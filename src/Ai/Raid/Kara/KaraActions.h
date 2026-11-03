@@ -184,11 +184,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class WizardOfOzScorchStrawmanAction : public Action
+class WizardOfOzCastScorchOnStrawmanAction : public MovementAction
 {
 public:
-    WizardOfOzScorchStrawmanAction(PlayerbotAI* botAI)
-        : Action(botAI, "wizard of oz scorch strawman") {}
+    WizardOfOzCastScorchOnStrawmanAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "wizard of oz cast scorch on strawman") {}
     bool Execute(Event event) override;
 };
 

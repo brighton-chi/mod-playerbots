@@ -70,19 +70,19 @@ public:
             &RaidKarazhanTriggerContext::big_bad_wolf_chasing_little_red_riding_hood;
 
         // Romulo and Julianne
-        creators["romulo and julianne both bosses revived"] =
-            &RaidKarazhanTriggerContext::romulo_and_julianne_both_bosses_revived;
+        creators["romulo and julianne should be killed together"] =
+            &RaidKarazhanTriggerContext::romulo_and_julianne_should_be_killed_together;
 
         // The Wizard of Oz
-        creators["wizard of oz need target priority"] =
-            &RaidKarazhanTriggerContext::wizard_of_oz_need_target_priority;
+        creators["wizard of oz should prioritize targets"] =
+            &RaidKarazhanTriggerContext::wizard_of_oz_should_prioritize_targets;
 
-        creators["wizard of oz strawman is vulnerable to fire"] =
-            &RaidKarazhanTriggerContext::wizard_of_oz_strawman_is_vulnerable_to_fire;
+        creators["wizard of oz mage should burn strawman"] =
+            &RaidKarazhanTriggerContext::wizard_of_oz_mage_should_burn_strawman;
 
         // The Curator
-        creators["the curator astral flare spawned"] =
-            &RaidKarazhanTriggerContext::the_curator_astral_flare_spawned;
+        creators["the curator should prioritize astral flares"] =
+            &RaidKarazhanTriggerContext::the_curator_should_prioritize_astral_flares;
 
         creators["the curator should be tanked"] =
             &RaidKarazhanTriggerContext::the_curator_should_be_tanked;
@@ -92,7 +92,7 @@ public:
 
         // Terestian Illhoof
         creators["terestian illhoof should prioritize chains"] =
-            &RaidKarazhanTriggerContext::terestian_illhoof_need_target_priority;
+            &RaidKarazhanTriggerContext::terestian_illhoof_should_prioritize_chains;
 
         // Shade of Aran
         creators["shade of aran arcane explosion is casting"] =
@@ -234,25 +234,25 @@ private:
     }
 
     // Romulo and Julianne
-    static Trigger* romulo_and_julianne_both_bosses_revived(PlayerbotAI* botAI)
+    static Trigger* romulo_and_julianne_should_be_killed_together(PlayerbotAI* botAI)
     {
-        return new RomuloAndJulianneBothBossesRevivedTrigger(botAI);
+        return new RomuloAndJulianneShouldBeKilledTogetherTrigger(botAI);
     }
 
     // The Wizard of Oz
-    static Trigger* wizard_of_oz_need_target_priority(PlayerbotAI* botAI)
+    static Trigger* wizard_of_oz_should_prioritize_targets(PlayerbotAI* botAI)
     {
-        return new WizardOfOzNeedTargetPriorityTrigger(botAI);
+        return new WizardOfOzShouldPrioritizeTargetsTrigger(botAI);
     }
-    static Trigger* wizard_of_oz_strawman_is_vulnerable_to_fire(PlayerbotAI* botAI)
+    static Trigger* wizard_of_oz_mage_should_burn_strawman(PlayerbotAI* botAI)
     {
-        return new WizardOfOzStrawmanIsVulnerableToFireTrigger(botAI);
+        return new WizardOfOzMageShouldBurnStrawmanTrigger(botAI);
     }
 
     // The Curator
-    static Trigger* the_curator_astral_flare_spawned(PlayerbotAI* botAI)
+    static Trigger* the_curator_should_prioritize_astral_flares(PlayerbotAI* botAI)
     {
-        return new TheCuratorAstralFlareSpawnedTrigger(botAI);
+        return new TheCuratorShouldPrioritizeAstralFlaresTrigger(botAI);
     }
     static Trigger* the_curator_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -264,7 +264,7 @@ private:
     }
 
     // Terestian Illhoof
-    static Trigger* terestian_illhoof_need_target_priority(PlayerbotAI* botAI)
+    static Trigger* terestian_illhoof_should_prioritize_chains(PlayerbotAI* botAI)
     {
         return new TerestianIllhoofShouldPrioritizeChainsTrigger(botAI);
     }

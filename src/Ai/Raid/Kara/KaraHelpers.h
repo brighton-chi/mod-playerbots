@@ -152,8 +152,8 @@ Unit* GetOperaActor(Player* bot, std::string_view name);
 
 bool IsSafePosition (float x, float y, std::vector<Unit*> const& hazards, float hazardRadius);
 
-// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf or Roar is fighting, or
-// Nightbane is on the ground.
+// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf, Dorothee or Roar is
+// fighting, or Nightbane is on the ground.
 bool IsKarazhanFearCasterActive(Player* bot);
 
 // Trash
@@ -236,7 +236,15 @@ inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
     Position{ -10913.391f, -1773.508f, 90.477f },
 };
 
+// Romulo and Julianne
+// Once one is down, the other must die within 10 s. The skull moves to the healthier one only
+// once it is this far ahead.
+inline constexpr float ROMULO_AND_JULIANNE_HEALTH_GAP_PCT = 10.0f;
+
 // Wizard of Oz
+inline constexpr float SCORCH_RANGE = 30.0f;
+// A mage out of range walks to this far inside it; Strawman moves fast.
+inline constexpr float SCORCH_APPROACH_MARGIN = 2.0f;
 inline std::array const OZ_TARGETS = {
     "dorothee",
     "tito",
@@ -246,6 +254,8 @@ inline std::array const OZ_TARGETS = {
 };
 
 // The Curator
+// Arcing Sear jumps 13 yd centre to centre between players, so this spread only cuts its jumps.
+inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Shade of Aran

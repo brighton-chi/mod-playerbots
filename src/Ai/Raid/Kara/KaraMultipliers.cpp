@@ -326,10 +326,11 @@ float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValueInEncounter(Action*
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    // Also the on-attacker DoTs, which pick their own target.
+    if (!dynamic_cast<CastDebuffSpellAction*>(action))
         return 1.0f;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
+    Unit* target = action->GetTarget();
     return target && target->GetEntry() == Id(KaraNpcs::NPC_FIENDISH_IMP) ? 0.0f : 1.0f;
 }
 

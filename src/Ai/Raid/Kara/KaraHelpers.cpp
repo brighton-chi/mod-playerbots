@@ -121,7 +121,7 @@ bool IsKarazhanFearCasterActive(Player* bot)
     if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return true;
 
-    return GetOperaActor(bot, "roar");
+    return GetOperaActor(bot, "dorothee") || GetOperaActor(bot, "roar");
 }
 
 // Trash

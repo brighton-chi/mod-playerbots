@@ -223,12 +223,12 @@ protected:
 
 // Romulo and Julianne
 
-class RomuloAndJulianneBothBossesRevivedTrigger : public KarazhanEncounterTrigger
+class RomuloAndJulianneShouldBeKilledTogetherTrigger : public KarazhanEncounterTrigger
 {
 public:
-    RomuloAndJulianneBothBossesRevivedTrigger(PlayerbotAI* botAI)
+    RomuloAndJulianneShouldBeKilledTogetherTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "romulo and julianne both bosses revived",
+            botAI, "romulo and julianne should be killed together",
             KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
 
 protected:
@@ -237,24 +237,24 @@ protected:
 
 // The Wizard of Oz
 
-class WizardOfOzNeedTargetPriorityTrigger : public KarazhanEncounterTrigger
+class WizardOfOzShouldPrioritizeTargetsTrigger : public KarazhanEncounterTrigger
 {
 public:
-    WizardOfOzNeedTargetPriorityTrigger(PlayerbotAI* botAI)
+    WizardOfOzShouldPrioritizeTargetsTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "wizard of oz need target priority",
+            botAI, "wizard of oz should prioritize targets",
             KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class WizardOfOzStrawmanIsVulnerableToFireTrigger : public KarazhanEncounterTrigger
+class WizardOfOzMageShouldBurnStrawmanTrigger : public KarazhanEncounterTrigger
 {
 public:
-    WizardOfOzStrawmanIsVulnerableToFireTrigger(PlayerbotAI* botAI)
+    WizardOfOzMageShouldBurnStrawmanTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "wizard of oz strawman is vulnerable to fire",
+            botAI, "wizard of oz mage should burn strawman",
             KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
 
 protected:
@@ -263,12 +263,13 @@ protected:
 
 // The Curator
 
-class TheCuratorAstralFlareSpawnedTrigger : public KarazhanEncounterTrigger
+class TheCuratorShouldPrioritizeAstralFlaresTrigger : public KarazhanEncounterTrigger
 {
 public:
-    TheCuratorAstralFlareSpawnedTrigger(PlayerbotAI* botAI)
+    TheCuratorShouldPrioritizeAstralFlaresTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "the curator astral flare spawned", KaraHelpers::KaraBosses::DATA_CURATOR) {}
+            botAI, "the curator should prioritize astral flares",
+            KaraHelpers::KaraBosses::DATA_CURATOR) {}
 
 protected:
     bool IsActiveInEncounter() override;

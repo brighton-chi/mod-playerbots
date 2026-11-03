@@ -148,7 +148,7 @@ bool BigBadWolfChasingLittleRedRidingHoodTrigger::IsActiveInEncounter()
 
 // Romulo and Julianne
 
-bool RomuloAndJulianneBothBossesRevivedTrigger::IsActiveInEncounter()
+bool RomuloAndJulianneShouldBeKilledTogetherTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
@@ -158,7 +158,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActiveInEncounter()
 
 // The Wizard of Oz
 
-bool WizardOfOzNeedTargetPriorityTrigger::IsActiveInEncounter()
+bool WizardOfOzShouldPrioritizeTargetsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
@@ -172,14 +172,14 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActiveInEncounter()
     return false;
 }
 
-bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActiveInEncounter()
+bool WizardOfOzMageShouldBurnStrawmanTrigger::IsActiveInEncounter()
 {
     return bot->getClass() == CLASS_MAGE && GetOperaActor(bot, "strawman");
 }
 
 // The Curator
 
-bool TheCuratorAstralFlareSpawnedTrigger::IsActiveInEncounter()
+bool TheCuratorShouldPrioritizeAstralFlaresTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, KARA_MAP_ID) && FindThreatTarget(bot, "astral flare");
 }

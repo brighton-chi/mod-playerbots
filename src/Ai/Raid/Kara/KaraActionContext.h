@@ -77,8 +77,8 @@ public:
         creators["wizard of oz mark target"] =
             &RaidKarazhanActionContext::wizard_of_oz_mark_target;
 
-        creators["wizard of oz scorch strawman"] =
-            &RaidKarazhanActionContext::wizard_of_oz_scorch_strawman;
+        creators["wizard of oz cast scorch on strawman"] =
+            &RaidKarazhanActionContext::wizard_of_oz_cast_scorch_on_strawman;
 
         // The Curator
         creators["the curator mark astral flare"] =
@@ -244,9 +244,9 @@ private:
     {
         return new WizardOfOzMarkTargetAction(botAI);
     }
-    static Action* wizard_of_oz_scorch_strawman(PlayerbotAI* botAI)
+    static Action* wizard_of_oz_cast_scorch_on_strawman(PlayerbotAI* botAI)
     {
-        return new WizardOfOzScorchStrawmanAction(botAI);
+        return new WizardOfOzCastScorchOnStrawmanAction(botAI);
     }
 
     // The Curator

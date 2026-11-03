@@ -498,28 +498,25 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
     if (!julianne)
         return false;
 
-    constexpr float maxPctDifference = 10.0f;
-    Unit* target = nullptr;
+    // Faking death
+    bool const romuloDown = romulo->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    bool const julianneDown = julianne->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    if (romuloDown && julianneDown)
+        return false;
 
-    if (julianne->GetHealthPct() + maxPctDifference < romulo->GetHealthPct() ||
-        julianne->GetHealthPct() < 1.0f)
-    {
-        target = romulo;
-    }
-    else if (romulo->GetHealthPct() + maxPctDifference < julianne->GetHealthPct() ||
-        romulo->GetHealthPct() < 1.0f)
-    {
-        target = julianne;
-    }
-    else
-    {
-        target = (romulo->GetHealthPct() >= julianne->GetHealthPct()) ? romulo : julianne;
-    }
+    if (romuloDown)
+        return MarkTargetWithSkull(bot, julianne);
 
-    if (target)
-        return MarkTargetWithSkull(bot, target);
+    if (julianneDown)
+        return MarkTargetWithSkull(bot, romulo);
 
-    return false;
+    // Within the gap the skull stays where it is; phase 2 leaves it on Romulo.
+    Unit* healthier = romulo->GetHealthPct() >= julianne->GetHealthPct() ? romulo : julianne;
+    Unit* other = healthier == romulo ? julianne : romulo;
+    if (healthier->GetHealthPct() - other->GetHealthPct() <= ROMULO_AND_JULIANNE_HEALTH_GAP_PCT)
+        return false;
+
+    return MarkTargetWithSkull(bot, healthier);
 }
 
 // The Wizard of Oz
@@ -535,11 +532,20 @@ bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
     return false;
 }
 
-bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
+bool WizardOfOzCastScorchOnStrawmanAction::Execute(Event /*event*/)
 {
     Unit* strawman = GetOperaActor(bot, "strawman");
-    return strawman &&
-        botAI->CanCastSpell("scorch", strawman) && botAI->CastSpell("scorch", strawman);
+    if (!strawman)
+        return false;
+
+    // Both measure edge to edge.
+    if (!bot->IsWithinCombatRange(strawman, SCORCH_RANGE))
+    {
+        return MoveTo(
+            strawman, SCORCH_RANGE - SCORCH_APPROACH_MARGIN, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    return botAI->CanCastSpell("scorch", strawman) && botAI->CastSpell("scorch", strawman);
 }
 
 // The Curator
@@ -577,9 +583,9 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
 
 bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 {
-    constexpr float minDistance = 5.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-    return nearestPlayer && FleePosition(nearestPlayer->GetPosition(), minDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, THE_CURATOR_RANGED_SPREAD_DISTANCE);
+    return nearestPlayer &&
+        FleePosition(nearestPlayer->GetPosition(), THE_CURATOR_RANGED_SPREAD_DISTANCE);
 }
 
 // Terestian Illhoof

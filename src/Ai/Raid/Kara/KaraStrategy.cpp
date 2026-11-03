@@ -68,18 +68,18 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("big bad wolf position boss", ACTION_RAID) }));
 
     // Romulo and Julianne
-    triggers.push_back(new TriggerNode("romulo and julianne both bosses revived",
+    triggers.push_back(new TriggerNode("romulo and julianne should be killed together",
         { NextAction("romulo and julianne mark target", ACTION_RAID) }));
 
     // The Wizard of Oz
-    triggers.push_back(new TriggerNode("wizard of oz need target priority",
+    triggers.push_back(new TriggerNode("wizard of oz should prioritize targets",
         { NextAction("wizard of oz mark target", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("wizard of oz strawman is vulnerable to fire",
-        { NextAction("wizard of oz scorch strawman", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("wizard of oz mage should burn strawman",
+        { NextAction("wizard of oz cast scorch on strawman", ACTION_RAID + 1) }));
 
     // The Curator
-    triggers.push_back(new TriggerNode("the curator astral flare spawned",
+    triggers.push_back(new TriggerNode("the curator should prioritize astral flares",
         { NextAction("the curator mark astral flare", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("the curator should be tanked",
