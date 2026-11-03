@@ -78,7 +78,7 @@ enum class KaraNpcs : uint32
     NPC_MANA_WARP                   = 16530,
 
     // Attumen the Huntsman
-    NPC_ATTUMEN_THE_HUNTSMAN        = 16152, // Mounted version
+    NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
 
     // Moroes
     NPC_LADY_KEIRA_BERRYBUCK        = 17007,
@@ -187,7 +187,22 @@ Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
-Unit* GetAttumenMounted(Player* bot);
+// Shadow Cleave jumps from the tank to two more players within 10 yd in front of Attumen.
+inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
+// Intangible Presence curses every player within 10 yd of Attumen.
+inline constexpr float INTANGIBLE_PRESENCE_RADIUS = 10.0f;
+inline constexpr float ATTUMEN_HAZARD_CLEARANCE = 1.0f;
+// Behind mounted Attumen, centre to centre. Charge goes to a player more than 8 yd away edge to
+// edge (11 yd centre to centre), and Auto Shot fails within 5 yd.
+inline constexpr float ATTUMEN_STACK_DISTANCE = 2.0f;
+inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.0f;
+inline constexpr float ATTUMEN_STACK_TOLERANCE = 1.5f;
+
+// Midnight turns invisible when mounted Attumen is summoned.
+bool IsAttumenMounted(Unit const& midnight);
+// Both Attumens share a name. For up to 1 s after the merge, the unmounted one can be found
+// instead, and this returns null.
+Unit* GetMountedAttumen(Player* bot);
 
 // Maiden of Virtue
 inline Position const MAIDEN_OF_VIRTUE_TANK_POSITION = { -10945.881f, -2103.782f, 92.712f };

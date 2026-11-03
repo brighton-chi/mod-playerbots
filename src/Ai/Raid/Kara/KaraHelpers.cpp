@@ -209,10 +209,18 @@ Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI)
 
 // Attumen the Huntsman
 
-Unit* GetAttumenMounted(Player* bot)
+bool IsAttumenMounted(Unit const& midnight)
 {
-    constexpr float searchRadius = 50.0f;
-    return bot->FindNearestCreature(Id(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
+    return !midnight.IsVisible();
+}
+
+Unit* GetMountedAttumen(Player* bot)
+{
+    Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
+    if (!attumen || attumen->GetEntry() != Id(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED))
+        return nullptr;
+
+    return attumen;
 }
 
 // Shade of Aran

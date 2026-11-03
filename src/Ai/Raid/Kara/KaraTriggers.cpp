@@ -45,25 +45,48 @@ bool ManaWarpStunnerShouldHoldTrigger::IsActive()
 
 // Midnight is still present as a separate (invisible) unit after Attumen mounts.
 // A Midnight threat list check will capture the entire encounter.
-bool AttumenTheHuntsmanPhaseOneActiveTrigger::IsActiveInEncounter()
+bool AttumenTheHuntsmanShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return FindThreatTarget(bot, "midnight") && !GetAttumenMounted(bot);
+    // First assist tank
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+        return false;
+
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    return midnight && !IsAttumenMounted(*midnight) && GetEncounterBoss();
 }
 
-bool AttumenTheHuntsmanPhaseTwoActiveTrigger::IsActiveInEncounter()
+bool AttumenTheHuntsmanMidnightShouldBeFocusedTrigger::IsActiveInEncounter()
 {
-    return FindThreatTarget(bot, "midnight") && GetAttumenMounted(bot);
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    if (!midnight || IsAttumenMounted(*midnight) || AI_VALUE(Unit*, "current target") == midnight)
+        return false;
+
+    // The first assist tank takes Attumen once he is up.
+    return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) || !GetEncounterBoss();
 }
 
-bool AttumenTheHuntsmanPhaseTransitionTrigger::IsActiveInEncounter()
+bool AttumenTheHuntsmanMountedShouldBeTankedTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* attumen = GetMountedAttumen(bot);
+    return attumen && attumen->GetVictim() == bot;
+}
+
+bool AttumenTheHuntsmanShouldStackBehindTrigger::IsActiveInEncounter()
+{
+    Unit* attumen = GetMountedAttumen(bot);
+    return attumen && attumen->GetVictim() != bot;
+}
+
+bool AttumenTheHuntsmanShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    if (!FindThreatTarget(bot, "midnight"))
-        return false;
-
-    return GetAttumenMounted(bot);
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    return midnight && IsAttumenMounted(*midnight);
 }
 
 // Moroes

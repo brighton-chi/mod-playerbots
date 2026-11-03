@@ -30,14 +30,20 @@ public:
             &RaidKarazhanTriggerContext::mana_warp_stunner_should_hold;
 
         // Attumen the Huntsman
-        creators["attumen the huntsman phase one active"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_one_active;
+        creators["attumen the huntsman should be tanked"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_should_be_tanked;
 
-        creators["attumen the huntsman phase two active"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_two_active;
+        creators["attumen the huntsman midnight should be focused"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_midnight_should_be_focused;
 
-        creators["attumen the huntsman phase transition"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_phase_transition;
+        creators["attumen the huntsman mounted should be tanked"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_mounted_should_be_tanked;
+
+        creators["attumen the huntsman should stack behind"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_should_stack_behind;
+
+        creators["attumen the huntsman should manage dps timer"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_should_manage_dps_timer;
 
         // Moroes
         creators["moroes should prioritize adds"] =
@@ -169,17 +175,25 @@ private:
     }
 
     // Attumen the Huntsman
-    static Trigger* attumen_the_huntsman_phase_one_active(PlayerbotAI* botAI)
+    static Trigger* attumen_the_huntsman_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanPhaseOneActiveTrigger(botAI);
+        return new AttumenTheHuntsmanShouldBeTankedTrigger(botAI);
     }
-    static Trigger* attumen_the_huntsman_phase_two_active(PlayerbotAI* botAI)
+    static Trigger* attumen_the_huntsman_midnight_should_be_focused(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanPhaseTwoActiveTrigger(botAI);
+        return new AttumenTheHuntsmanMidnightShouldBeFocusedTrigger(botAI);
     }
-    static Trigger* attumen_the_huntsman_phase_transition(PlayerbotAI* botAI)
+    static Trigger* attumen_the_huntsman_mounted_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanPhaseTransitionTrigger(botAI);
+        return new AttumenTheHuntsmanMountedShouldBeTankedTrigger(botAI);
+    }
+    static Trigger* attumen_the_huntsman_should_stack_behind(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanShouldStackBehindTrigger(botAI);
+    }
+    static Trigger* attumen_the_huntsman_should_manage_dps_timer(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanShouldManageDpsTimerTrigger(botAI);
     }
 
     // Moroes

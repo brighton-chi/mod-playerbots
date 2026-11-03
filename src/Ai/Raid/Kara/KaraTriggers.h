@@ -74,36 +74,60 @@ public:
 
 // Attumen the Huntsman
 
-class AttumenTheHuntsmanPhaseOneActiveTrigger : public KarazhanEncounterTrigger
+class AttumenTheHuntsmanShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    AttumenTheHuntsmanPhaseOneActiveTrigger(PlayerbotAI* botAI)
+    AttumenTheHuntsmanShouldBeTankedTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "attumen the huntsman phase one active",
+            botAI, "attumen the huntsman should be tanked",
             KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class AttumenTheHuntsmanPhaseTwoActiveTrigger : public KarazhanEncounterTrigger
+class AttumenTheHuntsmanMidnightShouldBeFocusedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    AttumenTheHuntsmanPhaseTwoActiveTrigger(PlayerbotAI* botAI)
+    AttumenTheHuntsmanMidnightShouldBeFocusedTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "attumen the huntsman phase two active",
+            botAI, "attumen the huntsman midnight should be focused",
             KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class AttumenTheHuntsmanPhaseTransitionTrigger : public KarazhanEncounterTrigger
+class AttumenTheHuntsmanMountedShouldBeTankedTrigger : public KarazhanEncounterTrigger
 {
 public:
-    AttumenTheHuntsmanPhaseTransitionTrigger(PlayerbotAI* botAI)
+    AttumenTheHuntsmanMountedShouldBeTankedTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "attumen the huntsman phase transition",
+            botAI, "attumen the huntsman mounted should be tanked",
+            KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class AttumenTheHuntsmanShouldStackBehindTrigger : public KarazhanEncounterTrigger
+{
+public:
+    AttumenTheHuntsmanShouldStackBehindTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "attumen the huntsman should stack behind",
+            KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class AttumenTheHuntsmanShouldManageDpsTimerTrigger : public KarazhanEncounterTrigger
+{
+public:
+    AttumenTheHuntsmanShouldManageDpsTimerTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "attumen the huntsman should manage dps timer",
             KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
 
 protected:

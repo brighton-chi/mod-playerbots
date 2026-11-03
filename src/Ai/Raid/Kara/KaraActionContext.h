@@ -30,13 +30,19 @@ public:
             &RaidKarazhanActionContext::mana_warp_stunner_hold_for_warp_breach;
 
         // Attumen the Huntsman
-        creators["attumen the huntsman handle phase one"] =
-            &RaidKarazhanActionContext::attumen_the_huntsman_handle_phase_one;
+        creators["attumen the huntsman assist tank position unmounted"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_assist_tank_position_unmounted;
 
-        creators["attumen the huntsman handle phase two"] =
-            &RaidKarazhanActionContext::attumen_the_huntsman_handle_phase_two;
+        creators["attumen the huntsman attack midnight"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_attack_midnight;
 
-        creators["attumen the huntsman set dps timer"] =
+        creators["attumen the huntsman tank position mounted"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_tank_position_mounted;
+
+        creators["attumen the huntsman stack behind"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
+
+        creators["attumen the huntsman manage dps timer"] =
             &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
         // Moroes
@@ -169,17 +175,25 @@ private:
     }
 
     // Attumen the Huntsman
-    static Action* attumen_the_huntsman_handle_phase_one(PlayerbotAI* botAI)
+    static Action* attumen_the_huntsman_assist_tank_position_unmounted(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanHandlePhaseOneAction(botAI);
+        return new AttumenTheHuntsmanAssistTankPositionUnmountedAction(botAI);
     }
-    static Action* attumen_the_huntsman_handle_phase_two(PlayerbotAI* botAI)
+    static Action* attumen_the_huntsman_attack_midnight(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanHandlePhaseTwoAction(botAI);
+        return new AttumenTheHuntsmanAttackMidnightAction(botAI);
+    }
+    static Action* attumen_the_huntsman_tank_position_mounted(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanTankPositionMountedAction(botAI);
+    }
+    static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanStackBehindAction(botAI);
     }
     static Action* attumen_the_huntsman_manage_dps_timer(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanSetDpsTimerAction(botAI);
+        return new AttumenTheHuntsmanManageDpsTimerAction(botAI);
     }
 
     // Moroes

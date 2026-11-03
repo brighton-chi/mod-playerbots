@@ -28,14 +28,20 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("mana warp stunner hold for warp breach", ACTION_RAID) }));
 
     // Attumen the Huntsman
-    triggers.push_back(new TriggerNode("attumen the huntsman phase one active",
-        { NextAction("attumen the huntsman handle phase one", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("attumen the huntsman should be tanked",
+        { NextAction("attumen the huntsman assist tank position unmounted", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("attumen the huntsman phase two active",
-        { NextAction("attumen the huntsman handle phase two", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("attumen the huntsman midnight should be focused",
+        { NextAction("attumen the huntsman attack midnight", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("attumen the huntsman phase transition",
-        { NextAction("attumen the huntsman set dps timer", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(new TriggerNode("attumen the huntsman mounted should be tanked",
+        { NextAction("attumen the huntsman tank position mounted", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("attumen the huntsman should stack behind",
+        { NextAction("attumen the huntsman stack behind", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("attumen the huntsman should manage dps timer",
+        { NextAction("attumen the huntsman manage dps timer", ACTION_EMERGENCY + 10) }));
 
     // Moroes
     triggers.push_back(new TriggerNode("moroes should prioritize adds",

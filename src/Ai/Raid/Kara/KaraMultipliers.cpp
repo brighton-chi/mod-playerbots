@@ -198,7 +198,9 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    return FindThreatTarget(bot, "midnight") ? 0.0f : 1.0f;
+    // Mounted Attumen is the only target left, so stock targeting finds him.
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    return midnight && !IsAttumenMounted(*midnight) ? 0.0f : 1.0f;
 }
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* action)
@@ -206,11 +208,11 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (PlayerbotAI::IsTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<AttumenTheHuntsmanHandlePhaseTwoAction*>(action))
+        dynamic_cast<AttumenTheHuntsmanStackBehindAction*>(action))
     {
         return 1.0f;
     }
@@ -223,10 +225,13 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    if (!FindThreatTarget(bot, "midnight"))
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    if (!midnight || !IsAttumenMounted(*midnight))
         return 1.0f;
 
-    return GetAttumenMounted(bot) ? 0.0f : 1.0f;
+    // Whoever Attumen is on moves freely; everyone else stays stacked.
+    Unit* attumen = GetMountedAttumen(bot);
+    return attumen && attumen->GetVictim() == bot ? 1.0f : 0.0f;
 }
 
 // Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight
@@ -241,17 +246,14 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (!FindThreatTarget(bot, "midnight"))
-        return 1.0f;
-
-    Unit* attumen = GetAttumenMounted(bot);
-    if (!attumen)
-        return 1.0f;
-
     if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
-    KaraInstanceState const* state = FindKaraState(attumen->GetInstanceId());
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    if (!midnight || !IsAttumenMounted(*midnight))
+        return 1.0f;
+
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     if (!state || !state->attumenDpsWaitTimer)
         return 0.0f; // Timer blocking dps if not set yet is intentional in all cases
 

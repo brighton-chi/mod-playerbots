@@ -175,55 +175,90 @@ bool ManaWarpStunnerHoldForWarpBreachAction::Execute(Event /*event*/)
 
 // Midnight's CombatReach is 1.6 yards
 // Unmounted Attumen's CombatReach is 1.5 yards
-bool AttumenTheHuntsmanHandlePhaseOneAction::Execute(Event /*event*/)
+// Steps the tank away from every player in reach of Shadow Cleave (from the tank) or Intangible
+// Presence (from Attumen), until each is clear.
+bool AttumenTheHuntsmanAssistTankPositionUnmountedAction::Execute(Event /*event*/)
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    if (!midnight)
+    Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
+    if (!midnight || !attumen)
         return false;
 
-    if (PlayerbotAI::IsAssistTank(bot))
-    {
-        Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
-        return attumen && AssistTankMoveAttumenFromGroup(midnight, attumen);
-    }
-
-    return AI_VALUE(Unit*, "current target") != midnight && Attack(midnight);
-}
-
-bool AttumenTheHuntsmanHandlePhaseOneAction::AssistTankMoveAttumenFromGroup(
-    Unit* midnight, Unit* attumen)
-{
     if (AI_VALUE(Unit*, "current target") != attumen)
         return Attack(attumen);
 
     if (attumen->GetVictim() != bot || midnight->GetVictim() == bot)
         return false;
 
-    constexpr float safeDistance = 8.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-    if (!nearestPlayer || attumen->GetDistance2d(nearestPlayer) >= safeDistance)
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    return MoveFromGroup(safeDistance);
+    float shortfall = 0.0f;
+    float sumX = 0.0f;
+    float sumY = 0.0f;
+    uint32 count = 0;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
+            continue;
+
+        float const reach = member->GetCombatReach() + ATTUMEN_HAZARD_CLEARANCE;
+        float const memberShortfall = std::max(
+            SHADOW_CLEAVE_JUMP_RADIUS + reach - bot->GetExactDist2d(member),
+            INTANGIBLE_PRESENCE_RADIUS + reach - attumen->GetExactDist2d(member));
+        if (memberShortfall <= 0.0f)
+            continue;
+
+        shortfall = std::max(shortfall, memberShortfall);
+        sumX += member->GetPositionX();
+        sumY += member->GetPositionY();
+        ++count;
+    }
+
+    if (!count)
+        return false;
+
+    float const angle = bot->GetAngle(sumX / count, sumY / count) + M_PI;
+    Position const destination(
+        bot->GetPositionX() + std::cos(angle) * shortfall,
+        bot->GetPositionY() + std::sin(angle) * shortfall, bot->GetPositionZ());
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, destination, 0.0f, attumen, moveX, moveY, backwards))
+        return false;
+
+    float moveZ = bot->GetPositionZ();
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), moveX, moveY,
+            moveZ, false))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-bool AttumenTheHuntsmanHandlePhaseTwoAction::Execute(Event /*event*/)
+bool AttumenTheHuntsmanAttackMidnightAction::Execute(Event /*event*/)
 {
-    Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    return midnight && AI_VALUE(Unit*, "current target") != midnight && Attack(midnight);
+}
+
+bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
+{
+    Unit* attumen = GetMountedAttumen(bot);
     if (!attumen)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != attumen)
         return Attack(attumen);
 
-    if (PlayerbotAI::IsTank(bot))
-        return CurrentTankPositionAttumen(attumen);
-
-    return StackBehindAttumen(attumen);
-}
-
-bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* attumen)
-{
     if (attumen->GetVictim() != bot || !bot->IsWithinMeleeRange(attumen))
         return false;
 
@@ -247,14 +282,19 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::CurrentTankPositionAttumen(Unit* at
 }
 
 // Mounted Attumen's CombatReach is 0 yards so defaults to 1.5 yards
-bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
+bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
 {
-    float const distanceBehind = bot->getClass() == CLASS_HUNTER ? 8.0f : 2.0f;
+    Unit* attumen = GetMountedAttumen(bot);
+    if (!attumen)
+        return false;
+
+    float const distanceBehind = bot->getClass() == CLASS_HUNTER ?
+        ATTUMEN_HUNTER_STACK_DISTANCE : ATTUMEN_STACK_DISTANCE;
     float const orientation = attumen->GetOrientation() + M_PI;
     float const rearX = attumen->GetPositionX() + std::cos(orientation) * distanceBehind;
     float const rearY = attumen->GetPositionY() + std::sin(orientation) * distanceBehind;
 
-    if (bot->GetDistance2d(rearX, rearY) <= 0.2f)
+    if (bot->GetExactDist2d(rearX, rearY) <= ATTUMEN_STACK_TOLERANCE)
         return false;
 
     return MoveTo(
@@ -262,7 +302,7 @@ bool AttumenTheHuntsmanHandlePhaseTwoAction::StackBehindAttumen(Unit* attumen)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool AttumenTheHuntsmanSetDpsTimerAction::Execute(Event /*event*/)
+bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
 {
     uint32 const now = getMSTime();
     return EmplaceIfUnset(KaraState(bot->GetInstanceId()).attumenDpsWaitTimer, now);
