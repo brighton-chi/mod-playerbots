@@ -329,6 +329,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FelmystLandingDpsHoldIsActiveTrigger : public SunwellEncounterTrigger
+{
+public:
+    FelmystLandingDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "felmyst landing dps hold is active") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Eredar Twins
 
 class EredarTwinsMeleeIsAtBalconyTrigger : public SunwellEncounterTrigger

@@ -1142,6 +1142,12 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+bool GurtoggBloodboilStopAttackingAction::Execute(Event /*event*/)
+{
+    Unit* gurtogg = GetBtBoss(bot, BtBosses::DATA_GURTOGG_BLOODBOIL);
+    return gurtogg && StopAttackingTarget(bot, *gurtogg);
+}
+
 // Reliquary of Souls
 
 bool ReliquaryOfSoulsMisdirectToMainTankAction::Execute(Event /*event*/)
@@ -1727,6 +1733,9 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 {
+    // Select a target without attacking while the DPS hold is active.
+    bool const isDpsHeld = IsIllidariCouncilDpsHoldActive(bot);
+
     IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
     Unit* veras = members.veras;
     if (IsVerasVanished(veras))
@@ -1779,7 +1788,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
     if (!target || AI_VALUE(Unit*, "current target") == target)
         return false;
 
-    return Attack(target);
+    return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
 }
 
 bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
@@ -2892,13 +2901,8 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
     bool const isHeld = target == illidan ?
         GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None :
         phase == IllidanPhase::Flying && IsFlameOfAzzinothDpsHeld(*illidan);
-    if (isHeld && !PlayerbotAI::IsRanged(bot))
-    {
-        context->GetValue<Unit*>("current target")->Set(target);
-        bot->SetSelection(target->GetGUID());
-        botAI->ChangeEngine(BOT_STATE_COMBAT);
-        return true;
-    }
+    if (isHeld)
+        return SelectTarget(botAI, target);
 
     return Attack(target);
 }

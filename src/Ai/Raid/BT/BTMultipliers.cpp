@@ -56,45 +56,6 @@ bool IsKillingSpree(Player* bot, Action* action)
     return bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action);
 }
 
-bool IsDpsHoldCandidate(Player* bot, Action* action)
-{
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return false;
-
-    if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
-        return false;
-
-    return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
-}
-
-// Buffs, cures, protection, and resurrection are allowed during a DPS hold. Totems are not because
-// some are offensive, and I don't think it's worth getting granular about which to allow.
-float GetDpsHoldValue(Player* bot, Action* action)
-{
-    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
-        return 0.0f;
-
-    bool const castOnRaidSpell = dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<CastProtectSpellAction*>(action);
-
-    return castOnRaidSpell ? 1.0f : 0.0f;
-}
-
-// An attack or a secondary dot picks its own target, which is not always the current target.
-Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
-{
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-    {
-        return action->GetTarget();
-    }
-
-    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-}
-
 } // end anonymous namespace (Shared)
 
 // Held for each boss's first 5% (excluding Shade of Akama and Illidan), and also through Supremus's
@@ -486,18 +447,10 @@ float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Act
     return dropsThreat ? 0.0f : 1.0f;
 }
 
-// Non-tanks other than healers should stay under GURTOGG_THREAT_HOLD_RATIO of the second tank's
-// threat, except during Fel Rage, when bots cannot gain threat.
 float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
-
-    if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
-        bot->HasAura(Id(BtSpells::SPELL_INSIGNIFICANCE)))
-    {
-        return 1.0f;
-    }
 
     Unit* gurtogg = GetEncounterBoss();
     if (!gurtogg)
@@ -506,11 +459,7 @@ float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
     if (AI_VALUE(Unit*, "current target") != gurtogg && action->GetTarget() != gurtogg)
         return 1.0f;
 
-    float const secondTankThreat = AI_VALUE(float, "gurtogg bloodboil second tank threat");
-    if (secondTankThreat <= 0.0f)
-        return 1.0f;
-
-    if (gurtogg->GetThreatMgr().GetThreat(bot) < secondTankThreat * GURTOGG_THREAT_HOLD_RATIO)
+    if (!IsGurtoggThreatHoldActive(botAI, gurtogg))
         return 1.0f;
 
     return dynamic_cast<CastHealingSpellAction*>(action) ? 1.0f : GetDpsHoldValue(bot, action);
@@ -873,25 +822,13 @@ float IllidariCouncilManageInterruptsMultiplier::GetValueInEncounter(Action* act
 
 float IllidariCouncilHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action))
-        return 1.0f;
-
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    if (!state || !state->councilDpsWaitTimer ||
-        GetMSTimeDiffToNow(*state->councilDpsWaitTimer) >= COUNCIL_DPS_WAIT_MS)
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<IllidariCouncilAssignDpsTargetsAction*>(action))
     {
         return 1.0f;
     }
 
-    if ((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
-        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) ||
-        IsZerevorMageTank(bot))
-    {
-        return 1.0f;
-    }
-
-    return GetDpsHoldValue(bot, action);
+    return IsIllidariCouncilDpsHoldActive(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Illidan Stormrage <The Betrayer>

@@ -58,6 +58,25 @@ public:
     bool Execute(Event event) override;
 };
 
+// Takes the target dps assist would take, without attacking it. Used for Hydross the Unstable,
+// Leotheras the Blind, and Fathom-Lord Karathress.
+class SscSelectHeldTargetAction : public Action
+{
+public:
+    SscSelectHeldTargetAction(PlayerbotAI* botAI, std::string const& name)
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+// For bots with no target. Tanks pick up Leotheras themselves.
+class LeotherasTheBlindSelectHeldTargetAction : public SscSelectHeldTargetAction
+{
+public:
+    LeotherasTheBlindSelectHeldTargetAction(PlayerbotAI* botAI)
+        : SscSelectHeldTargetAction(botAI, "leotheras the blind select held target") {}
+    bool isUseful() override;
+};
+
 // Used for Hydross the Unstable, Leotheras the Blind, and Fathom-Lord Karathress.
 class SscSpreadRangedAction : public MovementAction
 {

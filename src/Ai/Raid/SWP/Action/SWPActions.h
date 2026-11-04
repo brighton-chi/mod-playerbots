@@ -305,6 +305,24 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystStopAttackingForLandingAction : public Action
+{
+public:
+    FelmystStopAttackingForLandingAction(PlayerbotAI* botAI)
+        : Action(botAI, "felmyst stop attacking for landing") {}
+    bool Execute(Event event) override;
+};
+
+// Takes the target dps assist would take, without attacking it, for a bot in its non-combat engine.
+class FelmystSelectHeldTargetAction : public Action
+{
+public:
+    FelmystSelectHeldTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "felmyst select held target") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 // Eredar Twins
 
 class EredarTwinsMeleeJumpFromBalconyAction : public MovementAction

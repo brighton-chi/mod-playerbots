@@ -353,6 +353,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class GurtoggBloodboilStopAttackingAction : public Action
+{
+public:
+    GurtoggBloodboilStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "gurtogg bloodboil stop attacking") {}
+    bool Execute(Event event) override;
+};
+
 // Reliquary of Souls
 
 class ReliquaryOfSoulsMisdirectToMainTankAction : public Action
@@ -719,7 +727,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// The target is kept: the hold keeps the swing, shot or channel from starting again.
 class IllidanStormrageStopAttackingAction : public Action
 {
 public:

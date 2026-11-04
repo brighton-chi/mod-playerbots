@@ -245,6 +245,7 @@ inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 // 125 yards is about the exact distance from Kael to the entrances to his room.
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
+inline constexpr uint32 ADVISOR_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
 
 inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
     .playerClass = CLASS_WARLOCK,
@@ -277,6 +278,8 @@ inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
+// The first ADVISOR_DPS_WAIT_MS of each phase 1 advisor, for everyone but that advisor's tank.
+bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
 
 bool UpdateTkClassRoles(PlayerbotAI* botAI);
 bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);

@@ -430,6 +430,7 @@ bool IsGurtoggFelRageTarget(Player* player);
 Position GetGurtoggFelRageMeleePosition(
     Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
 float FindGurtoggSecondTankThreat(Player* bot);
+bool IsGurtoggThreatHoldActive(PlayerbotAI* botAI, Unit* gurtogg);
 bool IsInGurtoggRectangle(
     Position const& point, Position const& center, Position const& facing, float halfWidth,
     float halfDepth);
@@ -538,6 +539,7 @@ IllidariCouncilMembers GetIllidariCouncilMembers(Player* bot);
 bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(Player* bot);
 bool IsZerevorMageTank(Player* player);
+bool IsIllidariCouncilDpsHoldActive(Player* bot);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);

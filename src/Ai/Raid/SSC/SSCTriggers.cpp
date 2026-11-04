@@ -99,7 +99,7 @@ bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounte
 
 bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsDps(bot))
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
@@ -126,6 +126,15 @@ bool HydrossTheUnstableOffPhaseTankAttackingTrigger::IsActiveInEncounter()
         return false;
 
     return bot->GetVictim() == hydross || AI_VALUE(Unit*, "current target") == hydross;
+}
+
+bool HydrossTheUnstableShouldSelectHeldTargetTrigger::IsActiveInEncounter()
+{
+    if (botAI->GetState() != BOT_STATE_NON_COMBAT || PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
+    return hydross && GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None;
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
@@ -372,9 +381,9 @@ bool LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger::IsActiveInEncounter
     return GetLeotherasDemonOrShadow(botAI);
 }
 
-bool LeotherasTheBlindAggroResetsTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMelee(bot) || HasInnerDemon(bot))
+    if (HasInnerDemon(bot))
         return false;
 
     Unit* leotheras = FindThreatTarget(bot, "leotheras the blind");
@@ -425,6 +434,12 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
         return !FindThreatTarget(bot, "fathom-guard tidalvess");
 
     return false;
+}
+
+bool FathomLordKarathressShouldSelectHeldTargetTrigger::IsActiveInEncounter()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT && PlayerbotAI::IsHeal(bot) &&
+        IsKarathressStartDpsHoldActive(bot);
 }
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()

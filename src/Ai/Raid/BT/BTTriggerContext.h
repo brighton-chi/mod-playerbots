@@ -114,6 +114,9 @@ public:
         creators["gurtogg bloodboil fel rage on bot"] =
             &RaidBlackTempleTriggerContext::gurtogg_bloodboil_fel_rage_on_bot;
 
+        creators["gurtogg bloodboil should stop attacking"] =
+            &RaidBlackTempleTriggerContext::gurtogg_bloodboil_should_stop_attacking;
+
         // Reliquary of Souls
         creators["reliquary of souls hunter should misdirect"] =
             &RaidBlackTempleTriggerContext::reliquary_of_souls_hunter_should_misdirect;
@@ -401,6 +404,10 @@ private:
     static Trigger* gurtogg_bloodboil_fel_rage_on_bot(PlayerbotAI* botAI)
     {
         return new GurtoggBloodboilFelRageOnBotTrigger(botAI);
+    }
+    static Trigger* gurtogg_bloodboil_should_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilShouldStopAttackingTrigger(botAI);
     }
 
     // Reliquary of Souls

@@ -113,6 +113,9 @@ public:
         creators["gurtogg bloodboil lead boss to tank position"] =
             &RaidBlackTempleActionContext::gurtogg_bloodboil_lead_boss_to_tank_position;
 
+        creators["gurtogg bloodboil stop attacking"] =
+            &RaidBlackTempleActionContext::gurtogg_bloodboil_stop_attacking;
+
         // Reliquary of Souls
         creators["reliquary of souls misdirect to main tank"] =
             &RaidBlackTempleActionContext::reliquary_of_souls_misdirect_to_main_tank;
@@ -415,6 +418,10 @@ private:
         return new BlackTemplePositionBossAction(
             botAI, "gurtogg bloodboil lead boss to tank position",
             BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL, BtHelpers::GURTOGG_TANK_POSITION);
+    }
+    static Action* gurtogg_bloodboil_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new GurtoggBloodboilStopAttackingAction(botAI);
     }
 
     // Reliquary of Souls

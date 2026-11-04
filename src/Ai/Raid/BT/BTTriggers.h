@@ -363,6 +363,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class GurtoggBloodboilShouldStopAttackingTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    GurtoggBloodboilShouldStopAttackingTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "gurtogg bloodboil should stop attacking",
+            BtHelpers::BtBosses::DATA_GURTOGG_BLOODBOIL) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Reliquary of Souls
 
 class ReliquaryOfSoulsHunterShouldMisdirectTrigger : public BlackTempleEncounterTrigger

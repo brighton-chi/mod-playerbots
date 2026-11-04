@@ -78,6 +78,16 @@ bool SscStopAttackingAction::Execute(Event /*event*/)
     return StopAttackingAndChanneling(bot);
 }
 
+bool SscSelectHeldTargetAction::Execute(Event /*event*/)
+{
+    return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
+}
+
+bool LeotherasTheBlindSelectHeldTargetAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT && !PlayerbotAI::IsTank(bot);
+}
+
 bool SscSpreadRangedAction::Execute(Event /*event*/)
 {
     Player* nearestPlayer = GetNearestPlayerInRadius(bot, _distance);
@@ -1073,11 +1083,13 @@ bool FathomLordKarathressMisdirectToTanksAction::Execute(Event /*event*/)
 }
 
 // Priority: (1) Spitfire Totem, (2) Tidalvess, (3) Caribdis (ranged only), (4) Sharkkis,
-// (5) Sharkkis pet, (6) Karathress.
+// (5) Sharkkis pet, and (6) Karathress.
 bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
+    // Select a target without attacking while the DPS hold is active.
+    bool const isDpsHeld = IsKarathressStartDpsHoldActive(bot);
 
+    Unit* target = nullptr;
     // Karathress gets the totem when Tidalvess dies, so it stays top priority for the whole fight.
     Unit* totem = GetSpitfireTotem(botAI);
     Unit* tidalvess = FindThreatTarget(bot, "fathom-guard tidalvess");
@@ -1123,7 +1135,9 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         return ApproachCaribdis(caribdis);
 
     if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
+    {
+        return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
+    }
 
     if (target == caribdis)
     {

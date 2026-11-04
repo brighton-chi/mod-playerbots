@@ -1104,10 +1104,10 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    uint32 const phase = GetKaelthasTkPhase(kaelthas);
-    if (phase == PHASE_NONE)
-        return false;
+    // Select a target without attacking while the DPS hold is active.
+    bool const isDpsHeld = IsKaelthasAdvisorDpsHoldActive(botAI, kaelthas);
 
+    uint32 const phase = GetKaelthasTkPhase(kaelthas);
     bool const isPhase3 = phase == PHASE_ALL_ADVISORS;
     bool const isActiveCapernianTank = isPhase3 && IsCapernianTank(bot);
 
@@ -1166,7 +1166,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
+        return isDpsHeld ? SelectTarget(botAI, target) : Attack(target);
 
     if (target != telonicus || telonicus->GetVictim() == bot)
         return false;

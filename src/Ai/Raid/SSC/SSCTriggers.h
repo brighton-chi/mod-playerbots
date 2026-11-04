@@ -141,6 +141,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class HydrossTheUnstableShouldSelectHeldTargetTrigger : public SscEncounterTrigger
+{
+public:
+    HydrossTheUnstableShouldSelectHeldTargetTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable should select held target") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class HydrossTheUnstableShouldManagePhaseTimersTrigger : public SscEncounterTrigger
 {
 public:
@@ -315,11 +325,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindAggroResetsTrigger : public SscEncounterTrigger
+class LeotherasTheBlindDpsHoldIsActiveTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindAggroResetsTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind aggro resets") {}
+    LeotherasTheBlindDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -363,6 +373,16 @@ class FathomLordKarathressShouldAssignDpsPriorityTrigger : public SscEncounterTr
 public:
     FathomLordKarathressShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "fathom-lord karathress should assign dps priority") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class FathomLordKarathressShouldSelectHeldTargetTrigger : public SscEncounterTrigger
+{
+public:
+    FathomLordKarathressShouldSelectHeldTargetTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress should select held target") {}
 
 protected:
     bool IsActiveInEncounter() override;

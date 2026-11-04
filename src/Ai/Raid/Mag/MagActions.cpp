@@ -164,6 +164,12 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, channeler);
 }
 
+bool MagtheridonSelectHeldTargetAction::Execute(Event /*event*/)
+{
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    return SelectTarget(botAI, magtheridon);
+}
+
 // Establish a Banish rotation for Burning Abyssals and a Fear rotation with respect to any Burning
 // Abyssals that exceed the number of Warlocks in the raid.
 bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)

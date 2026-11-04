@@ -954,6 +954,20 @@ bool IsKarathressBlessingHoldActive(Player* bot)
     return FindThreatTarget(bot, "fathom-guard caribdis");
 }
 
+bool IsKarathressStartDpsHoldActive(Player* bot)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    if (!karathress)
+        return false;
+
+    std::optional<uint32> const& waitStart =
+        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer;
+    return !waitStart || getMSTimeDiff(*waitStart, getMSTime()) < KARATHRESS_DPS_WAIT_MS;
+}
+
 Unit* GetSharkkisPet(Player* bot)
 {
     Unit* lurker = nullptr;

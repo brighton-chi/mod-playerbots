@@ -428,6 +428,11 @@ bool FelmystShouldHoldDpsWhileLandingTrigger::IsActiveInEncounter()
     return IsMechanicTrackerBot(bot, SWP_MAP_ID) && AI_VALUE2(Unit*, "find target", "felmyst");
 }
 
+bool FelmystLandingDpsHoldIsActiveTrigger::IsActiveInEncounter()
+{
+    return IsFelmystLandingDpsHoldActive(botAI);
+}
+
 // Eredar Twins
 
 bool EredarTwinsMeleeIsAtBalconyTrigger::IsActiveInEncounter()

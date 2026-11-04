@@ -52,6 +52,16 @@ public:
     bool Execute(Event event) override;
 };
 
+// Takes Magtheridon as the target without attacking him, so the bots the DPS hold covers are in
+// their combat engines when it ends.
+class MagtheridonSelectHeldTargetAction : public Action
+{
+public:
+    MagtheridonSelectHeldTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "magtheridon select held target") {}
+    bool Execute(Event event) override;
+};
+
 class MagtheridonWarlockCcBurningAbyssalAction : public Action
 {
 public:

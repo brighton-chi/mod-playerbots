@@ -1014,6 +1014,26 @@ float FindGurtoggSecondTankThreat(Player* bot)
     return secondThreat;
 }
 
+// Non-tanks other than healers should stay under GURTOGG_THREAT_HOLD_RATIO of the second tank's
+// threat, except during Fel Rage, when bots cannot gain threat.
+bool IsGurtoggThreatHoldActive(PlayerbotAI* botAI, Unit* gurtogg)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot) ||
+        bot->HasAura(Id(BtSpells::SPELL_INSIGNIFICANCE)))
+    {
+        return false;
+    }
+
+    float const secondTankThreat =
+        botAI->GetAiObjectContext()->GetValue<float>("gurtogg bloodboil second tank threat")->Get();
+    if (secondTankThreat <= 0.0f)
+        return false;
+
+    return gurtogg->GetThreatMgr().GetThreat(bot) >=
+        secondTankThreat * GURTOGG_THREAT_HOLD_RATIO;
+}
+
 // The rectangle is a space in which bots can be given a randomized (by GUID) position. There are
 // two rectangles drawn, one for the 5 Bloodboil soakers and the other for other ranged bots.
 bool IsInGurtoggRectangle(
@@ -1189,6 +1209,20 @@ bool IsZerevorMageTank(Player* player)
 
     BtInstanceState const* state = FindBtState(player->GetInstanceId());
     return state && IsClassRolePlayer(player, state->zerevorMageTank);
+}
+
+bool IsIllidariCouncilDpsHoldActive(Player* bot)
+{
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    if (!state || !state->councilDpsWaitTimer ||
+        GetMSTimeDiffToNow(*state->councilDpsWaitTimer) >= COUNCIL_DPS_WAIT_MS)
+    {
+        return false;
+    }
+
+    return !((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
+        PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) || IsZerevorMageTank(bot));
 }
 
 bool HasDangerousCouncilAura(Player* bot)

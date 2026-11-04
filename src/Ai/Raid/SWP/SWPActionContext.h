@@ -110,6 +110,12 @@ public:
         creators["felmyst manage landing dps timer"] =
             &RaidSwpActionContext::felmyst_manage_landing_dps_timer;
 
+        creators["felmyst stop attacking for landing"] =
+            &RaidSwpActionContext::felmyst_stop_attacking_for_landing;
+
+        creators["felmyst select held target"] =
+            &RaidSwpActionContext::felmyst_select_held_target;
+
         // Eredar Twins
         creators["eredar twins melee jump from balcony"] =
             &RaidSwpActionContext::eredar_twins_melee_jump_from_balcony;
@@ -364,6 +370,14 @@ private:
     static Action* felmyst_manage_landing_dps_timer(PlayerbotAI* botAI)
     {
         return new FelmystManageLandingDpsTimerAction(botAI);
+    }
+    static Action* felmyst_stop_attacking_for_landing(PlayerbotAI* botAI)
+    {
+        return new FelmystStopAttackingForLandingAction(botAI);
+    }
+    static Action* felmyst_select_held_target(PlayerbotAI* botAI)
+    {
+        return new FelmystSelectHeldTargetAction(botAI);
     }
 
     // Eredar Twins

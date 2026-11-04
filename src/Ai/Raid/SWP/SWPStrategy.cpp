@@ -115,6 +115,12 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst should hold dps while landing",
         { NextAction("felmyst manage landing dps timer", ACTION_EMERGENCY + 8) }));
 
+    triggers.push_back(new TriggerNode("felmyst landing dps hold is active",
+        {
+            NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
+            NextAction("felmyst select held target", ACTION_RAID),
+        }));
+
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony",
         { NextAction("eredar twins melee jump from balcony", ACTION_EMERGENCY + 1) }));

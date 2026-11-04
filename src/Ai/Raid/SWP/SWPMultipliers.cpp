@@ -446,21 +446,10 @@ float FelmystControlMovementMultiplier::GetValueInEncounter(Action* action)
 
 float FelmystWaitForLandingDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst)
-        return 1.0f;
-
-    if (PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
-
-    FelmystEncounterState const* state = FindFelmystState(felmyst->GetInstanceId());
-    return state && state->landingDpsWaitStartMs ? 0.0f : 1.0f;
+    return IsFelmystLandingDpsHoldActive(botAI) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValueInEncounter(Action* action)
@@ -587,15 +576,13 @@ float EredarTwinsDisableAutoTargetingMultiplier::GetValueInEncounter(Action* act
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 {
-    // No AttackAction block. Commencing auto-attack activates combat engines and gets bots
-    // positioned, but don't use abilities.
-    if (!dynamic_cast<CastSpellAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<EredarTwinsDpsPrioritizeSacrolashAction*>(action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
-        return 1.0f;
-
-    return IsEredarTwinsStartHoldActive(botAI) ? 0.0f : 1.0f;
+    return IsEredarTwinsStartHoldActive(botAI) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)

@@ -228,6 +228,9 @@ bool TryGetFelmystLandingApproachDestination(
     Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
 bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
+// From the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, for everyone but the
+// main tank.
+bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
 bool IsFelmystFogMovementSuppressed(Unit* felmyst);
 bool IsFelmystFogActiveForBot(Player* bot, Unit* felmyst);

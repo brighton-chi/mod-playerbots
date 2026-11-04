@@ -6,6 +6,8 @@
 
 #include "EncounterHelpers.h"
 #include "AiFactory.h"
+#include "AttackAction.h"
+#include "AttackersValue.h"
 #include "CellImpl.h"
 #include "CharmInfo.h"
 #include "Creature.h"
@@ -812,10 +814,56 @@ bool IsAoeThreatAction(Player* bot, Action* action)
     }
 }
 
+bool IsDpsHoldCandidate(Player* bot, Action* action)
+{
+    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+        return false;
+
+    return PlayerbotAI::IsTank(bot) || !dynamic_cast<CastHealingSpellAction*>(action);
+}
+
+float GetDpsHoldValue(Player* bot, Action* action)
+{
+    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
+        return 0.0f;
+
+    bool const castOnRaidSpell = dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<CastProtectSpellAction*>(action);
+
+    return castOnRaidSpell ? 1.0f : 0.0f;
+}
+
+Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
+{
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    {
+        return action->GetTarget();
+    }
+
+    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+}
+
 // Stopping Attacks and Spells
 
 namespace
 {
+
+// Blizzard, Hurricane, Rain of Fire, and Volley have no unit target. TARGET_DEST_DYNOBJ_ENEMY
+// excludes friendly channeled AoEs.
+bool IsGroundChannelOnEnemies(Spell const& channel)
+{
+    for (SpellEffectInfo const& effect : channel.GetSpellInfo()->Effects)
+    {
+        if (effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
+            return true;
+    }
+
+    return false;
+}
 
 bool IsAutoRepeatAimedAt(Player* bot, Unit const& target)
 {
@@ -823,23 +871,23 @@ bool IsAutoRepeatAimedAt(Player* bot, Unit const& target)
     return shot && shot->m_targets.GetUnitTargetGUID() == target.GetGUID();
 }
 
+// True if the channel is on this unit, or on the ground at enemies (which counts as on every
+// enemy). Excludes a self-channel (e.g., Evocation).
 bool IsChannelAimedAt(Player* bot, Unit const& target)
 {
     Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (!channel)
-        return false;
+    return channel && (channel->m_targets.GetUnitTargetGUID() == target.GetGUID() ||
+        IsGroundChannelOnEnemies(*channel));
+}
 
-    if (channel->m_targets.GetUnitTargetGUID() == target.GetGUID())
-        return true;
+// True if the channel is on a hostile unit, whichever one, or on the ground at enemies. Excludes a
+// self-channel or channeled heal (Tranquility, Divine Hymn, Penance on an ally).
+bool IsOffensiveChannel(Player* bot, Spell const& channel)
+{
+    if (Unit* unitTarget = channel.m_targets.GetUnitTarget())
+        return bot->IsHostileTo(unitTarget);
 
-    // A ground channel on enemies (Blizzard, Hurricane, Rain of Fire, Volley) has no unit target.
-    for (SpellEffectInfo const& effect : channel->GetSpellInfo()->Effects)
-    {
-        if (effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
-            return true;
-    }
-
-    return false;
+    return IsGroundChannelOnEnemies(channel);
 }
 
 } // end anonymous namespace (Stopping Attacks and Spells)
@@ -866,10 +914,16 @@ bool StopAttackingAndChanneling(Player* bot)
         isStopped = true;
     }
 
-    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) ||
-        bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+    if (bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
     {
-        bot->CastStop();
+        bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+        isStopped = true;
+    }
+
+    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (channel && IsOffensiveChannel(bot, *channel))
+    {
+        bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
         isStopped = true;
     }
 
@@ -915,6 +969,31 @@ void StandDown(PlayerbotAI* botAI)
 
     currentTarget->Set(nullptr);
 }
+
+bool SelectTarget(PlayerbotAI* botAI, Unit* target)
+{
+    Player* bot = botAI->GetBot();
+    if (!target || !AttackersValue::IsValidTarget(target, bot))
+        return false;
+
+    auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
+    Unit* oldTarget = currentTarget->Get();
+    if (oldTarget == target && botAI->GetState() == BOT_STATE_COMBAT)
+        return false;
+
+    if (oldTarget && oldTarget != target)
+        StopAttackingTarget(bot, *oldTarget);
+
+    if (bot->GetVictim() && bot->GetVictim() != target)
+        bot->AttackStop();
+
+    currentTarget->Set(target);
+    bot->SetSelection(target->GetGUID());
+    botAI->ChangeEngine(BOT_STATE_COMBAT);
+    return true;
+}
+
+// Commanding Pets
 
 void CallBackPets(Player* bot)
 {

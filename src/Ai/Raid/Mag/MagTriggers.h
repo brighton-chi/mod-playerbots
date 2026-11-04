@@ -76,6 +76,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class MagtheridonShouldSelectHeldTargetTrigger : public MagtheridonEncounterTrigger
+{
+public:
+    MagtheridonShouldSelectHeldTargetTrigger(PlayerbotAI* botAI)
+        : MagtheridonEncounterTrigger(botAI, "magtheridon should select held target") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class MagtheridonBurningAbyssalSpawnedTrigger : public MagtheridonEncounterTrigger
 {
 public:

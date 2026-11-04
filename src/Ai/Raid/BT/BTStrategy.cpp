@@ -118,6 +118,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("gurtogg bloodboil fel rage on bot",
         { NextAction("gurtogg bloodboil lead boss to tank position", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("gurtogg bloodboil should stop attacking",
+        { NextAction("gurtogg bloodboil stop attacking", ACTION_EMERGENCY + 2) }));
+
     // Reliquary of Souls
     triggers.push_back(new TriggerNode("reliquary of souls hunter should misdirect",
         { NextAction("reliquary of souls misdirect to main tank", ACTION_RAID + 3) }));

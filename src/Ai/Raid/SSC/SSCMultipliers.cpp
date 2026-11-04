@@ -71,34 +71,6 @@ bool IsMeleeReachSpell(Player* bot, Action* action)
         (bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action));
 }
 
-bool IsDpsHoldCandidate(Player* bot, Action* action)
-{
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return false;
-
-    if (!PlayerbotAI::IsTank(bot) && dynamic_cast<CastHealingSpellAction*>(action))
-        return false;
-
-    // AttackAction for healers is used only to keep them in their combat engines. Their damage,
-    // including from wanding, all comes from CastSpellAction.
-    return !dynamic_cast<AttackAction*>(action) || !PlayerbotAI::IsHeal(bot);
-}
-
-// Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
-float GetDpsHoldValue(Player* bot, Action* action)
-{
-    if (bot->getClass() == CLASS_SHAMAN && dynamic_cast<CastTotemAction*>(action))
-        return 0.0f;
-
-    bool const castOnRaidSpell = dynamic_cast<CastBuffSpellAction*>(action) ||
-        dynamic_cast<CastCureSpellAction*>(action) ||
-        dynamic_cast<CurePartyMemberAction*>(action) ||
-        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-        dynamic_cast<CastProtectSpellAction*>(action);
-
-    return castOnRaidSpell ? 1.0f : 0.0f;
-}
-
 bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
 {
     auto const& adds =
@@ -745,22 +717,13 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
 
 float FathomLordKarathressHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action))
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action))
+    {
         return 1.0f;
+    }
 
-    if (PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
-    if (!karathress)
-        return 1.0f;
-
-    std::optional<uint32> const& waitStart =
-        SscState(karathress->GetInstanceId()).karathressDpsWaitTimer;
-    if (waitStart && getMSTimeDiff(*waitStart, getMSTime()) >= KARATHRESS_DPS_WAIT_MS)
-        return 1.0f;
-
-    return GetDpsHoldValue(bot, action);
+    return IsKarathressStartDpsHoldActive(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float FathomLordKarathressBlessingHoldDpsMultiplier::GetValueInEncounter(Action* action)
@@ -774,10 +737,7 @@ float FathomLordKarathressBlessingHoldDpsMultiplier::GetValueInEncounter(Action*
 
     Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
 
-    // The secondary dots go on their own targets, which are not always the current target.
-    bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
-    Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
+    Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
     return target == karathress ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 

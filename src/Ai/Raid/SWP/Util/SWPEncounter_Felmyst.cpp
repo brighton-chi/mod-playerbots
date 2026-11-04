@@ -1022,6 +1022,19 @@ bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst)
     return !IsNearLandingPosition(destination);
 }
 
+bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
+{
+    if (PlayerbotAI::IsMainTank(botAI->GetBot()))
+        return false;
+
+    Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
+    if (!felmyst)
+        return false;
+
+    FelmystEncounterState const* state = FindFelmystState(felmyst->GetInstanceId());
+    return state && state->landingDpsWaitStartMs;
+}
+
 void ClearFelmystDemonicVaporKiteState(Player* bot)
 {
     uint32 const instanceId = bot->GetInstanceId();

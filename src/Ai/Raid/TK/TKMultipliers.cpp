@@ -227,11 +227,9 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValueInEncounte
 
 float KaelthasSunstriderHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    if (dynamic_cast<CastHealingSpellAction*>(action) ||
-        dynamic_cast<CastFearWardOnMainTankAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<CastFearWardOnMainTankAction*>(action) ||
+        dynamic_cast<KaelthasSunstriderAssignAdvisorDpsPriorityAction*>(action))
     {
         return 1.0f;
     }
@@ -240,28 +238,7 @@ float KaelthasSunstriderHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (!kaelthas)
         return 1.0f;
 
-    if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
-        return 1.0f;
-
-    constexpr uint32 dpsWaitMs = 10 * IN_MILLISECONDS;
-    std::optional<uint32> const& waitStart = TkState(kaelthas->GetInstanceId()).advisorDpsWaitTimer;
-    if (waitStart && *waitStart != ADVISOR_DPS_WAIT_NOT_STARTED &&
-        getMSTimeDiff(*waitStart, getMSTime()) >= dpsWaitMs)
-    {
-        return 1.0f;
-    }
-
-    // Only the applicable tank may attack during the first 10 seconds of an advisor in phase 1.
-    if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "lord sanguinar")))
-        return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
-
-    if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "grand astromancer capernian")))
-        return IsCapernianTank(bot) ? 1.0f : 0.0f;
-
-    if (IsAdvisorActive(AI_VALUE2(Unit*, "find target", "master engineer telonicus")))
-        return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ? 1.0f : 0.0f;
-
-    return 1.0f;
+    return IsKaelthasAdvisorDpsHoldActive(botAI, kaelthas) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float KaelthasSunstriderKiteThaladredMultiplier::GetValueInEncounter(Action* action)

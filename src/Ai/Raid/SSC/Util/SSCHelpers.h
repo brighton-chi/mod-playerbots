@@ -380,6 +380,8 @@ Unit* GetSharkkisPet(Player* bot);
 // Non-healer melee other than the main tank, from Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT
 // until Caribdis dies.
 bool IsKarathressBlessingHoldActive(Player* bot);
+// Non-tanks for the first KARATHRESS_DPS_WAIT_MS of the fight, and before the timer is stamped.
+bool IsKarathressStartDpsHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 

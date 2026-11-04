@@ -48,6 +48,9 @@ public:
         creators["hydross the unstable off phase tank attacking"] =
             &RaidSscTriggerContext::hydross_the_unstable_off_phase_tank_attacking;
 
+        creators["hydross the unstable should select held target"] =
+            &RaidSscTriggerContext::hydross_the_unstable_should_select_held_target;
+
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
 
@@ -101,8 +104,8 @@ public:
         creators["leotheras the blind hunter should misdirect demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_hunter_should_misdirect_demon_form;
 
-        creators["leotheras the blind aggro resets"] =
-            &RaidSscTriggerContext::leotheras_the_blind_aggro_resets;
+        creators["leotheras the blind dps hold is active"] =
+            &RaidSscTriggerContext::leotheras_the_blind_dps_hold_is_active;
 
         creators["leotheras the blind should manage dps wait timers"] =
             &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_wait_timers;
@@ -119,6 +122,9 @@ public:
 
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
+
+        creators["fathom-lord karathress should select held target"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_should_select_held_target;
 
         creators["fathom-lord karathress pets should be held"] =
             &RaidSscTriggerContext::fathom_lord_karathress_pets_should_be_held;
@@ -275,6 +281,10 @@ private:
     {
         return new HydrossTheUnstableOffPhaseTankAttackingTrigger(botAI);
     }
+    static Trigger* hydross_the_unstable_should_select_held_target(PlayerbotAI* botAI)
+    {
+        return new HydrossTheUnstableShouldSelectHeldTargetTrigger(botAI);
+    }
     static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI)
     {
         return new HydrossTheUnstableShouldManagePhaseTimersTrigger(botAI);
@@ -347,9 +357,9 @@ private:
     {
         return new LeotherasTheBlindHunterShouldMisdirectDemonFormTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_aggro_resets(PlayerbotAI* botAI)
+    static Trigger* leotheras_the_blind_dps_hold_is_active(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindAggroResetsTrigger(botAI);
+        return new LeotherasTheBlindDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_should_manage_dps_wait_timers(PlayerbotAI* botAI)
     {
@@ -373,6 +383,10 @@ private:
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_should_select_held_target(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressShouldSelectHeldTargetTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_pets_should_be_held(PlayerbotAI* botAI)
     {

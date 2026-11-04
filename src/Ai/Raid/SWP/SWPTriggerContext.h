@@ -108,6 +108,9 @@ public:
         creators["felmyst should hold dps while landing"] =
             &RaidSwpTriggerContext::felmyst_should_hold_dps_while_landing;
 
+        creators["felmyst landing dps hold is active"] =
+            &RaidSwpTriggerContext::felmyst_landing_dps_hold_is_active;
+
         // Eredar Twins
         creators["eredar twins melee is at balcony"] =
             &RaidSwpTriggerContext::eredar_twins_melee_is_at_balcony;
@@ -352,6 +355,10 @@ private:
     static Trigger* felmyst_should_hold_dps_while_landing(PlayerbotAI* botAI)
     {
         return new FelmystShouldHoldDpsWhileLandingTrigger(botAI);
+    }
+    static Trigger* felmyst_landing_dps_hold_is_active(PlayerbotAI* botAI)
+    {
+        return new FelmystLandingDpsHoldIsActiveTrigger(botAI);
     }
 
     // Eredar Twins

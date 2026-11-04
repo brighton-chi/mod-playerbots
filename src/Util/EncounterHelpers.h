@@ -194,44 +194,59 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius);
 
 // Action Class Checks for Multipliers
 
-// Primarily for when it is desirable for bots to save cooldowns for particular phases (or for the
-// pull, often until BOSS_ENGAGED_HEALTH_PCT).
+// Major dps cooldowns, including Bloodlust. Primarily for use when it is desirable for bots to save
+// cooldowns for particular phases (or for the pull, e.g., until BOSS_ENGAGED_HEALTH_PCT).
 bool IsDpsCooldownAction(Player* bot, Action* action);
 // Includes both single-target and AoE taunts.
 bool IsTauntAction(Player* bot, Action* action);
 // These abilities (e.g., Avenger's Shield) can be problematic on the pull for a council-type boss.
 // Covers tanks only.
 bool IsAoeThreatAction(Player* bot, Action* action);
+// Attacks and casts a dps hold covers: any AttackAction or CastSpellAction, except a non-tank's
+// heals.
+bool IsDpsHoldCandidate(Player* bot, Action* action);
+// Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
+float GetDpsHoldValue(Player* bot, Action* action);
+// For holding dps assist, tank assist, and/or secondary dots on attackers against a single unit.
+// Such actions have target values of their own that can differ from the current target. Thus, we
+// must check the unit that the hold covers against the unit that a held action would hit.
+Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action);
 
 // Stopping Attacks and Spells
-//
-// None of these helpers decides the bot's engine. In a fight, a bot leaves its combat engine
-// through "drop target," which runs when its current target is missing or invalid.
-// - Hold and keep the target (StopAttackingAndChanneling or StopAttackingTarget): The stop lasts
+
+// Except for SelectTarget, none of these helpers decides the bot's engine. In a fight, a bot leaves
+// its combat engine through drop target, which runs when its current target is missing or invalid.
+// - Hold and keep the target (StopAttackingAndChanneling or StopAttackingTarget): The hold lasts
 //   one tick, so a multiplier is needed to prevent the bot from attacking again. If the multiplier
-//   blocks every attack, call StopAttackingAndChanneling. If it blocks attacks on only one unit,
-//   call StopAttackingTarget on that unit.
-// - Clear (StandDown): only if the bot has nothing to resume afterward. "drop target" moves the
-//   bot to its non-combat engine on the next tick unless a multiplier zeroes DropTargetAction. In
-//   either engine, dps assist and tank assist pick a target again unless a target exclusion or a
-//   multiplier on them prevents it.
-// In any case, a spell in flight still lands, and a filling cast bar can't be stopped by an action.
+//   blocks every attack and spell, call StopAttackingAndChanneling. If it blocks attacks on only
+//   one unit, call StopAttackingTarget on that unit.
+// - Clear (StandDown): only if the bot has nothing to resume afterward. Drop target switches the
+//   bot to its non-combat engine on the next tick unless a multiplier zeroes it. In either engine,
+//   dps/tank assist will pick a target again unless a target exclusion or a multiplier prevents it.
+// In any case, a spell in flight still lands, a filling cast bar can't be stopped by an action, and
+// pets are not affected (CallBackPets would need to also be called).
 
 // True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
 // ground at enemies counts as aimed at any enemy.
 bool IsAttackingTarget(Player* bot, Unit const& target);
-// Ends the bot's swing, a queued swing ability (e.g., Heroic Strike), its channel, and its auto
-// shot or wand, whatever they are aimed at, including a healer's channel. Returns true if it
-// stopped anything.
+// Stops the bot's swing, queued swing ability (e.g., Heroic Strike), auto shot or wand, and channel
+// aimed at any enemy, regardless of which one, so channeled heals continue. Returns true if
+// anything is stopped.
 bool StopAttackingAndChanneling(Player* bot);
-// Ends only what is aimed at the target: the bot's swing, its auto shot or wand, and a channel on
-// it or on the ground at enemies, so a healer's other channels and casts continue. Returns true
-// if it stopped anything.
+// Stops only what is aimed at the target: the bot's swing, auto shot or wand, and channel on the
+// target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
+// is stopped.
 bool StopAttackingTarget(Player* bot, Unit const& target);
-// Ends the bot's swing on any unit, then its auto shot, wand, or channel if aimed at the current
-// target (a ground channel on enemies counts), so a healer's other channels and casts continue.
-// Then clears the current target. Pets are not touched; call CallBackPets to stop them.
+// Ends the bot's swing on any unit, then calls StopAttackingTarget and clears the current target.
 void StandDown(PlayerbotAI* botAI);
+// Activate the bot's combat engine and set its current target without attacking or sending a pet.
+// A multiplier is needed to keep the bot from attacking the target right after selection. Returns
+// false if the unit isn't a valid target, or is already the target of a bot in its combat engine.
+// Useful for holding dps upon a pull.
+bool SelectTarget(PlayerbotAI* botAI, Unit* target);
+
+// Commanding Pets
+
 // The pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), with CastStop in place
 // of the same InterruptNonMeleeSpells(false), for every unit with pet controls: the pet,
 // controllable guardians, and charmed creatures. This does not change a pet's stance, so if the

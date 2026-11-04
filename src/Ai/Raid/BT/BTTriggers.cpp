@@ -338,6 +338,14 @@ bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
         bot->GetExactDist2d(GURTOGG_TANK_POSITION) > BT_ARRIVAL_DISTANCE;
 }
 
+// A swing, Auto Shot, or wand has to be cancelled by an action once the threat hold starts.
+bool GurtoggBloodboilShouldStopAttackingTrigger::IsActiveInEncounter()
+{
+    Unit* gurtogg = GetEncounterBoss();
+    return gurtogg && IsAttackingTarget(bot, *gurtogg) &&
+        IsGurtoggThreatHoldActive(botAI, gurtogg);
+}
+
 // Reliquary of Souls
 
 bool ReliquaryOfSoulsHunterShouldMisdirectTrigger::IsActiveInEncounter()
