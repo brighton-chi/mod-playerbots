@@ -1315,16 +1315,13 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     if (!target)
     {
-        if (!skippedForAxe)
+        bool const isOnAxe = isMeleeDps && axe && AI_VALUE(Unit*, "current target") == axe;
+        if (!skippedForAxe && !isOnAxe)
             return didAvoidDevastation;
 
         // If every weapon still standing is inside the axe's reach, then melee should hold and
         // attack nothing rather than end up in Whirlwind range.
-        bot->AttackStop();
-        bot->InterruptSpell(CURRENT_MELEE_SPELL);
-        bot->CastStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetSelection(ObjectGuid());
+        StandDown(botAI);
         return true;
     }
 
@@ -1349,15 +1346,10 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastation
             result = MoveAway(axe, safeDistance - currentDistance);
     }
 
+    // Just in case melee ends up on the axe despite the priority list leaving them off. The
+    // priority loop then picks the next weapon.
     if (isMeleeDps && AI_VALUE(Unit*, "current target") == axe)
-    {
-        // Just in case melee ends up on the axe despite the priority list leaving them off
-        bot->AttackStop();
-        bot->InterruptSpell(CURRENT_MELEE_SPELL);
-        bot->CastStop();
-        context->GetValue<Unit*>("current target")->Set(nullptr);
-        bot->SetSelection(ObjectGuid());
-    }
+        StopAttackingTarget(bot, *axe);
 
     return result;
 }

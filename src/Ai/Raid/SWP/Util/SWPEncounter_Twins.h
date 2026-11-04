@@ -110,6 +110,8 @@ Player* GetSacrolashTank(Player* bot, uint8 index);
 bool IsAnySacrolashTank(Player* bot);
 bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess);
 bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
+// The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro.
+bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot, ObjectGuid& lastBlazeGuid);

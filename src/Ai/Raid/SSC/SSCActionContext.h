@@ -119,6 +119,9 @@ public:
         creators["fathom-lord karathress assign dps priority"] =
             &RaidSscActionContext::fathom_lord_karathress_assign_dps_priority;
 
+        creators["fathom-lord karathress control pet aggression"] =
+            &RaidSscActionContext::fathom_lord_karathress_control_pet_aggression;
+
         creators["fathom-lord karathress manage dps timer"] =
             &RaidSscActionContext::fathom_lord_karathress_manage_dps_timer;
 
@@ -376,6 +379,10 @@ private:
     static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressAssignDpsPriorityAction(botAI);
+    }
+    static Action* fathom_lord_karathress_control_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressControlPetAggressionAction(botAI);
     }
     static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI)
     {

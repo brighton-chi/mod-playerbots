@@ -279,6 +279,25 @@ bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash)
     return HasClosedOnTankThreat(sacrolash, bot, tankThreat, SACROLASH_THREAT_HOLD_RATIO);
 }
 
+bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    if (PlayerbotAI::IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+        return false;
+
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get())
+        return false;
+
+    EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
+    if (!state || !state->dpsHoldStartMs)
+        return true;
+
+    return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS;
+}
+
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot)
 {
     std::list<GameObject*> nearbyObjects;

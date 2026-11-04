@@ -671,7 +671,7 @@ bool MuruVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    bool const commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
+    bool const commandedAttack = CommandPetAttack(voidSpawn->ToCreature(), target);
 
     if (voidSpawn->GetExactDist2d(target) >
         MURU_SHADOW_BOLT_VOLLEY_RADIUS + target->GetCombatReach())

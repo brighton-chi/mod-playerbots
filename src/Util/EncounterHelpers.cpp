@@ -7,7 +7,9 @@
 #include "EncounterHelpers.h"
 #include "AiFactory.h"
 #include "CellImpl.h"
+#include "CharmInfo.h"
 #include "Creature.h"
+#include "CreatureAI.h"
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
@@ -18,14 +20,18 @@
 #include "HunterActions.h"
 #include "InstanceScript.h"
 #include "MageActions.h"
+#include "MotionMaster.h"
 #include "ObjectAccessor.h"
 #include "PaladinActions.h"
 #include "PathGenerator.h"
+#include "Pet.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RogueActions.h"
 #include "RtiTargetValue.h"
 #include "ShamanActions.h"
+#include "Spell.h"
+#include "SpellInfo.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
@@ -37,6 +43,8 @@
 
 namespace EncounterHelpers
 {
+
+// Instance Script Callers
 
 bool IsEncounterInProgress(Player* bot, uint32 mapId)
 {
@@ -71,6 +79,9 @@ std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
 
     return std::nullopt;
 }
+
+// Class Roles
+// A job given to one raid member of a class, such as a mage tank.
 
 namespace
 {
@@ -145,7 +156,7 @@ bool SayClassRoleChoice(
     return botAI->SayToRaid(GetClassRoleText(text, placeholders));
 }
 
-} // end anonymous namespace (Class roles)
+} // end anonymous namespace (Class Roles)
 
 ClassRoleChoice FindClassRoleChoice(PlayerbotAI* botAI, uint32 mapId, ClassRole const& role)
 {
@@ -289,6 +300,8 @@ bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
     return !guid.IsEmpty() && guid == bot->GetGUID();
 }
 
+// Raid Target Icons (RTI)
+
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
     if (!target)
@@ -385,6 +398,8 @@ bool ClearStrategyTargetIcon(Player* bot, uint8 iconId, std::initializer_list<ui
 
     return ClearTargetIcon(bot, iconId);
 }
+
+// Movement
 
 bool CanTakeStepTowards(
     Player* bot, float destinationX, float destinationY, float moveDist,
@@ -547,6 +562,8 @@ bool GetStepToPosition(
     return true;
 }
 
+// Player Getters
+
 Player* GetGroupMainTank(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -634,6 +651,8 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius)
 
     return nearestPlayer;
 }
+
+// Action Class Checks for Multipliers
 
 bool IsDpsCooldownAction(Player* bot, Action* action)
 {
@@ -793,6 +812,174 @@ bool IsAoeThreatAction(Player* bot, Action* action)
     }
 }
 
+// Stopping Attacks and Spells
+
+namespace
+{
+
+bool IsAutoRepeatAimedAt(Player* bot, Unit const& target)
+{
+    Spell* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
+    return shot && shot->m_targets.GetUnitTargetGUID() == target.GetGUID();
+}
+
+bool IsChannelAimedAt(Player* bot, Unit const& target)
+{
+    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (!channel)
+        return false;
+
+    if (channel->m_targets.GetUnitTargetGUID() == target.GetGUID())
+        return true;
+
+    // A ground channel on enemies (Blizzard, Hurricane, Rain of Fire, Volley) has no unit target.
+    for (SpellEffectInfo const& effect : channel->GetSpellInfo()->Effects)
+    {
+        if (effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
+            return true;
+    }
+
+    return false;
+}
+
+} // end anonymous namespace (Stopping Attacks and Spells)
+
+bool IsAttackingTarget(Player* bot, Unit const& target)
+{
+    return bot->GetVictim() == &target || IsAutoRepeatAimedAt(bot, target) ||
+        IsChannelAimedAt(bot, target);
+}
+
+bool StopAttackingAndChanneling(Player* bot)
+{
+    bool isStopped = false;
+    if (bot->GetVictim())
+    {
+        bot->AttackStop();
+        isStopped = true;
+    }
+
+    if (bot->GetCurrentSpell(CURRENT_MELEE_SPELL))
+    {
+        // AttackStop() returns early without a victim, which would leave a queued swing ability.
+        bot->InterruptSpell(CURRENT_MELEE_SPELL);
+        isStopped = true;
+    }
+
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) ||
+        bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+    {
+        bot->CastStop();
+        isStopped = true;
+    }
+
+    return isStopped;
+}
+
+// Unlike StopAttackingAndChanneling(), CURRENT_MELEE_SPELL is not interrupted because a queued
+// swing ability fires on the next swing, at whatever the victim is then.
+bool StopAttackingTarget(Player* bot, Unit const& target)
+{
+    bool isStopped = false;
+    if (bot->GetVictim() == &target)
+    {
+        bot->AttackStop();
+        isStopped = true;
+    }
+
+    if (IsAutoRepeatAimedAt(bot, target))
+    {
+        bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+        isStopped = true;
+    }
+
+    if (IsChannelAimedAt(bot, target))
+    {
+        bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
+        isStopped = true;
+    }
+
+    return isStopped;
+}
+
+void StandDown(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    // Not duplicative of StopAttackingTarget, which calls AttackStop only when the bot's victim is
+    // its current target. They can differ if the target is cleared or changed without Attack().
+    bot->AttackStop();
+
+    auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
+    if (Unit* target = currentTarget->Get())
+        StopAttackingTarget(bot, *target);
+
+    currentTarget->Set(nullptr);
+}
+
+void CallBackPets(Player* bot)
+{
+    for (Unit* controlled : bot->m_Controlled)
+    {
+        Creature* pet = controlled->ToCreature();
+        CharmInfo* charmInfo = pet ? pet->GetCharmInfo() : nullptr;
+        if (!charmInfo || !pet->IsAlive())
+            continue;
+
+        pet->AttackStop();
+        pet->CastStop();
+        pet->ClearInPetCombat();
+        pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
+        if (Pet* playerPet = pet->ToPet())
+            playerPet->ClearCastWhenWillAvailable();
+
+        charmInfo->SetCommandState(COMMAND_FOLLOW);
+        charmInfo->SetIsCommandAttack(false);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsReturning(true);
+        charmInfo->SetIsCommandFollow(true);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->RemoveStayPosition();
+        charmInfo->SetForcedSpell(0);
+        charmInfo->SetForcedTargetGUID();
+    }
+}
+
+bool CommandPetAttack(Creature* pet, Unit* target)
+{
+    if (!pet || !pet->IsAlive() || !target)
+        return false;
+
+    if (Unit* owner = pet->GetCharmerOrOwner(); owner && !owner->IsValidAttackTarget(target))
+        return false;
+
+    if (!pet->IsCharmed() && !pet->CanCreatureAttack(target))
+        return false;
+
+    CharmInfo* charmInfo = pet->GetCharmInfo();
+    if (pet->GetVictim() == target && (!charmInfo || charmInfo->IsCommandAttack()))
+        return false;
+
+    pet->ClearUnitState(UNIT_STATE_FOLLOW);
+    pet->AttackStop();
+    if (charmInfo)
+    {
+        charmInfo->SetIsCommandAttack(true);
+        charmInfo->SetIsAtStay(false);
+        charmInfo->SetIsFollowing(false);
+        charmInfo->SetIsCommandFollow(false);
+        charmInfo->SetIsReturning(false);
+    }
+
+    if (pet->IsAIEnabled)
+        pet->AI()->AttackStart(target);
+    else
+        pet->Attack(target, true);
+
+    return true;
+}
+
+// Miscellaneous
+
 bool IsMechanicTrackerBot(Player* bot, uint32 mapId)
 {
     Group* group = bot->GetGroup();
@@ -841,20 +1028,20 @@ std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius,
 
 uint32 GetSelfImmunitySpell(Player* bot)
 {
-    constexpr uint32 iceBlock = 45438;
-    constexpr uint32 divineShield = 642;
-    constexpr uint32 cloakOfShadows = 31224;
+    constexpr uint32 SPELL_ICE_BLOCK = 45438;
+    constexpr uint32 SPELL_DIVINE_SHIELD = 642;
+    constexpr uint32 SPELL_CLOAK_OF_SHADOWS = 31224;
 
     switch (bot->getClass())
     {
         case CLASS_MAGE:
-            return iceBlock;
+            return SPELL_ICE_BLOCK;
 
         case CLASS_PALADIN:
-            return divineShield;
+            return SPELL_DIVINE_SHIELD;
 
         case CLASS_ROGUE:
-            return cloakOfShadows;
+            return SPELL_CLOAK_OF_SHADOWS;
 
         default:
             return 0;

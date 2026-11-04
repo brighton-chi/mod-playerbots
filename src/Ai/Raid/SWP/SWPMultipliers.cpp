@@ -587,9 +587,6 @@ float EredarTwinsDisableAutoTargetingMultiplier::GetValueInEncounter(Action* act
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 {
-    if (PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
     // No AttackAction block. Commencing auto-attack activates combat engines and gets bots
     // positioned, but don't use abilities.
     if (!dynamic_cast<CastSpellAction*>(action))
@@ -598,18 +595,7 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (PlayerbotAI::IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
-        return 1.0f;
-
-    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
-        return 1.0f;
-
-    EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
-    if (!state || !state->dpsHoldStartMs)
-        return 0.0f;
-
-    return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) <
-        EREDAR_TWINS_DPS_HOLD_MS ? 0.0f : 1.0f;
+    return IsEredarTwinsStartHoldActive(botAI) ? 0.0f : 1.0f;
 }
 
 float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)

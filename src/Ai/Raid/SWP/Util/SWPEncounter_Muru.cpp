@@ -6,8 +6,6 @@
 
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
-#include "CharmInfo.h"
-#include "CreatureAI.h"
 #include "Playerbots.h"
 #include <algorithm>
 #include <limits>
@@ -531,37 +529,6 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
     }
 
     return bestSpawn;
-}
-
-bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target)
-{
-    if (!controlled || !controlled->IsAlive() || !target || controlled->GetVictim() == target)
-        return false;
-
-    controlled->ClearUnitState(UNIT_STATE_FOLLOW);
-    controlled->AttackStop();
-    controlled->SetTarget(target->GetGUID());
-
-    if (CharmInfo* charmInfo = controlled->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    if (!controlled->IsPlayer() && controlled->IsCreature() &&
-        controlled->ToCreature()->IsAIEnabled)
-    {
-        controlled->ToCreature()->AI()->AttackStart(target);
-    }
-    else
-    {
-        controlled->Attack(target, true);
-    }
-
-    return true;
 }
 
 // Shared encounter state

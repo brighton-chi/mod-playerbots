@@ -127,7 +127,6 @@ Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius);
 ObjectGuid FindMuruSingularityGuid(Player* bot);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
-bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target);
 
 // Shared encounter state
 

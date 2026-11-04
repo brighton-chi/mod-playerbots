@@ -411,6 +411,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class EredarTwinsPetsShouldBeHeldTrigger : public SunwellEncounterTrigger
+{
+public:
+    EredarTwinsPetsShouldBeHeldTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "eredar twins pets should be held") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class EredarTwinsActiveConflagrationTargetTrigger : public SunwellEncounterTrigger
 {
 public:

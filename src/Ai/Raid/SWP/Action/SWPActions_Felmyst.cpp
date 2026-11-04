@@ -486,11 +486,8 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
 {
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
+    StandDown(botAI);
+    CallBackPets(bot);
     return true;
 }
 

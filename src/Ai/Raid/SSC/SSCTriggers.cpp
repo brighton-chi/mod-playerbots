@@ -9,6 +9,7 @@
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "SSCActions.h"
 #include "SSCHelpers.h"
@@ -432,6 +433,15 @@ bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
         return false;
 
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && FindThreatTarget(bot, "fathom-lord karathress");
+}
+
+bool FathomLordKarathressPetsShouldBeHeldTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    return IsKarathressBlessingHoldActive(bot) != pet->HasReactState(REACT_PASSIVE);
 }
 
 bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()

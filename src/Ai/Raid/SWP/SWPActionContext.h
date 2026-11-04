@@ -138,6 +138,9 @@ public:
         creators["eredar twins dps prioritize sacrolash"] =
             &RaidSwpActionContext::eredar_twins_dps_prioritize_sacrolash;
 
+        creators["eredar twins control pet aggression"] =
+            &RaidSwpActionContext::eredar_twins_control_pet_aggression;
+
         creators["eredar twins conflagration target move from group"] =
             &RaidSwpActionContext::eredar_twins_conflagration_target_move_from_group;
 
@@ -400,6 +403,10 @@ private:
     static Action* eredar_twins_dps_prioritize_sacrolash(PlayerbotAI* botAI)
     {
         return new EredarTwinsDpsPrioritizeSacrolashAction(botAI);
+    }
+    static Action* eredar_twins_control_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsControlPetAggressionAction(botAI);
     }
     static Action* eredar_twins_conflagration_target_move_from_group(PlayerbotAI* botAI)
     {

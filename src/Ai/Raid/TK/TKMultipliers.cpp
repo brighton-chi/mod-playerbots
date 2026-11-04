@@ -225,7 +225,7 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValueInEncounte
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-float KaelthasSunstriderWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float KaelthasSunstriderHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
         return 1.0f;
@@ -424,6 +424,19 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(
 
     // Only main tank is blocked during weapons/transition phases.
     return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+}
+
+// Melee with no weapon out of the axe's reach hold with no target, and stay in the combat engine.
+float KaelthasSunstriderKeepMeleeInCombatMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<DropTargetAction*>(action))
+        return 1.0f;
+
+    if (!PlayerbotAI::IsMelee(bot) || !PlayerbotAI::IsDps(bot))
+        return 1.0f;
+
+    Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
+    return kaelthas && GetKaelthasTkPhase(kaelthas) == PHASE_WEAPONS ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderDisableDisperseMultiplier::GetValueInEncounter(Action* action)

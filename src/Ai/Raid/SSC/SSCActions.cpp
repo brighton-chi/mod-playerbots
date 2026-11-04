@@ -5,12 +5,11 @@
  */
 
 #include "SSCActions.h"
-#include "CharmInfo.h"
-#include "CreatureAI.h"
 #include "EncounterHelpers.h"
 #include "MotionMaster.h"
 #include "MoveSpline.h"
 #include "ObjectAccessor.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "SSCHelpers.h"
@@ -76,20 +75,7 @@ bool SscMisdirectToMainTankAction::Execute(Event /*event*/)
 
 bool SscStopAttackingAction::Execute(Event /*event*/)
 {
-    if (!bot->GetVictim() && !AI_VALUE(Unit*, "current target") &&
-        !bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
-        !bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
-    {
-        return false;
-    }
-
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-
-    return true;
+    return StopAttackingAndChanneling(bot);
 }
 
 bool SscSpreadRangedAction::Execute(Event /*event*/)
@@ -174,8 +160,7 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
     if (markMaxedTime && getMSTimeDiff(*markMaxedTime, getMSTime()) >= phaseChangeDelayMs)
         return StepTo(otherPosition, hydross);
 
-    bot->AttackStop();
-    bot->CastStop();
+    StopAttackingAndChanneling(bot);
     return true;
 }
 
@@ -1125,12 +1110,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
             if (AI_VALUE(Unit*, "current target") != karathress)
                 return false;
 
-            bot->AttackStop();
-            bot->InterruptSpell(CURRENT_MELEE_SPELL);
-            bot->CastStop();
-            context->GetValue<Unit*>("current target")->Set(nullptr);
-            bot->SetSelection(ObjectGuid());
-            return true;
+            return StopAttackingTarget(bot, *karathress);
         }
 
         target = karathress;
@@ -1184,6 +1164,31 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 
     return EmplaceIfUnset(
         SscState(karathress->GetInstanceId()).karathressDpsWaitTimer, getMSTime());
+}
+
+bool FathomLordKarathressControlPetAggressionAction::Execute(Event /*event*/)
+{
+    Pet* pet = bot->GetPet();
+    if (!pet)
+        return false;
+
+    if (IsKarathressBlessingHoldActive(bot))
+    {
+        if (!pet->HasReactState(REACT_PASSIVE))
+        {
+            _previousReactState = pet->GetReactState();
+            _setPassive = true;
+            CallBackPets(bot);
+            pet->SetReactState(REACT_PASSIVE);
+        }
+    }
+    else if (_setPassive)
+    {
+        pet->SetReactState(_previousReactState);
+        _setPassive = false;
+    }
+
+    return false;
 }
 
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
@@ -1894,13 +1899,7 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     if (currentTier < tiers.size() || !currentTarget)
         return false;
 
-    bot->AttackStop();
-    bot->InterruptSpell(CURRENT_MELEE_SPELL);
-    if (!PlayerbotAI::IsHeal(bot))
-        bot->CastStop();
-    context->GetValue<Unit*>("current target")->Set(nullptr);
-    bot->SetSelection(ObjectGuid());
-
+    StandDown(botAI);
     return false;
 }
 
@@ -2320,45 +2319,14 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
     if (!pet || !vashj)
         return false;
 
-    CharmInfo* charmInfo = pet->GetCharmInfo();
     Unit* target = GetVashjPetTarget(botAI, pet, vashj);
-
     if (!target)
     {
-        pet->AttackStop();
-        pet->InterruptNonMeleeSpells(false);
-        pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
-        if (charmInfo)
-        {
-            charmInfo->SetCommandState(COMMAND_FOLLOW);
-            charmInfo->SetIsCommandAttack(false);
-            charmInfo->SetIsAtStay(false);
-            charmInfo->SetIsReturning(true);
-            charmInfo->SetIsCommandFollow(true);
-            charmInfo->SetIsFollowing(false);
-            charmInfo->RemoveStayPosition();
-        }
-
+        CallBackPets(bot);
         return true;
     }
 
-    if (!pet->IsValidAttackTarget(target))
-        return false;
-
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->AttackStop();
-    pet->SetTarget(target->GetGUID());
-    if (charmInfo)
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
-    return true;
+    return CommandPetAttack(pet, target);
 }
 
 bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)

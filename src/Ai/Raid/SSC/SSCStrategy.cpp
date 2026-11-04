@@ -19,7 +19,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Shared
     triggers.push_back(new TriggerNode("ssc no encounter in progress",
         { NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10),
-          NextAction("leotheras the blind announce class roles", ACTION_EMERGENCY + 8) }));
+          NextAction("leotheras the blind announce class roles", ACTION_EMERGENCY + 8),
+          NextAction("fathom-lord karathress control pet aggression", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("ssc class roles should be assigned",
         { NextAction("ssc assign class roles", ACTION_EMERGENCY + 9) }));
@@ -122,6 +123,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority",
         { NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("fathom-lord karathress pets should be held",
+        { NextAction("fathom-lord karathress control pet aggression", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage dps timer",
         { NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10) }));
@@ -242,7 +246,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // Hydross the Unstable <Duke of Currents>
     multipliers.push_back(new HydrossTheUnstableDisableOffPhaseTankActionsMultiplier(botAI));
     multipliers.push_back(new HydrossTheUnstableDisablePhaseTankAssistMultiplier(botAI));
-    multipliers.push_back(new HydrossTheUnstableWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new HydrossTheUnstableHoldDpsMultiplier(botAI));
 
     // The Lurker Below
     multipliers.push_back(new TheLurkerBelowStayAwayFromSpoutMultiplier(botAI));
@@ -257,14 +261,15 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));
-    multipliers.push_back(new LeotherasTheBlindWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindHoldDpsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankSoulshatterMultiplier(botAI));
 
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAutoTargetMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressHoldDpsMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressBlessingHoldDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressNoCastingWhileLiftedMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressApproachingCaribdisMultiplier(botAI));
@@ -289,24 +294,6 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
 namespace
 {
-
-void AppendFathomLordKarathressBlessingHoldExclusions(Player* bot, GuidSet& exclusions)
-{
-    if (PlayerbotAI::IsHeal(bot) || !PlayerbotAI::IsMelee(bot))
-        return;
-
-    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
-    if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
-        return;
-
-    if (!FindThreatTarget(bot, "fathom-guard caribdis"))
-        return;
-
-    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
-        return;
-
-    exclusions.insert(karathress->GetGUID());
-}
 
 void AppendMorogrimTidewalkerMurlocExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
@@ -346,7 +333,6 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    AppendFathomLordKarathressBlessingHoldExclusions(bot, exclusions);
     AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
     AppendLadyVashjGeneratorPhaseExclusions(bot, exclusions);
 }

@@ -318,7 +318,7 @@ float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Ac
 }
 
 // Phase changes reset threat. Hold dps from 1s after Marks hit 100% until 5s post-phase change.
-float HydrossTheUnstableWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
@@ -659,7 +659,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
         dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action) ? 0.0f : 1.0f;
 }
 
-float LeotherasTheBlindWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float LeotherasTheBlindHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
@@ -743,7 +743,7 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
     return FindThreatTarget(bot, "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
-float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float FathomLordKarathressHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
@@ -761,6 +761,24 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValueInEncounter(Action* acti
         return 1.0f;
 
     return GetDpsHoldValue(bot, action);
+}
+
+float FathomLordKarathressBlessingHoldDpsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsHoldCandidate(bot, action) ||
+        dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action) ||
+        !IsKarathressBlessingHoldActive(bot))
+    {
+        return 1.0f;
+    }
+
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+
+    // The secondary dots go on their own targets, which are not always the current target.
+    bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
+    Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
+    return target == karathress ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float FathomLordKarathressMaintainPositionMultiplier::GetValueInEncounter(Action* action)
@@ -1037,9 +1055,9 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (isAlwaysBlocked)
         return 0.0f;
 
-    // Keep healers in their combat engines.
+    // A bot with no allowed target holds with none, and stays in its combat engine.
     if (isDropTarget)
-        return PlayerbotAI::IsHeal(bot) ? 0.0f : 1.0f;
+        return 0.0f;
 
     // Don't waste tank and dps mana on healing in their non-combat engines.
     if (isHealSpell)
@@ -1093,7 +1111,9 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     bool const isHealerSpellReach =
         dynamic_cast<ReachSpellAction*>(action) && PlayerbotAI::IsHeal(bot);
 
-    if (!isAssistAction && !isDebuffOnAttacker && !isHealerSpellReach &&
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+
+    if (!isAssistAction && !isDebuffOnAttacker && !isHealerSpellReach && !isDropTarget &&
         !dynamic_cast<AvoidAoeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action))
@@ -1105,8 +1125,9 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (!vashj || GetLadyVashjPhase(vashj) != 3)
         return 1.0f;
 
-    // Healers move in range to heal but not to attack.
-    if (isAssistAction || isHealerSpellReach)
+    // Healers move in range to heal but not to attack. A bot with no allowed target holds with
+    // none, and stays in its combat engine.
+    if (isAssistAction || isHealerSpellReach || isDropTarget)
         return 0.0f;
 
     if (isDebuffOnAttacker)

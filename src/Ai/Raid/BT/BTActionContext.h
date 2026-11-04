@@ -225,11 +225,8 @@ public:
         creators["illidan stormrage position for landing"] =
             &RaidBlackTempleActionContext::illidan_stormrage_position_for_landing;
 
-        creators["illidan stormrage melee stop attacking"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_melee_stop_attacking;
-
-        creators["illidan stormrage stop shooting"] =
-            &RaidBlackTempleActionContext::illidan_stormrage_stop_shooting;
+        creators["illidan stormrage stop attacking"] =
+            &RaidBlackTempleActionContext::illidan_stormrage_stop_attacking;
 
         creators["illidan stormrage spread ranged"] =
             &RaidBlackTempleActionContext::illidan_stormrage_spread_ranged;
@@ -576,13 +573,9 @@ private:
     {
         return new IllidanStormragePositionForLandingAction(botAI);
     }
-    static Action* illidan_stormrage_melee_stop_attacking(PlayerbotAI* botAI)
+    static Action* illidan_stormrage_stop_attacking(PlayerbotAI* botAI)
     {
-        return new IllidanStormrageMeleeStopAttackingAction(botAI);
-    }
-    static Action* illidan_stormrage_stop_shooting(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageStopShootingAction(botAI);
+        return new IllidanStormrageStopAttackingAction(botAI);
     }
     static Action* illidan_stormrage_spread_ranged(PlayerbotAI* botAI)
     {

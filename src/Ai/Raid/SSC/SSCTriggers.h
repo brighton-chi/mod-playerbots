@@ -378,6 +378,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FathomLordKarathressPetsShouldBeHeldTrigger : public SscEncounterTrigger
+{
+public:
+    FathomLordKarathressPetsShouldBeHeldTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress pets should be held") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class FathomLordKarathressRangedShouldSpreadTrigger : public SscEncounterTrigger
 {
 public:

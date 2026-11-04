@@ -939,6 +939,21 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
     return heldPet;
 }
 
+bool IsKarathressBlessingHoldActive(Player* bot)
+{
+    if (PlayerbotAI::IsHeal(bot) || !PlayerbotAI::IsMelee(bot))
+        return false;
+
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
+        return false;
+
+    return FindThreatTarget(bot, "fathom-guard caribdis");
+}
+
 Unit* GetSharkkisPet(Player* bot)
 {
     Unit* lurker = nullptr;

@@ -83,6 +83,18 @@ float GetDpsHoldValue(Player* bot, Action* action)
     return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
+// An attack or a secondary dot picks its own target, which is not always the current target.
+Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
+{
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    {
+        return action->GetTarget();
+    }
+
+    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+}
+
 } // end anonymous namespace (Shared)
 
 // Held for each boss's first 5% (excluding Shade of Akama and Illidan), and also through Supremus's
@@ -250,6 +262,22 @@ float ShadowmoonReaverHoldChargeBuildingSpellsMultiplier::GetValue(Action* actio
         return IsShadowmoonReaverUnsafeForMagic(action->GetTarget()) ? 0.0f : 1.0f;
 
     return IsAnyShadowmoonReaverUnsafeForMagic(botAI) ? 0.0f : 1.0f;
+}
+
+// Non-tanks should never attack a Sister of Pain, only her linked Sister of Pleasure.
+float SisterOfPainHoldDpsMultiplier::GetValue(Action* action)
+{
+    if (PlayerbotAI::IsTank(bot) || !IsDpsHoldCandidate(bot, action))
+        return 1.0f;
+
+    Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
+    if (!target || target->GetEntry() != Id(BtNpcs::NPC_SISTER_OF_PAIN))
+        return 1.0f;
+
+    if (dynamic_cast<SisterOfPleasureFocusDpsAction*>(action))
+        return 1.0f;
+
+    return GetDpsHoldValue(bot, action);
 }
 
 // High Warlord Naj'entus
@@ -458,8 +486,8 @@ float GurtoggBloodboilFelRageTargetHoldsAggroMultiplier::GetValueInEncounter(Act
     return dropsThreat ? 0.0f : 1.0f;
 }
 
-// Non-tanks other than healers stay under GURTOGG_THREAT_HOLD_RATIO of the second tank's threat,
-// except during Fel Rage, when bots cannot gain threat.
+// Non-tanks other than healers should stay under GURTOGG_THREAT_HOLD_RATIO of the second tank's
+// threat, except during Fel Rage, when bots cannot gain threat.
 float GurtoggBloodboilHoldThreatMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
@@ -843,7 +871,7 @@ float IllidariCouncilManageInterruptsMultiplier::GetValueInEncounter(Action* act
     return GetIllidariCouncilMembers(bot).malande ? 0.0f : 1.0f;
 }
 
-float IllidariCouncilWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float IllidariCouncilHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
@@ -1042,11 +1070,22 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetValueInEncounter
         return 0.0f;
     }
 
-    // While Illidan is in flight and landing, he is unselectable and an invalid target. Drop target
-    // needs to be held to keep bots in their combat engine so they do not revert to non-combat
-    // strategies (particularly problematic with respect to healing).
+    // Keep combat strategies active.
     if (dynamic_cast<DropTargetAction*>(action))
-        return phase == IllidanPhase::Flying || phase == IllidanPhase::Landing ? 0.0f : 1.0f;
+    {
+        // While Illidan is in flight and landing, he is unselectable and an invalid target.
+        if (phase == IllidanPhase::Flying || phase == IllidanPhase::Landing)
+            return 0.0f;
+
+        if (!PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsMainTank(bot))
+            return 1.0f;
+
+        // The main tank stays in its combat engine while waiting for Illidan to transform back to
+        // humanoid form, so it is ready for an immediate pickup. Other melee can be in their
+        // non-combat engines; mainly that allows assist tank paladins/druids to help with healing.
+        return phase == IllidanPhase::Demon &&
+            IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS) ? 0.0f : 1.0f;
+    }
 
     bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
     bool const isDpsAssist = dynamic_cast<DpsAssistAction*>(action);
@@ -1304,7 +1343,7 @@ float IllidanStormrageHoldTotemsMultiplier::GetValueInEncounter(Action* action)
     return bot->GetExactDist2d(infectionPosition) < nearestTotem ? 0.0f : 1.0f;
 }
 
-float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+float IllidanStormrageHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isHeal = dynamic_cast<CastHealingSpellAction*>(action);
     bool const isItem = dynamic_cast<UseItemAction*>(action); // for mana potions and gems
@@ -1327,10 +1366,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         if (isHeal || isItem)
             return 0.0f;
 
-        // hasOwnTarget addresses that secondary dots are not cast on the current target.
-        bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
-            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
-        Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
+        Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
         bool const isAoe = action->getThreatType() == Action::ActionThreatType::Aoe;
         return IsIllidanPickupExemptTarget(target, isAoe) ? 1.0f : 0.0f;
     }
@@ -1354,9 +1390,7 @@ float IllidanStormrageWaitForDpsMultiplier::GetValueInEncounter(Action* action)
         if (!IsFlameOfAzzinothDpsHeld(*illidan) || IsFlameOfAzzinothTank(bot))
             return 1.0f;
 
-        bool const hasOwnTarget = dynamic_cast<AttackAction*>(action) ||
-            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
-        Unit* target = hasOwnTarget ? action->GetTarget() : AI_VALUE(Unit*, "current target");
+        Unit* target = GetActionTargetOrCurrentTarget(botAI, action);
         bool const isOnFlame = target && target->GetEntry() == Id(BtNpcs::NPC_FLAME_OF_AZZINOTH);
         return isOnFlame ? GetDpsHoldValue(bot, action) : 1.0f;
     }

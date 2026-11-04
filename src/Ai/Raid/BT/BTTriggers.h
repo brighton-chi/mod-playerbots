@@ -773,24 +773,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class IllidanStormrageMeleeShouldStopAttackingTrigger : public BlackTempleEncounterTrigger
+class IllidanStormrageShouldStopAttackingTrigger : public BlackTempleEncounterTrigger
 {
 public:
-    IllidanStormrageMeleeShouldStopAttackingTrigger(PlayerbotAI* botAI)
+    IllidanStormrageShouldStopAttackingTrigger(PlayerbotAI* botAI)
         : BlackTempleEncounterTrigger(
-            botAI, "illidan stormrage melee should stop attacking",
-            BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class IllidanStormrageShouldStopShootingTrigger : public BlackTempleEncounterTrigger
-{
-public:
-    IllidanStormrageShouldStopShootingTrigger(PlayerbotAI* botAI)
-        : BlackTempleEncounterTrigger(
-            botAI, "illidan stormrage should stop shooting",
+            botAI, "illidan stormrage should stop attacking",
             BtHelpers::BtBosses::DATA_ILLIDAN_STORMRAGE) {}
 
 protected:

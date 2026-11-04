@@ -386,6 +386,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class EredarTwinsControlPetAggressionAction : public Action
+{
+public:
+    EredarTwinsControlPetAggressionAction(PlayerbotAI* botAI)
+        : Action(botAI, "eredar twins control pet aggression") {}
+    bool Execute(Event event) override;
+
+private:
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
+};
+
 class EredarTwinsConflagrationTargetMoveFromGroupAction : public MovementAction
 {
 public:

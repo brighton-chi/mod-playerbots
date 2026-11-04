@@ -120,6 +120,9 @@ public:
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
 
+        creators["fathom-lord karathress pets should be held"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_pets_should_be_held;
+
         creators["fathom-lord karathress should manage dps timer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
 
@@ -370,6 +373,10 @@ private:
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_pets_should_be_held(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressPetsShouldBeHeldTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI)
     {

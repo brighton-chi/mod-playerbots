@@ -93,27 +93,6 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
-bool CommandPetAttack(Creature* pet, Unit* target)
-{
-    if (!pet || !target)
-        return false;
-
-    pet->ClearUnitState(UNIT_STATE_FOLLOW);
-    pet->AttackStop();
-    pet->SetTarget(target->GetGUID());
-    if (CharmInfo* charmInfo = pet->GetCharmInfo())
-    {
-        charmInfo->SetIsCommandAttack(true);
-        charmInfo->SetIsAtStay(false);
-        charmInfo->SetIsFollowing(false);
-        charmInfo->SetIsCommandFollow(false);
-        charmInfo->SetIsReturning(false);
-    }
-
-    pet->AI()->AttackStart(target);
-    return true;
-}
-
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry)
 {
     GuidVector matchingGuids;
@@ -275,6 +254,19 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
     {
         Unit* sister = botAI->GetUnit(sisterGuid);
         if (GetLinkedSisterOfPain(sister))
+            return sister;
+    }
+
+    return nullptr;
+}
+
+Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
+{
+    for (ObjectGuid const& sisterGuid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet())
+    {
+        Unit* sister = botAI->GetUnit(sisterGuid);
+        if (sister && GetLinkedSisterOfPain(sister) == pain)
             return sister;
     }
 

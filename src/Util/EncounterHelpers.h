@@ -12,7 +12,6 @@
 #include "Position.h"
 #include <initializer_list>
 #include <optional>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -42,7 +41,6 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
-
 // Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
 // right only if the instance script numbers its bosses in that same order. Each returns false or
 // nullopt when the bot isn't on mapId.
@@ -204,6 +202,47 @@ bool IsTauntAction(Player* bot, Action* action);
 // These abilities (e.g., Avenger's Shield) can be problematic on the pull for a council-type boss.
 // Covers tanks only.
 bool IsAoeThreatAction(Player* bot, Action* action);
+
+// Stopping Attacks and Spells
+//
+// None of these helpers decides the bot's engine. In a fight, a bot leaves its combat engine
+// through "drop target," which runs when its current target is missing or invalid.
+// - Hold and keep the target (StopAttackingAndChanneling or StopAttackingTarget): The stop lasts
+//   one tick, so a multiplier is needed to prevent the bot from attacking again. If the multiplier
+//   blocks every attack, call StopAttackingAndChanneling. If it blocks attacks on only one unit,
+//   call StopAttackingTarget on that unit.
+// - Clear (StandDown): only if the bot has nothing to resume afterward. "drop target" moves the
+//   bot to its non-combat engine on the next tick unless a multiplier zeroes DropTargetAction. In
+//   either engine, dps assist and tank assist pick a target again unless a target exclusion or a
+//   multiplier on them prevents it.
+// In any case, a spell in flight still lands, and a filling cast bar can't be stopped by an action.
+
+// True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
+// ground at enemies counts as aimed at any enemy.
+bool IsAttackingTarget(Player* bot, Unit const& target);
+// Ends the bot's swing, a queued swing ability (e.g., Heroic Strike), its channel, and its auto
+// shot or wand, whatever they are aimed at, including a healer's channel. Returns true if it
+// stopped anything.
+bool StopAttackingAndChanneling(Player* bot);
+// Ends only what is aimed at the target: the bot's swing, its auto shot or wand, and a channel on
+// it or on the ground at enemies, so a healer's other channels and casts continue. Returns true
+// if it stopped anything.
+bool StopAttackingTarget(Player* bot, Unit const& target);
+// Ends the bot's swing on any unit, then its auto shot, wand, or channel if aimed at the current
+// target (a ground channel on enemies counts), so a healer's other channels and casts continue.
+// Then clears the current target. Pets are not touched; call CallBackPets to stop them.
+void StandDown(PlayerbotAI* botAI);
+// The pet Follow command a player gives (PetHandler.cpp, COMMAND_FOLLOW), with CastStop in place
+// of the same InterruptNonMeleeSpells(false), for every unit with pet controls: the pet,
+// controllable guardians, and charmed creatures. This does not change a pet's stance, so if the
+// purpose is to keep a pet from engaging at all, a separate call of pet->SetReactState() to
+// passive is needed. There is no helper for stance changes because a flag is needed to restore the
+// prior stance, and that is best handled in the specific raid actions.
+void CallBackPets(Player* bot);
+// The pet Attack command a player gives (PetHandler.cpp, COMMAND_ATTACK), for a pet, guardian, or
+// charmed creature. A cast in progress is not stopped, but unlike for players, CastStop can be
+// called from an action to interrupt a pet's pending cast. Returns true if a command was issued.
+bool CommandPetAttack(Creature* pet, Unit* target);
 
 // Miscellaneous
 

@@ -377,6 +377,9 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 // Sharkkis's tank picks up his pets too.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 Unit* GetSharkkisPet(Player* bot);
+// Non-healer melee other than the main tank, from Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT
+// until Caribdis dies.
+bool IsKarathressBlessingHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 

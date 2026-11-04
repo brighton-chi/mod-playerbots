@@ -6,6 +6,7 @@
 
 #include "SWPTriggers.h"
 #include "EncounterHelpers.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
@@ -538,6 +539,15 @@ bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
         return true;
 
     return !IsAnySacrolashTank(bot) && !IsAlythessTank(bot);
+}
+
+bool EredarTwinsPetsShouldBeHeldTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    return IsEredarTwinsStartHoldActive(botAI) != pet->HasReactState(REACT_PASSIVE);
 }
 
 bool EredarTwinsActiveConflagrationTargetTrigger::IsActiveInEncounter()

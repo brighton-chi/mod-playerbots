@@ -230,7 +230,6 @@ inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float BT_ARRIVAL_DISTANCE = 2.0f;
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
-bool CommandPetAttack(Creature* pet, Unit* target);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
 uint32 GetAuraElapsedMs(Aura const* aura);
 void FaceUnit(Player* bot, Unit* unit);
@@ -243,6 +242,7 @@ inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 GuidVector FindSisterOfPleasureGuids(Player* bot);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
+Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
 
 enum class ChaoticChargeReach : uint8

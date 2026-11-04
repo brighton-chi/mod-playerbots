@@ -327,6 +327,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class FathomLordKarathressControlPetAggressionAction : public Action
+{
+public:
+    FathomLordKarathressControlPetAggressionAction(PlayerbotAI* botAI)
+        : Action(botAI, "fathom-lord karathress control pet aggression") {}
+    bool Execute(Event event) override;
+
+private:
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
+};
+
 class FathomLordKarathressDropToGroundAfterCycloneAction : public MovementAction
 {
 public:
