@@ -182,6 +182,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class LeotherasTheBlindDisableDpsAssistMultiplier : public SscEncounterMultiplier
+{
+public:
+    LeotherasTheBlindDisableDpsAssistMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "leotheras the blind disable dps assist") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class LeotherasTheBlindDisableTankActionsMultiplier : public SscEncounterMultiplier
 {
 public:

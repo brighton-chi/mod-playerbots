@@ -454,47 +454,74 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValueInEncounter(Action* act
     return leotheras && IsLeotherasChannelingWhirlwind(leotheras) ? 0.0f : 1.0f;
 }
 
-float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
+float LeotherasTheBlindDisableDpsAssistMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!PlayerbotAI::IsTank(bot) || HasInnerDemon(bot))
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+    if (!dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return 1.0f;
 
-    // Disable all spells from tanks if there is a Warlock tank. Instead, just auto-attack to build
-    // rage in case the tank gets an Inner Demon.
-    if (GetLeotherasDemon(botAI) && GetLeotherasWarlockTank(bot))
+    // No dps assist in situations in which there is more than one valid target.
+    return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
+}
+
+float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
+    if (!isTankAssist && !dynamic_cast<CastSpellAction*>(action))
+        return 1.0f;
+
+    if (!FindThreatTarget(bot, "leotheras the blind"))
+        return 1.0f;
+
+    // Tanks can always cast spells to attack Inner Demons or in the final phase, as long as they do
+    // not target Demon Leo or Shadow Leo.
+    if (isTankAssist)
+        return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
+
+    // Disable all spells from tanks in demon phase if there is a Warlock tank, other than shifting
+    // into bear form. Allow auto attacks to build rage in case the tank gets an Inner Demon.
+    if (IsLeotherasDemonPhase(botAI) && GetLeotherasWarlockTank(bot))
     {
         return bot->getClass() == CLASS_DRUID &&
             (dynamic_cast<CastDireBearFormAction*>(action) ||
              dynamic_cast<CastBearFormAction*>(action)) ? 1.0f : 0.0f;
     }
 
-    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action) &&
-        GetLeotherasDemonOrShadow(botAI))
+    // In all phases, also do not cast Vigilance on the Warlock tank.
+    if (bot->getClass() == CLASS_WARRIOR && dynamic_cast<CastVigilanceAction*>(action))
     {
         Player* warlockTank = GetLeotherasWarlockTank(bot);
-        if (warlockTank && action->GetTarget() == warlockTank)
-            return 0.0f;
+        return warlockTank && action->GetTarget() == warlockTank ? 0.0f : 1.0f;
     }
 
+    // If there is no Inner Demon, Berserk can be used in the final phase.
     if (bot->getClass() == CLASS_DRUID && dynamic_cast<CastBerserkAction*>(action))
-        return GetShadowOfLeotheras(botAI) ? 1.0f : 0.0f; // Save Berserk for Inner Demon pre-P3.
+        return IsLeotherasFinalPhase(botAI) ? 1.0f : 0.0f;
 
     return 1.0f;
 }
 
 float LeotherasTheBlindMeleeAvoidChaosBlastMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     if (!PlayerbotAI::IsMelee(bot))
         return 1.0f;
 
-    if (!dynamic_cast<AttackAction*>(action) && !dynamic_cast<ReachTargetAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) && !IsMeleeReachSpell(bot, action))
+    if (!dynamic_cast<ReachTargetAction*>(action) && !IsMeleeReachSpell(bot, action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 1.0f;
     }
@@ -615,9 +642,7 @@ float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValueInEncounter(Action* 
     }
 
     // Exclude abilities with a target that isn't the bot or the Inner Demon, plus self heals.
-    return dynamic_cast<DpsAssistAction*>(action) ||
-        dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastSnareSpellAction*>(action) ||
+    return dynamic_cast<CastSnareSpellAction*>(action) ||
         dynamic_cast<CastHealingSpellAction*>(action) ||
         dynamic_cast<CastCureSpellAction*>(action) ||
         dynamic_cast<CurePartyMemberAction*>(action) ||
