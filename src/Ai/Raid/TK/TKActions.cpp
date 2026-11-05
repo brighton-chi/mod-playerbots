@@ -958,6 +958,13 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
             return true;
     }
 
+    if (bot->GetPowerPct(POWER_MANA) < CAPERNIAN_LIFE_TAP_MANA_PCT &&
+        bot->GetHealthPct() > CAPERNIAN_LIFE_TAP_HEALTH_PCT &&
+        botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot))
+    {
+        return true;
+    }
+
     return botAI->CanCastSpell(searingPain, capernian) &&
         botAI->CastSpell(searingPain, capernian);
 }

@@ -564,5 +564,8 @@ bool FelmystSelectTargetForHoldAction::isUseful()
 
 bool FelmystSelectTargetForHoldAction::Execute(Event /*event*/)
 {
-    return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
+    if (!PlayerbotAI::IsTank(bot))
+        return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
+
+    return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
 }

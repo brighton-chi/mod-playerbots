@@ -46,13 +46,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("hydross the unstable misdirect to tank", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable dps hold is active",
-        {
-            NextAction("hydross the unstable stop attacking for hold", ACTION_RAID + 2),
-            NextAction("hydross the unstable select target for hold", ACTION_RAID),
-        }));
-
-    triggers.push_back(new TriggerNode("hydross the unstable off phase tank attacking",
-        { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
+        { NextAction("hydross the unstable stop attacking", ACTION_RAID + 3),
+          NextAction("hydross the unstable select target for hold", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers",
         { NextAction("hydross the unstable manage phase timers", ACTION_EMERGENCY + 10) }));
@@ -83,9 +78,6 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind warlock should tank demon form",
         { NextAction("leotheras the blind warlock tank attack demon form", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind tanks should auto-attack demon form",
-        { NextAction("leotheras the blind tanks build rage on demon form", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("leotheras the blind ranged should keep distance",
         { NextAction("leotheras the blind ranged keep distance", ACTION_RAID) }));
 
@@ -109,8 +101,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("leotheras the blind misdirect demon form to tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind dps hold is active",
-        { NextAction("leotheras the blind stop attacking", ACTION_RAID + 2),
-          NextAction("leotheras the blind select target for hold", ACTION_RAID) }));
+        { NextAction("leotheras the blind stop attacking", ACTION_RAID + 4),
+          NextAction("leotheras the blind select target for hold", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind should manage dps wait timers",
         { NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));
@@ -127,9 +119,6 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority",
         { NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
-
-    triggers.push_back(new TriggerNode("fathom-lord karathress dps hold is active",
-        { NextAction("fathom-lord karathress select target for hold", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress pets should be held",
         { NextAction("fathom-lord karathress control pet aggression", ACTION_RAID + 4) }));
@@ -276,7 +265,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAutoTargetMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressHoldDpsMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressStartHoldDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressBlessingHoldDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressMaintainPositionMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressNoCastingWhileLiftedMultiplier(botAI));

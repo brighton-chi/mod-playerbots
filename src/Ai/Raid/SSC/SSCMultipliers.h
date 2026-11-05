@@ -274,11 +274,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FathomLordKarathressHoldDpsMultiplier : public SscEncounterMultiplier
+class FathomLordKarathressStartHoldDpsMultiplier : public SscEncounterMultiplier
 {
 public:
-    FathomLordKarathressHoldDpsMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "fathom-lord karathress hold dps") {}
+    FathomLordKarathressStartHoldDpsMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "fathom-lord karathress start hold dps") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

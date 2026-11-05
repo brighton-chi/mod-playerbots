@@ -58,17 +58,17 @@ public:
     bool Execute(Event event) override;
 };
 
-// Hunters keep attacking after a phase change to use their Misdirection on the incoming tank.
-class HydrossTheUnstableStopAttackingForHoldAction : public SscStopAttackingAction
+// Add tanks stop attacking Hydross only, so they keep tanking adds.
+class HydrossTheUnstableStopAttackingAction : public SscStopAttackingAction
 {
 public:
-    HydrossTheUnstableStopAttackingForHoldAction(PlayerbotAI* botAI)
-        : SscStopAttackingAction(botAI, "hydross the unstable stop attacking for hold") {}
-    bool isUseful() override;
+    HydrossTheUnstableStopAttackingAction(PlayerbotAI* botAI)
+        : SscStopAttackingAction(botAI, "hydross the unstable stop attacking") {}
+    bool Execute(Event event) override;
 };
 
 // Select the target that dps assist would select, without attacking it. Used for Hydross the
-// Unstable, Leotheras the Blind, and Fathom-Lord Karathress.
+// Unstable and Leotheras the Blind.
 class SscSelectTargetForHoldAction : public Action
 {
 public:
@@ -78,14 +78,13 @@ public:
     bool Execute(Event event) override;
 };
 
-// For healers at the start of the fight. Karathress's dps get their targets from his priority
-// action.
-class FathomLordKarathressSelectTargetForHoldAction : public SscSelectTargetForHoldAction
+// Add tanks select the target tank assist would, which is Hydross if no adds are up.
+class HydrossTheUnstableSelectTargetForHoldAction : public SscSelectTargetForHoldAction
 {
 public:
-    FathomLordKarathressSelectTargetForHoldAction(PlayerbotAI* botAI)
-        : SscSelectTargetForHoldAction(botAI, "fathom-lord karathress select target for hold") {}
-    bool isUseful() override;
+    HydrossTheUnstableSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "hydross the unstable select target for hold") {}
+    bool Execute(Event event) override;
 };
 
 // For bots with no target. Tanks pick up Leotheras themselves.
@@ -230,14 +229,6 @@ class LeotherasTheBlindWarlockTankAttackDemonFormAction : public AttackAction
 public:
     LeotherasTheBlindWarlockTankAttackDemonFormAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "leotheras the blind warlock tank attack demon form") {}
-    bool Execute(Event event) override;
-};
-
-class LeotherasTheBlindTanksBuildRageOnDemonFormAction : public AttackAction
-{
-public:
-    LeotherasTheBlindTanksBuildRageOnDemonFormAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "leotheras the blind tanks build rage on demon form") {}
     bool Execute(Event event) override;
 };
 

@@ -41,11 +41,8 @@ public:
         creators["hydross the unstable misdirect to tank"] =
             &RaidSscActionContext::hydross_the_unstable_misdirect_to_tank;
 
-        creators["hydross the unstable stop attacking upon phase change"] =
-            &RaidSscActionContext::hydross_the_unstable_stop_attacking_upon_phase_change;
-
-        creators["hydross the unstable stop attacking for hold"] =
-            &RaidSscActionContext::hydross_the_unstable_stop_attacking_for_hold;
+        creators["hydross the unstable stop attacking"] =
+            &RaidSscActionContext::hydross_the_unstable_stop_attacking;
 
         creators["hydross the unstable select target for hold"] =
             &RaidSscActionContext::hydross_the_unstable_select_target_for_hold;
@@ -78,9 +75,6 @@ public:
 
         creators["leotheras the blind warlock tank attack demon form"] =
             &RaidSscActionContext::leotheras_the_blind_warlock_tank_attack_demon_form;
-
-        creators["leotheras the blind tanks build rage on demon form"] =
-            &RaidSscActionContext::leotheras_the_blind_tanks_build_rage_on_demon_form;
 
         creators["leotheras the blind ranged keep distance"] =
             &RaidSscActionContext::leotheras_the_blind_ranged_keep_distance;
@@ -127,9 +121,6 @@ public:
 
         creators["fathom-lord karathress assign dps priority"] =
             &RaidSscActionContext::fathom_lord_karathress_assign_dps_priority;
-
-        creators["fathom-lord karathress select target for hold"] =
-            &RaidSscActionContext::fathom_lord_karathress_select_target_for_hold;
 
         creators["fathom-lord karathress control pet aggression"] =
             &RaidSscActionContext::fathom_lord_karathress_control_pet_aggression;
@@ -281,19 +272,13 @@ private:
     {
         return new HydrossTheUnstableMisdirectToTankAction(botAI);
     }
-    static Action* hydross_the_unstable_stop_attacking_upon_phase_change(PlayerbotAI* botAI)
+    static Action* hydross_the_unstable_stop_attacking(PlayerbotAI* botAI)
     {
-        return new SscStopAttackingAction(
-            botAI, "hydross the unstable stop attacking upon phase change");
-    }
-    static Action* hydross_the_unstable_stop_attacking_for_hold(PlayerbotAI* botAI)
-    {
-        return new HydrossTheUnstableStopAttackingForHoldAction(botAI);
+        return new HydrossTheUnstableStopAttackingAction(botAI);
     }
     static Action* hydross_the_unstable_select_target_for_hold(PlayerbotAI* botAI)
     {
-        return new SscSelectTargetForHoldAction(
-            botAI, "hydross the unstable select target for hold");
+        return new HydrossTheUnstableSelectTargetForHoldAction(botAI);
     }
     static Action* hydross_the_unstable_manage_phase_timers(PlayerbotAI* botAI)
     {
@@ -336,10 +321,6 @@ private:
     static Action* leotheras_the_blind_warlock_tank_attack_demon_form(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindWarlockTankAttackDemonFormAction(botAI);
-    }
-    static Action* leotheras_the_blind_tanks_build_rage_on_demon_form(PlayerbotAI* botAI)
-    {
-        return new LeotherasTheBlindTanksBuildRageOnDemonFormAction(botAI);
     }
     static Action* leotheras_the_blind_ranged_keep_distance(PlayerbotAI* botAI)
     {
@@ -402,10 +383,6 @@ private:
     static Action* fathom_lord_karathress_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressAssignDpsPriorityAction(botAI);
-    }
-    static Action* fathom_lord_karathress_select_target_for_hold(PlayerbotAI* botAI)
-    {
-        return new FathomLordKarathressSelectTargetForHoldAction(botAI);
     }
     static Action* fathom_lord_karathress_control_pet_aggression(PlayerbotAI* botAI)
     {

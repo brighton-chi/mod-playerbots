@@ -246,6 +246,8 @@ inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 ADVISOR_DPS_WAIT_NOT_STARTED = 0;
 inline constexpr uint32 ADVISOR_DPS_WAIT_MS = 10 * IN_MILLISECONDS;
+inline constexpr float CAPERNIAN_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float CAPERNIAN_LIFE_TAP_HEALTH_PCT = 75.0f;
 
 inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
     .playerClass = CLASS_WARLOCK,

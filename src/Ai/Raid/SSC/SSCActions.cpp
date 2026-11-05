@@ -78,15 +78,13 @@ bool SscStopAttackingAction::Execute(Event /*event*/)
     return StopAttackingAndChanneling(bot);
 }
 
-bool HydrossTheUnstableStopAttackingForHoldAction::isUseful()
+bool HydrossTheUnstableStopAttackingAction::Execute(Event event)
 {
-    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    if (!hydross)
-        return false;
+    if (!PlayerbotAI::IsTank(bot))
+        return SscStopAttackingAction::Execute(event);
 
-    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
-    return window == HydrossDpsHoldWindow::BeforePhaseChange ||
-        (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
+    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
+    return hydross && StopAttackingTarget(bot, *hydross);
 }
 
 bool SscSelectTargetForHoldAction::isUseful()
@@ -99,14 +97,17 @@ bool SscSelectTargetForHoldAction::Execute(Event /*event*/)
     return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
 }
 
+bool HydrossTheUnstableSelectTargetForHoldAction::Execute(Event event)
+{
+    if (!IsHydrossAddTank(bot))
+        return SscSelectTargetForHoldAction::Execute(event);
+
+    return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
+}
+
 bool LeotherasTheBlindSelectTargetForHoldAction::isUseful()
 {
     return SscSelectTargetForHoldAction::isUseful() && !PlayerbotAI::IsTank(bot);
-}
-
-bool FathomLordKarathressSelectTargetForHoldAction::isUseful()
-{
-    return SscSelectTargetForHoldAction::isUseful() && PlayerbotAI::IsHeal(bot);
 }
 
 bool SscSpreadRangedAction::Execute(Event /*event*/)
@@ -624,17 +625,15 @@ bool LeotherasTheBlindWarlockTankAttackDemonFormAction::Execute(Event /*event*/)
             Id(SscSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     }
 
+    if (bot->GetPowerPct(POWER_MANA) < LEOTHERAS_LIFE_TAP_MANA_PCT &&
+        bot->GetHealthPct() > LEOTHERAS_LIFE_TAP_HEALTH_PCT &&
+        botAI->CanCastSpell("life tap", bot) && botAI->CastSpell("life tap", bot))
+    {
+        return true;
+    }
+
     return botAI->CanCastSpell("searing pain", leotherasDemon) &&
         botAI->CastSpell("searing pain", leotherasDemon);
-}
-
-bool LeotherasTheBlindTanksBuildRageOnDemonFormAction::Execute(Event /*event*/)
-{
-    Creature* leotherasDemon = GetLeotherasDemon(botAI);
-    if (!leotherasDemon)
-        return false;
-
-    return AI_VALUE(Unit*, "current target") != leotherasDemon && Attack(leotherasDemon);
 }
 
 bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)

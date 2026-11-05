@@ -99,28 +99,31 @@ bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounte
 
 bool HydrossTheUnstableDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsTank(bot))
-        return false;
-
-    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    return hydross && GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None;
-}
-
-bool HydrossTheUnstableOffPhaseTankAttackingTrigger::IsActiveInEncounter()
-{
-    if (!PlayerbotAI::IsTank(bot))
-        return false;
-
     Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
     if (!hydross)
         return false;
 
-    bool const isOffPhaseTank =
-        IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot);
-    if (!isOffPhaseTank)
+    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
+    if (window == HydrossDpsHoldWindow::None)
         return false;
 
-    return bot->GetVictim() == hydross || AI_VALUE(Unit*, "current target") == hydross;
+    // Each phase tank holds attacking for its entire offphase and never in its assigned phase.
+    bool const isFrostPhase = IsHydrossInFrostPhase(hydross);
+    if (IsHydrossFrostTank(bot))
+        return !isFrostPhase;
+    if (IsHydrossNatureTank(bot))
+        return isFrostPhase;
+
+    // Add tanks are held off Hydross only, in both windows.
+    if (IsHydrossAddTank(bot))
+        return true;
+
+    // The after phase change window excludes hunters (for Misdirection).
+    if (window == HydrossDpsHoldWindow::AfterPhaseChange)
+        return bot->getClass() != CLASS_HUNTER;
+
+    // The before change window stops everybody other than the active phase tank.
+    return window == HydrossDpsHoldWindow::BeforePhaseChange;
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
@@ -243,21 +246,6 @@ bool LeotherasTheBlindWarlockShouldTankDemonFormTrigger::IsActiveInEncounter()
         return false;
 
     return IsLeotherasWarlockTank(bot);
-}
-
-bool LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger::IsActiveInEncounter()
-{
-    if (!PlayerbotAI::IsTank(bot))
-        return false;
-
-    if (!FindThreatTarget(bot, "leotheras the blind"))
-        return false;
-
-    if (HasInnerDemon(bot) || !GetLeotherasDemon(botAI))
-        return false;
-
-    // If there is no Warlock tank, then traditional tanks will have to tank the demon form.
-    return GetLeotherasWarlockTank(bot);
 }
 
 bool LeotherasTheBlindRangedShouldKeepDistanceTrigger::IsActiveInEncounter()
@@ -417,11 +405,6 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
         return !FindThreatTarget(bot, "fathom-guard tidalvess");
 
     return false;
-}
-
-bool FathomLordKarathressDpsHoldIsActiveTrigger::IsActiveInEncounter()
-{
-    return IsKarathressStartDpsHoldActive(bot);
 }
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()

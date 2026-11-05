@@ -296,6 +296,9 @@ inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
     LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
 
+inline constexpr float LEOTHERAS_LIFE_TAP_MANA_PCT = 20.0f;
+inline constexpr float LEOTHERAS_LIFE_TAP_HEALTH_PCT = 90.0f;
+
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
 ObjectGuid FindLeotherasGuid(Player* bot);

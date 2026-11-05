@@ -302,6 +302,13 @@ float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (!hydross || GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::None)
         return 1.0f;
 
+    // Add tanks stay off Hydross but keep tanking adds.
+    if (IsHydrossAddTank(bot))
+    {
+        return GetActionTargetOrCurrentTarget(botAI, action) == hydross ?
+            GetDpsHoldValue(bot, action) : 1.0f;
+    }
+
     if (PlayerbotAI::IsTank(bot) &&
         !(IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot)))
     {
@@ -740,7 +747,7 @@ float FathomLordKarathressDisableAoeMultiplier::GetValueInEncounter(Action* acti
     return FindThreatTarget(bot, "fathom-lord karathress") ? 0.0f : 1.0f;
 }
 
-float FathomLordKarathressHoldDpsMultiplier::GetValueInEncounter(Action* action)
+float FathomLordKarathressStartHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action) ||
         dynamic_cast<FathomLordKarathressAssignDpsPriorityAction*>(action))

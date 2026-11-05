@@ -131,16 +131,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableOffPhaseTankAttackingTrigger : public SscEncounterTrigger
-{
-public:
-    HydrossTheUnstableOffPhaseTankAttackingTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable off phase tank attacking") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class HydrossTheUnstableShouldManagePhaseTimersTrigger : public SscEncounterTrigger
 {
 public:
@@ -230,16 +220,6 @@ class LeotherasTheBlindWarlockShouldTankDemonFormTrigger : public SscEncounterTr
 public:
     LeotherasTheBlindWarlockShouldTankDemonFormTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "leotheras the blind warlock should tank demon form") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger : public SscEncounterTrigger
-{
-public:
-    LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind tanks should auto-attack demon form") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -363,16 +343,6 @@ class FathomLordKarathressShouldAssignDpsPriorityTrigger : public SscEncounterTr
 public:
     FathomLordKarathressShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "fathom-lord karathress should assign dps priority") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class FathomLordKarathressDpsHoldIsActiveTrigger : public SscEncounterTrigger
-{
-public:
-    FathomLordKarathressDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;

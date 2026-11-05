@@ -45,9 +45,6 @@ public:
         creators["hydross the unstable dps hold is active"] =
             &RaidSscTriggerContext::hydross_the_unstable_dps_hold_is_active;
 
-        creators["hydross the unstable off phase tank attacking"] =
-            &RaidSscTriggerContext::hydross_the_unstable_off_phase_tank_attacking;
-
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
 
@@ -76,9 +73,6 @@ public:
 
         creators["leotheras the blind warlock should tank demon form"] =
             &RaidSscTriggerContext::leotheras_the_blind_warlock_should_tank_demon_form;
-
-        creators["leotheras the blind tanks should auto-attack demon form"] =
-            &RaidSscTriggerContext::leotheras_the_blind_tanks_should_auto_attack_demon_form;
 
         creators["leotheras the blind ranged should keep distance"] =
             &RaidSscTriggerContext::leotheras_the_blind_ranged_should_keep_distance;
@@ -119,9 +113,6 @@ public:
 
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
-
-        creators["fathom-lord karathress dps hold is active"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_dps_hold_is_active;
 
         creators["fathom-lord karathress pets should be held"] =
             &RaidSscTriggerContext::fathom_lord_karathress_pets_should_be_held;
@@ -274,10 +265,6 @@ private:
     {
         return new HydrossTheUnstableDpsHoldIsActiveTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_off_phase_tank_attacking(PlayerbotAI* botAI)
-    {
-        return new HydrossTheUnstableOffPhaseTankAttackingTrigger(botAI);
-    }
     static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI)
     {
         return new HydrossTheUnstableShouldManagePhaseTimersTrigger(botAI);
@@ -317,10 +304,6 @@ private:
     static Trigger* leotheras_the_blind_warlock_should_tank_demon_form(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindWarlockShouldTankDemonFormTrigger(botAI);
-    }
-    static Trigger* leotheras_the_blind_tanks_should_auto_attack_demon_form(PlayerbotAI* botAI)
-    {
-        return new LeotherasTheBlindTanksShouldAutoAttackDemonFormTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_ranged_should_keep_distance(PlayerbotAI* botAI)
     {
@@ -376,10 +359,6 @@ private:
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
-    }
-    static Trigger* fathom_lord_karathress_dps_hold_is_active(PlayerbotAI* botAI)
-    {
-        return new FathomLordKarathressDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_pets_should_be_held(PlayerbotAI* botAI)
     {

@@ -796,7 +796,7 @@ inline constexpr float ILLIDAN_SHADOW_DEMON_GAP_CLOSER_DISTANCE =
 // When the Seed of Corruption and/or warlock tank Searing Pain action is active, use Life Tap when
 // below 20% mana and above 50% HP to ensure enough mana to cast the applicable spell.
 inline constexpr float ILLIDAN_LIFE_TAP_MANA_PCT = 20.0f;
-inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 50.0f;
+inline constexpr float ILLIDAN_LIFE_TAP_HEALTH_PCT = 75.0f;
 // The warlock tank's phase 4 position, 31 yd from Illidan and off his inward line. His reach is
 // only 1.5 yd in Demon Form, so a standard 30 yd spell (like Searing Pain) has a 33 yd range.
 inline constexpr float ILLIDAN_WARLOCK_POSITION_DISTANCE = 31.0f;
