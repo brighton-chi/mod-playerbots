@@ -338,7 +338,6 @@ bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
         bot->GetExactDist2d(GURTOGG_TANK_POSITION) > BT_ARRIVAL_DISTANCE;
 }
 
-// A swing, Auto Shot, or wand has to be cancelled by an action once the threat hold starts.
 bool GurtoggBloodboilShouldStopAttackingTrigger::IsActiveInEncounter()
 {
     Unit* gurtogg = GetEncounterBoss();
@@ -882,8 +881,6 @@ bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
     return !HasParasiticShadowfiend(bot);
 }
 
-// Swings, Auto Shot, wands, and channels (Drain Soul, Mind Flay) need to be cancelled by an action
-// during a hold.
 bool IllidanStormrageShouldStopAttackingTrigger::IsActiveInEncounter()
 {
     Unit* illidan = GetEncounterBoss();

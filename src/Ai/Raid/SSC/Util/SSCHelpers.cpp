@@ -746,9 +746,7 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
 
         std::optional<uint32> const& start = state.leotherasHumanoidPhaseStartTime;
         if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_HUMANOID_DPS_WAIT_MS)
-        {
             return true;
-        }
 
         return isJustAfterWhirlwind();
     }
@@ -775,9 +773,7 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
 
         std::optional<uint32> const& start = state.leotherasFinalPhaseStartTime;
         if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_FINAL_DPS_WAIT_MS)
-        {
             return true;
-        }
 
         return isJustAfterWhirlwind();
     }

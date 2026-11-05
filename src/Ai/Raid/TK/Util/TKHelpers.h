@@ -280,9 +280,7 @@ inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
-// The first ADVISOR_DPS_WAIT_MS of each phase 1 advisor, for everyone but that advisor's tank.
 bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
-
 bool UpdateTkClassRoles(PlayerbotAI* botAI);
 bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
 // Demonology spec is preferred for the Capernian Warlock tank.

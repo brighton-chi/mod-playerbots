@@ -403,7 +403,8 @@ float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(
     return PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 }
 
-// Melee with no weapon out of the axe's reach hold with no target, and stay in the combat engine.
+// Stop melee from dropping to their non-combat engines during the weapon phase (in the event that
+// the only weapons remaining are in range of the axe).
 float KaelthasSunstriderKeepMeleeInCombatMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<DropTargetAction*>(action))

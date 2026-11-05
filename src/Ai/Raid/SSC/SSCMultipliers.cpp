@@ -461,16 +461,22 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValueInEncounter(Action* act
     return leotheras && IsLeotherasChannelingWhirlwind(leotheras) ? 0.0f : 1.0f;
 }
 
-float LeotherasTheBlindDisableDpsAssistMultiplier::GetValueInEncounter(Action* action)
+float LeotherasTheBlindControlTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action))
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+    if (!isDropTarget && !dynamic_cast<DpsAssistAction*>(action))
         return 1.0f;
 
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return 1.0f;
+
+    // There is no valid target during the brief transition into the final phase. Keep bots in
+    // the combat engine through the transition.
+    if (isDropTarget)
+        return 0.0f;
 
     // No dps assist in situations in which there is more than one valid target.
     return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
@@ -485,11 +491,15 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
         return 1.0f;
 
     bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
-    if (!isTankAssist && !dynamic_cast<CastSpellAction*>(action))
+    bool const isTaunt = IsTauntAction(bot, action);
+    if (!isTankAssist && !isTaunt && !dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return 1.0f;
+
+    if (isTaunt)
+        return 0.0f;
 
     // Tanks can always cast spells to attack Inner Demons or in the final phase, as long as they do
     // not target Demon Leo or Shadow Leo.
