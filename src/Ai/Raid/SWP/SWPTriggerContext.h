@@ -161,7 +161,7 @@ public:
         creators["m'uru should assign dps priority"] =
             &RaidSwpTriggerContext::muru_should_assign_dps_priority;
 
-        creators["m'uru m'uru void sentinel should be tanked"] =
+        creators["m'uru void sentinel should be tanked"] =
             &RaidSwpTriggerContext::muru_void_sentinel_should_be_tanked;
 
         creators["m'uru adds spawn at entrance"] =

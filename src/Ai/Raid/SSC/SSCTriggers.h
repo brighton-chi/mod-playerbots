@@ -121,11 +121,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class HydrossTheUnstableAggroResetsUponPhaseChangeTrigger : public SscEncounterTrigger
+class HydrossTheUnstableDpsHoldIsActiveTrigger : public SscEncounterTrigger
 {
 public:
-    HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable aggro resets upon phase change") {}
+    HydrossTheUnstableDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "hydross the unstable dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -136,16 +136,6 @@ class HydrossTheUnstableOffPhaseTankAttackingTrigger : public SscEncounterTrigge
 public:
     HydrossTheUnstableOffPhaseTankAttackingTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "hydross the unstable off phase tank attacking") {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class HydrossTheUnstableShouldSelectHeldTargetTrigger : public SscEncounterTrigger
-{
-public:
-    HydrossTheUnstableShouldSelectHeldTargetTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "hydross the unstable should select held target") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -295,11 +285,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class LeotherasTheBlindInFinalPhaseTrigger : public SscEncounterTrigger
+class LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger : public SscEncounterTrigger
 {
 public:
-    LeotherasTheBlindInFinalPhaseTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "leotheras the blind in final phase") {}
+    LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "leotheras the blind should focus boss in final phase") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -378,11 +368,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressShouldSelectHeldTargetTrigger : public SscEncounterTrigger
+class FathomLordKarathressDpsHoldIsActiveTrigger : public SscEncounterTrigger
 {
 public:
-    FathomLordKarathressShouldSelectHeldTargetTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress should select held target") {}
+    FathomLordKarathressDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;

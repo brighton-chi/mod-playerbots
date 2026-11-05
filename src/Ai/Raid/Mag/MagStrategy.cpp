@@ -24,8 +24,8 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon should assign dps priority",
         { NextAction("magtheridon assign dps priority", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("magtheridon should select held target",
-        { NextAction("magtheridon select held target", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("magtheridon dps hold is active",
+        { NextAction("magtheridon select target for hold", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("magtheridon burning abyssal spawned",
         { NextAction("magtheridon warlock cc burning abyssal", ACTION_RAID + 2) }));

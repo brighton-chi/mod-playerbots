@@ -45,14 +45,14 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hydross the unstable should misdirect upon phase change",
         { NextAction("hydross the unstable misdirect to tank", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("hydross the unstable aggro resets upon phase change",
-        { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("hydross the unstable dps hold is active",
+        {
+            NextAction("hydross the unstable stop attacking for hold", ACTION_RAID + 2),
+            NextAction("hydross the unstable select target for hold", ACTION_RAID),
+        }));
 
     triggers.push_back(new TriggerNode("hydross the unstable off phase tank attacking",
         { NextAction("hydross the unstable stop attacking upon phase change", ACTION_RAID + 2) }));
-
-    triggers.push_back(new TriggerNode("hydross the unstable should select held target",
-        { NextAction("hydross the unstable select held target", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers",
         { NextAction("hydross the unstable manage phase timers", ACTION_EMERGENCY + 10) }));
@@ -98,7 +98,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("leotheras the blind inner demon has awakened",
         { NextAction("leotheras the blind destroy inner demon", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("leotheras the blind in final phase",
+    triggers.push_back(new TriggerNode("leotheras the blind should focus boss in final phase",
         { NextAction("leotheras the blind final phase attack boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind should separate boss from demon",
@@ -109,10 +109,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("leotheras the blind misdirect demon form to tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind dps hold is active",
-        {
-            NextAction("leotheras the blind stop attacking", ACTION_RAID + 2),
-            NextAction("leotheras the blind select held target", ACTION_RAID),
-        }));
+        { NextAction("leotheras the blind stop attacking", ACTION_RAID + 2),
+          NextAction("leotheras the blind select target for hold", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind should manage dps wait timers",
         { NextAction("leotheras the blind manage dps wait timers", ACTION_EMERGENCY + 10) }));
@@ -130,8 +128,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority",
         { NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("fathom-lord karathress should select held target",
-        { NextAction("fathom-lord karathress select held target", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("fathom-lord karathress dps hold is active",
+        { NextAction("fathom-lord karathress select target for hold", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress pets should be held",
         { NextAction("fathom-lord karathress control pet aggression", ACTION_RAID + 4) }));
@@ -267,6 +265,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Leotheras the Blind
     multipliers.push_back(new LeotherasTheBlindAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new LeotherasTheBlindDisableDpsAssistMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindMeleeAvoidChaosBlastMultiplier(botAI));
     multipliers.push_back(new LeotherasTheBlindFocusOnInnerDemonMultiplier(botAI));

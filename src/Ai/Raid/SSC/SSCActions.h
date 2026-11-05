@@ -58,22 +58,42 @@ public:
     bool Execute(Event event) override;
 };
 
-// Takes the target dps assist would take, without attacking it. Used for Hydross the Unstable,
-// Leotheras the Blind, and Fathom-Lord Karathress.
-class SscSelectHeldTargetAction : public Action
+// Hunters keep attacking after a phase change to use their Misdirection on the incoming tank.
+class HydrossTheUnstableStopAttackingForHoldAction : public SscStopAttackingAction
 {
 public:
-    SscSelectHeldTargetAction(PlayerbotAI* botAI, std::string const& name)
+    HydrossTheUnstableStopAttackingForHoldAction(PlayerbotAI* botAI)
+        : SscStopAttackingAction(botAI, "hydross the unstable stop attacking for hold") {}
+    bool isUseful() override;
+};
+
+// Select the target that dps assist would select, without attacking it. Used for Hydross the
+// Unstable, Leotheras the Blind, and Fathom-Lord Karathress.
+class SscSelectTargetForHoldAction : public Action
+{
+public:
+    SscSelectTargetForHoldAction(PlayerbotAI* botAI, std::string const& name)
         : Action(botAI, name) {}
+    bool isUseful() override;
     bool Execute(Event event) override;
 };
 
-// For bots with no target. Tanks pick up Leotheras themselves.
-class LeotherasTheBlindSelectHeldTargetAction : public SscSelectHeldTargetAction
+// For healers at the start of the fight. Karathress's dps get their targets from his priority
+// action.
+class FathomLordKarathressSelectTargetForHoldAction : public SscSelectTargetForHoldAction
 {
 public:
-    LeotherasTheBlindSelectHeldTargetAction(PlayerbotAI* botAI)
-        : SscSelectHeldTargetAction(botAI, "leotheras the blind select held target") {}
+    FathomLordKarathressSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "fathom-lord karathress select target for hold") {}
+    bool isUseful() override;
+};
+
+// For bots with no target. Tanks pick up Leotheras themselves.
+class LeotherasTheBlindSelectTargetForHoldAction : public SscSelectTargetForHoldAction
+{
+public:
+    LeotherasTheBlindSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "leotheras the blind select target for hold") {}
     bool isUseful() override;
 };
 

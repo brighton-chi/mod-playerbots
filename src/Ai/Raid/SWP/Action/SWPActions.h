@@ -314,11 +314,11 @@ public:
 };
 
 // Takes the target dps assist would take, without attacking it, for a bot in its non-combat engine.
-class FelmystSelectHeldTargetAction : public Action
+class FelmystSelectTargetForHoldAction : public Action
 {
 public:
-    FelmystSelectHeldTargetAction(PlayerbotAI* botAI)
-        : Action(botAI, "felmyst select held target") {}
+    FelmystSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "felmyst select target for hold") {}
     bool isUseful() override;
     bool Execute(Event event) override;
 };

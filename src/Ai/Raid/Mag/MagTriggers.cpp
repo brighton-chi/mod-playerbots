@@ -60,16 +60,11 @@ bool MagtheridonShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
     return !PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "magtheridon");
 }
 
-bool MagtheridonShouldSelectHeldTargetTrigger::IsActiveInEncounter()
+bool MagtheridonDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon || AI_VALUE(Unit*, "current target") == magtheridon)
-        return false;
-
-    return IsMagtheridonDpsHoldActive(bot, magtheridon) && !IsAnyChannelerAlive(bot);
+    return magtheridon && IsMagtheridonDpsHoldActive(bot, magtheridon) &&
+        !IsAnyChannelerAlive(bot);
 }
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActiveInEncounter()

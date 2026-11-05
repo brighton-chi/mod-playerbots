@@ -76,11 +76,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MagtheridonShouldSelectHeldTargetTrigger : public MagtheridonEncounterTrigger
+class MagtheridonDpsHoldIsActiveTrigger : public MagtheridonEncounterTrigger
 {
 public:
-    MagtheridonShouldSelectHeldTargetTrigger(PlayerbotAI* botAI)
-        : MagtheridonEncounterTrigger(botAI, "magtheridon should select held target") {}
+    MagtheridonDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : MagtheridonEncounterTrigger(botAI, "magtheridon dps hold is active") {}
 
 protected:
     bool IsActiveInEncounter() override;

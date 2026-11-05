@@ -106,9 +106,8 @@ GuidVector FindBurningAbyssalGuids(Player* bot);
 std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsAnyChannelerAlive(Player* bot);
-// The last Channeler's death releases him, and he stays caged and unselectable for 3s after.
+// Magtheridon is released when the last Channeler dies, but he stays caged and unselectable for 3s.
 bool IsMagtheridonReleasePending(Player* bot, Unit* magtheridon);
-// Everyone but the main tank, from when he becomes attackable for MAG_DPS_HOLD_MS.
 bool IsMagtheridonDpsHoldActive(Player* bot, Unit* magtheridon);
 bool IsCubeClicker(Player* bot);
 bool IsBlastNovaCasting(Unit* magtheridon);

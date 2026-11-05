@@ -42,14 +42,11 @@ public:
         creators["hydross the unstable should misdirect upon phase change"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_misdirect_upon_phase_change;
 
-        creators["hydross the unstable aggro resets upon phase change"] =
-            &RaidSscTriggerContext::hydross_the_unstable_aggro_resets_upon_phase_change;
+        creators["hydross the unstable dps hold is active"] =
+            &RaidSscTriggerContext::hydross_the_unstable_dps_hold_is_active;
 
         creators["hydross the unstable off phase tank attacking"] =
             &RaidSscTriggerContext::hydross_the_unstable_off_phase_tank_attacking;
-
-        creators["hydross the unstable should select held target"] =
-            &RaidSscTriggerContext::hydross_the_unstable_should_select_held_target;
 
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
@@ -95,8 +92,8 @@ public:
         creators["leotheras the blind inner demon has awakened"] =
             &RaidSscTriggerContext::leotheras_the_blind_inner_demon_has_awakened;
 
-        creators["leotheras the blind in final phase"] =
-            &RaidSscTriggerContext::leotheras_the_blind_in_final_phase;
+        creators["leotheras the blind should focus boss in final phase"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_focus_boss_in_final_phase;
 
         creators["leotheras the blind should separate boss from demon"] =
             &RaidSscTriggerContext::leotheras_the_blind_should_separate_boss_from_demon;
@@ -123,8 +120,8 @@ public:
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
 
-        creators["fathom-lord karathress should select held target"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_should_select_held_target;
+        creators["fathom-lord karathress dps hold is active"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_dps_hold_is_active;
 
         creators["fathom-lord karathress pets should be held"] =
             &RaidSscTriggerContext::fathom_lord_karathress_pets_should_be_held;
@@ -273,17 +270,13 @@ private:
     {
         return new HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger(botAI);
     }
-    static Trigger* hydross_the_unstable_aggro_resets_upon_phase_change(PlayerbotAI* botAI)
+    static Trigger* hydross_the_unstable_dps_hold_is_active(PlayerbotAI* botAI)
     {
-        return new HydrossTheUnstableAggroResetsUponPhaseChangeTrigger(botAI);
+        return new HydrossTheUnstableDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_off_phase_tank_attacking(PlayerbotAI* botAI)
     {
         return new HydrossTheUnstableOffPhaseTankAttackingTrigger(botAI);
-    }
-    static Trigger* hydross_the_unstable_should_select_held_target(PlayerbotAI* botAI)
-    {
-        return new HydrossTheUnstableShouldSelectHeldTargetTrigger(botAI);
     }
     static Trigger* hydross_the_unstable_should_manage_phase_timers(PlayerbotAI* botAI)
     {
@@ -345,9 +338,9 @@ private:
     {
         return new LeotherasTheBlindInnerDemonHasAwakenedTrigger(botAI);
     }
-    static Trigger* leotheras_the_blind_in_final_phase(PlayerbotAI* botAI)
+    static Trigger* leotheras_the_blind_should_focus_boss_in_final_phase(PlayerbotAI* botAI)
     {
-        return new LeotherasTheBlindInFinalPhaseTrigger(botAI);
+        return new LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger(botAI);
     }
     static Trigger* leotheras_the_blind_should_separate_boss_from_demon(PlayerbotAI* botAI)
     {
@@ -384,9 +377,9 @@ private:
     {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_should_select_held_target(PlayerbotAI* botAI)
+    static Trigger* fathom_lord_karathress_dps_hold_is_active(PlayerbotAI* botAI)
     {
-        return new FathomLordKarathressShouldSelectHeldTargetTrigger(botAI);
+        return new FathomLordKarathressDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_pets_should_be_held(PlayerbotAI* botAI)
     {

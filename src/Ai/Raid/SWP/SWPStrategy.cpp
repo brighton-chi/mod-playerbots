@@ -118,7 +118,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst landing dps hold is active",
         {
             NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
-            NextAction("felmyst select held target", ACTION_RAID),
+            NextAction("felmyst select target for hold", ACTION_RAID),
         }));
 
     // Eredar Twins

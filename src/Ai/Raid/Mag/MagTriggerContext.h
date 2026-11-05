@@ -30,8 +30,8 @@ public:
         creators["magtheridon should assign dps priority"] =
             &RaidMagtheridonTriggerContext::magtheridon_should_assign_dps_priority;
 
-        creators["magtheridon should select held target"] =
-            &RaidMagtheridonTriggerContext::magtheridon_should_select_held_target;
+        creators["magtheridon dps hold is active"] =
+            &RaidMagtheridonTriggerContext::magtheridon_dps_hold_is_active;
 
         creators["magtheridon burning abyssal spawned"] =
             &RaidMagtheridonTriggerContext::magtheridon_burning_abyssal_spawned;
@@ -73,9 +73,9 @@ private:
     {
         return new MagtheridonShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* magtheridon_should_select_held_target(PlayerbotAI* botAI)
+    static Trigger* magtheridon_dps_hold_is_active(PlayerbotAI* botAI)
     {
-        return new MagtheridonShouldSelectHeldTargetTrigger(botAI);
+        return new MagtheridonDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* magtheridon_burning_abyssal_spawned(PlayerbotAI* botAI)
     {

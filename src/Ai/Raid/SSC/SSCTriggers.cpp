@@ -97,18 +97,13 @@ bool HydrossTheUnstableShouldMisdirectUponPhaseChangeTrigger::IsActiveInEncounte
     return IsHydrossInFrostPhase(hydross) ? HasNoMarkOfHydross(bot) : HasNoMarkOfCorruption(bot);
 }
 
-bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActiveInEncounter()
+bool HydrossTheUnstableDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    if (!hydross)
-        return false;
-
-    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
-    return window == HydrossDpsHoldWindow::BeforePhaseChange ||
-        (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
+    return hydross && GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None;
 }
 
 bool HydrossTheUnstableOffPhaseTankAttackingTrigger::IsActiveInEncounter()
@@ -126,15 +121,6 @@ bool HydrossTheUnstableOffPhaseTankAttackingTrigger::IsActiveInEncounter()
         return false;
 
     return bot->GetVictim() == hydross || AI_VALUE(Unit*, "current target") == hydross;
-}
-
-bool HydrossTheUnstableShouldSelectHeldTargetTrigger::IsActiveInEncounter()
-{
-    if (botAI->GetState() != BOT_STATE_NON_COMBAT || PlayerbotAI::IsTank(bot))
-        return false;
-
-    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    return hydross && GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None;
 }
 
 bool HydrossTheUnstableShouldManagePhaseTimersTrigger::IsActiveInEncounter()
@@ -333,11 +319,8 @@ bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActiveInEncounter()
     return HasInnerDemon(bot);
 }
 
-bool LeotherasTheBlindInFinalPhaseTrigger::IsActiveInEncounter()
+bool LeotherasTheBlindShouldFocusBossInFinalPhaseTrigger::IsActiveInEncounter()
 {
-    if (PlayerbotAI::IsHeal(bot))
-        return false;
-
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return false;
 
@@ -436,10 +419,9 @@ bool FathomLordKarathressShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
     return false;
 }
 
-bool FathomLordKarathressShouldSelectHeldTargetTrigger::IsActiveInEncounter()
+bool FathomLordKarathressDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
-    return botAI->GetState() == BOT_STATE_NON_COMBAT && PlayerbotAI::IsHeal(bot) &&
-        IsKarathressStartDpsHoldActive(bot);
+    return IsKarathressStartDpsHoldActive(bot);
 }
 
 bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()

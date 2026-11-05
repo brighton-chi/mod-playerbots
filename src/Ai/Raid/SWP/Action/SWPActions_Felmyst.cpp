@@ -557,12 +557,12 @@ bool FelmystStopAttackingForLandingAction::Execute(Event /*event*/)
     return StopAttackingAndChanneling(bot);
 }
 
-bool FelmystSelectHeldTargetAction::isUseful()
+bool FelmystSelectTargetForHoldAction::isUseful()
 {
     return botAI->GetState() == BOT_STATE_NON_COMBAT;
 }
 
-bool FelmystSelectHeldTargetAction::Execute(Event /*event*/)
+bool FelmystSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
 }

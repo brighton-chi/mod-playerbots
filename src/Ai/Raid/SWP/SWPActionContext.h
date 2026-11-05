@@ -113,8 +113,8 @@ public:
         creators["felmyst stop attacking for landing"] =
             &RaidSwpActionContext::felmyst_stop_attacking_for_landing;
 
-        creators["felmyst select held target"] =
-            &RaidSwpActionContext::felmyst_select_held_target;
+        creators["felmyst select target for hold"] =
+            &RaidSwpActionContext::felmyst_select_target_for_hold;
 
         // Eredar Twins
         creators["eredar twins melee jump from balcony"] =
@@ -375,9 +375,9 @@ private:
     {
         return new FelmystStopAttackingForLandingAction(botAI);
     }
-    static Action* felmyst_select_held_target(PlayerbotAI* botAI)
+    static Action* felmyst_select_target_for_hold(PlayerbotAI* botAI)
     {
-        return new FelmystSelectHeldTargetAction(botAI);
+        return new FelmystSelectTargetForHoldAction(botAI);
     }
 
     // Eredar Twins

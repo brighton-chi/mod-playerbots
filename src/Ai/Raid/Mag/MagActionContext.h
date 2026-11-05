@@ -30,8 +30,8 @@ public:
         creators["magtheridon assign dps priority"] =
             &RaidMagtheridonActionContext::magtheridon_assign_dps_priority;
 
-        creators["magtheridon select held target"] =
-            &RaidMagtheridonActionContext::magtheridon_select_held_target;
+        creators["magtheridon select target for hold"] =
+            &RaidMagtheridonActionContext::magtheridon_select_target_for_hold;
 
         creators["magtheridon warlock cc burning abyssal"] =
             &RaidMagtheridonActionContext::magtheridon_warlock_cc_burning_abyssal;
@@ -73,9 +73,9 @@ private:
     {
         return new MagtheridonAssignDpsPriorityAction(botAI);
     }
-    static Action* magtheridon_select_held_target(PlayerbotAI* botAI)
+    static Action* magtheridon_select_target_for_hold(PlayerbotAI* botAI)
     {
-        return new MagtheridonSelectHeldTargetAction(botAI);
+        return new MagtheridonSelectTargetForHoldAction(botAI);
     }
     static Action* magtheridon_warlock_cc_burning_abyssal(PlayerbotAI* botAI)
     {

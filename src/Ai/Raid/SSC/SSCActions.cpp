@@ -78,14 +78,35 @@ bool SscStopAttackingAction::Execute(Event /*event*/)
     return StopAttackingAndChanneling(bot);
 }
 
-bool SscSelectHeldTargetAction::Execute(Event /*event*/)
+bool HydrossTheUnstableStopAttackingForHoldAction::isUseful()
+{
+    Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
+    if (!hydross)
+        return false;
+
+    HydrossDpsHoldWindow const window = GetHydrossDpsHoldWindow(hydross);
+    return window == HydrossDpsHoldWindow::BeforePhaseChange ||
+        (window == HydrossDpsHoldWindow::AfterPhaseChange && bot->getClass() != CLASS_HUNTER);
+}
+
+bool SscSelectTargetForHoldAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT;
+}
+
+bool SscSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
 }
 
-bool LeotherasTheBlindSelectHeldTargetAction::isUseful()
+bool LeotherasTheBlindSelectTargetForHoldAction::isUseful()
 {
-    return botAI->GetState() == BOT_STATE_NON_COMBAT && !PlayerbotAI::IsTank(bot);
+    return SscSelectTargetForHoldAction::isUseful() && !PlayerbotAI::IsTank(bot);
+}
+
+bool FathomLordKarathressSelectTargetForHoldAction::isUseful()
+{
+    return SscSelectTargetForHoldAction::isUseful() && PlayerbotAI::IsHeal(bot);
 }
 
 bool SscSpreadRangedAction::Execute(Event /*event*/)

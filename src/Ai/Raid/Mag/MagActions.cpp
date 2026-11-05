@@ -164,7 +164,7 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, channeler);
 }
 
-bool MagtheridonSelectHeldTargetAction::Execute(Event /*event*/)
+bool MagtheridonSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     return SelectTarget(botAI, magtheridon);

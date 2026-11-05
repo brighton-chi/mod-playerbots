@@ -52,7 +52,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
 float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action) ||
-        dynamic_cast<MagtheridonSelectHeldTargetAction*>(action))
+        dynamic_cast<MagtheridonSelectTargetForHoldAction*>(action))
     {
         return 1.0f;
     }
@@ -61,8 +61,8 @@ float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
     return IsMagtheridonDpsHoldActive(bot, magtheridon) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
-// Between the last Channeler's death and his release, bots keep their dead targets so they stay in
-// their combat engines.
+// Between the last Channeler's death and Magtheridon's release, bots keep their dead targets so
+// they stay in their combat engines.
 float MagtheridonKeepInCombatBeforeReleaseMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
