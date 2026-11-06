@@ -146,20 +146,23 @@ public:
         creators["nightbane should be tanked"] =
             &RaidKarazhanTriggerContext::nightbane_should_be_tanked;
 
-        creators["nightbane ground phase engaged by ranged"] =
-            &RaidKarazhanTriggerContext::nightbane_ground_phase_engaged_by_ranged;
+        creators["nightbane ranged should stack"] =
+            &RaidKarazhanTriggerContext::nightbane_ranged_should_stack;
 
-        creators["nightbane pets chase flying boss out of bounds"] =
-            &RaidKarazhanTriggerContext::nightbane_pets_chase_flying_boss_out_of_bounds;
+        creators["nightbane pets should be held"] =
+            &RaidKarazhanTriggerContext::nightbane_pets_should_be_held;
 
-        creators["nightbane in flight phase"] =
-            &RaidKarazhanTriggerContext::nightbane_in_flight_phase;
+        creators["nightbane should hold dps"] =
+            &RaidKarazhanTriggerContext::nightbane_should_hold_dps;
 
-        creators["nightbane bot went out of bounds"] =
-            &RaidKarazhanTriggerContext::nightbane_bot_went_out_of_bounds;
+        creators["nightbane should stack in flight"] =
+            &RaidKarazhanTriggerContext::nightbane_should_stack_in_flight;
+
+        creators["nightbane should stand down"] =
+            &RaidKarazhanTriggerContext::nightbane_should_stand_down;
 
         creators["nightbane should manage timers and trackers"] =
-            &RaidKarazhanTriggerContext::nightbane_need_to_manage_timers_and_trackers;
+            &RaidKarazhanTriggerContext::nightbane_should_manage_timers_and_trackers;
     }
 
 private:
@@ -346,23 +349,27 @@ private:
     {
         return new NightbaneShouldBeTankedTrigger(botAI);
     }
-    static Trigger* nightbane_ground_phase_engaged_by_ranged(PlayerbotAI* botAI)
+    static Trigger* nightbane_ranged_should_stack(PlayerbotAI* botAI)
     {
-        return new NightbaneGroundPhaseEngagedByRangedTrigger(botAI);
+        return new NightbaneRangedShouldStackTrigger(botAI);
     }
-    static Trigger* nightbane_pets_chase_flying_boss_out_of_bounds(PlayerbotAI* botAI)
+    static Trigger* nightbane_pets_should_be_held(PlayerbotAI* botAI)
     {
-        return new NightbanePetsChaseFlyingBossOutOfBoundsTrigger(botAI);
+        return new NightbanePetsShouldBeHeldTrigger(botAI);
     }
-    static Trigger* nightbane_in_flight_phase(PlayerbotAI* botAI)
+    static Trigger* nightbane_should_hold_dps(PlayerbotAI* botAI)
     {
-        return new NightbaneInFlightPhaseTrigger(botAI);
+        return new NightbaneShouldHoldDpsTrigger(botAI);
     }
-    static Trigger* nightbane_bot_went_out_of_bounds(PlayerbotAI* botAI)
+    static Trigger* nightbane_should_stack_in_flight(PlayerbotAI* botAI)
     {
-        return new NightbaneBotWentOutOfBoundsTrigger(botAI);
+        return new NightbaneShouldStackInFlightTrigger(botAI);
     }
-    static Trigger* nightbane_need_to_manage_timers_and_trackers(PlayerbotAI* botAI)
+    static Trigger* nightbane_should_stand_down(PlayerbotAI* botAI)
+    {
+        return new NightbaneShouldStandDownTrigger(botAI);
+    }
+    static Trigger* nightbane_should_manage_timers_and_trackers(PlayerbotAI* botAI)
     {
         return new NightbaneShouldManageTimersAndTrackersTrigger(botAI);
     }

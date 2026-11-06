@@ -260,12 +260,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class NightbaneWaitForDpsMultiplier : public KarazhanEncounterMultiplier
+class NightbaneHoldDpsMultiplier : public KarazhanEncounterMultiplier
 {
 public:
-    NightbaneWaitForDpsMultiplier(PlayerbotAI* botAI)
+    NightbaneHoldDpsMultiplier(PlayerbotAI* botAI)
         : KarazhanEncounterMultiplier(
-            botAI, "nightbane wait for dps", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+            botAI, "nightbane hold dps", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

@@ -142,19 +142,23 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Nightbane
     triggers.push_back(new TriggerNode("nightbane should be tanked",
-        { NextAction("nightbane ground phase tanks position boss", ACTION_RAID) }));
+        { NextAction("nightbane tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("nightbane ground phase engaged by ranged",
-        { NextAction("nightbane ground phase coordinate ranged movement", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("nightbane ranged should stack",
+        { NextAction("nightbane ranged stack", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("nightbane pets chase flying boss out of bounds",
+    triggers.push_back(new TriggerNode("nightbane pets should be held",
         { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("nightbane in flight phase",
-        { NextAction("nightbane flight phase stack and move", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("nightbane should hold dps",
+        { NextAction("nightbane stop attacking", ACTION_RAID + 3),
+          NextAction("nightbane select target for hold", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("nightbane bot went out of bounds",
-        { NextAction("nightbane teleport back to terrace", ACTION_EMERGENCY + 9) }));
+    triggers.push_back(new TriggerNode("nightbane should stack in flight",
+        { NextAction("nightbane stack in flight", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("nightbane should stand down",
+        { NextAction("nightbane stand down", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("nightbane should manage timers and trackers",
         { NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10) }));
@@ -180,7 +184,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new NetherspiteWaitForDpsMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarEnfeebleMultiplier(botAI));
     multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
-    multipliers.push_back(new NightbaneWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new NightbaneHoldDpsMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));
 }
@@ -190,6 +194,23 @@ void RaidKarazhanStrategy::AppendTargetExclusions(
 {
     Unit* nightbane =
         KaraHelpers::GetKaraBoss(botAI->GetBot(), KaraHelpers::KaraBosses::DATA_NIGHTBANE);
-    if (nightbane && nightbane->GetPositionZ() > KaraHelpers::NIGHTBANE_FLIGHT_Z)
+    if (!nightbane)
+        return;
+
+    if (KaraHelpers::IsNightbaneFlying(*nightbane))
         exclusions.insert(nightbane->GetGUID());
+
+    // Reach would walk a bot off the terrace after a skeleton that spawned out of bounds.
+    uint32 const skeletonEntry = KaraHelpers::Id(KaraHelpers::KaraNpcs::NPC_RESTLESS_SKELETON);
+    GuidVector const targets =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    for (ObjectGuid const& guid : targets)
+    {
+        if (guid.GetEntry() != skeletonEntry)
+            continue;
+
+        Unit* skeleton = botAI->GetUnit(guid);
+        if (skeleton && KaraHelpers::IsOutsideNightbaneTerrace(*skeleton))
+            exclusions.insert(guid);
+    }
 }

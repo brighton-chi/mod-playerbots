@@ -143,20 +143,26 @@ public:
             &RaidKarazhanActionContext::prince_malchezaar_tanks_position_boss;
 
         // Nightbane
-        creators["nightbane ground phase tanks position boss"] =
-            &RaidKarazhanActionContext::nightbane_ground_phase_position_boss;
+        creators["nightbane tank position boss"] =
+            &RaidKarazhanActionContext::nightbane_tank_position_boss;
 
-        creators["nightbane ground phase coordinate ranged movement"] =
-            &RaidKarazhanActionContext::nightbane_ground_phase_rotate_ranged_positions;
+        creators["nightbane ranged stack"] =
+            &RaidKarazhanActionContext::nightbane_ranged_stack;
 
         creators["nightbane control pet aggression"] =
             &RaidKarazhanActionContext::nightbane_control_pet_aggression;
 
-        creators["nightbane flight phase stack and move"] =
-            &RaidKarazhanActionContext::nightbane_flight_phase_stack_and_move;
+        creators["nightbane stop attacking"] =
+            &RaidKarazhanActionContext::nightbane_stop_attacking;
 
-        creators["nightbane teleport back to terrace"] =
-            &RaidKarazhanActionContext::nightbane_teleport_back_to_terrace;
+        creators["nightbane select target for hold"] =
+            &RaidKarazhanActionContext::nightbane_select_target_for_hold;
+
+        creators["nightbane stack in flight"] =
+            &RaidKarazhanActionContext::nightbane_stack_in_flight;
+
+        creators["nightbane stand down"] =
+            &RaidKarazhanActionContext::nightbane_stand_down;
 
         creators["nightbane manage timers and trackers"] =
             &RaidKarazhanActionContext::nightbane_manage_timers_and_trackers;
@@ -342,25 +348,33 @@ private:
     }
 
     // Nightbane
-    static Action* nightbane_ground_phase_position_boss(PlayerbotAI* botAI)
+    static Action* nightbane_tank_position_boss(PlayerbotAI* botAI)
     {
-        return new NightbaneGroundPhaseTanksPositionBossAction(botAI);
+        return new NightbaneTankPositionBossAction(botAI);
     }
-    static Action* nightbane_ground_phase_rotate_ranged_positions(PlayerbotAI* botAI)
+    static Action* nightbane_ranged_stack(PlayerbotAI* botAI)
     {
-        return new NightbaneGroundPhaseCoordinateRangedMovementAction(botAI);
+        return new NightbaneRangedStackAction(botAI);
     }
     static Action* nightbane_control_pet_aggression(PlayerbotAI* botAI)
     {
         return new NightbaneControlPetAggressionAction(botAI);
     }
-    static Action* nightbane_flight_phase_stack_and_move(PlayerbotAI* botAI)
+    static Action* nightbane_stop_attacking(PlayerbotAI* botAI)
     {
-        return new NightbaneFlightPhaseStackAndMoveAction(botAI);
+        return new NightbaneStopAttackingAction(botAI);
     }
-    static Action* nightbane_teleport_back_to_terrace(PlayerbotAI* botAI)
+    static Action* nightbane_select_target_for_hold(PlayerbotAI* botAI)
     {
-        return new NightbaneTeleportBackToTerraceAction(botAI);
+        return new NightbaneSelectTargetForHoldAction(botAI);
+    }
+    static Action* nightbane_stack_in_flight(PlayerbotAI* botAI)
+    {
+        return new NightbaneStackInFlightAction(botAI);
+    }
+    static Action* nightbane_stand_down(PlayerbotAI* botAI)
+    {
+        return new NightbaneStandDownAction(botAI);
     }
     static Action* nightbane_manage_timers_and_trackers(PlayerbotAI* botAI)
     {

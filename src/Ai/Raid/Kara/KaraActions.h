@@ -405,19 +405,19 @@ public:
 
 // Nightbane
 
-class NightbaneGroundPhaseTanksPositionBossAction : public AttackAction
+class NightbaneTankPositionBossAction : public AttackAction
 {
 public:
-    NightbaneGroundPhaseTanksPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "nightbane ground phase tanks position boss") {}
+    NightbaneTankPositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "nightbane tank position boss") {}
     bool Execute(Event event) override;
 };
 
-class NightbaneGroundPhaseCoordinateRangedMovementAction : public MovementAction
+class NightbaneRangedStackAction : public MovementAction
 {
 public:
-    NightbaneGroundPhaseCoordinateRangedMovementAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "nightbane ground phase coordinate ranged movement") {}
+    NightbaneRangedStackAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "nightbane ranged stack") {}
     bool Execute(Event event) override;
 
 private:
@@ -431,31 +431,43 @@ public:
     NightbaneControlPetAggressionAction(PlayerbotAI* botAI)
         : Action(botAI, "nightbane control pet aggression") {}
     bool Execute(Event event) override;
-};
-
-class NightbaneFlightPhaseStackAndMoveAction : public MovementAction
-{
-public:
-    NightbaneFlightPhaseStackAndMoveAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "nightbane flight phase stack and move") {}
-    bool Execute(Event event) override;
-    bool ResetRainOfBonesHit()
-    {
-        if (!_rainOfBonesHit)
-            return false;
-        _rainOfBonesHit = false;
-        return true;
-    }
+    bool ResetPetStance();
 
 private:
-    bool _rainOfBonesHit = false;
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
 };
 
-class NightbaneTeleportBackToTerraceAction : public MovementAction
+class NightbaneStopAttackingAction : public Action
 {
 public:
-    NightbaneTeleportBackToTerraceAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "nightbane teleport back to terrace") {}
+    NightbaneStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "nightbane stop attacking") {}
+    bool Execute(Event event) override;
+};
+
+class NightbaneSelectTargetForHoldAction : public Action
+{
+public:
+    NightbaneSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "nightbane select target for hold") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
+class NightbaneStackInFlightAction : public MovementAction
+{
+public:
+    NightbaneStackInFlightAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "nightbane stack in flight") {}
+    bool Execute(Event event) override;
+};
+
+class NightbaneStandDownAction : public Action
+{
+public:
+    NightbaneStandDownAction(PlayerbotAI* botAI)
+        : Action(botAI, "nightbane stand down") {}
     bool Execute(Event event) override;
 };
 

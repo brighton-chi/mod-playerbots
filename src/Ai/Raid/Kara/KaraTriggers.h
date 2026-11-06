@@ -504,47 +504,56 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class NightbaneGroundPhaseEngagedByRangedTrigger : public KarazhanEncounterTrigger
+class NightbaneRangedShouldStackTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbaneGroundPhaseEngagedByRangedTrigger(PlayerbotAI* botAI)
+    NightbaneRangedShouldStackTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "nightbane ground phase engaged by ranged",
-            KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+            botAI, "nightbane ranged should stack", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class NightbanePetsChaseFlyingBossOutOfBoundsTrigger : public KarazhanEncounterTrigger
+class NightbanePetsShouldBeHeldTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbanePetsChaseFlyingBossOutOfBoundsTrigger(PlayerbotAI* botAI)
+    NightbanePetsShouldBeHeldTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "nightbane pets chase flying boss out of bounds",
-            KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+            botAI, "nightbane pets should be held", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class NightbaneInFlightPhaseTrigger : public KarazhanEncounterTrigger
+class NightbaneShouldHoldDpsTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbaneInFlightPhaseTrigger(PlayerbotAI* botAI)
+    NightbaneShouldHoldDpsTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "nightbane in flight phase", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+            botAI, "nightbane should hold dps", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class NightbaneBotWentOutOfBoundsTrigger : public KarazhanEncounterTrigger
+class NightbaneShouldStackInFlightTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbaneBotWentOutOfBoundsTrigger(PlayerbotAI* botAI)
+    NightbaneShouldStackInFlightTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "nightbane bot went out of bounds", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+            botAI, "nightbane should stack in flight", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class NightbaneShouldStandDownTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NightbaneShouldStandDownTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "nightbane should stand down", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -179,7 +179,7 @@ bool IsKarazhanFearCasterActive(Player* bot)
         return true;
 
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+    if (nightbane && !IsNightbaneFlying(*nightbane))
         return true;
 
     return GetOperaActor(bot, "dorothee") || GetOperaActor(bot, "roar");
@@ -818,6 +818,79 @@ bool TryFindSafePositionWithSafePath(
     return false;
 }
 
+// Nightbane
+
+float GetTerraceAngle(Position const& position)
+{
+    float const angle = std::atan2(
+        position.GetPositionY() - TERRACE_DOME_CENTER.GetPositionY(),
+        position.GetPositionX() - TERRACE_DOME_CENTER.GetPositionX());
+
+    return angle < TERRACE_ARC_START ? angle + 2.0f * static_cast<float>(M_PI) : angle;
+}
+
+bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths)
+{
+    for (Position const& charredEarth : charredEarths)
+    {
+        if (charredEarth.GetExactDist2d(position) < CHARRED_EARTH_REACH + CHARRED_EARTH_CLEARANCE)
+            return false;
+    }
+
+    return true;
+}
+
+bool IsOutsideNightbaneTerrace(Unit const& unit)
+{
+    constexpr float belowTerraceLeeway = 5.0f;
+    if (unit.GetPositionZ() < NIGHTBANE_GROUND_Z - belowTerraceLeeway)
+        return true;
+
+    return unit.GetExactDist2d(TERRACE_DOME_CENTER) > TERRACE_OUTER_RADIUS &&
+        GetTerraceAngle(unit) <= TERRACE_ARC_END;
+}
+
+bool IsNightbaneFlying(Unit const& nightbane)
+{
+    return nightbane.GetPositionZ() > NIGHTBANE_FLIGHT_Z;
+}
+
+bool IsNightbaneFlightPhaseActive(Unit const& nightbane)
+{
+    if (!IsNightbaneFlying(nightbane))
+        return false;
+
+    KaraInstanceState const* state = FindKaraState(nightbane.GetInstanceId());
+    return !state || state->nightbaneFlightStage != NightbaneFlightStage::Landing;
+}
+
+bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane)
+{
+    if (IsNightbaneFlying(nightbane))
+        return true;
+
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    KaraInstanceState const* state = FindKaraState(nightbane.GetInstanceId());
+    if (!state || !state->nightbaneDpsHoldTimer)
+        return true;
+
+    return getMSTimeDiff(*state->nightbaneDpsHoldTimer, getMSTime()) < NIGHTBANE_DPS_HOLD_MS;
+}
+
+Position const* GetRainOfBonesCenter(Unit const& nightbane)
+{
+    Spell const* channel = nightbane.GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (!channel || channel->m_spellInfo->Id != Id(KaraSpells::SPELL_RAIN_OF_BONES) ||
+        !channel->m_targets.HasDst())
+    {
+        return nullptr;
+    }
+
+    return channel->m_targets.GetDstPos();
+}
+
 // Shared encounter state
 
 KaraInstanceState& KaraState(uint32 instanceId)
@@ -843,7 +916,8 @@ bool KaraResetInstance(uint32 instanceId)
     KaraInstanceState const& state = it->second;
     bool const wasSet = state.attumenDpsWaitTimer || state.netherspiteDpsWaitTimer ||
         state.currentRedBlocker || state.currentGreenBlocker || state.currentBlueBlocker ||
-        state.nightbaneDpsWaitTimer || state.nightbaneFlightPhaseStartTimer;
+        state.nightbaneDpsHoldTimer || state.nightbaneFlightStage ||
+        state.nightbaneFlightSpot || state.nightbaneRainOfBonesCenter;
 
     karaStates.erase(it);
     return wasSet;

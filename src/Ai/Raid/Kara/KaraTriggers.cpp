@@ -349,56 +349,53 @@ bool NightbaneShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
+    return nightbane && !IsNightbaneFlying(*nightbane);
 }
 
-bool NightbaneGroundPhaseEngagedByRangedTrigger::IsActiveInEncounter()
+bool NightbaneRangedShouldStackTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z;
+    return nightbane && !IsNightbaneFlying(*nightbane);
 }
 
-bool NightbanePetsChaseFlyingBossOutOfBoundsTrigger::IsActiveInEncounter()
+bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_WARLOCK)
-        return false;
-
-    if (!GetEncounterBoss())
-        return false;
-
     Pet* pet = bot->GetPet();
-    return pet && pet->IsAlive();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* nightbane = GetEncounterBoss();
+    return nightbane && IsNightbaneFlying(*nightbane) != pet->HasReactState(REACT_PASSIVE);
 }
 
-bool NightbaneInFlightPhaseTrigger::IsActiveInEncounter()
+bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
-        return false;
-
-    constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
-    // After 35s, Nightbane goes to land, and bots freely follow their master
-    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
-    if (!state || !state->nightbaneFlightPhaseStartTimer)
-        return false;
-
-    return getMSTimeDiff(*state->nightbaneFlightPhaseStartTimer, getMSTime()) <
-        flightPhaseDurationMs;
+    return nightbane && IsNightbaneDpsHeld(bot, *nightbane);
 }
 
-bool NightbaneBotWentOutOfBoundsTrigger::IsActiveInEncounter()
+bool NightbaneShouldStackInFlightTrigger::IsActiveInEncounter()
 {
-    if (!GetEncounterBoss())
+    Unit* nightbane = GetEncounterBoss();
+    if (!nightbane || !IsNightbaneFlying(*nightbane))
         return false;
 
-    constexpr float outOfBoundsLeeway = 5.0f;
-    return bot->GetPositionZ() < NIGHTBANE_GROUND_Z - outOfBoundsLeeway;
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    return state && state->nightbaneFlightSpot;
+}
+
+bool NightbaneShouldStandDownTrigger::IsActiveInEncounter()
+{
+    Unit* nightbane = GetEncounterBoss();
+    return nightbane && IsNightbaneFlying(*nightbane) &&
+        !IsNightbaneFlightPhaseActive(*nightbane) &&
+        AI_VALUE(Unit*, "current target") == nightbane;
 }
 
 bool NightbaneShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 {
-    return GetEncounterBoss();
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID);
 }

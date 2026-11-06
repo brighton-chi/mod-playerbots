@@ -59,9 +59,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* flightAction = context->GetAction("nightbane flight phase stack and move");
-    if (flightAction &&
-        static_cast<NightbaneFlightPhaseStackAndMoveAction*>(flightAction)->ResetRainOfBonesHit())
+    Action* petAction = context->GetAction("nightbane control pet aggression");
+    if (petAction &&
+        static_cast<NightbaneControlPetAggressionAction*>(petAction)->ResetPetStance())
     {
         reset = true;
     }
@@ -1289,7 +1289,10 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
 // Nightbane
 // CombatReach is 10.5 yards
 
-bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
+// On the arc, he stands about 10y inside the tank and faces the parapet with the dome wall close
+// behind him, so Smoldering Breath and Tail Sweep have little of the terrace to hit. Nothing else
+// may move him: the tank sits in Charred Earth rather than turn him toward the raid.
+bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
@@ -1301,48 +1304,12 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot || !bot->IsWithinMeleeRange(nightbane))
         return false;
 
-    Position const& domeCenter = TERRACE_DOME_CENTER;
-    Position const& eastEnd = TERRACE_EAST_END;
-    Position const& westEnd = TERRACE_WEST_END;
-
-    float const radius = domeCenter.GetExactDist2d(eastEnd);
-    float const thetaA = atan2(
-        eastEnd.GetPositionY() - domeCenter.GetPositionY(),
-        eastEnd.GetPositionX() - domeCenter.GetPositionX());
-    float const thetaB = atan2(
-        westEnd.GetPositionY() - domeCenter.GetPositionY(),
-        westEnd.GetPositionX() - domeCenter.GetPositionX());
-
-    float deltaAB = thetaB - thetaA;
-    if (deltaAB < 0.0f)
-        deltaAB += 2.0f * M_PI;
-
-    float arcStart = 0.0f;
-    float arcEnd = 0.0f;
-    if (deltaAB < M_PI)
-    {
-        arcStart = thetaB;
-        arcEnd = thetaA + 2.0f * M_PI;
-    }
-    else
-    {
-        arcStart = thetaA;
-        arcEnd = thetaB;
-    }
-
-    float thetaN = atan2(
-        nightbane->GetPositionY() - domeCenter.GetPositionY(),
-        nightbane->GetPositionX() - domeCenter.GetPositionX());
-
-    if (thetaN < arcStart)
-        thetaN += 2.0f * M_PI;
-    else if (thetaN >= arcStart + 2.0f * M_PI)
-        thetaN -= 2.0f * M_PI;
-
-    float const thetaClamped = std::max(arcStart, std::min(arcEnd, thetaN));
+    float const angle =
+        std::clamp(GetTerraceAngle(*nightbane), TERRACE_ARC_START, TERRACE_ARC_END);
     Position const destination(
-        domeCenter.GetPositionX() + radius * cos(thetaClamped),
-        domeCenter.GetPositionY() + radius * sin(thetaClamped), bot->GetPositionZ());
+        TERRACE_DOME_CENTER.GetPositionX() + TERRACE_ARC_RADIUS * std::cos(angle),
+        TERRACE_DOME_CENTER.GetPositionY() + TERRACE_ARC_RADIUS * std::sin(angle),
+        bot->GetPositionZ());
 
     constexpr float arrivalDist = 0.5f;
     float moveX;
@@ -1358,7 +1325,7 @@ bool NightbaneGroundPhaseTanksPositionBossAction::Execute(Event /*event*/)
 
 // Ranged bots will stack on one "ranged leader" that can be designated by the assistant flag
 // The ranged leader will lead the ranged group out of Charred Earths
-bool NightbaneGroundPhaseCoordinateRangedMovementAction::Execute(Event /*event*/)
+bool NightbaneRangedStackAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1393,120 +1360,44 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::Execute(Event /*event*/
     return StackOnRangedLeader(rangedLeader);
 }
 
-bool NightbaneGroundPhaseCoordinateRangedMovementAction::MoveRangedLeaderToSafeSpot()
+bool NightbaneRangedStackAction::MoveRangedLeaderToSafeSpot()
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
-    constexpr float searchRadius = 40.0f;
     constexpr float minBossDist = 15.0f;
+    if (!bot->HasAura(Id(KaraSpells::SPELL_CHARRED_EARTH)) &&
+        bot->GetExactDist2d(nightbane) >= minBossDist)
+    {
+        return false;
+    }
 
-    std::vector<Position> charredEarths = GetDynamicObjectPositions(
+    constexpr float searchRadius = 60.0f;
+    std::vector<Position> const charredEarths = GetDynamicObjectPositions(
         bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
 
-    if (charredEarths.empty())
-    {
-        float const distToBoss = bot->GetExactDist2d(nightbane);
-        if (distToBoss >= minBossDist)
-            return false;
-
-        bot->CastStop();
-        return MoveAway(nightbane, minBossDist - distToBoss, true);
-    }
-
-    constexpr float safeDistance = 12.0f;
-    float const safeDistSq = safeDistance * safeDistance;
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-
-    bool inDanger = false;
-    for (auto const& charredEarth : charredEarths)
-    {
-        float dx = botX - charredEarth.GetPositionX();
-        float dy = botY - charredEarth.GetPositionY();
-        if (dx * dx + dy * dy < safeDistSq)
+    constexpr float spotMinBossDist = minBossDist + 1.0f;
+    constexpr float spotMaxBossDist = 35.0f;
+    std::optional<Position> const spot = FindNightbaneStackSpot(
+        GetTerraceAngle(*bot), TERRACE_ARC_START, TERRACE_ARC_END,
+        [&](Position const& candidate)
         {
-            inDanger = true;
-            break;
-        }
-    }
+            float const bossDist = nightbane->GetExactDist2d(candidate);
+            return bossDist >= spotMinBossDist && bossDist <= spotMaxBossDist &&
+                IsClearOfCharredEarth(candidate, charredEarths);
+        });
 
-    if (!inDanger)
-        return false;
-
-    constexpr float maxBossDist = 35.0f;
-    constexpr float distStep = 1.0f;
-    constexpr uint8 numSteps = 20;
-    constexpr uint8 numAngles = 36;
-
-    float const bossX = nightbane->GetPositionX();
-    float const bossY = nightbane->GetPositionY();
-    float bestDistSq = std::numeric_limits<float>::max();
-    float bestX = botX;
-    float bestY = botY;
-    bool found = false;
-
-    for (uint8 i = 0; i <= numSteps; ++i)
-    {
-        float const dist = minBossDist + i * distStep;
-        for (uint8 j = 0; j < numAngles; ++j)
-        {
-            float const angle = j * M_PI / 18.0f;
-            float candidateX = bossX + cos(angle) * dist;
-            float candidateY = bossY + sin(angle) * dist;
-
-            bool safe = true;
-            for (auto const& charredEarth : charredEarths)
-            {
-                float dx = candidateX - charredEarth.GetPositionX();
-                float dy = candidateY - charredEarth.GetPositionY();
-                if (dx * dx + dy * dy < safeDistSq)
-                {
-                    safe = false;
-                    break;
-                }
-            }
-
-            if (!safe || nightbane->GetExactDist2d(candidateX, candidateY) > maxBossDist)
-                continue;
-
-            float testX = candidateX;
-            float testY = candidateY;
-            float testZ = bot->GetPositionZ();
-            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                    bot, bot->GetPositionX(), bot->GetPositionY(),
-                    bot->GetPositionZ(), testX, testY, testZ))
-            {
-                continue;
-            }
-
-            if (!nightbane->IsWithinLOS(candidateX, candidateY, bot->GetPositionZ()))
-                continue;
-
-            float dx = candidateX - botX;
-            float dy = candidateY - botY;
-            float moveDistSq = dx * dx + dy * dy;
-            if (moveDistSq < bestDistSq)
-            {
-                bestDistSq = moveDistSq;
-                bestX = candidateX;
-                bestY = candidateY;
-                found = true;
-            }
-        }
-    }
-
-    if (!found)
+    if (!spot)
         return false;
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, bestX, bestY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, spot->GetPositionX(), spot->GetPositionY(), bot->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool NightbaneGroundPhaseCoordinateRangedMovementAction::StackOnRangedLeader(Player* rangedLeader)
+bool NightbaneRangedStackAction::StackOnRangedLeader(Player* rangedLeader)
 {
     if (bot->GetExactDist2d(rangedLeader) < 0.5f)
         return false;
@@ -1520,102 +1411,100 @@ bool NightbaneGroundPhaseCoordinateRangedMovementAction::StackOnRangedLeader(Pla
 
 bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 {
+    Pet* pet = bot->GetPet();
+    if (!pet)
+        return false;
+
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
-        return false;
-
-    if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z && pet->GetReactState() == REACT_PASSIVE)
+    if (IsNightbaneFlying(*nightbane))
     {
-        pet->SetReactState(REACT_DEFENSIVE);
-        return true;
+        if (!pet->HasReactState(REACT_PASSIVE))
+        {
+            _previousReactState = pet->GetReactState();
+            _setPassive = true;
+            CallBackPets(bot);
+            pet->SetReactState(REACT_PASSIVE);
+        }
     }
-
-    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z && pet->GetReactState() != REACT_PASSIVE)
-    {
-        pet->AttackStop();
-        pet->CastStop();
-        pet->SetReactState(REACT_PASSIVE);
-        return true;
-    }
+    else
+        ResetPetStance();
 
     return false;
 }
 
-// 1. Stack at the "Flight Stack Position" near Nightbane so he doesn't use Fireball Barrage
-// 2. Once Rain of Bones hits, the whole party moves to a new stack position
-// This lasts for the first 35 seconds of the flight phase, after which Nightbane begins landing
-bool NightbaneFlightPhaseStackAndMoveAction::Execute(Event /*event*/)
+bool NightbaneControlPetAggressionAction::ResetPetStance()
+{
+    if (!_setPassive)
+        return false;
+
+    if (Pet* pet = bot->GetPet())
+        pet->SetReactState(_previousReactState);
+
+    _setPassive = false;
+    return true;
+}
+
+bool NightbaneStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
-    if (AI_VALUE(Unit*, "current target") == nightbane)
-    {
-        bot->AttackStop();
-        bot->CastStop();
-    }
+    return StopAttackingTarget(bot, *nightbane);
+}
 
-    if (bot->HasAura(Id(KaraSpells::SPELL_RAIN_OF_BONES)))
-        _rainOfBonesHit = true;
+bool NightbaneSelectTargetForHoldAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT;
+}
 
-    auto const& posArray = _rainOfBonesHit ?
-        NIGHTBANE_RAIN_OF_BONES_POSITIONS : NIGHTBANE_FLIGHT_STACK_POSITIONS;
-    Position destPos;
-    bool foundSafe = false;
-
-    constexpr float searchRadius = 40.0f;
-    constexpr float charredEarthSafeDist = 12.0f;
-    std::vector<Position> charredEarths = GetDynamicObjectPositions(
-        bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
-
-    for (uint8 i = 0; i < 2; i++)
-    {
-        destPos = posArray[i];
-        bool inCharredEarth = false;
-
-        for (auto const& charredEarth : charredEarths)
-        {
-            if (charredEarth.GetExactDist2d(destPos) < charredEarthSafeDist)
-            {
-                inCharredEarth = true;
-                break;
-            }
-        }
-
-        if (!inCharredEarth)
-        {
-            foundSafe = true;
-            break;
-        }
-    }
-
-    if (!foundSafe)
+bool NightbaneSelectTargetForHoldAction::Execute(Event /*event*/)
+{
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
+    if (!nightbane || IsNightbaneFlying(*nightbane))
         return false;
 
-    if (bot->GetExactDist2d(destPos) < 0.5f)
+    return SelectTarget(
+        botAI, AI_VALUE(Unit*, PlayerbotAI::IsTank(bot) ? "tank target" : "dps target"));
+}
+
+// The shared spot is out of Rain of Bones and clear of Charred Earth (see the manage action).
+// Stacked, the skeletons come to everyone, with reach off. Fireball Barrage needs only range.
+bool NightbaneStackInFlightAction::Execute(Event /*event*/)
+{
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
+    if (!nightbane)
         return false;
+
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    if (!state || !state->nightbaneFlightSpot)
+        return false;
+
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, *state->nightbaneFlightSpot, arrivalDist, nullptr, moveX, moveY, backwards))
+    {
+        return false;
+    }
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, destPos.GetPositionX(), destPos.GetPositionY(), destPos.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Failsafe in case bots fall through the world or off the terrace
-bool NightbaneTeleportBackToTerraceAction::Execute(Event /*event*/)
+// He casts nothing during the landing, so bots drop to their non-combat engine, where stock follow
+// lets the master reposition them. The target exclusion keeps him from being picked again.
+bool NightbaneStandDownAction::Execute(Event /*event*/)
 {
-    Position const& position = NIGHTBANE_TELEPORT_POSITION;
-    bot->NearTeleportTo(
-        position.GetPositionX(), position.GetPositionY(),
-        position.GetPositionZ(), bot->GetOrientation());
-
-    constexpr float zTolerance = 1.0f;
-    return std::fabs(bot->GetPositionZ() - NIGHTBANE_GROUND_Z) <= zTolerance;
+    StandDown(botAI);
+    return true;
 }
 
 bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
@@ -1625,30 +1514,82 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         return false;
 
     KaraInstanceState& state = KaraState(nightbane->GetInstanceId());
-    uint32 const now = getMSTime();
-    bool const isMechanicTracker = IsMechanicTrackerBot(bot, KARA_MAP_ID);
-    bool didSomething = false;
 
-    if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+    if (!IsNightbaneFlying(*nightbane))
     {
-        Action* action = context->GetAction("nightbane flight phase stack and move");
-        if (action &&
-            static_cast<NightbaneFlightPhaseStackAndMoveAction*>(action)->ResetRainOfBonesHit())
-        {
-            didSomething = true;
-        }
-
-        if (isMechanicTracker)
-        {
-            didSomething |= ResetIfSet(state.nightbaneFlightPhaseStartTimer);
-            didSomething |= EmplaceIfUnset(state.nightbaneDpsWaitTimer, now);
-        }
-    }
-    else if (isMechanicTracker)
-    {
-        didSomething |= ResetIfSet(state.nightbaneDpsWaitTimer);
-        didSomething |= EmplaceIfUnset(state.nightbaneFlightPhaseStartTimer, now);
+        bool didSomething = ResetIfSet(state.nightbaneFlightStage);
+        didSomething |= ResetIfSet(state.nightbaneFlightSpot);
+        didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
+        didSomething |= EmplaceIfUnset(state.nightbaneDpsHoldTimer, getMSTime());
+        return didSomething;
     }
 
-    return didSomething;
+    bool didSomething = ResetIfSet(state.nightbaneDpsHoldTimer);
+
+    constexpr float atFlightPositionDist = 1.0f;
+    NightbaneFlightStage stage = NightbaneFlightStage::TakeOff;
+    if (nightbane->GetExactDist(NIGHTBANE_FLIGHT_POSITION) < atFlightPositionDist)
+        stage = NightbaneFlightStage::Hover;
+    else if (state.nightbaneFlightStage &&
+             *state.nightbaneFlightStage != NightbaneFlightStage::TakeOff)
+    {
+        stage = NightbaneFlightStage::Landing;
+    }
+
+    if (state.nightbaneFlightStage != stage)
+    {
+        state.nightbaneFlightStage = stage;
+        didSomething = true;
+    }
+
+    if (stage == NightbaneFlightStage::Landing)
+    {
+        didSomething |= ResetIfSet(state.nightbaneFlightSpot);
+        didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
+        return didSomething;
+    }
+
+    Position const* rainCenter = GetRainOfBonesCenter(*nightbane);
+    bool const isNewRain = rainCenter && (!state.nightbaneRainOfBonesCenter ||
+        state.nightbaneRainOfBonesCenter->GetExactDist2d(*rainCenter) > 0.1f);
+    if (state.nightbaneFlightSpot && !isNewRain)
+        return didSomething;
+
+    if (isNewRain)
+        state.nightbaneRainOfBonesCenter = *rainCenter;
+
+    float const rainClearDist = RAIN_OF_BONES_REACH + RAIN_OF_BONES_CLEARANCE;
+    if (state.nightbaneFlightSpot &&
+        state.nightbaneFlightSpot->GetExactDist2d(*rainCenter) >= rainClearDist)
+    {
+        return true;
+    }
+
+    constexpr float searchRadius = 80.0f;
+    std::vector<Position> const charredEarths = GetDynamicObjectPositions(
+        bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
+
+    float const startAngle = state.nightbaneFlightSpot ?
+        GetTerraceAngle(*state.nightbaneFlightSpot) : NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE;
+    std::optional<Position> const spot = FindNightbaneStackSpot(
+        startAngle, NIGHTBANE_FLIGHT_SPOT_MIN_ANGLE, NIGHTBANE_FLIGHT_SPOT_MAX_ANGLE,
+        [&](Position const& candidate)
+        {
+            return IsClearOfCharredEarth(candidate, charredEarths) &&
+                (!rainCenter || candidate.GetExactDist2d(*rainCenter) >= rainClearDist);
+        });
+
+    if (spot)
+        state.nightbaneFlightSpot = spot;
+    else if (!state.nightbaneFlightSpot)
+    {
+        state.nightbaneFlightSpot = Position(
+            TERRACE_DOME_CENTER.GetPositionX() +
+                NIGHTBANE_STACK_RADIUS * std::cos(NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE),
+            TERRACE_DOME_CENTER.GetPositionY() +
+                NIGHTBANE_STACK_RADIUS * std::sin(NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE),
+            NIGHTBANE_GROUND_Z);
+    }
+
+    return true;
 }

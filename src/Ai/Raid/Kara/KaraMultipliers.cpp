@@ -135,7 +135,7 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         return 0.0f;
 
     if (boss->GetEntry() == Id(KaraNpcs::NPC_NIGHTBANE))
-        return boss->GetPositionZ() > NIGHTBANE_FLIGHT_Z ? 0.0f : 1.0f;
+        return IsNightbaneFlying(*boss) ? 0.0f : 1.0f;
 
     if (boss->GetEntry() == Id(KaraNpcs::NPC_NETHERSPITE))
         return IsBanishPhase(boss) ? 0.0f : 1.0f;
@@ -549,34 +549,30 @@ float NightbaneDisablePetsMultiplier::GetValueInEncounter(Action* action)
         return 0.0f;
 
     // PetAttackAction
-    return nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z ? 0.0f : 1.0f;
+    return IsNightbaneFlying(*nightbane) ? 0.0f : 1.0f;
 }
 
-// Give the main tank 8 seconds to get aggro during phase transitions
-float NightbaneWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+// In flight, a unit hold on Nightbane, with drop target zeroed until he leaves the flight position
+// so bots stay in their combat engine fighting skeletons and healing. After each landing, the main
+// tank has 8 seconds to get aggro.
+float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
+    if (!isDropTarget && !IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
+    if (!nightbane)
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot))
+    if (isDropTarget)
+        return IsNightbaneFlightPhaseActive(*nightbane) ? 0.0f : 1.0f;
+
+    if (dynamic_cast<CastHealingSpellAction*>(action) || !IsNightbaneDpsHeld(bot, *nightbane))
         return 1.0f;
 
-    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
-    if (!state || !state->nightbaneDpsWaitTimer)
-        return 0.0f;
-
-    constexpr uint32 dpsWaitMs = 8 * IN_MILLISECONDS;
-    return getMSTimeDiff(*state->nightbaneDpsWaitTimer, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return GetActionTargetOrCurrentTarget(botAI, action) == nightbane ?
+        GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
@@ -588,7 +584,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
+    if (!nightbane || IsNightbaneFlying(*nightbane))
         return 1.0f;
 
     return PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
@@ -619,18 +615,12 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
     if (isBlockedMovement)
         return 0.0f;
 
-    if (nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
+    if (!IsNightbaneFlying(*nightbane))
         return 1.0f;
 
     if (isReachAction)
         return 0.0f;
 
-    // After 35s, Nightbane goes to land, and bots freely follow their master
-    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
-    if (!state || !state->nightbaneFlightPhaseStartTimer)
-        return 0.0f;
-
-    constexpr uint32 flightPhaseDurationMs = 35 * IN_MILLISECONDS;
-    return getMSTimeDiff(*state->nightbaneFlightPhaseStartTimer, getMSTime()) <
-        flightPhaseDurationMs ? 0.0f : 1.0f;
+    // Once he leaves the flight position to land, bots freely follow their master
+    return IsNightbaneFlightPhaseActive(*nightbane) ? 0.0f : 1.0f;
 }

@@ -11,6 +11,8 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
+#include <cmath>
+#include <initializer_list>
 #include <optional>
 #include <string_view>
 #include <tuple>
@@ -65,7 +67,7 @@ enum class KaraSpells : uint32
 
     // Nightbane
     SPELL_CHARRED_EARTH           = 30129,
-    SPELL_RAIN_OF_BONES           = 37091,
+    SPELL_RAIN_OF_BONES           = 37098, // the channel; its ticks are 37091
 
     // Shaman
     SPELL_TREMOR_TOTEM            = 8143,
@@ -124,6 +126,7 @@ enum class KaraNpcs : uint32
 
     // Nightbane
     NPC_NIGHTBANE                   = 17225,
+    NPC_RESTLESS_SKELETON           = 17261,
 };
 
 // Shared
@@ -347,20 +350,78 @@ bool TryFindSafePositionWithSafePath(
     float& outX, float& outY);
 
 // Nightbane
+enum class NightbaneFlightStage : uint8
+{
+    TakeOff,
+    Hover,   // At the flight position, where every air-phase spell is cast
+    Landing, // From leaving the flight position, unless he comes back for another air phase
+};
+
 inline constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 inline constexpr float NIGHTBANE_GROUND_Z = 91.473f;
+inline constexpr uint32 NIGHTBANE_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
+inline constexpr float CHARRED_EARTH_REACH = 11.5f; // 10y patch + 1.5y player reach
+inline constexpr float CHARRED_EARTH_CLEARANCE = 1.5f;
+// Rain of Bones ticks land up to 8y from its centre and hit 6y around that, with no player reach.
+inline constexpr float RAIN_OF_BONES_REACH = 14.0f;
+inline constexpr float RAIN_OF_BONES_CLEARANCE = 1.0f;
+// The terrace is a ring around the dome. Terrace angles are measured around the dome in world
+// coordinates, running from the west end through the south side to the east end.
+inline constexpr float TERRACE_OUTER_RADIUS = 51.0f;
+inline constexpr float TERRACE_ARC_RADIUS = 47.856f;
+inline constexpr float TERRACE_ARC_START = 0.2418f;
+inline constexpr float TERRACE_ARC_END = 4.9241f;
+// All floor, and 10.5y from the outer wall, so skeletons appearing up to 10y from a Rain of Bones
+// on the stack can't reach it.
+inline constexpr float NIGHTBANE_STACK_RADIUS = 39.0f;
+// Within 50y of the flight position. Fireball Barrage hits players more than 52y from his centre.
+inline constexpr float NIGHTBANE_FLIGHT_SPOT_MIN_ANGLE = 1.2566f;
+inline constexpr float NIGHTBANE_FLIGHT_SPOT_MAX_ANGLE = 3.0020f;
+inline constexpr float NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE = 2.0944f;
+
+inline Position const NIGHTBANE_FLIGHT_POSITION = { -11160.125f, -1870.683f, 97.739f };
 inline Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f };
-inline Position const TERRACE_EAST_END    = { -11115.958f, -1972.058f, 91.457f };
-inline Position const TERRACE_WEST_END    = { -11077.521f, -1913.315f, 91.471f };
-inline std::array const NIGHTBANE_FLIGHT_STACK_POSITIONS = {
-    Position{ -11156.233f, -1888.353f, 91.473f },  // primary
-    Position{ -11149.115f, -1897.154f, 91.473f },  // backup in case of charred earth
-};
-inline std::array const NIGHTBANE_RAIN_OF_BONES_POSITIONS = {
-    Position{ -11166.516f, -1901.405f, 91.473f },  // primary
-    Position{ -11158.752f, -1909.394f, 91.473f },  // backup in case of charred earth
-};
-inline Position const NIGHTBANE_TELEPORT_POSITION = { -11159.555f, -1893.526f, 91.473f };
+
+// Normalized to the range starting at TERRACE_ARC_START.
+float GetTerraceAngle(Position const& position);
+// Searches the stack circle in both directions from startAngle, away from his landing spot first,
+// and returns the nearest spot within the limits for which isClear is true.
+template <typename IsClear>
+std::optional<Position> FindNightbaneStackSpot(
+    float startAngle, float minAngle, float maxAngle, IsClear const& isClear)
+{
+    constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7y
+
+    for (uint8 i = 0; i * angleStep <= maxAngle - minAngle; ++i)
+    {
+        for (float const direction : { -1.0f, 1.0f })
+        {
+            float const angle = startAngle + direction * i * angleStep;
+            if (angle < minAngle || angle > maxAngle)
+                continue;
+
+            Position const spot(
+                TERRACE_DOME_CENTER.GetPositionX() + NIGHTBANE_STACK_RADIUS * std::cos(angle),
+                TERRACE_DOME_CENTER.GetPositionY() + NIGHTBANE_STACK_RADIUS * std::sin(angle),
+                NIGHTBANE_GROUND_Z);
+            if (isClear(spot))
+                return spot;
+        }
+    }
+
+    return std::nullopt;
+}
+bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
+// True for a unit off the ring (the terrace is only a plain ring within the arc) or below it.
+bool IsOutsideNightbaneTerrace(Unit const& unit);
+bool IsNightbaneFlying(Unit const& nightbane);
+// True in flight until he leaves the flight position. The landing that follows has no air-phase
+// spells, and bots are free to follow their master then.
+bool IsNightbaneFlightPhaseActive(Unit const& nightbane);
+// In flight, and for all but the main tank until 8s after he is on the ground.
+bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane);
+// Where the current Rain of Bones channel is aimed, or nullptr. A rain doesn't follow its target.
+Position const* GetRainOfBonesCenter(Unit const& nightbane);
 
 // Shared encounter state
 
@@ -371,8 +432,10 @@ struct KaraInstanceState
     std::optional<ObjectGuid> currentRedBlocker;
     std::optional<ObjectGuid> currentGreenBlocker;
     std::optional<ObjectGuid> currentBlueBlocker;
-    std::optional<uint32> nightbaneDpsWaitTimer;
-    std::optional<uint32> nightbaneFlightPhaseStartTimer;
+    std::optional<uint32> nightbaneDpsHoldTimer;
+    std::optional<NightbaneFlightStage> nightbaneFlightStage;
+    std::optional<Position> nightbaneFlightSpot;
+    std::optional<Position> nightbaneRainOfBonesCenter;
 };
 
 KaraInstanceState& KaraState(uint32 instanceId);
