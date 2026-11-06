@@ -101,6 +101,9 @@ public:
         creators["shade of aran run away from arcane explosion"] =
             &RaidKarazhanActionContext::shade_of_aran_run_away_from_arcane_explosion;
 
+        creators["shade of aran run out of blizzard"] =
+            &RaidKarazhanActionContext::shade_of_aran_run_out_of_blizzard;
+
         creators["shade of aran stop moving during flame wreath"] =
             &RaidKarazhanActionContext::shade_of_aran_stop_moving_during_flame_wreath;
 
@@ -280,6 +283,10 @@ private:
     static Action* shade_of_aran_run_away_from_arcane_explosion(PlayerbotAI* botAI)
     {
         return new ShadeOfAranRunAwayFromArcaneExplosionAction(botAI);
+    }
+    static Action* shade_of_aran_run_out_of_blizzard(PlayerbotAI* botAI)
+    {
+        return new ShadeOfAranRunOutOfBlizzardAction(botAI);
     }
     static Action* shade_of_aran_stop_moving_during_flame_wreath(PlayerbotAI* botAI)
     {

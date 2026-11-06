@@ -5,16 +5,22 @@
  */
 
 #include "KaraHelpers.h"
+#include "CellImpl.h"
+#include "DynamicObject.h"
 #include "EncounterHelpers.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "Spell.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
+#include <cmath>
 #include <initializer_list>
 #include <limits>
 #include <list>
 #include <mutex>
 #include <unordered_map>
+#include <vector>
 
 using namespace EncounterHelpers;
 
@@ -26,6 +32,22 @@ namespace
 
 std::mutex karaStateMutex;
 std::unordered_map<uint32, KaraInstanceState> karaStates;
+
+float GetDistanceToSegment2d(Position const& point, Position const& start, Position const& end)
+{
+    float const segmentX = end.GetPositionX() - start.GetPositionX();
+    float const segmentY = end.GetPositionY() - start.GetPositionY();
+    float const lengthSquared = segmentX * segmentX + segmentY * segmentY;
+    if (lengthSquared <= 0.0f)
+        return point.GetExactDist2d(start);
+
+    float const along =
+        ((point.GetPositionX() - start.GetPositionX()) * segmentX +
+         (point.GetPositionY() - start.GetPositionY()) * segmentY) / lengthSquared;
+    float const fraction = std::clamp(along, 0.0f, 1.0f);
+    return point.GetExactDist2d(
+        start.GetPositionX() + segmentX * fraction, start.GetPositionY() + segmentY * fraction);
+}
 
 bool IsInBearForm(Player* bot)
 {
@@ -354,30 +376,81 @@ bool IsAranCastingArcaneExplosion(Unit* aran)
     return aran && aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARCANE_EXPLOSION));
 }
 
-bool IsFlameWreathActive(Player* bot)
+std::optional<Position> GetBlizzardEscapeSpot(Player* bot)
 {
-    Unit* aran = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
-    if (!aran)
-        return false;
+    std::list<WorldObject*> objects;
+    Acore::AllWorldObjectsInRange check(bot, ARAN_ROOM_SEARCH_RADIUS);
+    Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
+        bot, objects, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
+    Cell::VisitObjects(bot, searcher, ARAN_ROOM_SEARCH_RADIUS);
 
-    if (aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)))
-        return true;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    DynamicObject const* oldest = nullptr;
+    for (WorldObject* object : objects)
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (member->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
-            return true;
+        DynamicObject const* patch = object->ToDynObject();
+        if (patch && patch->GetSpellId() == Id(KaraSpells::SPELL_BLIZZARD) &&
+            (!oldest || patch->GetDuration() < oldest->GetDuration()))
+        {
+            oldest = patch;
+        }
     }
 
-    return false;
+    if (!oldest)
+        return std::nullopt;
+
+    float const angle = ARAN_ROOM_CENTER.GetAngle(oldest) + ARAN_BLIZZARD_ESCAPE_ANGLE;
+    return Position(
+        ARAN_ROOM_CENTER.GetPositionX() + ARAN_BLIZZARD_ESCAPE_DISTANCE * std::cos(angle),
+        ARAN_ROOM_CENTER.GetPositionY() + ARAN_BLIZZARD_ESCAPE_DISTANCE * std::sin(angle),
+        bot->GetPositionZ());
+}
+
+bool IsFlameWreathInProgress(Player* bot, Unit* aran)
+{
+    if (bot->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
+        return true;
+
+    return aran && (aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)) ||
+                    aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)));
+}
+
+// The only movement allowed around Flame Wreath is a stuck bot walking to its own target. That is
+// the one stock destination a check can see, and the bot stops well short of every ring.
+bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
+{
+    Player* bot = botAI->GetBot();
+    if (!aran || bot->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
+        return false;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* target = context->GetValue<Unit*>("current target")->Get();
+    if (!target)
+        return false;
+
+    if (Spell* cast = aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)))
+        return cast->GetCastTimeRemaining() > ARAN_FLAME_WREATH_STOP_LEAD_MS;
+
+    DynamicObject* ring = aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA));
+    if (!ring)
+        return true;
+
+    if (ring->GetDuration() > ARAN_FLAME_WREATH_RING_DURATION_MS - ARAN_FLAME_WREATH_SETTLE_MS)
+        return false;
+
+    std::vector<Position> const rings =
+        context->GetValue<std::vector<Position>>("shade of aran flame wreath rings")->Get();
+    if (rings.empty())
+        return false;
+
+    float const clearance = ARAN_FLAME_WREATH_RING_HAZARD_RADIUS + bot->GetCombatReach() +
+        ARAN_FLAME_WREATH_REACH_CLEARANCE;
+    for (Position const& position : rings)
+    {
+        if (GetDistanceToSegment2d(position, *bot, *target) <= clearance)
+            return false;
+    }
+
+    return true;
 }
 
 // Netherspite

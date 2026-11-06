@@ -99,6 +99,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("shade of aran arcane explosion is casting",
         { NextAction("shade of aran run away from arcane explosion", ACTION_EMERGENCY + 6) }));
 
+    triggers.push_back(new TriggerNode("shade of aran ranged is in blizzard",
+        { NextAction("shade of aran run out of blizzard", ACTION_EMERGENCY + 5) }));
+
     triggers.push_back(new TriggerNode("shade of aran flame wreath is active",
         { NextAction("shade of aran stop moving during flame wreath", ACTION_EMERGENCY + 7) }));
 
@@ -171,6 +174,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TerestianIllhoofDontDotFiendishImpsMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranArcaneExplosionRunAwayMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAranDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));
     multipliers.push_back(new NetherspiteWaitForDpsMultiplier(botAI));

@@ -350,7 +350,8 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValueInEncounter(Action* a
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<CastKillingSpreeAction*>(action))
     {
         return 1.0f;
     }
@@ -362,12 +363,19 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValueInEncounter(Action* a
     return IsAranCastingArcaneExplosion(aran) ? 0.0f : 1.0f;
 }
 
+// Includes set behind, as he faces a random player with each cast.
+float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isReactiveMovement =
+        dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action);
+
+    return isReactiveMovement ? 0.0f : 1.0f;
+}
+
 // I will not move when Flame Wreath is cast or the raid blows up.
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<ShadeOfAranStopMovingDuringFlameWreathAction*>(action))
     {
@@ -383,10 +391,14 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
-    if (!GetEncounterBoss())
+    Unit* aran = GetEncounterBoss();
+    if (!IsFlameWreathInProgress(bot, aran))
         return 1.0f;
 
-    return IsFlameWreathActive(bot) ? 0.0f : 1.0f;
+    bool const isReachingTarget =
+        dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action);
+
+    return isReachingTarget && CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
 }
 
 // Netherspite

@@ -219,12 +219,18 @@ bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActiveInEncounter()
 bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
-    return aran && IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
+    return aran && IsAranCastingArcaneExplosion(aran);
+}
+
+bool ShadeOfAranRangedIsInBlizzardTrigger::IsActiveInEncounter()
+{
+    return bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)) && PlayerbotAI::IsRanged(bot);
 }
 
 bool ShadeOfAranFlameWreathIsActiveTrigger::IsActiveInEncounter()
 {
-    return GetEncounterBoss() && IsFlameWreathActive(bot);
+    Unit* aran = GetEncounterBoss();
+    return IsFlameWreathInProgress(bot, aran) && !CanReachTargetDuringFlameWreath(botAI, aran);
 }
 
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActiveInEncounter()
@@ -244,7 +250,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
     if (bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
         return false;
 
-    return !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathActive(bot);
+    return !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathInProgress(bot, aran);
 }
 
 // Netherspite

@@ -220,7 +220,7 @@ inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10947.590f, -2082.815f, 92.180f }, // W
     Position{ -10933.089f, -2088.502f, 92.180f }, // NW (entrance)
 };
-// Holy Ground hits a player within 12 yd of her plus the player's reach, and breaks Repentance.
+// Holy Ground hits a player within 12 yd of her centre, and breaks Repentance.
 inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
 inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
 
@@ -293,8 +293,37 @@ inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Shade of Aran
+// He blinks here before each super spell. Blizzard patches land in a ring around it.
+inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
+// Hits within 21 yd of his centre, no reach added.
+inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
+inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
+// Hits within 9 yd of his centre, no reach added.
+inline constexpr float ARAN_COUNTERSPELL_HAZARD_RADIUS = 9.0f;
+// Ranged stand here, centre to centre: outside Counterspell, and inside most Blizzard patches.
+inline constexpr float ARAN_RANGED_MIN_DISTANCE = ARAN_COUNTERSPELL_HAZARD_RADIUS + 1.0f;
+inline constexpr float ARAN_RANGED_MAX_DISTANCE = 13.0f;
+// A patch reaches 13 yd plus the player's reach.
+inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 13.0f;
+inline constexpr float ARAN_ROOM_SEARCH_RADIUS = 60.0f;
+// Ranged run here from a patch, measured from the room centre. The train goes clockwise and stops
+// short of a full lap, so it doesn't come back to ground behind its oldest patch.
+inline constexpr float ARAN_BLIZZARD_ESCAPE_DISTANCE = ARAN_RANGED_MIN_DISTANCE + 0.5f;
+inline constexpr float ARAN_BLIZZARD_ESCAPE_ANGLE = static_cast<float>(M_PI) * 40.0f / 180.0f;
+// A ring reaches 3 yd plus the player's reach. Leaving it explodes, and so does crossing it.
+inline constexpr float ARAN_FLAME_WREATH_RING_HAZARD_RADIUS = 3.0f;
+inline constexpr float ARAN_FLAME_WREATH_REACH_CLEARANCE = 5.0f;
+// Targets are picked when the cast ends, so everyone has to be standing still by then.
+inline constexpr int32 ARAN_FLAME_WREATH_STOP_LEAD_MS = 1500;
+inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20000;
+// No one moves this soon after the rings land, which also outlasts the ring value's cache.
+inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
+inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
+
 bool IsAranCastingArcaneExplosion(Unit* aran);
-bool IsFlameWreathActive(Player* bot);
+std::optional<Position> GetBlizzardEscapeSpot(Player* bot);
+bool IsFlameWreathInProgress(Player* bot, Unit* aran);
+bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran);
 
 // Netherspite
 bool IsBanishPhase(Unit* netherspite);

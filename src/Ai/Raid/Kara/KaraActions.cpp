@@ -18,6 +18,7 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <optional>
 #include <string>
 
 using namespace KaraHelpers;
@@ -204,10 +205,11 @@ bool AttumenTheHuntsmanAssistTankPositionUnmountedAction::Execute(Event /*event*
         if (!member || member == bot || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
             continue;
 
-        float const reach = member->GetCombatReach() + ATTUMEN_HAZARD_CLEARANCE;
-        float const memberShortfall = std::max(
-            SHADOW_CLEAVE_JUMP_RADIUS + reach - bot->GetExactDist2d(member),
-            INTANGIBLE_PRESENCE_RADIUS + reach - attumen->GetExactDist2d(member));
+        // A cleave's jump adds the member's reach; Intangible Presence doesn't.
+        float const cleaveJump = SHADOW_CLEAVE_JUMP_RADIUS + member->GetCombatReach();
+        float const memberShortfall = ATTUMEN_HAZARD_CLEARANCE + std::max(
+            cleaveJump - bot->GetExactDist2d(member),
+            INTANGIBLE_PRESENCE_RADIUS - attumen->GetExactDist2d(member));
         if (memberShortfall <= 0.0f)
             continue;
 
@@ -384,9 +386,7 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
     if (!healer)
         return false;
 
-    float const breakReach =
-        HOLY_GROUND_RADIUS + healer->GetCombatReach() - MAIDEN_REPENTANCE_BREAK_CLEARANCE;
-    if (maiden->GetExactDist2d(healer) <= breakReach)
+    if (maiden->GetExactDist2d(healer) <= HOLY_GROUND_RADIUS - MAIDEN_REPENTANCE_BREAK_CLEARANCE)
         return false;
 
     constexpr float arrivalDist = 2.0f;
@@ -658,13 +658,30 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
     if (!aran)
         return false;
 
-    constexpr float safeDistance = 20.0f;
-    float const currentDistance = bot->GetDistance2d(aran);
-    if (currentDistance >= safeDistance)
+    float const distance = bot->GetExactDist(aran);
+    if (distance >= ARAN_ARCANE_EXPLOSION_CLEARANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(aran, safeDistance - currentDistance);
+    return MoveAway(aran, ARAN_ARCANE_EXPLOSION_CLEARANCE - distance);
+}
+
+// Ranged only: a patch's reach stops short of melee range on Aran.
+bool ShadeOfAranRunOutOfBlizzardAction::Execute(Event /*event*/)
+{
+    if (!IsMovingAllowed() || IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
+        return false;
+
+    std::optional<Position> const spot = GetBlizzardEscapeSpot(bot);
+    if (!spot)
+        return false;
+
+    // A filling cast would hold the bot still.
+    bot->CastStop();
+
+    return MoveTo(
+        KARA_MAP_ID, spot->GetPositionX(), spot->GetPositionY(), spot->GetPositionZ(), false,
+        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up
@@ -705,17 +722,39 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     if (!aran)
         return false;
 
-    constexpr float minDistance = 10.0f;
-    constexpr float maxDistance = 15.0f;
-    float const distanceToBoss = bot->GetDistance2d(aran);
+    float const distance = bot->GetExactDist2d(aran);
+    float goal;
+    if (distance > ARAN_RANGED_MAX_DISTANCE)
+        goal = ARAN_RANGED_MAX_DISTANCE;
+    else if (distance < ARAN_RANGED_MIN_DISTANCE)
+        goal = ARAN_RANGED_MIN_DISTANCE;
+    else
+        return false;
 
-    if (distanceToBoss > maxDistance)
-        return MoveTo(aran, maxDistance, MovementPriority::MOVEMENT_COMBAT);
+    float const angle = aran->GetAngle(bot);
+    Position const spot(
+        aran->GetPositionX() + goal * std::cos(angle),
+        aran->GetPositionY() + goal * std::sin(angle), bot->GetPositionZ());
 
-    if (distanceToBoss < minDistance)
-        return MoveTo(aran, minDistance, MovementPriority::MOVEMENT_COMBAT);
+    // Wait out a Blizzard rather than walk back into it.
+    float const patchReach = ARAN_BLIZZARD_HAZARD_RADIUS + bot->GetCombatReach();
+    for (Position const& patch : GetDynamicObjectPositions(
+             bot, ARAN_ROOM_SEARCH_RADIUS, Id(KaraSpells::SPELL_BLIZZARD)))
+    {
+        if (patch.GetExactDist2d(spot) <= patchReach)
+            return false;
+    }
 
-    return false;
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, spot, arrivalDist, nullptr, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 // Netherspite

@@ -101,6 +101,9 @@ public:
         creators["shade of aran arcane explosion is casting"] =
             &RaidKarazhanTriggerContext::shade_of_aran_arcane_explosion_is_casting;
 
+        creators["shade of aran ranged is in blizzard"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_ranged_is_in_blizzard;
+
         creators["shade of aran flame wreath is active"] =
             &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_is_active;
 
@@ -280,6 +283,10 @@ private:
     static Trigger* shade_of_aran_arcane_explosion_is_casting(PlayerbotAI* botAI)
     {
         return new ShadeOfAranArcaneExplosionIsCastingTrigger(botAI);
+    }
+    static Trigger* shade_of_aran_ranged_is_in_blizzard(PlayerbotAI* botAI)
+    {
+        return new ShadeOfAranRangedIsInBlizzardTrigger(botAI);
     }
     static Trigger* shade_of_aran_flame_wreath_is_active(PlayerbotAI* botAI)
     {

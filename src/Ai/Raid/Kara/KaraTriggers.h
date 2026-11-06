@@ -337,6 +337,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class ShadeOfAranRangedIsInBlizzardTrigger : public KarazhanEncounterTrigger
+{
+public:
+    ShadeOfAranRangedIsInBlizzardTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "shade of aran ranged is in blizzard", KaraHelpers::KaraBosses::DATA_ARAN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class ShadeOfAranFlameWreathIsActiveTrigger : public KarazhanEncounterTrigger
 {
 public:

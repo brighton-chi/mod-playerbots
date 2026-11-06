@@ -249,6 +249,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class ShadeOfAranRunOutOfBlizzardAction : public MovementAction
+{
+public:
+    ShadeOfAranRunOutOfBlizzardAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "shade of aran run out of blizzard") {}
+    bool Execute(Event event) override;
+};
+
 class ShadeOfAranStopMovingDuringFlameWreathAction : public MovementAction
 {
 public:

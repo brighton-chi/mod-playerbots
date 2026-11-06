@@ -186,6 +186,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class ShadeOfAranDisableReactiveMovementMultiplier : public KarazhanEncounterMultiplier
+{
+public:
+    ShadeOfAranDisableReactiveMovementMultiplier(PlayerbotAI* botAI)
+        : KarazhanEncounterMultiplier(
+            botAI, "shade of aran disable reactive movement",
+            KaraHelpers::KaraBosses::DATA_ARAN) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class ShadeOfAranFlameWreathDisableMovementMultiplier : public KarazhanEncounterMultiplier
 {
 public:
