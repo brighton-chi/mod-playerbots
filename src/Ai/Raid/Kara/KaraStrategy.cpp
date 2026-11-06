@@ -61,8 +61,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("maiden of virtue set grounding totem", ACTION_RAID) }));
 
     // The Big Bad Wolf
-    triggers.push_back(new TriggerNode("big bad wolf chasing little red riding hood",
-        { NextAction("big bad wolf little red riding hood run away", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("big bad wolf chasing red hood",
+        { NextAction("big bad wolf red hood run away", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("big bad wolf paladin should protect red hood",
+        { NextAction("big bad wolf cast hand of protection on red hood", ACTION_EMERGENCY + 5) }));
 
     triggers.push_back(new TriggerNode("big bad wolf should be tanked",
         { NextAction("big bad wolf position boss", ACTION_RAID) }));

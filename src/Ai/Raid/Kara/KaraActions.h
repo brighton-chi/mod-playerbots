@@ -9,6 +9,7 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "KaraHelpers.h"
 #include "MovementActions.h"
 #include <vector>
 
@@ -146,22 +147,32 @@ public:
     bool Execute(Event event) override;
 };
 
-class BigBadWolfLittleRedRidingHoodRunAwayAction : public MovementAction
+class BigBadWolfRedHoodRunAwayAction : public MovementAction
 {
 public:
-    BigBadWolfLittleRedRidingHoodRunAwayAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "big bad wolf little red riding hood run away") {}
+    BigBadWolfRedHoodRunAwayAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "big bad wolf red hood run away") {}
     bool Execute(Event event) override;
-    bool ResetRunIndex()
+    bool ResetRun()
     {
-        if (!_runIndex)
+        if (!_lastRunStepTime)
             return false;
-        _runIndex = 0;
+        _run = {};
+        _lastRunStepTime = 0;
         return true;
     }
 
 private:
-    uint8 _runIndex = 0;
+    KaraHelpers::BigBadWolfRunPlan _run;
+    uint32 _lastRunStepTime = 0;
+};
+
+class BigBadWolfCastHandOfProtectionOnRedHoodAction : public Action
+{
+public:
+    BigBadWolfCastHandOfProtectionOnRedHoodAction(PlayerbotAI* botAI)
+        : Action(botAI, "big bad wolf cast hand of protection on red hood") {}
+    bool Execute(Event event) override;
 };
 
 // Romulo and Julianne

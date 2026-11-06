@@ -228,13 +228,47 @@ inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
 Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden);
 
 // The Big Bad Wolf
-inline Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };
-inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
-    Position{ -10875.456f, -1779.036f, 90.477f },
-    Position{ -10872.281f, -1751.638f, 90.477f },
-    Position{ -10910.492f, -1747.401f, 90.477f },
-    Position{ -10913.391f, -1773.508f, 90.477f },
+struct BigBadWolfRunPlan
+{
+    uint8 index = 0;
+    int32 direction = 1;
 };
+
+// The run turns for the next point when this close to the current one: one step.
+inline constexpr float BIG_BAD_WOLF_RUN_TURN_DISTANCE = 3.5f;
+// No step for this long means a new Hood or the end of a fear or stun, so the run is replanned.
+inline constexpr uint32 BIG_BAD_WOLF_RUN_RESTART_MS = 1000;
+// A settled chase stays further off than this, so a run going well doesn't use the long cooldown.
+inline constexpr float BIG_BAD_WOLF_PROTECT_DISTANCE = 8.5f;
+inline constexpr int32 BIG_BAD_WOLF_PROTECT_REACTION_MS = 500;
+inline constexpr float HAND_OF_PROTECTION_RANGE = 30.0f;
+// He stays at the stage edge between Hoods; from mid-stage he would catch any run.
+inline Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };
+// Round the stage edge, on the stage's own axes, clear of the trees and the backdrop.
+inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
+    Position{ -10873.346f, -1767.691f, 90.477f },
+    Position{ -10873.569f, -1760.625f, 90.477f },
+    Position{ -10876.827f, -1753.725f, 90.477f },
+    Position{ -10883.397f, -1749.476f, 90.477f },
+    Position{ -10893.279f, -1747.877f, 90.477f },
+    Position{ -10901.284f, -1747.492f, 90.477f },
+    Position{ -10908.019f, -1749.260f, 90.477f },
+    Position{ -10912.599f, -1754.285f, 90.477f },
+    Position{ -10913.570f, -1761.219f, 90.477f },
+    Position{ -10912.652f, -1768.362f, 90.477f },
+    Position{ -10908.455f, -1775.869f, 90.477f },
+    Position{ -10899.897f, -1780.339f, 90.477f },
+    Position{ -10888.966f, -1781.551f, 90.477f },
+    Position{ -10879.527f, -1778.071f, 90.477f },
+};
+
+uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction);
+// He runs straight at the bot, cutting inside any route, so a poor start runs into him. This
+// forecasts the chase for every point and direction, and returns the one that keeps him furthest
+// away at his closest.
+BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds);
+// His victim, if it is a non-tank on Hood that he has caught up with.
+Player* GetBigBadWolfTargetToProtect(Unit const& wolf);
 
 // Romulo and Julianne
 // Once one is down, the other must die within 10 s. The skull moves to the healthier one only

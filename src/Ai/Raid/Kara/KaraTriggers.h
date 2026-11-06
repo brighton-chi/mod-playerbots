@@ -209,12 +209,24 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class BigBadWolfChasingLittleRedRidingHoodTrigger : public KarazhanEncounterTrigger
+class BigBadWolfChasingRedHoodTrigger : public KarazhanEncounterTrigger
 {
 public:
-    BigBadWolfChasingLittleRedRidingHoodTrigger(PlayerbotAI* botAI)
+    BigBadWolfChasingRedHoodTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "big bad wolf chasing little red riding hood",
+            botAI, "big bad wolf chasing red hood",
+            KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class BigBadWolfPaladinShouldProtectRedHoodTrigger : public KarazhanEncounterTrigger
+{
+public:
+    BigBadWolfPaladinShouldProtectRedHoodTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "big bad wolf paladin should protect red hood",
             KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
 
 protected:

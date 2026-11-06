@@ -66,8 +66,11 @@ public:
         creators["big bad wolf position boss"] =
             &RaidKarazhanActionContext::big_bad_wolf_position_boss;
 
-        creators["big bad wolf little red riding hood run away"] =
-            &RaidKarazhanActionContext::big_bad_wolf_little_red_riding_hood_run_away;
+        creators["big bad wolf red hood run away"] =
+            &RaidKarazhanActionContext::big_bad_wolf_red_hood_run_away;
+
+        creators["big bad wolf cast hand of protection on red hood"] =
+            &RaidKarazhanActionContext::big_bad_wolf_cast_hand_of_protection_on_red_hood;
 
         // Romulo and Julianne
         creators["romulo and julianne mark target"] =
@@ -228,9 +231,13 @@ private:
     {
         return new BigBadWolfPositionBossAction(botAI);
     }
-    static Action* big_bad_wolf_little_red_riding_hood_run_away(PlayerbotAI* botAI)
+    static Action* big_bad_wolf_red_hood_run_away(PlayerbotAI* botAI)
     {
-        return new BigBadWolfLittleRedRidingHoodRunAwayAction(botAI);
+        return new BigBadWolfRedHoodRunAwayAction(botAI);
+    }
+    static Action* big_bad_wolf_cast_hand_of_protection_on_red_hood(PlayerbotAI* botAI)
+    {
+        return new BigBadWolfCastHandOfProtectionOnRedHoodAction(botAI);
     }
 
     // Romulo and Julianne

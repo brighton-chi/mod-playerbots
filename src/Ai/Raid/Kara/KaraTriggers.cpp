@@ -141,9 +141,22 @@ bool BigBadWolfShouldBeTankedTrigger::IsActiveInEncounter()
     return !bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
-bool BigBadWolfChasingLittleRedRidingHoodTrigger::IsActiveInEncounter()
+bool BigBadWolfChasingRedHoodTrigger::IsActiveInEncounter()
 {
     return bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+}
+
+bool BigBadWolfPaladinShouldProtectRedHoodTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_PALADIN)
+        return false;
+
+    Unit* wolf = GetOperaActor(bot, "the big bad wolf");
+    if (!wolf)
+        return false;
+
+    Player* target = GetBigBadWolfTargetToProtect(*wolf);
+    return target && target != bot;
 }
 
 // Romulo and Julianne

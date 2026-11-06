@@ -51,9 +51,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* wolfAction = context->GetAction("big bad wolf little red riding hood run away");
+    Action* wolfAction = context->GetAction("big bad wolf red hood run away");
     if (wolfAction &&
-        static_cast<BigBadWolfLittleRedRidingHoodRunAwayAction*>(wolfAction)->ResetRunIndex())
+        static_cast<BigBadWolfRedHoodRunAwayAction*>(wolfAction)->ResetRun())
     {
         reset = true;
     }
@@ -443,7 +443,6 @@ bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 }
 
 // The Big Bad Wolf
-// CombatReach is 0 [sic] yards
 
 bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 {
@@ -471,19 +470,62 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 }
 
 // Run away, little girl, run away
-bool BigBadWolfLittleRedRidingHoodRunAwayAction::Execute(Event /*event*/)
+bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
 {
-    Position const& target = BIG_BAD_WOLF_RUN_POSITIONS[_runIndex];
+    Aura* hood = bot->GetAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    Unit* wolf = GetOperaActor(bot, "the big bad wolf");
+    if (!hood || !wolf)
+        return false;
 
-    if (bot->GetExactDist2d(target.GetPositionX(), target.GetPositionY()) < 1.0f)
-        _runIndex = (_runIndex + 1) % 4;
-
-    Position const& position = BIG_BAD_WOLF_RUN_POSITIONS[_runIndex];
-
+    // Hood silences and pacifies, but only stops silence-type casts. A cast like Steady Shot
+    // would keep filling and hold the bot still.
     bot->CastStop();
-    return MoveTo(
-        KARA_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+
+    if (GetMSTimeDiffToNow(_lastRunStepTime) > BIG_BAD_WOLF_RUN_RESTART_MS)
+    {
+        _run = GetBigBadWolfRunPlan(
+            bot, *wolf, hood->GetDuration() / static_cast<float>(IN_MILLISECONDS));
+    }
+
+    if (bot->GetExactDist2d(BIG_BAD_WOLF_RUN_POSITIONS[_run.index]) <
+        BIG_BAD_WOLF_RUN_TURN_DISTANCE)
+    {
+        _run.index = GetNextBigBadWolfRunIndex(_run.index, _run.direction);
+    }
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, BIG_BAD_WOLF_RUN_POSITIONS[_run.index], BIG_BAD_WOLF_RUN_TURN_DISTANCE, nullptr,
+            moveX, moveY, backwards))
+    {
+        return false;
+    }
+
+    if (!MoveTo(
+            KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, backwards))
+    {
+        return false;
+    }
+
+    _lastRunStepTime = getMSTime();
+    return true;
+}
+
+bool BigBadWolfCastHandOfProtectionOnRedHoodAction::Execute(Event /*event*/)
+{
+    Unit* wolf = GetOperaActor(bot, "the big bad wolf");
+    if (!wolf)
+        return false;
+
+    Player* target = GetBigBadWolfTargetToProtect(*wolf);
+    if (!target || target == bot || !bot->IsWithinCombatRange(target, HAND_OF_PROTECTION_RANGE))
+        return false;
+
+    return botAI->CanCastSpell("hand of protection", target) &&
+        botAI->CastSpell("hand of protection", target);
 }
 
 // Romulo and Julianne
