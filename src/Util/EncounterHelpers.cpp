@@ -57,6 +57,31 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId)
     return instance && instance->IsEncounterInProgress();
 }
 
+bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId)
+{
+    if (bot->GetMapId() != mapId)
+        return false;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    return instance && instance->GetBossState(bossId) == IN_PROGRESS;
+}
+
+std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
+{
+    if (bot->GetMapId() != mapId)
+        return std::nullopt;
+
+    InstanceScript* instance = bot->GetInstanceScript();
+    if (!instance)
+        return std::nullopt;
+
+    for (uint32 bossId = 0; bossId < instance->GetEncounterCount(); ++bossId)
+        if (instance->GetBossState(bossId) == IN_PROGRESS)
+            return bossId;
+
+    return std::nullopt;
+}
+
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.
 
