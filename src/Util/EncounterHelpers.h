@@ -41,13 +41,6 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
-// Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
-// right only if the instance script numbers its bosses in that same order. Each returns false or
-// nullopt when the bot isn't on mapId.
-// One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
-bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
-// The lowest boss id that is IN_PROGRESS, if any.
-std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 
 // Class Roles
 // A job given to one raid member of a class, such as a mage tank.

@@ -299,7 +299,16 @@ float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* hydross = FindThreatTarget(bot, "hydross the unstable");
-    if (!hydross || GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::None)
+    if (!hydross)
+        return 1.0f;
+
+    // Each phase tank holds attacking for its entire offphase.
+    bool const isOffPhaseTank =
+        IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot);
+    if (isOffPhaseTank)
+        return GetDpsHoldValue(bot, action);
+
+    if (GetHydrossDpsHoldWindow(hydross) == HydrossDpsHoldWindow::None)
         return 1.0f;
 
     // Add tanks stay off Hydross but keep tanking adds.
@@ -309,13 +318,7 @@ float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
             GetDpsHoldValue(bot, action) : 1.0f;
     }
 
-    if (PlayerbotAI::IsTank(bot) &&
-        !(IsHydrossInFrostPhase(hydross) ? IsHydrossNatureTank(bot) : IsHydrossFrostTank(bot)))
-    {
-        return 1.0f;
-    }
-
-    return GetDpsHoldValue(bot, action);
+    return PlayerbotAI::IsTank(bot) ? 1.0f : GetDpsHoldValue(bot, action);
 }
 
 // The Lurker Below
@@ -498,13 +501,18 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValueInEncounter(Action*
     if (!FindThreatTarget(bot, "leotheras the blind"))
         return 1.0f;
 
+    // The Shadow of Leotheras can be taunted, and it must stay on the Warlock tank if there is one.
     if (isTaunt)
-        return 0.0f;
+        return IsLeotherasFinalPhase(botAI) && !GetLeotherasWarlockTank(bot) ? 1.0f : 0.0f;
 
-    // Tanks can always cast spells to attack Inner Demons or in the final phase, as long as they do
-    // not target Demon Leo or Shadow Leo.
+    // Tanks stay on their Inner Demons and, in the final phase, on the boss, so they do not target
+    // Demon Leo or Shadow Leo.
     if (isTankAssist)
         return HasInnerDemon(bot) || IsLeotherasFinalPhase(botAI) ? 0.0f : 1.0f;
+
+    // AoE threat spells can also hit Demon Leo and pull threat from the Warlock tank.
+    if (HasInnerDemon(bot))
+        return IsAoeThreatAction(bot, action) ? 0.0f : 1.0f;
 
     // Disable all spells from tanks in demon phase if there is a Warlock tank, other than shifting
     // into bear form. Allow auto attacks to build rage in case the tank gets an Inner Demon.
@@ -764,6 +772,11 @@ float FathomLordKarathressStartHoldDpsMultiplier::GetValueInEncounter(Action* ac
     {
         return 1.0f;
     }
+
+    // AttackAction keeps healers in their combat engines. A healer in melee range also swings, but
+    // the threat is negligible.
+    if (PlayerbotAI::IsHeal(bot) && dynamic_cast<AttackAction*>(action))
+        return 1.0f;
 
     return IsKarathressStartDpsHoldActive(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
