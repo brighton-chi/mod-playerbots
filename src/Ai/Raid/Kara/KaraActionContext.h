@@ -117,17 +117,23 @@ public:
         creators["netherspite block red beam"] =
             &RaidKarazhanActionContext::netherspite_block_red_beam;
 
-        creators["netherspite block blue beam"] =
-            &RaidKarazhanActionContext::netherspite_block_blue_beam;
+        creators["netherspite block beam"] =
+            &RaidKarazhanActionContext::netherspite_block_beam;
 
-        creators["netherspite block green beam"] =
-            &RaidKarazhanActionContext::netherspite_block_green_beam;
+        creators["netherspite wait to block beam"] =
+            &RaidKarazhanActionContext::netherspite_wait_to_block_beam;
 
-        creators["netherspite avoid beam and void zone"] =
-            &RaidKarazhanActionContext::netherspite_avoid_beam_and_void_zone;
+        creators["netherspite move to beam area"] =
+            &RaidKarazhanActionContext::netherspite_move_to_beam_area;
 
-        creators["netherspite banish phase avoid void zone"] =
-            &RaidKarazhanActionContext::netherspite_banish_phase_avoid_void_zone;
+        creators["netherspite move to banish slot"] =
+            &RaidKarazhanActionContext::netherspite_move_to_banish_slot;
+
+        creators["netherspite stop attacking"] =
+            &RaidKarazhanActionContext::netherspite_stop_attacking;
+
+        creators["netherspite select target for hold"] =
+            &RaidKarazhanActionContext::netherspite_select_target_for_hold;
 
         creators["netherspite manage timers and trackers"] =
             &RaidKarazhanActionContext::netherspite_manage_timers_and_trackers;
@@ -312,21 +318,29 @@ private:
     {
         return new NetherspiteBlockRedBeamAction(botAI);
     }
-    static Action* netherspite_block_blue_beam(PlayerbotAI* botAI)
+    static Action* netherspite_block_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteBlockBlueBeamAction(botAI);
+        return new NetherspiteBlockBeamAction(botAI);
     }
-    static Action* netherspite_block_green_beam(PlayerbotAI* botAI)
+    static Action* netherspite_wait_to_block_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteBlockGreenBeamAction(botAI);
+        return new NetherspiteWaitToBlockBeamAction(botAI);
     }
-    static Action* netherspite_avoid_beam_and_void_zone(PlayerbotAI* botAI)
+    static Action* netherspite_move_to_beam_area(PlayerbotAI* botAI)
     {
-        return new NetherspiteAvoidBeamAndVoidZoneAction(botAI);
+        return new NetherspiteMoveToBeamAreaAction(botAI);
     }
-    static Action* netherspite_banish_phase_avoid_void_zone(PlayerbotAI* botAI)
+    static Action* netherspite_move_to_banish_slot(PlayerbotAI* botAI)
     {
-        return new NetherspiteBanishPhaseAvoidVoidZoneAction(botAI);
+        return new NetherspiteMoveToBanishSlotAction(botAI);
+    }
+    static Action* netherspite_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new NetherspiteStopAttackingAction(botAI);
+    }
+    static Action* netherspite_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new NetherspiteSelectTargetForHoldAction(botAI);
     }
     static Action* netherspite_manage_timers_and_trackers(PlayerbotAI* botAI)
     {

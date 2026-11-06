@@ -114,20 +114,23 @@ public:
             &RaidKarazhanTriggerContext::shade_of_aran_ranged_should_maintain_distance;
 
         // Netherspite
-        creators["netherspite red beam is active"] =
-            &RaidKarazhanTriggerContext::netherspite_red_beam_is_active;
+        creators["netherspite should block red beam"] =
+            &RaidKarazhanTriggerContext::netherspite_should_block_red_beam;
 
-        creators["netherspite blue beam is active"] =
-            &RaidKarazhanTriggerContext::netherspite_blue_beam_is_active;
+        creators["netherspite should block beam"] =
+            &RaidKarazhanTriggerContext::netherspite_should_block_beam;
 
-        creators["netherspite green beam is active"] =
-            &RaidKarazhanTriggerContext::netherspite_green_beam_is_active;
+        creators["netherspite next beam blocker should prepare"] =
+            &RaidKarazhanTriggerContext::netherspite_next_beam_blocker_should_prepare;
 
-        creators["netherspite bot is not beam blocker"] =
-            &RaidKarazhanTriggerContext::netherspite_bot_is_not_beam_blocker;
+        creators["netherspite should position around beams"] =
+            &RaidKarazhanTriggerContext::netherspite_should_position_around_beams;
 
-        creators["netherspite in banish phase"] =
-            &RaidKarazhanTriggerContext::netherspite_in_banish_phase;
+        creators["netherspite should spread for netherbreath"] =
+            &RaidKarazhanTriggerContext::netherspite_should_spread_for_netherbreath;
+
+        creators["netherspite should hold dps"] =
+            &RaidKarazhanTriggerContext::netherspite_should_hold_dps;
 
         creators["netherspite should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::netherspite_need_to_manage_timers_and_trackers;
@@ -305,25 +308,29 @@ private:
     }
 
     // Netherspite
-    static Trigger* netherspite_red_beam_is_active(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_block_red_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteRedBeamIsActiveTrigger(botAI);
+        return new NetherspiteShouldBlockRedBeamTrigger(botAI);
     }
-    static Trigger* netherspite_blue_beam_is_active(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_block_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteBlueBeamIsActiveTrigger(botAI);
+        return new NetherspiteShouldBlockBeamTrigger(botAI);
     }
-    static Trigger* netherspite_green_beam_is_active(PlayerbotAI* botAI)
+    static Trigger* netherspite_next_beam_blocker_should_prepare(PlayerbotAI* botAI)
     {
-        return new NetherspiteGreenBeamIsActiveTrigger(botAI);
+        return new NetherspiteNextBeamBlockerShouldPrepareTrigger(botAI);
     }
-    static Trigger* netherspite_bot_is_not_beam_blocker(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_position_around_beams(PlayerbotAI* botAI)
     {
-        return new NetherspiteBotIsNotBeamBlockerTrigger(botAI);
+        return new NetherspiteShouldPositionAroundBeamsTrigger(botAI);
     }
-    static Trigger* netherspite_in_banish_phase(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_spread_for_netherbreath(PlayerbotAI* botAI)
     {
-        return new NetherspiteInBanishPhaseTrigger(botAI);
+        return new NetherspiteShouldSpreadForNetherbreathTrigger(botAI);
+    }
+    static Trigger* netherspite_should_hold_dps(PlayerbotAI* botAI)
+    {
+        return new NetherspiteShouldHoldDpsTrigger(botAI);
     }
     static Trigger* netherspite_need_to_manage_timers_and_trackers(PlayerbotAI* botAI)
     {

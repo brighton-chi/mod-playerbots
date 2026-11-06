@@ -291,10 +291,9 @@ public:
     bool Execute(Event event) override;
     bool ResetRedBeamState()
     {
-        bool const wasSet = _redBeamTimerWasSet || _lastBeamMoveSideways || _wasBlockingRedBeam;
+        bool const wasSet = _redBeamTimerWasSet || _lastBeamMoveSideways;
         _redBeamMoveTimer = 0;
         _lastBeamMoveSideways = false;
-        _wasBlockingRedBeam = false;
         _redBeamTimerWasSet = false;
         return wasSet;
     }
@@ -302,70 +301,64 @@ public:
 private:
     uint32 _redBeamMoveTimer = 0;
     bool _lastBeamMoveSideways = false;
-    bool _wasBlockingRedBeam = false;
     bool _redBeamTimerWasSet = false;
 };
 
-class NetherspiteBlockBlueBeamAction : public MovementAction
+class NetherspiteBlockBeamAction : public MovementAction
 {
 public:
-    NetherspiteBlockBlueBeamAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite block blue beam") {}
+    NetherspiteBlockBeamAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite block beam") {}
     bool Execute(Event event) override;
-    bool ResetBlueBeamState()
+};
+
+class NetherspiteWaitToBlockBeamAction : public MovementAction
+{
+public:
+    NetherspiteWaitToBlockBeamAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite wait to block beam") {}
+    bool Execute(Event event) override;
+};
+
+class NetherspiteMoveToBeamAreaAction : public MovementAction
+{
+public:
+    NetherspiteMoveToBeamAreaAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite move to beam area") {}
+    bool Execute(Event event) override;
+    bool ResetDestination()
     {
-        if (!_wasBlockingBlueBeam)
-            return false;
-        _wasBlockingBlueBeam = false;
-        return true;
+        bool const wasSet = _destination.has_value();
+        _destination.reset();
+        return wasSet;
     }
 
 private:
-    bool _wasBlockingBlueBeam = false;
+    std::optional<Position> _destination;
 };
 
-class NetherspiteBlockGreenBeamAction : public MovementAction
+class NetherspiteMoveToBanishSlotAction : public MovementAction
 {
 public:
-    NetherspiteBlockGreenBeamAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite block green beam") {}
+    NetherspiteMoveToBanishSlotAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite move to banish slot") {}
     bool Execute(Event event) override;
-    bool ResetGreenBeamState()
-    {
-        if (!_wasBlockingGreenBeam)
-            return false;
-        _wasBlockingGreenBeam = false;
-        return true;
-    }
-
-private:
-    bool _wasBlockingGreenBeam = false;
 };
 
-class NetherspiteAvoidBeamAndVoidZoneAction : public MovementAction
+class NetherspiteStopAttackingAction : public Action
 {
 public:
-    NetherspiteAvoidBeamAndVoidZoneAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite avoid beam and void zone") {}
+    NetherspiteStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "netherspite stop attacking") {}
     bool Execute(Event event) override;
-
-private:
-    struct BeamAvoid
-    {
-        float minDist;
-        float maxDist;
-        float dirX;
-        float dirY;
-    };
-    bool IsAwayFromBeams(
-        float x, float y, float botX, float botY, std::vector<BeamAvoid> const& beams);
 };
 
-class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction
+class NetherspiteSelectTargetForHoldAction : public Action
 {
 public:
-    NetherspiteBanishPhaseAvoidVoidZoneAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite banish phase avoid void zone") {}
+    NetherspiteSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "netherspite select target for hold") {}
+    bool isUseful() override;
     bool Execute(Event event) override;
 };
 

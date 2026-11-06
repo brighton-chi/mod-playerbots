@@ -212,23 +212,24 @@ protected:
 
 // Netherspite
 
-class NetherspiteKeepBlockingBeamMultiplier : public KarazhanEncounterMultiplier
+class NetherspiteDisableReactiveMovementMultiplier : public KarazhanEncounterMultiplier
 {
 public:
-    NetherspiteKeepBlockingBeamMultiplier(PlayerbotAI* botAI)
+    NetherspiteDisableReactiveMovementMultiplier(PlayerbotAI* botAI)
         : KarazhanEncounterMultiplier(
-            botAI, "netherspite keep blocking beam", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+            botAI, "netherspite disable reactive movement",
+            KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class NetherspiteWaitForDpsMultiplier : public KarazhanEncounterMultiplier
+class NetherspiteHoldDpsMultiplier : public KarazhanEncounterMultiplier
 {
 public:
-    NetherspiteWaitForDpsMultiplier(PlayerbotAI* botAI)
+    NetherspiteHoldDpsMultiplier(PlayerbotAI* botAI)
         : KarazhanEncounterMultiplier(
-            botAI, "netherspite wait for dps", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+            botAI, "netherspite hold dps", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

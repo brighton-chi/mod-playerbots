@@ -15,7 +15,6 @@
 #include <initializer_list>
 #include <optional>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -26,6 +25,8 @@ class Unit;
 
 namespace KaraHelpers
 {
+
+struct KaraInstanceState;
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 constexpr uint32 Id(T value)
@@ -329,15 +330,102 @@ bool IsFlameWreathInProgress(Player* bot, Unit* aran);
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran);
 
 // Netherspite
+
+enum class NetherspiteBeam : uint8
+{
+    Red,
+    Green,
+    Blue,
+};
+
+struct NetherspiteBeamData
+{
+    NetherspiteBeam beam;
+    KaraNpcs portal;
+    KaraSpells buff;
+    KaraSpells exhaustion;
+};
+
+struct NetherspiteBeamState
+{
+    std::optional<Position> portal;
+    ObjectGuid blocker;
+    ObjectGuid next;
+    Position blockerSpot;
+    Position nextSpot;
+};
+
+struct NetherspiteBeamOffset
+{
+    float along;
+    float off;
+};
+
+struct NetherspiteBanishSlot
+{
+    ObjectGuid guid;
+    Position spot;
+};
+
+// In the order the tracker picks: an empty green beam heals him 4000 a second per stack, so green
+// picks before blue.
+inline constexpr std::array NETHERSPITE_BEAMS = {
+    NetherspiteBeamData{
+        NetherspiteBeam::Red, KaraNpcs::NPC_RED_PORTAL, KaraSpells::SPELL_RED_BEAM_DEBUFF,
+        KaraSpells::SPELL_NETHER_EXHAUSTION_RED,
+    },
+    NetherspiteBeamData{
+        NetherspiteBeam::Green, KaraNpcs::NPC_GREEN_PORTAL, KaraSpells::SPELL_GREEN_BEAM_DEBUFF,
+        KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN,
+    },
+    NetherspiteBeamData{
+        NetherspiteBeam::Blue, KaraNpcs::NPC_BLUE_PORTAL, KaraSpells::SPELL_BLUE_BEAM_DEBUFF,
+        KaraSpells::SPELL_NETHER_EXHAUSTION_BLUE,
+    },
+};
+
+// The script takes a player within 1.5 yd of the line only if their 2D distance to the portal, less
+// both reaches, beats Netherspite's. His reach is 18, so that starts 18 - 1.5 yd from his centre.
+inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
+inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
+inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
+// Consumption is NPC AoE on target 15: exact distance, no reach.
+inline constexpr float VOID_ZONE_RADIUS = 2.0f;
+inline constexpr float VOID_ZONE_CLEARANCE = VOID_ZONE_RADIUS + 1.0f;
+inline constexpr float VOID_ZONE_BEAM_SPOT_CLEARANCE = VOID_ZONE_RADIUS + 0.5f;
+inline constexpr float NETHERSPITE_BEAM_SPOT_TOLERANCE = 0.5f;
+inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
+    static_cast<float>(M_PI) * 6.0f / 180.0f;
+// Beams start 10 s into a portal phase.
+inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
+
 bool IsBanishPhase(Unit* netherspite);
-std::vector<Player*> GetRedBlockers(Player* bot);
-std::vector<Player*> GetBlueBlockers(Player* bot);
-std::vector<Player*> GetGreenBlockers(Player* bot);
-std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot);
-std::vector<Unit*> GetAllVoidZones(Player* bot);
-bool FindBeamPosition(
-    Unit* netherspite, Unit* portal, std::vector<Unit*> const& voidZones,
-    float idealDistance, Position& outPos);
+// Holds for 5 s from each portal phase, then until a tank is his victim. At 10 s the red beam's
+// threat settles it. The threat reset leaves him on the first player to make any threat.
+bool IsNetherspiteDpsHeld(Player* bot, Unit const& netherspite);
+bool AreNetherspitePortalsKnown(KaraInstanceState const& state);
+// Includes the red blocker.
+bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid);
+Position const* FindNetherspiteBlockerSpot(KaraInstanceState const& state, ObjectGuid guid);
+Position const* FindNetherspiteNextSpot(KaraInstanceState const& state, ObjectGuid guid);
+NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
+    KaraInstanceState const& state, ObjectGuid guid);
+// Along the line from his centre, and to the side, positive counterclockwise.
+NetherspiteBeamOffset GetNetherspiteBeamOffset(
+    Unit const& netherspite, Position const& portal, float x, float y);
+bool IsOnNetherspiteBeam(Unit const& netherspite, Position const& portal, Unit const& unit);
+bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance);
+// The side of the green or blue beam that faces the other one, away from red: +1 counterclockwise.
+float GetNetherspiteInnerSide(
+    Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam);
+// A tank just stays off the beams and out of void zones. Everyone else stands between green and
+// blue, on the side without red, at attack range. Healers keep the red tank in range.
+bool IsNetherspiteStandingSpotGood(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y);
+// A random spot in the area, then the nearest safe spot if there is none. Neither crosses a beam
+// that will be up by the time the bot arrives.
+std::optional<Position> FindNetherspiteStandingSpot(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state);
 
 // Prince Malchezaar
 std::vector<Unit*> GetSpawnedInfernals(Player* bot);
@@ -428,10 +516,10 @@ Position const* GetRainOfBonesCenter(Unit const& nightbane);
 struct KaraInstanceState
 {
     std::optional<uint32> attumenDpsWaitTimer;
-    std::optional<uint32> netherspiteDpsWaitTimer;
-    std::optional<ObjectGuid> currentRedBlocker;
-    std::optional<ObjectGuid> currentGreenBlocker;
-    std::optional<ObjectGuid> currentBlueBlocker;
+    std::optional<uint32> netherspiteDpsHoldTimer;
+    std::array<NetherspiteBeamState, NETHERSPITE_BEAMS.size()> netherspiteBeams;
+    std::vector<Position> netherspiteVoidZones;
+    std::vector<NetherspiteBanishSlot> netherspiteBanishSlots;
     std::optional<uint32> nightbaneDpsHoldTimer;
     std::optional<NightbaneFlightStage> nightbaneFlightStage;
     std::optional<Position> nightbaneFlightSpot;

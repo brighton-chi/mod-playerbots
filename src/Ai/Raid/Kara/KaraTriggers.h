@@ -385,57 +385,71 @@ protected:
 
 // Netherspite
 
-class NetherspiteRedBeamIsActiveTrigger : public KarazhanEncounterTrigger
+class NetherspiteShouldBlockRedBeamTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NetherspiteRedBeamIsActiveTrigger(PlayerbotAI* botAI)
+    NetherspiteShouldBlockRedBeamTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "netherspite red beam is active", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class NetherspiteBlueBeamIsActiveTrigger : public KarazhanEncounterTrigger
-{
-public:
-    NetherspiteBlueBeamIsActiveTrigger(PlayerbotAI* botAI)
-        : KarazhanEncounterTrigger(
-            botAI, "netherspite blue beam is active", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class NetherspiteGreenBeamIsActiveTrigger : public KarazhanEncounterTrigger
-{
-public:
-    NetherspiteGreenBeamIsActiveTrigger(PlayerbotAI* botAI)
-        : KarazhanEncounterTrigger(
-            botAI, "netherspite green beam is active", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
-class NetherspiteBotIsNotBeamBlockerTrigger : public KarazhanEncounterTrigger
-{
-public:
-    NetherspiteBotIsNotBeamBlockerTrigger(PlayerbotAI* botAI)
-        : KarazhanEncounterTrigger(
-            botAI, "netherspite bot is not beam blocker",
+            botAI, "netherspite should block red beam",
             KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class NetherspiteInBanishPhaseTrigger : public KarazhanEncounterTrigger
+class NetherspiteShouldBlockBeamTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NetherspiteInBanishPhaseTrigger(PlayerbotAI* botAI)
+    NetherspiteShouldBlockBeamTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "netherspite in banish phase", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+            botAI, "netherspite should block beam", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class NetherspiteNextBeamBlockerShouldPrepareTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NetherspiteNextBeamBlockerShouldPrepareTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "netherspite next beam blocker should prepare",
+            KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class NetherspiteShouldPositionAroundBeamsTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NetherspiteShouldPositionAroundBeamsTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "netherspite should position around beams",
+            KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class NetherspiteShouldSpreadForNetherbreathTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NetherspiteShouldSpreadForNetherbreathTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "netherspite should spread for netherbreath",
+            KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class NetherspiteShouldHoldDpsTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NetherspiteShouldHoldDpsTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "netherspite should hold dps", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -10,6 +10,8 @@
 #include "KaraHelpers.h"
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
+#include <algorithm>
+#include <cmath>
 
 using namespace KaraHelpers;
 using namespace EncounterHelpers;
@@ -255,55 +257,75 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
 
 // Netherspite
 
-bool NetherspiteRedBeamIsActiveTrigger::IsActiveInEncounter()
+bool NetherspiteShouldBlockRedBeamTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = GetEncounterBoss();
-    if (!netherspite || IsBanishPhase(netherspite))
-        return false;
-
-    constexpr float searchRadius = 150.0f;
-    return bot->FindNearestCreature(Id(KaraNpcs::NPC_RED_PORTAL), searchRadius);
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    return state &&
+        state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID();
 }
 
-bool NetherspiteBlueBeamIsActiveTrigger::IsActiveInEncounter()
+bool NetherspiteShouldBlockBeamTrigger::IsActiveInEncounter()
 {
-    Unit* netherspite = GetEncounterBoss();
-    if (!netherspite || IsBanishPhase(netherspite))
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())
         return false;
 
-    constexpr float searchRadius = 150.0f;
-    return bot->FindNearestCreature(Id(KaraNpcs::NPC_BLUE_PORTAL), searchRadius);
+    Position const* spot = FindNetherspiteBlockerSpot(*state, bot->GetGUID());
+    return spot && bot->GetExactDist2d(*spot) > NETHERSPITE_BEAM_SPOT_TOLERANCE;
 }
 
-bool NetherspiteGreenBeamIsActiveTrigger::IsActiveInEncounter()
+bool NetherspiteNextBeamBlockerShouldPrepareTrigger::IsActiveInEncounter()
 {
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    Position const* spot = state ? FindNetherspiteNextSpot(*state, bot->GetGUID()) : nullptr;
+    return spot && bot->GetExactDist2d(*spot) > NETHERSPITE_BEAM_SPOT_TOLERANCE;
+}
+
+bool NetherspiteShouldPositionAroundBeamsTrigger::IsActiveInEncounter()
+{
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    if (!state || !AreNetherspitePortalsKnown(*state) ||
+        IsNetherspiteBlockerOrNext(*state, bot->GetGUID()))
+    {
+        return false;
+    }
+
     Unit* netherspite = GetEncounterBoss();
-    if (!netherspite || IsBanishPhase(netherspite))
+    return netherspite && !IsBanishPhase(netherspite) && !IsNetherspiteStandingSpotGood(
+        bot, *netherspite, *state, bot->GetPositionX(), bot->GetPositionY());
+}
+
+bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
+{
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    NetherspiteBanishSlot const* slot =
+        state ? FindNetherspiteBanishSlot(*state, bot->GetGUID()) : nullptr;
+    if (!slot)
         return false;
 
-    constexpr float searchRadius = 150.0f;
-    return bot->FindNearestCreature(Id(KaraNpcs::NPC_GREEN_PORTAL), searchRadius);
-}
+    if (!IsClearOfVoidZones(*state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_CLEARANCE))
+        return true;
 
-bool NetherspiteBotIsNotBeamBlockerTrigger::IsActiveInEncounter()
-{
     Unit* netherspite = GetEncounterBoss();
-    if (!netherspite || IsBanishPhase(netherspite))
+    if (!netherspite)
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
-    return bot != redBlocker && bot != blueBlocker && bot != greenBlocker;
+    float const gap = Position::NormalizeOrientation(
+        netherspite->GetAngle(bot->GetPositionX(), bot->GetPositionY()) -
+        netherspite->GetAngle(slot->spot.GetPositionX(), slot->spot.GetPositionY()));
+    return std::min(gap, 2.0f * static_cast<float>(M_PI) - gap) >
+        NETHERSPITE_BANISH_SLOT_TOLERANCE;
 }
 
-bool NetherspiteInBanishPhaseTrigger::IsActiveInEncounter()
+bool NetherspiteShouldHoldDpsTrigger::IsActiveInEncounter()
 {
     Unit* netherspite = GetEncounterBoss();
-    return netherspite && IsBanishPhase(netherspite);
+    return netherspite && IsNetherspiteDpsHeld(bot, *netherspite);
 }
 
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 {
-    return GetEncounterBoss();
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
 }
 
 // Prince Malchezaar

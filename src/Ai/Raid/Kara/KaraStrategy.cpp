@@ -112,20 +112,24 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("shade of aran ranged maintain distance", ACTION_RAID + 1) }));
 
     // Netherspite
-    triggers.push_back(new TriggerNode("netherspite red beam is active",
+    triggers.push_back(new TriggerNode("netherspite should block red beam",
         { NextAction("netherspite block red beam", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite blue beam is active",
-        { NextAction("netherspite block blue beam", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("netherspite should block beam",
+        { NextAction("netherspite block beam", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite green beam is active",
-        { NextAction("netherspite block green beam", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("netherspite next beam blocker should prepare",
+        { NextAction("netherspite wait to block beam", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite bot is not beam blocker",
-        { NextAction("netherspite avoid beam and void zone", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("netherspite should position around beams",
+        { NextAction("netherspite move to beam area", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite in banish phase",
-        { NextAction("netherspite banish phase avoid void zone", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("netherspite should spread for netherbreath",
+        { NextAction("netherspite move to banish slot", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("netherspite should hold dps",
+        { NextAction("netherspite stop attacking", ACTION_RAID + 3),
+          NextAction("netherspite select target for hold", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("netherspite should manage timers and trackers",
         { NextAction("netherspite manage timers and trackers", ACTION_EMERGENCY + 10) }));
@@ -180,8 +184,8 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new ShadeOfAranArcaneExplosionRunAwayMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
-    multipliers.push_back(new NetherspiteKeepBlockingBeamMultiplier(botAI));
-    multipliers.push_back(new NetherspiteWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new NetherspiteDisableReactiveMovementMultiplier(botAI));
+    multipliers.push_back(new NetherspiteHoldDpsMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarEnfeebleMultiplier(botAI));
     multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
     multipliers.push_back(new NightbaneHoldDpsMultiplier(botAI));

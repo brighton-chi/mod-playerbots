@@ -11,6 +11,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "Playerbots.h"
+#include "Random.h"
 #include "Spell.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
@@ -455,256 +456,362 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
 
 // Netherspite
 
+namespace
+{
+
+constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
+constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
+constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
+constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
+constexpr uint8 NETHERSPITE_SPOT_TRIES = 12;
+
+struct NetherspiteArc
+{
+    float start;
+    float width;
+};
+
+struct NetherspiteRadiusBand
+{
+    float low;
+    float high;
+};
+
+float GetBeamAngle(
+    Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
+{
+    Position const& portal = *state.netherspiteBeams[Id(beam)].portal;
+    return netherspite.GetAngle(portal.GetPositionX(), portal.GetPositionY());
+}
+
+// The bearings between green and blue that don't include red.
+NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState const& state)
+{
+    float const red = GetBeamAngle(netherspite, state, NetherspiteBeam::Red);
+    float const green = GetBeamAngle(netherspite, state, NetherspiteBeam::Green);
+    float const blue = GetBeamAngle(netherspite, state, NetherspiteBeam::Blue);
+
+    float const greenToBlue = Position::NormalizeOrientation(blue - green);
+    if (Position::NormalizeOrientation(red - green) < greenToBlue)
+        return { blue, Position::NormalizeOrientation(green - blue) };
+
+    return { green, greenToBlue };
+}
+
+// At most 60 degrees from the bot's own line, so a wedge under 180 degrees: a straight move inside
+// it can't cross a beam. Healers take the middle of the side instead, which keeps the tank in
+// range. One that becomes the next blocker has about 25 s to get to its beam.
+NetherspiteArc GetNetherspiteStandingArc(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state)
+{
+    NetherspiteArc const side = GetSideWithoutRed(netherspite, state);
+    if (PlayerbotAI::IsHeal(bot))
+    {
+        float const width = std::min(side.width, NETHERSPITE_MAX_HEALER_ARC);
+        return { side.start + (side.width - width) / 2.0f, width };
+    }
+
+    NetherspiteBeam const ownBeam = bot->getPowerType() == POWER_MANA ?
+        NetherspiteBeam::Blue : NetherspiteBeam::Green;
+    float const width = std::min(side.width, NETHERSPITE_MAX_OWN_LINE_ARC);
+    float const own = GetBeamAngle(netherspite, state, ownBeam);
+    bool const isStart = GetNetherspiteInnerSide(netherspite, state, ownBeam) > 0.0f;
+    return { isStart ? own : own - width, width };
+}
+
+NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
+{
+    if (PlayerbotAI::IsHeal(bot))
+        return { 14.0f, 25.0f };
+    if (bot->getClass() == CLASS_HUNTER)
+        return { 25.0f, 32.0f };
+    if (PlayerbotAI::IsMelee(bot))
+        return { 14.0f, 20.0f };
+    return { 18.0f, 25.0f };
+}
+
+// Up to his centre, past where the script counts a player: a bot shouldn't rely on that cutoff.
+bool IsClearOfBeams(
+    Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+{
+    for (NetherspiteBeamState const& beam : state.netherspiteBeams)
+    {
+        if (!beam.portal)
+            continue;
+
+        NetherspiteBeamOffset const offset =
+            GetNetherspiteBeamOffset(netherspite, *beam.portal, x, y);
+        if (offset.along > 0.0f && offset.along < netherspite.GetExactDist2d(*beam.portal) &&
+            std::abs(offset.off) < NETHERSPITE_BEAM_CLEARANCE)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool CrossesBeam(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+{
+    for (NetherspiteBeamState const& beam : state.netherspiteBeams)
+    {
+        if (!beam.portal)
+            continue;
+
+        NetherspiteBeamOffset const from = GetNetherspiteBeamOffset(
+            netherspite, *beam.portal, bot->GetPositionX(), bot->GetPositionY());
+        NetherspiteBeamOffset const to = GetNetherspiteBeamOffset(netherspite, *beam.portal, x, y);
+        // A bot already on the beam, such as a blocker stepping off, can leave by either side.
+        if (std::abs(from.off) < NETHERSPITE_BEAM_WIDTH || from.off * to.off >= 0.0f)
+            continue;
+
+        float const along =
+            from.along + (to.along - from.along) * from.off / (from.off - to.off);
+        if (along > 0.0f && along < netherspite.GetExactDist2d(*beam.portal))
+            return true;
+    }
+
+    return false;
+}
+
+// Crossing costs nothing if the bot is across before the beams start.
+bool CrossesBeamAfterStart(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+{
+    uint32 const elapsed = state.netherspiteDpsHoldTimer ?
+        getMSTimeDiff(*state.netherspiteDpsHoldTimer, getMSTime()) : NETHERSPITE_BEAMS_START_MS;
+    float const travelMs = bot->GetExactDist2d(x, y) / NETHERSPITE_BOT_SPEED * IN_MILLISECONDS;
+    if (elapsed + travelMs < NETHERSPITE_BEAMS_START_MS)
+        return false;
+
+    return CrossesBeam(bot, netherspite, state, x, y);
+}
+
+// False if the floor stops the way there short of it.
+bool GetFloorAt(Player* bot, float x, float y, float& outZ)
+{
+    float clippedX = x;
+    float clippedY = y;
+    outZ = bot->GetPositionZ();
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), clippedX, clippedY,
+            outZ, false))
+    {
+        return false;
+    }
+
+    return std::abs(clippedX - x) < 1.0f && std::abs(clippedY - y) < 1.0f;
+}
+
+}
+
 bool IsBanishPhase(Unit* netherspite)
 {
     return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED));
 }
 
-// Red beam blockers: tank bots, no Nether Exhaustion Red
-std::vector<Player*> GetRedBlockers(Player* bot)
+bool IsNetherspiteDpsHeld(Player* bot, Unit const& netherspite)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return {};
-
-    std::vector<Player*> redBlockers;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member) ||
-            !GET_PLAYERBOT_AI(member))
-        {
-            continue;
-        }
-
-        if (!member->HasAura(Id(KaraSpells::SPELL_NETHER_EXHAUSTION_RED)))
-            redBlockers.push_back(member);
-    }
-
-    return redBlockers;
-}
-
-// Blue beam blockers: Mana-using DPS bots (includes Balance Druid)
-// no Nether Exhaustion Blue and <25 stacks of Blue Beam debuff
-std::vector<Player*> GetBlueBlockers(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return {};
-
-    std::vector<Player*> blueBlockers;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
-            continue;
-
-        if (!GET_PLAYERBOT_AI(member) || member->getPowerType() != POWER_MANA ||
-            !PlayerbotAI::IsDps(member))
-        {
-            continue;
-        }
-
-        if (member->HasAura(Id(KaraSpells::SPELL_NETHER_EXHAUSTION_BLUE)))
-            continue;
-
-        Aura* blueBuff = member->GetAura(Id(KaraSpells::SPELL_BLUE_BEAM_DEBUFF));
-        if (!blueBuff || blueBuff->GetStackAmount() < 25)
-            blueBlockers.push_back(member);
-    }
-
-    return blueBlockers;
-}
-
-// Green beam blockers:
-// (1) Prioritize Rogue, cat Druid, and dps Warrior and DK bots, no Nether Exhaustion Green
-// (2) Then assign Healer bots, no Nether Exhaustion Green and <25 stacks of Green Beam debuff
-std::vector<Player*> GetGreenBlockers(Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return {};
-
-    std::vector<Player*> greenBlockers;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
-            continue;
-
-        if (!GET_PLAYERBOT_AI(member) || member->getPowerType() == POWER_MANA ||
-            !PlayerbotAI::IsDps(member))
-        {
-            continue;
-        }
-
-        if (!member->HasAura(Id(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
-            greenBlockers.push_back(member);
-    }
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
-            continue;
-
-        if (!GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member))
-            continue;
-
-        if (member->HasAura(Id(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
-            continue;
-
-        Aura* greenBuff = member->GetAura(Id(KaraSpells::SPELL_GREEN_BEAM_DEBUFF));
-        if (!greenBuff || greenBuff->GetStackAmount() < 25)
-        {
-            greenBlockers.push_back(member);
-        }
-    }
-
-    return greenBlockers;
-}
-
-std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
-{
-    KaraInstanceState& state = KaraState(bot->GetInstanceId());
-
-    Player* redBlocker = nullptr;
-    auto redBlockers = GetRedBlockers(bot);
-    if (!redBlockers.empty())
-    {
-        ObjectGuid& redGuid = state.currentRedBlocker ?
-            *state.currentRedBlocker : state.currentRedBlocker.emplace();
-        auto const it = std::find_if(redBlockers.begin(), redBlockers.end(), [&redGuid](Player* player)
-        {
-            return player && player->GetGUID() == redGuid;
-        });
-
-        if (it != redBlockers.end())
-            redBlocker = *it;
-        else
-            redBlocker = redBlockers.front();
-
-        redGuid = redBlocker ? redBlocker->GetGUID() : ObjectGuid::Empty;
-    }
-    else
-    {
-        redBlocker = nullptr;
-    }
-
-    Player* greenBlocker = nullptr;
-    auto greenBlockers = GetGreenBlockers(bot);
-    if (!greenBlockers.empty())
-    {
-        ObjectGuid& greenGuid = state.currentGreenBlocker ?
-            *state.currentGreenBlocker : state.currentGreenBlocker.emplace();
-        auto const it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [&greenGuid](Player* player)
-        {
-            return player && player->GetGUID() == greenGuid;
-        });
-
-        if (it != greenBlockers.end())
-            greenBlocker = *it;
-        else
-            greenBlocker = greenBlockers.front();
-
-        greenGuid = greenBlocker ? greenBlocker->GetGUID() : ObjectGuid::Empty;
-    }
-    else
-    {
-        greenBlocker = nullptr;
-    }
-
-    Player* blueBlocker = nullptr;
-    auto blueBlockers = GetBlueBlockers(bot);
-    if (!blueBlockers.empty())
-    {
-        ObjectGuid& blueGuid = state.currentBlueBlocker ?
-            *state.currentBlueBlocker : state.currentBlueBlocker.emplace();
-        auto const it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [&blueGuid](Player* player)
-        {
-            return player && player->GetGUID() == blueGuid;
-        });
-
-        if (it != blueBlockers.end())
-            blueBlocker = *it;
-        else
-            blueBlocker = blueBlockers.front();
-
-        blueGuid = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
-    }
-    else
-    {
-        blueBlocker = nullptr;
-    }
-
-    return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
-}
-
-std::vector<Unit*> GetAllVoidZones(Player* bot)
-{
-    std::vector<Unit*> voidZones;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 30.0f;
-
-    bot->GetCreatureListWithEntryInGrid(creatureList, Id(KaraNpcs::NPC_VOID_ZONE), searchRadius);
-
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            voidZones.push_back(creature);
-    }
-
-    return voidZones;
-}
-
-bool FindBeamPosition(
-    Unit* netherspite, Unit* portal, std::vector<Unit*> const& voidZones,
-    float idealDistance, Position& outPos)
-{
-    float bossX = netherspite->GetPositionX();
-    float bossY = netherspite->GetPositionY();
-    float portalX = portal->GetPositionX();
-    float portalY = portal->GetPositionY();
-
-    float dx = portalX - bossX;
-    float dy = portalY - bossY;
-    float length = netherspite->GetExactDist2d(portalX, portalY);
-    if (length == 0.0f)
+    if (PlayerbotAI::IsTank(bot) || netherspite.HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED)))
         return false;
 
-    constexpr float voidZoneRadius = 4.0f;
-    constexpr float searchMinDist = 18.0f;
-    constexpr float searchStep = 0.5f;
-    constexpr uint8 numSteps = 24;
+    KaraInstanceState const* state = FindKaraState(netherspite.GetInstanceId());
+    if (!state || !state->netherspiteDpsHoldTimer)
+        return true;
 
-    dx /= length;
-    dy /= length;
+    constexpr uint32 minimumHoldMs = 5 * IN_MILLISECONDS;
+    uint32 const elapsed = getMSTimeDiff(*state->netherspiteDpsHoldTimer, getMSTime());
+    if (elapsed < minimumHoldMs)
+        return true;
+    if (elapsed >= NETHERSPITE_BEAMS_START_MS)
+        return false;
 
-    float bestDist = std::numeric_limits<float>::max();
-    bool found = false;
+    Unit* victim = netherspite.GetVictim();
+    Player* player = victim ? victim->ToPlayer() : nullptr;
+    return !player || !PlayerbotAI::IsTank(player);
+}
 
-    for (uint8 i = 0; i <= numSteps; ++i)
-    {
-        float const dist = searchMinDist + i * searchStep;
-        float candidateX = bossX + dx * dist;
-        float candidateY = bossY + dy * dist;
-        float candidateZ = netherspite->GetPositionZ();
-        if (!IsSafePosition(candidateX, candidateY, voidZones, voidZoneRadius))
-            continue;
+bool AreNetherspitePortalsKnown(KaraInstanceState const& state)
+{
+    return std::all_of(
+        state.netherspiteBeams.begin(), state.netherspiteBeams.end(),
+        [](NetherspiteBeamState const& beam) { return beam.portal.has_value(); });
+}
 
-        float distToIdeal = fabs(dist - idealDistance);
-        if (distToIdeal < bestDist)
+bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid)
+{
+    return std::any_of(
+        state.netherspiteBeams.begin(), state.netherspiteBeams.end(),
+        [guid](NetherspiteBeamState const& beam)
         {
-            bestDist = distToIdeal;
-            outPos = Position(candidateX, candidateY, candidateZ);
-            found = true;
+            return beam.blocker == guid || beam.next == guid;
+        });
+}
+
+Position const* FindNetherspiteBlockerSpot(KaraInstanceState const& state, ObjectGuid guid)
+{
+    for (NetherspiteBeamState const& beam : state.netherspiteBeams)
+    {
+        if (beam.blocker == guid)
+            return &beam.blockerSpot;
+    }
+
+    return nullptr;
+}
+
+Position const* FindNetherspiteNextSpot(KaraInstanceState const& state, ObjectGuid guid)
+{
+    for (NetherspiteBeamState const& beam : state.netherspiteBeams)
+    {
+        if (beam.next == guid)
+            return &beam.nextSpot;
+    }
+
+    return nullptr;
+}
+
+NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
+    KaraInstanceState const& state, ObjectGuid guid)
+{
+    for (NetherspiteBanishSlot const& slot : state.netherspiteBanishSlots)
+    {
+        if (slot.guid == guid)
+            return &slot;
+    }
+
+    return nullptr;
+}
+
+NetherspiteBeamOffset GetNetherspiteBeamOffset(
+    Unit const& netherspite, Position const& portal, float x, float y)
+{
+    float const length = netherspite.GetExactDist2d(portal);
+    if (length == 0.0f)
+        return { 0.0f, 0.0f };
+
+    float const dirX = (portal.GetPositionX() - netherspite.GetPositionX()) / length;
+    float const dirY = (portal.GetPositionY() - netherspite.GetPositionY()) / length;
+    float const dx = x - netherspite.GetPositionX();
+    float const dy = y - netherspite.GetPositionY();
+    return { dx * dirX + dy * dirY, dy * dirX - dx * dirY };
+}
+
+bool IsOnNetherspiteBeam(Unit const& netherspite, Position const& portal, Unit const& unit)
+{
+    NetherspiteBeamOffset const offset = GetNetherspiteBeamOffset(
+        netherspite, portal, unit.GetPositionX(), unit.GetPositionY());
+    return offset.along > NETHERSPITE_BEAM_START &&
+        offset.along < netherspite.GetExactDist2d(portal) &&
+        std::abs(offset.off) < NETHERSPITE_BEAM_WIDTH;
+}
+
+bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance)
+{
+    return std::none_of(
+        state.netherspiteVoidZones.begin(), state.netherspiteVoidZones.end(),
+        [x, y, clearance](Position const& zone) { return zone.GetExactDist2d(x, y) < clearance; });
+}
+
+float GetNetherspiteInnerSide(
+    Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
+{
+    float const toOwn = Position::NormalizeOrientation(
+        GetBeamAngle(netherspite, state, beam) -
+        GetSideWithoutRed(netherspite, state).start);
+    return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
+}
+
+bool IsNetherspiteStandingSpotGood(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+{
+    if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) ||
+        !IsClearOfBeams(netherspite, state, x, y))
+    {
+        return false;
+    }
+
+    if (PlayerbotAI::IsTank(bot))
+        return true;
+
+    NetherspiteRadiusBand const band = GetNetherspiteRadiusBand(bot);
+    float const radius = netherspite.GetExactDist2d(x, y);
+    if (radius < band.low || radius > band.high)
+        return false;
+
+    NetherspiteArc const arc = GetNetherspiteStandingArc(bot, netherspite, state);
+    float const angle = netherspite.GetAngle(x, y);
+    if (Position::NormalizeOrientation(angle - arc.start) > arc.width)
+        return false;
+
+    if (PlayerbotAI::IsHeal(bot))
+    {
+        NetherspiteBeamState const& red = state.netherspiteBeams[Id(NetherspiteBeam::Red)];
+        return red.blocker.IsEmpty() ||
+            red.blockerSpot.GetExactDist2d(x, y) <= NETHERSPITE_HEALER_TANK_RANGE;
+    }
+
+    if (bot->getClass() == CLASS_HUNTER || !PlayerbotAI::IsMelee(bot))
+        return true;
+
+    // He faces the red blocker, and set behind is off.
+    float const fromRed = Position::NormalizeOrientation(
+        angle - GetBeamAngle(netherspite, state, NetherspiteBeam::Red));
+    return fromRed > M_PI / 2.0f && fromRed < 3.0f * M_PI / 2.0f;
+}
+
+std::optional<Position> FindNetherspiteStandingSpot(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state)
+{
+    float z = bot->GetPositionZ();
+    if (!PlayerbotAI::IsTank(bot))
+    {
+        NetherspiteArc const arc = GetNetherspiteStandingArc(bot, netherspite, state);
+        NetherspiteRadiusBand const band = GetNetherspiteRadiusBand(bot);
+        for (uint8 i = 0; i < NETHERSPITE_SPOT_TRIES; ++i)
+        {
+            float const angle = arc.start + frand(0.0f, arc.width);
+            float const radius = frand(band.low, band.high);
+            float const x = netherspite.GetPositionX() + std::cos(angle) * radius;
+            float const y = netherspite.GetPositionY() + std::sin(angle) * radius;
+            if (IsNetherspiteStandingSpotGood(bot, netherspite, state, x, y) &&
+                !CrossesBeamAfterStart(bot, netherspite, state, x, y) &&
+                GetFloorAt(bot, x, y, z))
+            {
+                return Position(x, y, z);
+            }
         }
     }
 
-    return found;
+    // A bot that can't get to the area without crossing a beam stays put unless it's in danger.
+    if (IsClearOfVoidZones(state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_CLEARANCE) &&
+        IsClearOfBeams(netherspite, state, bot->GetPositionX(), bot->GetPositionY()))
+    {
+        return std::nullopt;
+    }
+
+    // Nearest first, so a bot only steps clear of what it's standing in.
+    constexpr float maxDistance = 20.0f;
+    constexpr float distanceStep = 0.5f;
+    constexpr uint8 numAngles = 24;
+    for (float distance = 1.0f; distance <= maxDistance; distance += distanceStep)
+    {
+        for (uint8 i = 0; i < numAngles; ++i)
+        {
+            float const angle = i * 2.0f * M_PI / numAngles;
+            float const x = bot->GetPositionX() + std::cos(angle) * distance;
+            float const y = bot->GetPositionY() + std::sin(angle) * distance;
+            if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
+                IsClearOfBeams(netherspite, state, x, y) &&
+                !CrossesBeamAfterStart(bot, netherspite, state, x, y) &&
+                GetFloorAt(bot, x, y, z))
+            {
+                return Position(x, y, z);
+            }
+        }
+    }
+
+    return std::nullopt;
 }
 
 // Prince Malchezaar
@@ -914,9 +1021,10 @@ bool KaraResetInstance(uint32 instanceId)
         return false;
 
     KaraInstanceState const& state = it->second;
-    bool const wasSet = state.attumenDpsWaitTimer || state.netherspiteDpsWaitTimer ||
-        state.currentRedBlocker || state.currentGreenBlocker || state.currentBlueBlocker ||
-        state.nightbaneDpsHoldTimer || state.nightbaneFlightStage ||
+    bool const wasSet = state.attumenDpsWaitTimer || state.netherspiteDpsHoldTimer ||
+        AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
+        !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
+        state.nightbaneFlightStage ||
         state.nightbaneFlightSpot || state.nightbaneRainOfBonesCenter;
 
     karaStates.erase(it);

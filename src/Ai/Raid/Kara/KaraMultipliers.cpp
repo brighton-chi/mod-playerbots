@@ -403,70 +403,46 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
 
 // Netherspite
 
-float NetherspiteKeepBlockingBeamMultiplier::GetValueInEncounter(Action* action)
+// The beam area and the banish slots are where every bot stands, so nothing else moves them. Bots
+// on a beam or waiting for one don't reach either, except that a red blocker can follow him.
+float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    bool const isReachTargetAction =
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action);
-
-    bool const isBlockedAction =
-        isReachTargetAction ||
-        dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<AvoidAoeAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action);
-
-    if (!isBlockedAction)
-        return 1.0f;
-
-    Unit* netherspite = GetEncounterBoss();
-    if (!netherspite)
-        return 1.0f;
-
-    // Derived from CombatFormationMoveAction. Block even in Banish phase so the tank stays put.
-    if (dynamic_cast<TankFaceAction*>(action))
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action))
+    {
         return 0.0f;
+    }
 
-    if (IsBanishPhase(netherspite))
-        return 1.0f;
-
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(bot);
-
-    if (bot == greenBlocker || bot == blueBlocker)
-        return 0.0f;
-
-    return bot == redBlocker && !isReachTargetAction ? 0.0f : 1.0f;
-}
-
-// Give tanks 5 seconds to get aggro during phase transitions
-float NetherspiteWaitForDpsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (PlayerbotAI::IsTank(bot))
-        return 1.0f;
-
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
 
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    if (!state ||
+        state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())
+    {
+        return 1.0f;
+    }
+
+    return IsNetherspiteBlockerOrNext(*state, bot->GetGUID()) ? 0.0f : 1.0f;
+}
+
+float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
     Unit* netherspite = GetEncounterBoss();
-    if (!netherspite || IsBanishPhase(netherspite))
+    if (!netherspite || !IsNetherspiteDpsHeld(bot, *netherspite))
         return 1.0f;
 
-    KaraInstanceState const* state = FindKaraState(netherspite->GetInstanceId());
-    if (!state || !state->netherspiteDpsWaitTimer)
-        return 0.0f;
-
-    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(*state->netherspiteDpsWaitTimer, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return GetActionTargetOrCurrentTarget(botAI, action) == netherspite ?
+        GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Prince Malchezaar
