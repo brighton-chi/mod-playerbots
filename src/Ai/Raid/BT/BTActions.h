@@ -526,6 +526,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilNonTanksAvoidZerevorAction : public MovementAction
+{
+public:
+    IllidariCouncilNonTanksAvoidZerevorAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "illidari council non-tanks avoid zerevor") {}
+    bool Execute(Event event) override;
+};
+
 class IllidariCouncilCommandPetTargetAction : public AttackAction
 {
 public:

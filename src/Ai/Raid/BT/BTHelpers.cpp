@@ -1328,6 +1328,45 @@ bool IsZerevorOnMageTank(Player* bot, Unit* zerevor)
     return mageTank && zerevor->GetVictim() == mageTank;
 }
 
+bool FindZerevorAvoidPosition(Player* bot, Unit* gathios, Unit* zerevor, Position& destination)
+{
+    if (!zerevor)
+        return false;
+
+    constexpr uint8 pointCount = 16;
+
+    std::vector<Position> candidates;
+    for (uint8 i = 0; i < pointCount; ++i)
+    {
+        float const angle = 2.0f * static_cast<float>(M_PI) * i / pointCount;
+        Position const point(
+            zerevor->GetPositionX() + ZEREVOR_AVOID_DISTANCE * std::cos(angle),
+            zerevor->GetPositionY() + ZEREVOR_AVOID_DISTANCE * std::sin(angle),
+            bot->GetPositionZ());
+
+        if (!IsInCouncilPatch(point, gathios, zerevor, COUNCIL_PATCH_MARGIN))
+            candidates.push_back(point);
+    }
+
+    std::sort(
+        candidates.begin(), candidates.end(),
+        [bot](Position const& a, Position const& b)
+        {
+            return bot->GetExactDist2d(a) < bot->GetExactDist2d(b);
+        });
+
+    for (Position const& candidate : candidates)
+    {
+        if (!CanMoveStraightTo(bot, candidate))
+            continue;
+
+        destination = candidate;
+        return true;
+    }
+
+    return false;
+}
+
 // Within heal range of the mage tank, clear of Arcane Explosion, and not standing in a patch.
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor)
 {

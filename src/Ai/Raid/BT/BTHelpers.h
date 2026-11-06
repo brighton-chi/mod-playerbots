@@ -228,6 +228,7 @@ Unit* GetBtBoss(Player* bot, BtBosses boss);
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 // How close to its assigned spot a bot has to stand to count as arrived.
 inline constexpr float BT_ARRIVAL_DISTANCE = 2.0f;
+inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
@@ -452,7 +453,6 @@ inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
 // Non-mage dispellers wait this long into each Rune Shield to dispel to leave a window for mages
 // to Spellsteal.
 inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
-inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
 // Null until the essence is in combat, about 4s after it emerges.
 Unit* GetReliquaryEssence(Player* bot, std::string_view essence);
@@ -504,6 +504,8 @@ inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
 inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
 // Zerevor casts Arcane Explosion when anyone is within 10 yd, plus both combat reaches (14.65 yd).
 inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
+// Non-tanks closer than the safe distance move away to this distance from Zerevor.
+inline constexpr float ZEREVOR_AVOID_DISTANCE = 18.0f;
 // A patch hits a player whose center is within its radius plus the player's 1.5 yd combat reach,
 // and we add another yard for good measure.
 inline constexpr float COUNCIL_PATCH_MARGIN = 2.5f;
@@ -549,6 +551,7 @@ bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor);
 bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor);
 bool IsZerevorOnMageTank(Player* bot, Unit* zerevor);
+bool FindZerevorAvoidPosition(Player* bot, Unit* gathios, Unit* zerevor, Position& destination);
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);
 bool FindMageTankHealerPosition(
     Player* bot, Player* mageTank, Unit* zerevor, Position& destination);

@@ -525,6 +525,25 @@ bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
         !bot->IsWithinLOSInMap(mageTank);
 }
 
+bool IllidariCouncilNonTanksShouldAvoidZerevorTrigger::IsActiveInEncounter()
+{
+    if (PlayerbotAI::IsTank(bot) || IsZerevorMageTank(bot))
+        return false;
+
+    Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
+    if (!zerevor || bot->GetExactDist2d(zerevor) >= ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE)
+        return false;
+
+    Player* mageTank = GetZerevorMageTank(bot);
+    if (!mageTank)
+        return false;
+
+    if (zerevor->GetVictim() == mageTank && PlayerbotAI::IsAssistHealOfIndex(bot, 0, true))
+        return false;
+
+    return true;
+}
+
 bool IllidariCouncilRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))

@@ -1647,14 +1647,30 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
             Id(BtSpells::SPELL_VIGILANCE), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     }
 
-    if (zerevor->HasAura(Id(BtSpells::SPELL_DAMPEN_MAGIC)) &&
-        botAI->CanCastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor))
-    {
-        return botAI->CastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor);
-    }
+    if (AI_VALUE(Unit*, "current target") != zerevor && Attack(zerevor))
+        return true;
 
-    if (AI_VALUE(Unit*, "current target") != zerevor)
-        return Attack(zerevor);
+    // The mage tank needs Dampen Magic to survive Zerevor, so stealing it is top priority. A
+    // custom move is needed since CanCastSpell does not reject a target out of range.
+    if (zerevor->HasAura(Id(BtSpells::SPELL_DAMPEN_MAGIC)))
+    {
+        if (!bot->IsWithinCombatRange(zerevor, SPELLSTEAL_RANGE))
+        {
+            float stepX;
+            float stepY;
+            if (GetPathStepTowardUnit(
+                    bot, zerevor, SPELLSTEAL_RANGE, PATH_STEP_DISTANCE, stepX, stepY))
+            {
+                return MoveTo(
+                    BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
+                    MovementPriority::MOVEMENT_FORCED, true, false);
+            }
+        }
+        else if (botAI->CanCastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor))
+        {
+            return botAI->CastSpell(Id(BtSpells::SPELL_SPELLSTEAL), zerevor);
+        }
+    }
 
     if (zerevor->GetVictim() != bot)
         return false;
@@ -1710,6 +1726,27 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
         priority, true, false);
+}
+
+bool IllidariCouncilNonTanksAvoidZerevorAction::Execute(Event /*event*/)
+{
+    IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);
+    Position destination;
+    if (!FindZerevorAvoidPosition(bot, members.gathios, members.zerevor, destination))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, destination, BT_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
 bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)

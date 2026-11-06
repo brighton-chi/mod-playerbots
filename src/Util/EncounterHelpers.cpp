@@ -791,16 +791,19 @@ bool IsAoeThreatAction(Player* bot, Action* action)
         case CLASS_DEATH_KNIGHT:
             return dynamic_cast<CastDeathAndDecayAction*>(action) ||
                 dynamic_cast<CastPestilenceAction*>(action) ||
-                dynamic_cast<CastBloodBoilAction*>(action);
+                dynamic_cast<CastBloodBoilAction*>(action) ||
+                dynamic_cast<CastHeartStrikeAction*>(action);
 
         case CLASS_DRUID:
             return dynamic_cast<CastSwipeBearAction*>(action) ||
                 dynamic_cast<CastMaulAction*>(action) || // Hits multiple targets with the Glyph
-                dynamic_cast<CastDemoralizingRoarAction*>(action);
+                dynamic_cast<CastDemoralizingRoarAction*>(action) ||
+                dynamic_cast<CastBerserkAction*>(action); // Causes Mangle (Bear) to chain
 
         case CLASS_PALADIN:
             return dynamic_cast<CastAvengersShieldAction*>(action) ||
-                dynamic_cast<CastConsecrationAction*>(action);
+                dynamic_cast<CastConsecrationAction*>(action) ||
+                dynamic_cast<CastHammerOfTheRighteousAction*>(action);
 
         case CLASS_WARRIOR:
             return dynamic_cast<CastThunderClapAction*>(action) ||

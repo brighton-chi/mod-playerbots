@@ -173,6 +173,9 @@ public:
         creators["illidari council position mage tank healer"] =
             &RaidBlackTempleActionContext::illidari_council_position_mage_tank_healer;
 
+        creators["illidari council non-tanks avoid zerevor"] =
+            &RaidBlackTempleActionContext::illidari_council_non_tanks_avoid_zerevor;
+
         creators["illidari council spread ranged"] =
             &RaidBlackTempleActionContext::illidari_council_spread_ranged;
 
@@ -504,6 +507,10 @@ private:
     static Action* illidari_council_position_mage_tank_healer(PlayerbotAI* botAI)
     {
         return new IllidariCouncilPositionMageTankHealerAction(botAI);
+    }
+    static Action* illidari_council_non_tanks_avoid_zerevor(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilNonTanksAvoidZerevorAction(botAI);
     }
     static Action* illidari_council_spread_ranged(PlayerbotAI* botAI)
     {
