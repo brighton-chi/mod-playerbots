@@ -184,16 +184,7 @@ bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
         return pleasure && MarkTargetWithSkull(bot, pleasure);
     }
 
-    Unit* pain = nullptr;
-    for (Unit* unit : { bot->GetVictim(), AI_VALUE(Unit*, "current target") })
-    {
-        if (unit && unit->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
-        {
-            pain = unit;
-            break;
-        }
-    }
-
+    Unit* pain = FindEngagedSisterOfPain(botAI);
     if (!pain)
         return false;
 

@@ -283,6 +283,18 @@ Unit* GetSkulledSisterOfPain(Player* bot)
         ObjectAccessor::GetUnit(*bot, group->GetTargetIcon(RtiTargetValue::skullIndex)));
 }
 
+Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI)
+{
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    for (Unit* target : { botAI->GetBot()->GetVictim(), currentTarget })
+    {
+        if (target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
+            return target;
+    }
+
+    return nullptr;
+}
+
 // True while magic would risk building a Chaotic Charge: (1) during Spell Absorption, (2) before
 // the first Spell Absorption is cast, and (3) in the margin before the earliest possible recast.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)

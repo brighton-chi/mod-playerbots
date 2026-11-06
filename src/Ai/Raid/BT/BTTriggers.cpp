@@ -51,13 +51,7 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    for (Unit* target : { bot->GetVictim(), AI_VALUE(Unit*, "current target") })
-    {
-        if (target && target->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN))
-            return true;
-    }
-
-    return false;
+    return FindEngagedSisterOfPain(botAI);
 }
 
 // Wands keep shooting once started, so a multiplier alone can't stop wanding.

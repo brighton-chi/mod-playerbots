@@ -244,6 +244,7 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure);
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
+Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI);
 
 enum class ChaoticChargeReach : uint8
 {
