@@ -154,8 +154,6 @@ Unit* GetKaraBoss(Player* bot, KaraBosses boss);
 // actor counts only once released, as the script itself tests.
 Unit* GetOperaActor(Player* bot, std::string_view name);
 
-bool IsSafePosition (float x, float y, std::vector<Unit*> const& hazards, float hazardRadius);
-
 // Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf, Dorothee or Roar is
 // fighting, or Nightbane is on the ground.
 bool IsKarazhanFearCasterActive(Player* bot);
@@ -428,14 +426,88 @@ std::optional<Position> FindNetherspiteStandingSpot(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state);
 
 // Prince Malchezaar
-std::vector<Unit*> GetSpawnedInfernals(Player* bot);
-bool IsStraightPathSafe(
-    float startX, float startY, float targetX, float targetY,
-    std::vector<Unit*> const& hazards, float hazardRadius);
-bool TryFindSafePositionWithSafePath(
-    Player* bot, float originX, float originY, float centerX, float centerY,
-    std::vector<Unit*> const& hazards, float safeDistance, float maxSampleDist,
-    float& outX, float& outY);
+// Hellfire and Shadow Nova are NPC AoE on target 16 and 15: exact distance, no reach.
+inline constexpr float HELLFIRE_RADIUS = 20.0f;
+inline constexpr float HELLFIRE_CLEARANCE = HELLFIRE_RADIUS + 1.0f;
+inline constexpr float SHADOW_NOVA_RADIUS = 30.0f;
+inline constexpr float SHADOW_NOVA_MOVE_DISTANCE = SHADOW_NOVA_RADIUS + 1.0f;
+inline constexpr float SHADOW_NOVA_CLEARANCE = SHADOW_NOVA_RADIUS + 2.0f;
+// His melee range for a player: his reach 4 + 1.5 + 4/3.
+inline constexpr float MALCHEZAAR_MELEE_RANGE = 6.83f;
+// With him this clear of a landed infernal, all of his melee ring is clear of it.
+inline constexpr float MALCHEZAAR_RING_CLEARANCE = HELLFIRE_CLEARANCE + MALCHEZAAR_MELEE_RANGE;
+// He ends about this far behind a tank walking him away.
+inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 5.5f;
+// The model the infernal has until Infernal Rain lands on it.
+inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
+inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 LANDED_INFERNALS_CACHE_INTERVAL_MS = 200;
+
+std::vector<Position> FindLandedInfernals(Player* bot);
+std::vector<Position> GetLandedInfernals(PlayerbotAI* botAI);
+bool IsClearOfInfernals(
+    Position const& position, std::vector<Position> const& infernals, float clearance);
+// An infernal the line starts inside doesn't count, since the bot is walking out of it.
+bool IsLineClearOfInfernals(
+    Position const& from, Position const& to, std::vector<Position> const& infernals);
+bool CanWalkStraightTo(Player* bot, Position const& destination);
+// The nearest spot on rings around origin that passes isGood and can be walked to in a straight
+// line. A line clear of landed infernals comes first; with mayCross, any line after that.
+template <typename IsGood>
+std::optional<Position> FindMalchezaarSpot(
+    Player* bot, Position const& origin, std::vector<Position> const& infernals,
+    float maxDistance, bool mayCross, IsGood const& isGood)
+{
+    constexpr float ringStep = 2.0f;
+    constexpr uint8 angleCount = 32;
+    constexpr uint8 maxWalkChecks = 64;
+
+    int const ringCount = static_cast<int>(maxDistance / ringStep);
+    uint8 walkChecks = 0;
+    for (bool const clearLine : { true, false })
+    {
+        if (!clearLine && !mayCross)
+            break;
+
+        for (int ring = 1; ring <= ringCount; ++ring)
+        {
+            float const distance = ring * ringStep;
+            for (uint8 i = 0; i < angleCount; ++i)
+            {
+                float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
+                Position const candidate(
+                    origin.GetPositionX() + distance * std::cos(angle),
+                    origin.GetPositionY() + distance * std::sin(angle), origin.GetPositionZ());
+
+                if (!isGood(candidate) ||
+                    (clearLine && !IsLineClearOfInfernals(origin, candidate, infernals)))
+                {
+                    continue;
+                }
+
+                if (walkChecks >= maxWalkChecks)
+                    return std::nullopt;
+
+                ++walkChecks;
+                if (CanWalkStraightTo(bot, candidate))
+                    return candidate;
+            }
+        }
+    }
+
+    return std::nullopt;
+}
+// The nearest clear spot in range of the bot's target: for a ranged bot on a ring just out of
+// Shadow Nova, for melee on the target's melee ring. Failing that, the nearest clear spot anywhere.
+std::optional<Position> FindMalchezaarStandingSpot(
+    PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals);
+bool IsMalchezaarStandingSpotGood(
+    Player* bot, Unit const& malchezaar, std::vector<Position> const& infernals,
+    Position const& spot);
+// Sets clearance to what the spot is clear by: enough for his melee ring and his trail if it can,
+// then less.
+std::optional<Position> FindMalchezaarTankSpot(
+    Player* bot, std::vector<Position> const& infernals, float& clearance);
 
 // Nightbane
 enum class NightbaneFlightStage : uint8

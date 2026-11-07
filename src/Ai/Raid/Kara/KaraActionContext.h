@@ -142,8 +142,8 @@ public:
         creators["prince malchezaar enfeebled bot avoid hazard"] =
             &RaidKarazhanActionContext::prince_malchezaar_enfeebled_bot_avoid_hazard;
 
-        creators["prince malchezaar non-tank avoid infernal"] =
-            &RaidKarazhanActionContext::prince_malchezaar_non_tank_avoid_infernal;
+        creators["prince malchezaar move clear of hazards"] =
+            &RaidKarazhanActionContext::prince_malchezaar_move_clear_of_hazards;
 
         creators["prince malchezaar tanks position boss"] =
             &RaidKarazhanActionContext::prince_malchezaar_tanks_position_boss;
@@ -352,9 +352,9 @@ private:
     {
         return new PrinceMalchezaarEnfeebledBotAvoidHazardAction(botAI);
     }
-    static Action* prince_malchezaar_non_tank_avoid_infernal(PlayerbotAI* botAI)
+    static Action* prince_malchezaar_move_clear_of_hazards(PlayerbotAI* botAI)
     {
-        return new PrinceMalchezaarNonTankAvoidInfernalAction(botAI);
+        return new PrinceMalchezaarMoveClearOfHazardsAction(botAI);
     }
     static Action* prince_malchezaar_tanks_position_boss(PlayerbotAI* botAI)
     {

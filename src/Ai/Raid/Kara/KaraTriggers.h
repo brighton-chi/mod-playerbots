@@ -481,12 +481,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class PrinceMalchezaarEngagedByNonTanksTrigger : public KarazhanEncounterTrigger
+class PrinceMalchezaarBotInHazardTrigger : public KarazhanEncounterTrigger
 {
 public:
-    PrinceMalchezaarEngagedByNonTanksTrigger(PlayerbotAI* botAI)
+    PrinceMalchezaarBotInHazardTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "prince malchezaar engaged by non-tanks",
+            botAI, "prince malchezaar bot in hazard",
             KaraHelpers::KaraBosses::DATA_MALCHEZAAR) {}
 
 protected:

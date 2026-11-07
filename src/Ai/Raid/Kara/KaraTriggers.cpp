@@ -332,25 +332,45 @@ bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 
 bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE));
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
+        return false;
+
+    Unit* malchezaar = GetEncounterBoss();
+    if (!malchezaar)
+        return false;
+
+    if (bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE ||
+        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE))
+    {
+        return true;
+    }
+
+    Action* action = context->GetAction("prince malchezaar enfeebled bot avoid hazard");
+    return action &&
+        static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action)->HasDestination();
 }
 
-bool PrinceMalchezaarEngagedByNonTanksTrigger::IsActiveInEncounter()
+bool PrinceMalchezaarBotInHazardTrigger::IsActiveInEncounter()
 {
     Unit* malchezaar = GetEncounterBoss();
     if (!malchezaar)
         return false;
 
-    if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
-        return false;
-
-    if ((PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot) ||
-        PlayerbotAI::IsMainTank(bot))
+    if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)) ||
+        (PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot))
     {
         return false;
     }
 
-    return true;
+    if ((PlayerbotAI::IsRanged(bot) && bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE) ||
+        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE))
+    {
+        return true;
+    }
+
+    Action* action = context->GetAction("prince malchezaar move clear of hazards");
+    return action &&
+        static_cast<PrinceMalchezaarMoveClearOfHazardsAction*>(action)->HasDestination();
 }
 
 bool PrinceMalchezaarShouldBeTankedTrigger::IsActiveInEncounter()

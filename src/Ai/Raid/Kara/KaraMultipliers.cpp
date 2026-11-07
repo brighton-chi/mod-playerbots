@@ -447,11 +447,17 @@ float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
 // Prince Malchezaar
 
+float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isReactiveMovement =
+        dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action);
+
+    return isReactiveMovement ? 0.0f : 1.0f;
+}
+
 float PrinceMalchezaarEnfeebleMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
         return 1.0f;
 

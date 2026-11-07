@@ -378,14 +378,34 @@ public:
     PrinceMalchezaarEnfeebledBotAvoidHazardAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "prince malchezaar enfeebled bot avoid hazard") {}
     bool Execute(Event event) override;
+    bool HasDestination() const { return _destination.has_value(); }
+    bool ResetDestination()
+    {
+        bool const wasSet = _destination.has_value();
+        _destination.reset();
+        return wasSet;
+    }
+
+private:
+    std::optional<Position> _destination;
 };
 
-class PrinceMalchezaarNonTankAvoidInfernalAction : public MovementAction
+class PrinceMalchezaarMoveClearOfHazardsAction : public MovementAction
 {
 public:
-    PrinceMalchezaarNonTankAvoidInfernalAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "prince malchezaar non tank avoid infernal") {}
+    PrinceMalchezaarMoveClearOfHazardsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "prince malchezaar move clear of hazards") {}
     bool Execute(Event event) override;
+    bool HasDestination() const { return _destination.has_value(); }
+    bool ResetDestination()
+    {
+        bool const wasSet = _destination.has_value();
+        _destination.reset();
+        return wasSet;
+    }
+
+private:
+    std::optional<Position> _destination;
 };
 
 class PrinceMalchezaarTanksPositionBossAction : public AttackAction
@@ -394,6 +414,19 @@ public:
     PrinceMalchezaarTanksPositionBossAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "prince malchezaar tanks position boss") {}
     bool Execute(Event event) override;
+    bool ResetWalk()
+    {
+        bool const wasSet = _destination.has_value() || _searchedInfernalCount.has_value();
+        _destination.reset();
+        _searchedInfernalCount.reset();
+        return wasSet;
+    }
+
+private:
+    std::optional<Position> _destination;
+    float _destinationClearance = 0.0f;
+    // No new search until the number of landed infernals changes.
+    std::optional<size_t> _searchedInfernalCount;
 };
 
 // Nightbane

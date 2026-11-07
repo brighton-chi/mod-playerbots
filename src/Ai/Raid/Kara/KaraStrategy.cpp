@@ -138,8 +138,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("prince malchezaar bot is enfeebled",
         { NextAction("prince malchezaar enfeebled bot avoid hazard", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("prince malchezaar engaged by non-tanks",
-        { NextAction("prince malchezaar non-tank avoid infernal", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("prince malchezaar bot in hazard",
+        { NextAction("prince malchezaar move clear of hazards", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("prince malchezaar should be tanked",
         { NextAction("prince malchezaar tanks position boss", ACTION_EMERGENCY + 6) }));
@@ -186,6 +186,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteHoldDpsMultiplier(botAI));
+    multipliers.push_back(new PrinceMalchezaarDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarEnfeebleMultiplier(botAI));
     multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
     multipliers.push_back(new NightbaneHoldDpsMultiplier(botAI));

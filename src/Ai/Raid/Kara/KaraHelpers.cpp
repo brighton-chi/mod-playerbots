@@ -162,18 +162,6 @@ Unit* GetOperaActor(Player* bot, std::string_view name)
     return actor && !actor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ? actor : nullptr;
 }
 
-bool IsSafePosition(float x, float y, std::vector<Unit*> const& hazards, float hazardRadius)
-{
-    for (Unit* hazard : hazards)
-    {
-        float dist = hazard->GetDistance2d(x, y);
-        if (dist < hazardRadius)
-            return false;
-    }
-
-    return true;
-}
-
 bool IsKarazhanFearCasterActive(Player* bot)
 {
     if (FindThreatTarget(bot, "spectral charger") || GetOperaActor(bot, "the big bad wolf"))
@@ -816,113 +804,166 @@ std::optional<Position> FindNetherspiteStandingSpot(
 
 // Prince Malchezaar
 
-std::vector<Unit*> GetSpawnedInfernals(Player* bot)
+std::vector<Position> FindLandedInfernals(Player* bot)
 {
-    std::vector<Unit*> infernals;
+    std::vector<Position> infernals;
     std::list<Creature*> creatureList;
-    constexpr float searchRadius = 100.0f;
-
     bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(KaraNpcs::NPC_NETHERSPITE_INFERNAL), searchRadius);
+        creatureList, Id(KaraNpcs::NPC_NETHERSPITE_INFERNAL), INFERNAL_SEARCH_RADIUS);
 
     for (Creature* creature : creatureList)
     {
-        if (creature && creature->IsAlive())
-            infernals.push_back(creature);
+        if (creature->IsAlive() && creature->GetDisplayId() != INFERNAL_MODEL_INVISIBLE)
+            infernals.push_back(creature->GetPosition());
     }
 
     return infernals;
 }
 
-bool IsStraightPathSafe(
-    float sx, float sy, float tx, float ty, std::vector<Unit*> const& hazards, float hazardRadius)
+std::vector<Position> GetLandedInfernals(PlayerbotAI* botAI)
 {
-    float const totalDistX = tx - sx;
-    float const totalDistY = ty - sy;
-    float const totalDist = sqrt(totalDistX * totalDistX + totalDistY * totalDistY);
-    if (totalDist == 0.0f)
-        return true;
-
-    constexpr float stepSize = 0.5f;
-    int const numSteps = static_cast<int>(totalDist / stepSize);
-    for (int i = 0; i <= numSteps; ++i)
-    {
-        float const checkDist = i * stepSize;
-        float const t = (totalDist > 0.0f) ? checkDist / totalDist : 0.0f;
-        float checkX = sx + totalDistX * t;
-        float checkY = sy + totalDistY * t;
-        for (Unit* hazard : hazards)
-        {
-            float const hx = checkX - hazard->GetPositionX();
-            float const hy = checkY - hazard->GetPositionY();
-            if ((hx*hx + hy*hy) < hazardRadius * hazardRadius)
-                return false;
-        }
-    }
-
-    return true;
+    return botAI->GetAiObjectContext()
+        ->GetValue<std::vector<Position>>("prince malchezaar landed infernals")->Get();
 }
 
-bool TryFindSafePositionWithSafePath(
-    Player* bot, float originX, float originY, float centerX, float centerY,
-    std::vector<Unit*> const& hazards, float safeDistance, float maxSampleDist,
-    float& outX, float& outY)
+bool IsClearOfInfernals(
+    Position const& position, std::vector<Position> const& infernals, float clearance)
 {
-    constexpr uint8 numAngles = 64;
-    constexpr float stepSize = 0.5f;
-
-    // Attempt to find a safe path, but take any path to a safe position if no safe path is found
-    for (bool requireSafePath : { true, false })
+    return std::none_of(infernals.begin(), infernals.end(), [&](Position const& infernal)
     {
-        float bestMoveDistSq = std::numeric_limits<float>::max();
-        bool found = false;
+        return infernal.GetExactDist2d(position) < clearance;
+    });
+}
 
-        for (int i = 0; i < numAngles; ++i)
+bool IsLineClearOfInfernals(
+    Position const& from, Position const& to, std::vector<Position> const& infernals)
+{
+    return std::none_of(infernals.begin(), infernals.end(), [&](Position const& infernal)
+    {
+        return infernal.GetExactDist2d(from) >= HELLFIRE_RADIUS &&
+            GetDistanceToSegment2d(infernal, from, to) < HELLFIRE_RADIUS;
+    });
+}
+
+bool CanWalkStraightTo(Player* bot, Position const& destination)
+{
+    float x = destination.GetPositionX();
+    float y = destination.GetPositionY();
+    float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+    if (z <= INVALID_HEIGHT)
+        z = bot->GetPositionZ();
+
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
+        return false;
+
+    // An incomplete path can cut the point short without counting as a collision.
+    constexpr float truncationTolerance = 1.0f;
+    return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
+        truncationTolerance;
+}
+
+std::optional<Position> FindMalchezaarStandingSpot(
+    PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
+{
+    Player* bot = botAI->GetBot();
+    bool const isRanged = PlayerbotAI::IsRanged(bot);
+    bool const isHealer = PlayerbotAI::IsHeal(bot);
+    Unit const* target = botAI->GetAiObjectContext()
+        ->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    if (!target)
+        target = &malchezaar;
+
+    constexpr float rangeInset = 1.0f;
+    float const reach = (isRanged ?
+        botAI->GetRange(isHealer ? "heal" : "spell") + bot->GetCombatReach() +
+            target->GetCombatReach() :
+        bot->GetMeleeRange(target)) - rangeInset;
+
+    // Ranged go to a ring just out of Shadow Nova and melee to his melee ring, so the nearest point
+    // is straight out, or straight in, from where the bot stands.
+    Unit const* center = isRanged ? &malchezaar : target;
+    float const ringRadius = isRanged ? SHADOW_NOVA_CLEARANCE : reach;
+    Position const origin = bot->GetPosition();
+
+    constexpr uint8 angleCount = 72;
+    std::vector<std::pair<float, Position>> candidates;
+    for (uint8 i = 0; i < angleCount; ++i)
+    {
+        float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
+        Position const candidate(
+            center->GetPositionX() + ringRadius * std::cos(angle),
+            center->GetPositionY() + ringRadius * std::sin(angle), origin.GetPositionZ());
+
+        if (IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
+            (target == center || target->GetExactDist2d(candidate) <= reach))
         {
-            float angle = (2.0f * M_PI * i) / numAngles;
-            float dx = cos(angle);
-            float dy = sin(angle);
-
-            int const numSteps = static_cast<int>(maxSampleDist / stepSize);
-            for (int j = 1; j <= numSteps; ++j)
-            {
-                float const dist = j * stepSize;
-                float destX = centerX + dx * dist;
-                float destY = centerY + dy * dist;
-                float destZ = bot->GetPositionZ();
-                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                        bot, centerX, centerY, destZ, destX, destY, destZ, true))
-                {
-                    continue;
-                }
-
-                if (!IsSafePosition(destX, destY, hazards, safeDistance))
-                    continue;
-
-                if (requireSafePath)
-                {
-                    if (!IsStraightPathSafe(originX, originY, destX, destY, hazards, safeDistance))
-                        continue;
-                }
-
-                float const toDestX = destX - originX;
-                float const toDestY = destY - originY;
-                float const moveDistSq = toDestX*toDestX + toDestY*toDestY;
-                if (moveDistSq < bestMoveDistSq)
-                {
-                    bestMoveDistSq = moveDistSq;
-                    outX = destX;
-                    outY = destY;
-                    found = true;
-                }
-            }
+            candidates.emplace_back(origin.GetExactDist2d(candidate), candidate);
         }
-
-        if (found)
-            return true;
     }
 
-    return false;
+    std::stable_sort(candidates.begin(), candidates.end(), [](auto const& a, auto const& b)
+    {
+        return a.first < b.first;
+    });
+
+    for (bool const clearLine : { true, false })
+    {
+        for (auto const& [distance, candidate] : candidates)
+        {
+            if ((!clearLine || IsLineClearOfInfernals(origin, candidate, infernals)) &&
+                CanWalkStraightTo(bot, candidate))
+            {
+                return candidate;
+            }
+        }
+    }
+
+    constexpr float searchDistance = 60.0f;
+    return FindMalchezaarSpot(
+        bot, origin, infernals, searchDistance, true, [&](Position const& candidate)
+        {
+            return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
+                (!isRanged || malchezaar.GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
+        });
+}
+
+bool IsMalchezaarStandingSpotGood(
+    Player* bot, Unit const& malchezaar, std::vector<Position> const& infernals,
+    Position const& spot)
+{
+    return IsClearOfInfernals(spot, infernals, HELLFIRE_CLEARANCE) &&
+        (!PlayerbotAI::IsRanged(bot) ||
+         malchezaar.GetExactDist2d(spot) >= SHADOW_NOVA_MOVE_DISTANCE);
+}
+
+std::optional<Position> FindMalchezaarTankSpot(
+    Player* bot, std::vector<Position> const& infernals, float& clearance)
+{
+    constexpr float searchDistance = 60.0f;
+    constexpr float clearances[] =
+    {
+        MALCHEZAAR_RING_CLEARANCE + MALCHEZAAR_TRAIL_DISTANCE,
+        MALCHEZAAR_RING_CLEARANCE,
+        HELLFIRE_CLEARANCE + 1.0f,
+    };
+
+    for (float const candidateClearance : clearances)
+    {
+        std::optional<Position> const spot = FindMalchezaarSpot(
+            bot, bot->GetPosition(), infernals, searchDistance, true,
+            [&](Position const& candidate)
+            {
+                return IsClearOfInfernals(candidate, infernals, candidateClearance);
+            });
+
+        if (spot)
+        {
+            clearance = candidateClearance;
+            return spot;
+        }
+    }
+
+    return std::nullopt;
 }
 
 // Nightbane

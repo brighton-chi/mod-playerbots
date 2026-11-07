@@ -53,6 +53,28 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* enfeebleAction = context->GetAction("prince malchezaar enfeebled bot avoid hazard");
+    if (enfeebleAction &&
+        static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(enfeebleAction)
+            ->ResetDestination())
+    {
+        reset = true;
+    }
+
+    Action* hazardAction = context->GetAction("prince malchezaar move clear of hazards");
+    if (hazardAction &&
+        static_cast<PrinceMalchezaarMoveClearOfHazardsAction*>(hazardAction)->ResetDestination())
+    {
+        reset = true;
+    }
+
+    Action* tankAction = context->GetAction("prince malchezaar tanks position boss");
+    if (tankAction &&
+        static_cast<PrinceMalchezaarTanksPositionBossAction*>(tankAction)->ResetWalk())
+    {
+        reset = true;
+    }
+
     Action* petAction = context->GetAction("nightbane control pet aggression");
     if (petAction &&
         static_cast<NightbaneControlPetAggressionAction*>(petAction)->ResetPetStance())
@@ -1452,111 +1474,104 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 // Prince Malchezaar
 // CombatReach is 4 yards
 
+// One tick kills at 1 health, so this run never crosses a landed infernal. Shadow Nova lands 7.5 s
+// after Enfeeble, which is about 52 yd of walking.
 bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (!IsMovingAllowed())
+        return false;
+
+    // Taking the tick keeps a new cast from starting between steps.
+    if (IsWaitingForLastMove(priority))
+        return true;
+
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
         return false;
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
-
-    constexpr uint8 numAngles = 64;
-    constexpr float minSafeBossDistance = 32.0f;
-    constexpr float distIncrement = 0.5f;
-    constexpr uint8 numSteps = 56;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const bossX = malchezaar->GetPositionX();
-    float const bossY = malchezaar->GetPositionY();
-    float bestMoveDistSq = std::numeric_limits<float>::max();
-    float bestDestX = 0.0f;
-    float bestDestY = 0.0f;
-    bool found = false;
-
-    for (int i = 0; i < numAngles; ++i)
+    std::vector<Position> const infernals = GetLandedInfernals(botAI);
+    if (_destination &&
+        (!IsClearOfInfernals(*_destination, infernals, HELLFIRE_CLEARANCE) ||
+         malchezaar->GetExactDist2d(*_destination) < SHADOW_NOVA_MOVE_DISTANCE ||
+         !IsLineClearOfInfernals(bot->GetPosition(), *_destination, infernals)))
     {
-        float const angle = (2 * M_PI * i) / numAngles;
-        float const dx = std::cos(angle);
-        float const dy = std::sin(angle);
-
-        for (uint8 j = 0; j <= numSteps; ++j)
-        {
-            float const dist = minSafeBossDistance + j * distIncrement;
-            float destX = bossX + dx * dist;
-            float destY = bossY + dy * dist;
-            float destZ = bot->GetPositionZ();
-            if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                    bot, botX, botY, destZ, destX, destY, destZ, true))
-            {
-                continue;
-            }
-
-            float ddx = destX - bossX;
-            float ddy = destY - bossY;
-
-            constexpr float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
-            if (ddx*ddx + ddy*ddy < minSafeBossDistanceSq)
-                continue;
-
-            float mdx = destX - botX;
-            float mdy = destY - botY;
-            float moveDistSq = mdx*mdx + mdy*mdy;
-
-            constexpr float safeInfernalDistance = 22.0f;
-            if (IsStraightPathSafe(botX, botY, destX, destY, infernals, safeInfernalDistance) &&
-                moveDistSq < bestMoveDistSq)
-            {
-                bestMoveDistSq = moveDistSq;
-                bestDestX = destX;
-                bestDestY = destY;
-                found = true;
-            }
-        }
+        _destination.reset();
     }
 
-    if (!found)
+    if (!_destination)
+    {
+        constexpr float searchDistance = 52.0f;
+        _destination = FindMalchezaarSpot(
+            bot, bot->GetPosition(), infernals, searchDistance, false,
+            [&](Position const& candidate)
+            {
+                return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
+                    malchezaar->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE;
+            });
+
+        if (!_destination)
+            return false;
+    }
+
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, *_destination, arrivalDist, nullptr, moveX, moveY, backwards))
+    {
+        _destination.reset();
         return false;
+    }
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
-bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
+// Stock reach walks at the target and this takes over at a landed infernal. It holds its spot until
+// it gets there, or reach would walk the bot straight back in. The spot is in range, so reach has
+// nothing left to do on arrival.
+bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (!IsMovingAllowed())
+        return false;
+
+    // Taking the tick keeps a new cast from starting between steps.
+    if (IsWaitingForLastMove(priority))
+        return true;
+
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
         return false;
 
-    constexpr float safeInfernalDistance = 22.0f;
-    if (!bot->FindNearestCreature(
-            Id(KaraNpcs::NPC_NETHERSPITE_INFERNAL), safeInfernalDistance, true))
+    std::vector<Position> const infernals = GetLandedInfernals(botAI);
+    if (_destination && !IsMalchezaarStandingSpotGood(bot, *malchezaar, infernals, *_destination))
+        _destination.reset();
+
+    if (!_destination)
     {
+        _destination = FindMalchezaarStandingSpot(botAI, *malchezaar, infernals);
+        if (!_destination)
+            return false;
+    }
+
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, *_destination, arrivalDist, nullptr, moveX, moveY, backwards))
+    {
+        _destination.reset();
         return false;
     }
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    constexpr float maxDistanceFromBoss = 33.0f;
-
-    float bestDestX = botX;
-    float bestDestY = botY;
-
-    bool found = TryFindSafePositionWithSafePath(
-        bot, botX, botY, malchezaar->GetPositionX(), malchezaar->GetPositionY(),
-        infernals, safeInfernalDistance, maxDistanceFromBoss, bestDestX, bestDestY);
-
-    if (!found)
-        return false;
-
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
@@ -1571,39 +1586,40 @@ bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
     if (malchezaar->GetVictim() != bot || !bot->IsWithinMeleeRange(malchezaar))
         return false;
 
-    constexpr float safeInfernalDistance = 30.0f;
-    if (!bot->FindNearestCreature(
-            Id(KaraNpcs::NPC_NETHERSPITE_INFERNAL), safeInfernalDistance, true))
+    std::vector<Position> const infernals = GetLandedInfernals(botAI);
+    if (IsClearOfInfernals(*malchezaar, infernals, MALCHEZAAR_RING_CLEARANCE))
     {
+        ResetWalk();
         return false;
     }
 
-    std::vector<Unit*> infernals = GetSpawnedInfernals(bot);
+    if (_destination && !IsClearOfInfernals(*_destination, infernals, _destinationClearance))
+        _destination.reset();
 
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
+    if (!_destination)
+    {
+        if (_searchedInfernalCount == infernals.size())
+            return false;
 
-    constexpr float maxSampleDist = 75.0f;
-    float bestDestX = botX;
-    float bestDestY = botY;
+        _searchedInfernalCount = infernals.size();
+        _destination = FindMalchezaarTankSpot(bot, infernals, _destinationClearance);
+        if (!_destination)
+            return false;
+    }
 
-    bool found = TryFindSafePositionWithSafePath(
-        bot, botX, botY, botX, botY, infernals, safeInfernalDistance,
-        maxSampleDist, bestDestX, bestDestY);
-
-    if (!found)
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, *_destination, arrivalDist, malchezaar, moveX, moveY, backwards))
+    {
+        _destination.reset();
         return false;
-
-    float const toPosX = bestDestX - botX;
-    float const toPosY = bestDestY - botY;
-
-    float const toBossX = malchezaar->GetPositionX() - botX;
-    float const toBossY = malchezaar->GetPositionY() - botY;
-    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+    }
 
     return MoveTo(
-        KARA_MAP_ID, bestDestX, bestDestY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
 // Nightbane

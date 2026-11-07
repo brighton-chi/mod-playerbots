@@ -237,6 +237,18 @@ protected:
 
 // Prince Malchezaar
 
+class PrinceMalchezaarDisableReactiveMovementMultiplier : public KarazhanEncounterMultiplier
+{
+public:
+    PrinceMalchezaarDisableReactiveMovementMultiplier(PlayerbotAI* botAI)
+        : KarazhanEncounterMultiplier(
+            botAI, "prince malchezaar disable reactive movement",
+            KaraHelpers::KaraBosses::DATA_MALCHEZAAR) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class PrinceMalchezaarEnfeebleMultiplier : public KarazhanEncounterMultiplier
 {
 public:

@@ -139,8 +139,8 @@ public:
         creators["prince malchezaar bot is enfeebled"] =
             &RaidKarazhanTriggerContext::prince_malchezaar_bot_is_enfeebled;
 
-        creators["prince malchezaar engaged by non-tanks"] =
-            &RaidKarazhanTriggerContext::prince_malchezaar_engaged_by_non_tanks;
+        creators["prince malchezaar bot in hazard"] =
+            &RaidKarazhanTriggerContext::prince_malchezaar_bot_in_hazard;
 
         creators["prince malchezaar should be tanked"] =
             &RaidKarazhanTriggerContext::prince_malchezaar_should_be_tanked;
@@ -342,9 +342,9 @@ private:
     {
         return new PrinceMalchezaarBotIsEnfeebledTrigger(botAI);
     }
-    static Trigger* prince_malchezaar_engaged_by_non_tanks(PlayerbotAI* botAI)
+    static Trigger* prince_malchezaar_bot_in_hazard(PlayerbotAI* botAI)
     {
-        return new PrinceMalchezaarEngagedByNonTanksTrigger(botAI);
+        return new PrinceMalchezaarBotInHazardTrigger(botAI);
     }
     static Trigger* prince_malchezaar_should_be_tanked(PlayerbotAI* botAI)
     {
