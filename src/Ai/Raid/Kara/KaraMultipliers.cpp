@@ -424,8 +424,7 @@ float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (!netherspite || !IsNetherspiteDpsHeld(bot, *netherspite))
         return 1.0f;
 
-    return GetActionTargetOrCurrentTarget(botAI, action) == netherspite ?
-        GetDpsHoldValue(bot, action) : 1.0f;
+    return action->GetTarget() == netherspite ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Prince Malchezaar
@@ -536,8 +535,7 @@ float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<CastHealingSpellAction*>(action) || !IsNightbaneDpsHeld(bot, *nightbane))
         return 1.0f;
 
-    return GetActionTargetOrCurrentTarget(botAI, action) == nightbane ?
-        GetDpsHoldValue(bot, action) : 1.0f;
+    return action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
