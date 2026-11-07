@@ -1519,9 +1519,18 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
             return castInterrupt(Id(BtSpells::SPELL_MIND_FREEZE), inMeleeRange);
         case CLASS_MAGE:
         {
-            return castInterrupt(
-                Id(BtSpells::SPELL_COUNTERSPELL),
-                bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE));
+            // CanCastSpell refuses every spell during a channel. A channel can be stopped from here
+            // (it can't be in flight), and Counterspell then goes out on the next tick.
+            uint32 const counterspell = Id(BtSpells::SPELL_COUNTERSPELL);
+            bool const inRange = bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE);
+            if (inRange && bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
+                !bot->HasSpellCooldown(counterspell))
+            {
+                bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                return true;
+            }
+
+            return castInterrupt(counterspell, inRange);
         }
         case CLASS_ROGUE:
             return castInterrupt(Id(BtSpells::SPELL_KICK), inMeleeRange);
@@ -1726,6 +1735,25 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     return MoveTo(
         BT_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
         priority, true, false);
+}
+
+bool IllidariCouncilPositionToInterruptMalandeAction::Execute(Event /*event*/)
+{
+    Position destination;
+    if (!FindMalandeInterruptPosition(botAI, GetIllidariCouncilMembers(bot), destination))
+        return false;
+
+    // The trigger ends the walk once the bot is in position, which is before it gets here, so the
+    // destination needs no arrival distance.
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(bot, destination, 0.0f, nullptr, moveX, moveY, backwards))
+        return false;
+
+    return MoveTo(
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool IllidariCouncilNonTanksAvoidZerevorAction::Execute(Event /*event*/)

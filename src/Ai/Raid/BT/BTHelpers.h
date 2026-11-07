@@ -517,6 +517,12 @@ inline constexpr int32 CIRCLE_OF_HEALING_CASTER_MARGIN_MS = 500;
 inline constexpr float COUNTERSPELL_RANGE = 30.0f;
 inline constexpr float WIND_SHEAR_RANGE = 25.0f;
 inline constexpr float SPELL_LOCK_RANGE = 30.0f;
+// Mages and elemental shamans aim this far inside their interrupt's range of Malande.
+inline constexpr float CIRCLE_INTERRUPTER_RANGE_MARGIN = 2.0f;
+// Elemental Reach adds this to Lightning Bolt, Chain Lightning, and Lava Burst. Shamans use it to
+// stand farther from their target than reach spell would, which Wind Shear's range requires when
+// Gathios is at a far spot and Consecration covers his previous one.
+inline constexpr float ELEMENTAL_REACH_BONUS_RANGE = 6.0f;
 
 inline std::array const GATHIOS_TANK_POSITIONS = {
     Position{ 662.977f, 296.246f, 271.688f },
@@ -550,6 +556,10 @@ bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin = 0.0f)
 bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float margin = 0.0f);
 bool IsMalandeInCouncilPatch(Unit* malande, Unit* gathios, Unit* zerevor);
 bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* zerevor);
+bool IsCircleRangedInterrupter(Player* bot);
+bool IsInMalandeInterruptPosition(PlayerbotAI* botAI, Unit* malande);
+bool FindMalandeInterruptPosition(
+    PlayerbotAI* botAI, IllidariCouncilMembers const& members, Position& destination);
 bool IsZerevorOnMageTank(Player* bot, Unit* zerevor);
 bool FindZerevorAvoidPosition(Player* bot, Unit* gathios, Unit* zerevor, Position& destination);
 bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit* zerevor);

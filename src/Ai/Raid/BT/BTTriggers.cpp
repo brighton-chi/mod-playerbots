@@ -525,6 +525,15 @@ bool IllidariCouncilMageTankHealerShouldRepositionTrigger::IsActiveInEncounter()
         !bot->IsWithinLOSInMap(mageTank);
 }
 
+bool IllidariCouncilRangedInterrupterShouldRepositionTrigger::IsActiveInEncounter()
+{
+    if (!IsCircleRangedInterrupter(bot) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    Unit* malande = GetIllidariCouncilMembers(bot).malande;
+    return malande && !IsInMalandeInterruptPosition(botAI, malande);
+}
+
 bool IllidariCouncilNonTanksShouldAvoidZerevorTrigger::IsActiveInEncounter()
 {
     if (PlayerbotAI::IsTank(bot) || IsZerevorMageTank(bot))

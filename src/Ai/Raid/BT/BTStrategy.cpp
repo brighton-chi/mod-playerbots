@@ -180,6 +180,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council mage tank healer should reposition",
         { NextAction("illidari council position mage tank healer", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("illidari council ranged interrupter should reposition",
+        { NextAction("illidari council position to interrupt malande", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("illidari council non-tanks should avoid zerevor",
         { NextAction("illidari council non-tanks avoid zerevor", ACTION_EMERGENCY + 2) }));
 
