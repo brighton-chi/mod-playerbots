@@ -493,7 +493,10 @@ bool GetPathStepTowardPoint(
             if (fromDist <= stopDistance)
                 break;
 
-            ratio = (fromDist - stopDistance) / (fromDist - toDist);
+            float const a = segment * segment;
+            float const b = (from - targetPos).dot(to - from);
+            float const c = fromDist * fromDist - stopDistance * stopDistance;
+            ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
         }
 
         if (segment * ratio >= remaining)
@@ -841,18 +844,6 @@ float GetDpsHoldValue(Player* bot, Action* action)
     return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
-Unit* GetActionTargetOrCurrentTarget(PlayerbotAI* botAI, Action* action)
-{
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnMeleeAttackerAction*>(action))
-    {
-        return action->GetTarget();
-    }
-
-    return botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-}
-
 // Stopping Attacks and Spells
 
 namespace
@@ -964,16 +955,8 @@ bool StopAttackingTarget(Player* bot, Unit const& target)
 
 void StandDown(PlayerbotAI* botAI)
 {
-    Player* bot = botAI->GetBot();
-    // Not duplicative of StopAttackingTarget, which calls AttackStop only when the bot's victim is
-    // its current target. They can differ if the target is cleared or changed without Attack().
-    bot->AttackStop();
-
-    auto* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
-    if (Unit* target = currentTarget->Get())
-        StopAttackingTarget(bot, *target);
-
-    currentTarget->Set(nullptr);
+    StopAttackingAndChanneling(botAI->GetBot());
+    botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(nullptr);
 }
 
 bool SelectTarget(PlayerbotAI* botAI, Unit* target)
