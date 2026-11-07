@@ -688,8 +688,6 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Acti
     if (isSetBehind)
         return 1.0f;
 
-    // Reach spell would walk ranged interrupters out of their interrupt's range of Malande. Their
-    // positioning action takes them into range of their target instead.
     if (dynamic_cast<ReachSpellAction*>(action))
     {
         return IsCircleRangedInterrupter(bot) && GetIllidariCouncilMembers(bot).malande ?

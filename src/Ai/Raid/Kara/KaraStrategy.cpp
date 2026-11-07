@@ -9,7 +9,6 @@
 #include "KaraHelpers.h"
 #include "KaraMultipliers.h"
 #include "Playerbots.h"
-#include "vector"
 
 void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

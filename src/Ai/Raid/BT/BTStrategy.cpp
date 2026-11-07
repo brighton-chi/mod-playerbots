@@ -423,8 +423,8 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         exclusions.insert(demon->GetGUID());
 }
 
-// Stock "on attacker" DoTs go on every member, and their ticks would add threat on Zerevor for
-// everyone but the mage tank, who is the only one that should be building it.
+// Exclude secondary DoTs on Zerevor to not take aggro from the Mage tank at pull (and after pull,
+// Zerevor will be out of range anyway).
 void AppendZerevorDebuffExclusion(Player* bot, GuidSet& exclusions)
 {
     if (!IsBossInProgress(bot, BT_MAP_ID, Id(BtBosses::DATA_ILLIDARI_COUNCIL)))

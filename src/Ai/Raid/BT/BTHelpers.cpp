@@ -1207,7 +1207,6 @@ float GetCircleInterruptRange(Player* bot)
     return bot->getClass() == CLASS_MAGE ? COUNTERSPELL_RANGE : WIND_SHEAR_RANGE;
 }
 
-// The distance from Malande's center that a ranged interrupter aims for.
 float GetMalandeInterruptRingRadius(Player* bot, Unit* malande)
 {
     return GetCircleInterruptRange(bot) + bot->GetCombatReach() + malande->GetCombatReach() -
@@ -1354,10 +1353,9 @@ bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* ze
         IsMalandeInCouncilPatch(malande, gathios, zerevor);
 }
 
-// Mages (other than the mage tank) and elemental shamans. Warlocks need no such position because
-// Felhunters stay on Malande.
 bool IsCircleRangedInterrupter(Player* bot)
 {
+    // Warlocks also interrupt but do so with Felhunters, so they do not need special positioning.
     if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_SHAMAN)
         return false;
 
@@ -1376,15 +1374,12 @@ bool IsInMalandeInterruptPosition(PlayerbotAI* botAI, Unit* malande)
     if (!target || bot->IsWithinCombatRange(target, targetRange + CONTACT_DISTANCE))
         return true;
 
-    // Interrupt range wins if no point is in range of both.
+    // Interrupt range to Malande wins if no point is in range of Malande and Gathios.
     float const targetRadius = targetRange + bot->GetCombatReach() + target->GetCombatReach();
     return target->GetExactDist2d(malande) >=
         GetMalandeInterruptRingRadius(bot, malande) + targetRadius;
 }
 
-// Points on a ring inside the interrupt's range of Malande and in spell range of the bot's target,
-// clear of patches and Arcane Explosion, and far enough from others that spread won't move the bot
-// back out. If there is none, the point on the ring nearest the target.
 bool FindMalandeInterruptPosition(
     PlayerbotAI* botAI, IllidariCouncilMembers const& members, Position& destination)
 {

@@ -18,7 +18,6 @@
 #include <type_traits>
 #include <vector>
 
-class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;

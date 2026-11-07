@@ -519,9 +519,8 @@ inline constexpr float WIND_SHEAR_RANGE = 25.0f;
 inline constexpr float SPELL_LOCK_RANGE = 30.0f;
 // Mages and elemental shamans aim this far inside their interrupt's range of Malande.
 inline constexpr float CIRCLE_INTERRUPTER_RANGE_MARGIN = 2.0f;
-// Elemental Reach adds this to Lightning Bolt, Chain Lightning, and Lava Burst. Shamans use it to
-// stand farther from their target than reach spell would, which Wind Shear's range requires when
-// Gathios is at a far spot and Consecration covers his previous one.
+// The strategy needs extra spacing and thus assumes all Elemental Shamans have taken Elemental
+// Reach, which is part of the standard ele pve bot build.
 inline constexpr float ELEMENTAL_REACH_BONUS_RANGE = 6.0f;
 
 inline std::array const GATHIOS_TANK_POSITIONS = {

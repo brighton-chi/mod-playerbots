@@ -11,7 +11,6 @@
 #include "AttackAction.h"
 #include "KaraHelpers.h"
 #include "MovementActions.h"
-#include <vector>
 
 // Shared
 

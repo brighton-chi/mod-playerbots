@@ -1519,8 +1519,6 @@ bool IllidariCouncilInterruptCircleOfHealingAction::Execute(Event /*event*/)
             return castInterrupt(Id(BtSpells::SPELL_MIND_FREEZE), inMeleeRange);
         case CLASS_MAGE:
         {
-            // CanCastSpell refuses every spell during a channel. A channel can be stopped from here
-            // (it can't be in flight), and Counterspell then goes out on the next tick.
             uint32 const counterspell = Id(BtSpells::SPELL_COUNTERSPELL);
             bool const inRange = bot->IsWithinCombatRange(malande, COUNTERSPELL_RANGE);
             if (inRange && bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
@@ -1743,8 +1741,7 @@ bool IllidariCouncilPositionToInterruptMalandeAction::Execute(Event /*event*/)
     if (!FindMalandeInterruptPosition(botAI, GetIllidariCouncilMembers(bot), destination))
         return false;
 
-    // The trigger ends the walk once the bot is in position, which is before it gets here, so the
-    // destination needs no arrival distance.
+    // No arrival distance is needed because it is built into the trigger.
     float moveX;
     float moveY;
     bool backwards;
