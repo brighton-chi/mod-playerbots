@@ -76,8 +76,10 @@ std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId)
         return std::nullopt;
 
     for (uint32 bossId = 0; bossId < instance->GetEncounterCount(); ++bossId)
+    {
         if (instance->GetBossState(bossId) == IN_PROGRESS)
             return bossId;
+    }
 
     return std::nullopt;
 }
