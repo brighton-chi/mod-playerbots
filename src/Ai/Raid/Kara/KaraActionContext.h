@@ -42,6 +42,12 @@ public:
         creators["attumen the huntsman stack behind"] =
             &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
 
+        creators["attumen the huntsman stop attacking"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_stop_attacking;
+
+        creators["attumen the huntsman select target for hold"] =
+            &RaidKarazhanActionContext::attumen_the_huntsman_select_target_for_hold;
+
         creators["attumen the huntsman manage dps timer"] =
             &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
@@ -211,6 +217,14 @@ private:
     static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI)
     {
         return new AttumenTheHuntsmanStackBehindAction(botAI);
+    }
+    static Action* attumen_the_huntsman_stop_attacking(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanStopAttackingAction(botAI);
+    }
+    static Action* attumen_the_huntsman_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanSelectTargetForHoldAction(botAI);
     }
     static Action* attumen_the_huntsman_manage_dps_timer(PlayerbotAI* botAI)
     {

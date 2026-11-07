@@ -122,6 +122,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class AttumenTheHuntsmanShouldHoldDpsTrigger : public KarazhanEncounterTrigger
+{
+public:
+    AttumenTheHuntsmanShouldHoldDpsTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "attumen the huntsman should hold dps",
+            KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class AttumenTheHuntsmanShouldManageDpsTimerTrigger : public KarazhanEncounterTrigger
 {
 public:

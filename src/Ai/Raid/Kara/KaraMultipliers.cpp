@@ -234,31 +234,14 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     return attumen && attumen->GetVictim() == bot ? 1.0f : 0.0f;
 }
 
-// Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight
-float AttumenTheHuntsmanWaitForDpsMultiplier::GetValueInEncounter(Action* action)
+// Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight. Mounted Attumen is the
+// only thing left to attack then, so the hold doesn't need to look at the target.
+float AttumenTheHuntsmanHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<CastSpellAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    if (dynamic_cast<CastHealingSpellAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
-
-    Unit* midnight = FindThreatTarget(bot, "midnight");
-    if (!midnight || !IsAttumenMounted(*midnight))
-        return 1.0f;
-
-    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
-    if (!state || !state->attumenDpsWaitTimer)
-        return 0.0f; // Timer blocking dps if not set yet is intentional in all cases
-
-    constexpr uint32 dpsWaitMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(*state->attumenDpsWaitTimer, getMSTime()) < dpsWaitMs ? 0.0f : 1.0f;
+    return IsAttumenDpsHeld(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Maiden of Virtue

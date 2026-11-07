@@ -42,6 +42,9 @@ public:
         creators["attumen the huntsman should stack behind"] =
             &RaidKarazhanTriggerContext::attumen_the_huntsman_should_stack_behind;
 
+        creators["attumen the huntsman should hold dps"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_should_hold_dps;
+
         creators["attumen the huntsman should manage dps timer"] =
             &RaidKarazhanTriggerContext::attumen_the_huntsman_should_manage_dps_timer;
 
@@ -205,6 +208,10 @@ private:
     static Trigger* attumen_the_huntsman_should_stack_behind(PlayerbotAI* botAI)
     {
         return new AttumenTheHuntsmanShouldStackBehindTrigger(botAI);
+    }
+    static Trigger* attumen_the_huntsman_should_hold_dps(PlayerbotAI* botAI)
+    {
+        return new AttumenTheHuntsmanShouldHoldDpsTrigger(botAI);
     }
     static Trigger* attumen_the_huntsman_should_manage_dps_timer(PlayerbotAI* botAI)
     {

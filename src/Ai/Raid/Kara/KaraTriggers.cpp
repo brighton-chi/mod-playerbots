@@ -82,6 +82,11 @@ bool AttumenTheHuntsmanShouldStackBehindTrigger::IsActiveInEncounter()
     return attumen && attumen->GetVictim() != bot;
 }
 
+bool AttumenTheHuntsmanShouldHoldDpsTrigger::IsActiveInEncounter()
+{
+    return IsAttumenDpsHeld(bot);
+}
+
 bool AttumenTheHuntsmanShouldManageDpsTimerTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))

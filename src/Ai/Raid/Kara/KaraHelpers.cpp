@@ -273,6 +273,23 @@ Unit* GetMountedAttumen(Player* bot)
     return attumen;
 }
 
+bool IsAttumenDpsHeld(Player* bot)
+{
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    if (!midnight || !IsAttumenMounted(*midnight))
+        return false;
+
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    if (!state || !state->attumenDpsHoldTimer)
+        return true;
+
+    constexpr uint32 holdMs = 5 * IN_MILLISECONDS;
+    return getMSTimeDiff(*state->attumenDpsHoldTimer, getMSTime()) < holdMs;
+}
+
 // Maiden of Virtue
 
 Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden)
@@ -1062,7 +1079,7 @@ bool KaraResetInstance(uint32 instanceId)
         return false;
 
     KaraInstanceState const& state = it->second;
-    bool const wasSet = state.attumenDpsWaitTimer || state.netherspiteDpsHoldTimer ||
+    bool const wasSet = state.attumenDpsHoldTimer || state.netherspiteDpsHoldTimer ||
         AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
         !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
         state.nightbaneFlightStage ||

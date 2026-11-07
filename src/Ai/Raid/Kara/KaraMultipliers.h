@@ -98,12 +98,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class AttumenTheHuntsmanWaitForDpsMultiplier : public KarazhanEncounterMultiplier
+class AttumenTheHuntsmanHoldDpsMultiplier : public KarazhanEncounterMultiplier
 {
 public:
-    AttumenTheHuntsmanWaitForDpsMultiplier(PlayerbotAI* botAI)
+    AttumenTheHuntsmanHoldDpsMultiplier(PlayerbotAI* botAI)
         : KarazhanEncounterMultiplier(
-            botAI, "attumen the huntsman wait for dps", KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
+            botAI, "attumen the huntsman hold dps", KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

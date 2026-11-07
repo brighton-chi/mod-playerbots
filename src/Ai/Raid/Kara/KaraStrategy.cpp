@@ -40,6 +40,10 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("attumen the huntsman should stack behind",
         { NextAction("attumen the huntsman stack behind", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("attumen the huntsman should hold dps",
+        { NextAction("attumen the huntsman stop attacking", ACTION_RAID + 3),
+          NextAction("attumen the huntsman select target for hold", ACTION_RAID + 2) }));
+
     triggers.push_back(new TriggerNode("attumen the huntsman should manage dps timer",
         { NextAction("attumen the huntsman manage dps timer", ACTION_EMERGENCY + 10) }));
 
@@ -175,7 +179,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new ManaWarpSaveStunsMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanDisableAutoTargetingMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
-    multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new AttumenTheHuntsmanHoldDpsMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueSetGroundingTotemMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));

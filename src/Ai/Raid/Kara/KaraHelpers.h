@@ -205,6 +205,8 @@ bool IsAttumenMounted(Unit const& midnight);
 // Both Attumens share a name. For up to 1 s after the merge, the unmounted one can be found
 // instead, and this returns null.
 Unit* GetMountedAttumen(Player* bot);
+// For all but the main tank, for 5 s from when Attumen mounts Midnight.
+bool IsAttumenDpsHeld(Player* bot);
 
 // Maiden of Virtue
 // Her spawn point; the ranged spots are a ring around it.
@@ -587,7 +589,7 @@ Position const* GetRainOfBonesCenter(Unit const& nightbane);
 
 struct KaraInstanceState
 {
-    std::optional<uint32> attumenDpsWaitTimer;
+    std::optional<uint32> attumenDpsHoldTimer;
     std::optional<uint32> netherspiteDpsHoldTimer;
     std::array<NetherspiteBeamState, NETHERSPITE_BEAMS.size()> netherspiteBeams;
     std::vector<Position> netherspiteVoidZones;

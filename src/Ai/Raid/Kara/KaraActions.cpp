@@ -320,10 +320,28 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+bool AttumenTheHuntsmanStopAttackingAction::Execute(Event /*event*/)
+{
+    return StopAttackingAndChanneling(bot);
+}
+
+bool AttumenTheHuntsmanSelectTargetForHoldAction::isUseful()
+{
+    return botAI->GetState() == BOT_STATE_NON_COMBAT;
+}
+
+// Midnight turning invisible makes her an invalid target, so every bot on her drops to its
+// non-combat engine at the merge.
+bool AttumenTheHuntsmanSelectTargetForHoldAction::Execute(Event /*event*/)
+{
+    return SelectTarget(
+        botAI, AI_VALUE(Unit*, PlayerbotAI::IsTank(bot) ? "tank target" : "dps target"));
+}
+
 bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
 {
     uint32 const now = getMSTime();
-    return EmplaceIfUnset(KaraState(bot->GetInstanceId()).attumenDpsWaitTimer, now);
+    return EmplaceIfUnset(KaraState(bot->GetInstanceId()).attumenDpsHoldTimer, now);
 }
 
 // Moroes

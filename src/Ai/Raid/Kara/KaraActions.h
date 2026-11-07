@@ -85,6 +85,23 @@ public:
     bool Execute(Event event) override;
 };
 
+class AttumenTheHuntsmanStopAttackingAction : public Action
+{
+public:
+    AttumenTheHuntsmanStopAttackingAction(PlayerbotAI* botAI)
+        : Action(botAI, "attumen the huntsman stop attacking") {}
+    bool Execute(Event event) override;
+};
+
+class AttumenTheHuntsmanSelectTargetForHoldAction : public Action
+{
+public:
+    AttumenTheHuntsmanSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "attumen the huntsman select target for hold") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 class AttumenTheHuntsmanManageDpsTimerAction : public Action
 {
 public:
