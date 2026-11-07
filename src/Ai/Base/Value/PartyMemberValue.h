@@ -34,6 +34,7 @@ public:
     }
 
     bool IsTargetOfSpellCast(Player* target, SpellEntryPredicate& predicate);
+    static bool IsEnfeebled(Unit const& unit);
 
 protected:
     Unit* FindPartyMember(FindPlayerPredicate& predicate, bool ignoreOutOfGroup = false);

@@ -5,6 +5,7 @@
  */
 
 #include "PartyMemberValue.h"
+#include "AreaDefines.h"
 #include "Corpse.h"
 #include "Group.h"
 #include "Pet.h"
@@ -111,6 +112,13 @@ bool PartyMemberValue::Check(Unit* player)
     return player && player->GetMapId() == bot->GetMapId() && !isGM &&
            bot->GetDistance(player) < sPlayerbotAIConfig.SpellDistance * 2 &&
            bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+}
+
+// Malchezaar's Enfeeble leaves its targets at 1 health with healing taken at -100% for 9s.
+bool PartyMemberValue::IsEnfeebled(Unit const& unit)
+{
+    constexpr uint32 SPELL_ENFEEBLE = 30843;
+    return unit.GetMapId() == MAP_KARAZHAN && unit.HasAura(SPELL_ENFEEBLE);
 }
 
 bool PartyMemberValue::IsTargetOfSpellCast(Player* target, SpellEntryPredicate& predicate)
