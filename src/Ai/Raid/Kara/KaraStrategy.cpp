@@ -159,7 +159,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane ranged stack", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("nightbane pets should be held",
-        { NextAction("nightbane control pet aggression", ACTION_RAID + 1) }));
+        { NextAction("nightbane control pet aggression", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("nightbane should hold dps",
         { NextAction("nightbane stop attacking", ACTION_RAID + 3),

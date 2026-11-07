@@ -1819,7 +1819,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
     if (!nightbane)
         return false;
 
-    if (IsNightbaneFlying(*nightbane))
+    if (IsNightbaneDpsHeld(bot, *nightbane))
     {
         if (!pet->HasReactState(REACT_PASSIVE))
         {

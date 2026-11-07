@@ -426,7 +426,7 @@ bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && IsNightbaneFlying(*nightbane) != pet->HasReactState(REACT_PASSIVE);
+    return nightbane && IsNightbaneDpsHeld(bot, *nightbane) != pet->HasReactState(REACT_PASSIVE);
 }
 
 bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()
