@@ -5,6 +5,7 @@
  */
 
 #include "AoeHealValues.h"
+#include "PartyMemberValue.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
@@ -36,7 +37,7 @@ uint8 AoeHealValue::Calculate()
             continue;
 
         float percent = (static_cast<float>(player->GetHealth()) / player->GetMaxHealth()) * 100;
-        if (percent <= range)
+        if (percent <= range && !PartyMemberValue::IsEnfeebled(*player))
             ++count;
     }
 
