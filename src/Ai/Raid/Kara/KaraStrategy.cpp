@@ -135,6 +135,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("netherspite stop attacking", ACTION_RAID + 3),
           NextAction("netherspite select target for hold", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("netherspite pets should be held",
+        { NextAction("netherspite control pet aggression", ACTION_EMERGENCY + 7) }));
+
     triggers.push_back(new TriggerNode("netherspite should manage timers and trackers",
         { NextAction("netherspite manage timers and trackers", ACTION_EMERGENCY + 10) }));
 

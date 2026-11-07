@@ -135,6 +135,9 @@ public:
         creators["netherspite should hold dps"] =
             &RaidKarazhanTriggerContext::netherspite_should_hold_dps;
 
+        creators["netherspite pets should be held"] =
+            &RaidKarazhanTriggerContext::netherspite_pets_should_be_held;
+
         creators["netherspite should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::netherspite_need_to_manage_timers_and_trackers;
 
@@ -338,6 +341,10 @@ private:
     static Trigger* netherspite_should_hold_dps(PlayerbotAI* botAI)
     {
         return new NetherspiteShouldHoldDpsTrigger(botAI);
+    }
+    static Trigger* netherspite_pets_should_be_held(PlayerbotAI* botAI)
+    {
+        return new NetherspitePetsShouldBeHeldTrigger(botAI);
     }
     static Trigger* netherspite_need_to_manage_timers_and_trackers(PlayerbotAI* botAI)
     {

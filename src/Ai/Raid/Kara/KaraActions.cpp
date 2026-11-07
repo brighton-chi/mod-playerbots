@@ -75,6 +75,13 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* netherspitePetAction = context->GetAction("netherspite control pet aggression");
+    if (netherspitePetAction &&
+        static_cast<NetherspiteControlPetAggressionAction*>(netherspitePetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     Action* petAction = context->GetAction("nightbane control pet aggression");
     if (petAction &&
         static_cast<NightbaneControlPetAggressionAction*>(petAction)->ResetPetStance())
@@ -934,6 +941,45 @@ bool NetherspiteSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     return SelectTarget(
         botAI, AI_VALUE(Unit*, PlayerbotAI::IsTank(bot) ? "tank target" : "dps target"));
+}
+
+// Pets on him through the banish keep hitting after its threat reset, ahead of the tank.
+bool NetherspiteControlPetAggressionAction::Execute(Event /*event*/)
+{
+    Pet* pet = bot->GetPet();
+    if (!pet)
+        return false;
+
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
+    if (!netherspite)
+        return false;
+
+    if (IsNetherspiteDpsHeld(bot, *netherspite))
+    {
+        if (!pet->HasReactState(REACT_PASSIVE))
+        {
+            _previousReactState = pet->GetReactState();
+            _setPassive = true;
+            CallBackPets(bot);
+            pet->SetReactState(REACT_PASSIVE);
+        }
+    }
+    else
+        ResetPetStance();
+
+    return false;
+}
+
+bool NetherspiteControlPetAggressionAction::ResetPetStance()
+{
+    if (!_setPassive)
+        return false;
+
+    if (Pet* pet = bot->GetPet())
+        pet->SetReactState(_previousReactState);
+
+    _setPassive = false;
+    return true;
 }
 
 namespace

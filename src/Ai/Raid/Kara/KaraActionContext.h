@@ -141,6 +141,9 @@ public:
         creators["netherspite select target for hold"] =
             &RaidKarazhanActionContext::netherspite_select_target_for_hold;
 
+        creators["netherspite control pet aggression"] =
+            &RaidKarazhanActionContext::netherspite_control_pet_aggression;
+
         creators["netherspite manage timers and trackers"] =
             &RaidKarazhanActionContext::netherspite_manage_timers_and_trackers;
 
@@ -355,6 +358,10 @@ private:
     static Action* netherspite_select_target_for_hold(PlayerbotAI* botAI)
     {
         return new NetherspiteSelectTargetForHoldAction(botAI);
+    }
+    static Action* netherspite_control_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new NetherspiteControlPetAggressionAction(botAI);
     }
     static Action* netherspite_manage_timers_and_trackers(PlayerbotAI* botAI)
     {

@@ -328,6 +328,17 @@ bool NetherspiteShouldHoldDpsTrigger::IsActiveInEncounter()
     return netherspite && IsNetherspiteDpsHeld(bot, *netherspite);
 }
 
+bool NetherspitePetsShouldBeHeldTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* netherspite = GetEncounterBoss();
+    return netherspite &&
+        IsNetherspiteDpsHeld(bot, *netherspite) != pet->HasReactState(REACT_PASSIVE);
+}
+
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();

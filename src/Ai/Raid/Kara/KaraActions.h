@@ -379,6 +379,19 @@ public:
     bool Execute(Event event) override;
 };
 
+class NetherspiteControlPetAggressionAction : public Action
+{
+public:
+    NetherspiteControlPetAggressionAction(PlayerbotAI* botAI)
+        : Action(botAI, "netherspite control pet aggression") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    ReactStates _previousReactState = REACT_DEFENSIVE;
+    bool _setPassive = false;
+};
+
 class NetherspiteManageTimersAndTrackersAction : public Action
 {
 public:

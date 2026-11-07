@@ -467,6 +467,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class NetherspitePetsShouldBeHeldTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NetherspitePetsShouldBeHeldTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "netherspite pets should be held", KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class NetherspiteShouldManageTimersAndTrackersTrigger : public KarazhanEncounterTrigger
 {
 public:
