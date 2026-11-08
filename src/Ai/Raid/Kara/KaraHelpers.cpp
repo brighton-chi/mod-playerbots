@@ -243,8 +243,11 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
 Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    if (GetManaWarpStunReach(bot) <= 0.0f || PlayerbotAI::IsTank(bot) || !IsNearManaWarpPacks(bot))
+    if (GetManaWarpStunReach(bot) <= 0.0f || !IsNearManaWarpPacks(bot) ||
+        PlayerbotAI::IsTank(bot) || PlayerbotAI::IsHeal(bot))
+    {
         return nullptr;
+    }
 
     Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     if (!target || target->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) || !target->IsAlive() ||
@@ -273,21 +276,36 @@ Unit* GetMountedAttumen(Player* bot)
     return attumen;
 }
 
+std::optional<Position> GetAttumenStackPosition(Player* bot, Unit const& attumen)
+{
+    float const distanceBehind = bot->getClass() == CLASS_HUNTER ?
+        ATTUMEN_HUNTER_STACK_DISTANCE : ATTUMEN_STACK_DISTANCE;
+    float const orientation = attumen.GetOrientation() + M_PI;
+    Position const position(
+        attumen.GetPositionX() + std::cos(orientation) * distanceBehind,
+        attumen.GetPositionY() + std::sin(orientation) * distanceBehind,
+        attumen.GetPositionZ());
+    if (bot->GetExactDist2d(position) <= ATTUMEN_STACK_TOLERANCE)
+        return std::nullopt;
+
+    return position;
+}
+
 bool IsAttumenDpsHeld(Player* bot)
 {
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
     Unit* midnight = FindThreatTarget(bot, "midnight");
     if (!midnight || !IsAttumenMounted(*midnight))
         return false;
 
-    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
-    if (!state || !state->attumenDpsHoldTimer)
-        return true;
-
     constexpr uint32 holdMs = 5 * IN_MILLISECONDS;
-    return getMSTimeDiff(*state->attumenDpsHoldTimer, getMSTime()) < holdMs;
+    KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
+    if (state && state->attumenDpsHoldTimer &&
+        getMSTimeDiff(*state->attumenDpsHoldTimer, getMSTime()) >= holdMs)
+    {
+        return false;
+    }
+
+    return !PlayerbotAI::IsMainTank(bot);
 }
 
 // Maiden of Virtue
@@ -382,7 +400,7 @@ bool IsAranCastingArcaneExplosion(Unit* aran)
     return aran && aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARCANE_EXPLOSION));
 }
 
-std::optional<Position> GetBlizzardEscapeSpot(Player* bot)
+std::optional<Position> GetBlizzardEscapePosition(Player* bot)
 {
     std::list<WorldObject*> objects;
     Acore::AllWorldObjectsInRange check(bot, ARAN_ROOM_SEARCH_RADIUS);
@@ -648,23 +666,23 @@ bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid)
         });
 }
 
-Position const* FindNetherspiteBlockerSpot(KaraInstanceState const& state, ObjectGuid guid)
+Position const* FindNetherspiteBlockerPosition(KaraInstanceState const& state, ObjectGuid guid)
 {
     for (NetherspiteBeamState const& beam : state.netherspiteBeams)
     {
         if (beam.blocker == guid)
-            return &beam.blockerSpot;
+            return &beam.blockerPosition;
     }
 
     return nullptr;
 }
 
-Position const* FindNetherspiteNextSpot(KaraInstanceState const& state, ObjectGuid guid)
+Position const* FindNetherspiteNextPosition(KaraInstanceState const& state, ObjectGuid guid)
 {
     for (NetherspiteBeamState const& beam : state.netherspiteBeams)
     {
         if (beam.next == guid)
-            return &beam.nextSpot;
+            return &beam.nextPosition;
     }
 
     return nullptr;
@@ -721,7 +739,7 @@ float GetNetherspiteInnerSide(
     return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
 }
 
-bool IsNetherspiteStandingSpotGood(
+bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
     if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) ||
@@ -747,7 +765,7 @@ bool IsNetherspiteStandingSpotGood(
     {
         NetherspiteBeamState const& red = state.netherspiteBeams[Id(NetherspiteBeam::Red)];
         return red.blocker.IsEmpty() ||
-            red.blockerSpot.GetExactDist2d(x, y) <= NETHERSPITE_HEALER_TANK_RANGE;
+            red.blockerPosition.GetExactDist2d(x, y) <= NETHERSPITE_HEALER_TANK_RANGE;
     }
 
     if (bot->getClass() == CLASS_HUNTER || !PlayerbotAI::IsMelee(bot))
@@ -759,7 +777,7 @@ bool IsNetherspiteStandingSpotGood(
     return fromRed > M_PI / 2.0f && fromRed < 3.0f * M_PI / 2.0f;
 }
 
-std::optional<Position> FindNetherspiteStandingSpot(
+std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state)
 {
     float z = bot->GetPositionZ();
@@ -767,13 +785,13 @@ std::optional<Position> FindNetherspiteStandingSpot(
     {
         NetherspiteArc const arc = GetNetherspiteStandingArc(bot, netherspite, state);
         NetherspiteRadiusBand const band = GetNetherspiteRadiusBand(bot);
-        for (uint8 i = 0; i < NETHERSPITE_SPOT_TRIES; ++i)
+        for (uint8 i = 0; i < NETHERSPITE_POSITION_TRIES; ++i)
         {
             float const angle = arc.start + frand(0.0f, arc.width);
             float const radius = frand(band.low, band.high);
             float const x = netherspite.GetPositionX() + std::cos(angle) * radius;
             float const y = netherspite.GetPositionY() + std::sin(angle) * radius;
-            if (IsNetherspiteStandingSpotGood(bot, netherspite, state, x, y) &&
+            if (IsBetweenNetherspiteBeams(bot, netherspite, state, x, y) &&
                 !CrossesBeamAfterStart(bot, netherspite, state, x, y) &&
                 GetFloorAt(bot, x, y, z))
             {
@@ -873,7 +891,7 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
         truncationTolerance;
 }
 
-std::optional<Position> FindMalchezaarStandingSpot(
+std::optional<Position> FindMalchezaarClearPosition(
     PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
 {
     Player* bot = botAI->GetBot();
@@ -930,7 +948,7 @@ std::optional<Position> FindMalchezaarStandingSpot(
     }
 
     constexpr float searchDistance = 60.0f;
-    return FindMalchezaarSpot(
+    return FindMalchezaarPosition(
         bot, origin, infernals, searchDistance, true, [&](Position const& candidate)
         {
             return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
@@ -938,16 +956,16 @@ std::optional<Position> FindMalchezaarStandingSpot(
         });
 }
 
-bool IsMalchezaarStandingSpotGood(
+bool IsClearOfMalchezaarHazards(
     Player* bot, Unit const& malchezaar, std::vector<Position> const& infernals,
-    Position const& spot)
+    Position const& position)
 {
-    return IsClearOfInfernals(spot, infernals, HELLFIRE_CLEARANCE) &&
+    return IsClearOfInfernals(position, infernals, HELLFIRE_CLEARANCE) &&
         (!PlayerbotAI::IsRanged(bot) ||
-         malchezaar.GetExactDist2d(spot) >= SHADOW_NOVA_MOVE_DISTANCE);
+         malchezaar.GetExactDist2d(position) >= SHADOW_NOVA_MOVE_DISTANCE);
 }
 
-std::optional<Position> FindMalchezaarTankSpot(
+std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance)
 {
     constexpr float searchDistance = 60.0f;
@@ -960,17 +978,17 @@ std::optional<Position> FindMalchezaarTankSpot(
 
     for (float const candidateClearance : clearances)
     {
-        std::optional<Position> const spot = FindMalchezaarSpot(
+        std::optional<Position> const position = FindMalchezaarPosition(
             bot, bot->GetPosition(), infernals, searchDistance, true,
             [&](Position const& candidate)
             {
                 return IsClearOfInfernals(candidate, infernals, candidateClearance);
             });
 
-        if (spot)
+        if (position)
         {
             clearance = candidateClearance;
-            return spot;
+            return position;
         }
     }
 
@@ -1077,7 +1095,7 @@ bool KaraResetInstance(uint32 instanceId)
         AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
         !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
         state.nightbaneFlightStage ||
-        state.nightbaneFlightSpot || state.nightbaneRainOfBonesCenter;
+        state.nightbaneFlightStackPosition || state.nightbaneRainOfBonesCenter;
 
     karaStates.erase(it);
     return wasSet;

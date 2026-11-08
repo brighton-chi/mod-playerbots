@@ -10,6 +10,7 @@
 #include "DKActions.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
+#include "DruidCatActions.h"
 #include "EncounterHelpers.h"
 #include "FollowActions.h"
 #include "HunterActions.h"
@@ -159,7 +160,8 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
         case CLASS_DRUID:
         {
             isStun = dynamic_cast<CastBashAction*>(action) ||
-                dynamic_cast<CastBashOnEnemyHealerAction*>(action);
+                dynamic_cast<CastBashOnEnemyHealerAction*>(action) ||
+                dynamic_cast<CastMaimAction*>(action);
             break;
         }
         case CLASS_PALADIN:
@@ -209,9 +211,6 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot))
-        return 1.0f;
-
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<AttumenTheHuntsmanStackBehindAction*>(action))
     {
@@ -230,9 +229,12 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!midnight || !IsAttumenMounted(*midnight))
         return 1.0f;
 
-    // Whoever Attumen is on moves freely; everyone else stays stacked.
+    // Whoever Attumen is on, and the main tank, move freely; everyone else stays stacked.
     Unit* attumen = GetMountedAttumen(bot);
-    return attumen && attumen->GetVictim() == bot ? 1.0f : 0.0f;
+    if (attumen && attumen->GetVictim() == bot)
+        return 1.0f;
+
+    return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 }
 
 // Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight. Mounted Attumen is the

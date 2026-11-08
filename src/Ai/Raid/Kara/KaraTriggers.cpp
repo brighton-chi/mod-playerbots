@@ -49,12 +49,12 @@ bool ManaWarpStunnerShouldHoldTrigger::IsActive()
 // A Midnight threat list check will capture the entire encounter.
 bool AttumenTheHuntsmanShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    // First assist tank
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, true))
+    Unit* midnight = FindThreatTarget(bot, "midnight");
+    if (!midnight || IsAttumenMounted(*midnight))
         return false;
 
-    Unit* midnight = FindThreatTarget(bot, "midnight");
-    return midnight && !IsAttumenMounted(*midnight) && GetEncounterBoss();
+    // First assist tank
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) && GetEncounterBoss();
 }
 
 bool AttumenTheHuntsmanMidnightShouldBeFocusedTrigger::IsActiveInEncounter()
@@ -79,7 +79,8 @@ bool AttumenTheHuntsmanMountedShouldBeTankedTrigger::IsActiveInEncounter()
 bool AttumenTheHuntsmanShouldStackBehindTrigger::IsActiveInEncounter()
 {
     Unit* attumen = GetMountedAttumen(bot);
-    return attumen && attumen->GetVictim() != bot;
+    return attumen && attumen->GetVictim() != bot &&
+        GetAttumenStackPosition(bot, *attumen).has_value();
 }
 
 bool AttumenTheHuntsmanShouldHoldDpsTrigger::IsActiveInEncounter()
@@ -275,15 +276,16 @@ bool NetherspiteShouldBlockGreenOrBlueBeamTrigger::IsActiveInEncounter()
     if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())
         return false;
 
-    Position const* spot = FindNetherspiteBlockerSpot(*state, bot->GetGUID());
-    return spot && bot->GetExactDist2d(*spot) > NETHERSPITE_BEAM_SPOT_TOLERANCE;
+    Position const* position = FindNetherspiteBlockerPosition(*state, bot->GetGUID());
+    return position && bot->GetExactDist2d(*position) > NETHERSPITE_BEAM_POSITION_TOLERANCE;
 }
 
 bool NetherspiteNextBeamBlockerShouldPrepareTrigger::IsActiveInEncounter()
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
-    Position const* spot = state ? FindNetherspiteNextSpot(*state, bot->GetGUID()) : nullptr;
-    return spot && bot->GetExactDist2d(*spot) > NETHERSPITE_BEAM_SPOT_TOLERANCE;
+    Position const* position =
+        state ? FindNetherspiteNextPosition(*state, bot->GetGUID()) : nullptr;
+    return position && bot->GetExactDist2d(*position) > NETHERSPITE_BEAM_POSITION_TOLERANCE;
 }
 
 bool NetherspiteShouldStandBetweenBeamsTrigger::IsActiveInEncounter()
@@ -296,7 +298,7 @@ bool NetherspiteShouldStandBetweenBeamsTrigger::IsActiveInEncounter()
     }
 
     Unit* netherspite = GetEncounterBoss();
-    return netherspite && !IsBanishPhase(netherspite) && !IsNetherspiteStandingSpotGood(
+    return netherspite && !IsBanishPhase(netherspite) && !IsBetweenNetherspiteBeams(
         bot, *netherspite, *state, bot->GetPositionX(), bot->GetPositionY());
 }
 
@@ -317,7 +319,7 @@ bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
 
     float const gap = Position::NormalizeOrientation(
         netherspite->GetAngle(bot->GetPositionX(), bot->GetPositionY()) -
-        netherspite->GetAngle(slot->spot.GetPositionX(), slot->spot.GetPositionY()));
+        netherspite->GetAngle(slot->position.GetPositionX(), slot->position.GetPositionY()));
     return std::min(gap, 2.0f * static_cast<float>(M_PI) - gap) >
         NETHERSPITE_BANISH_SLOT_TOLERANCE;
 }
@@ -442,7 +444,7 @@ bool NightbaneShouldAvoidRainOfBonesTrigger::IsActiveInEncounter()
         return false;
 
     KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
-    return state && state->nightbaneFlightSpot;
+    return state && state->nightbaneFlightStackPosition;
 }
 
 bool NightbaneInLandingPhaseTrigger::IsActiveInEncounter()

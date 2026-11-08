@@ -163,7 +163,7 @@ bool IsKarazhanFearCasterActive(Player* bot);
 // Each stunner waits its own delay after the cast starts, so the first stun ends that cast and the
 // others go to a warp still casting.
 inline constexpr uint32 WARP_BREACH_MIN_REACTION_MS = 200;
-inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 600;
+inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 300; // War Stomp's 0.5 s cast still lands
 // From here a stunner on the warp casts nothing else, keeping its global cooldown free.
 inline constexpr float MANA_WARP_STUNNER_HOLD_HEALTH_PCT = 15.0f;
 // Stun reaches, centre to centre
@@ -183,7 +183,7 @@ bool IsNearManaWarpPacks(Player* bot);
 float GetManaWarpStunReach(Player* bot);
 // Rogues and cat druids stun only their target, which holds their combo points.
 Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
-// Tanks keep tanking and stun without holding.
+// Tanks and healers stun without holding.
 Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
@@ -193,7 +193,7 @@ inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
 inline constexpr float INTANGIBLE_PRESENCE_RADIUS = 10.0f;
 inline constexpr float ATTUMEN_HAZARD_CLEARANCE = 1.0f;
 // Behind mounted Attumen, centre to centre. Charge goes to a player more than 8 yd away edge to
-// edge (11 yd centre to centre), and Auto Shot fails within 5 yd.
+// edge (11.75 yd centre to centre), and Auto Shot fails within 5.08 yd.
 inline constexpr float ATTUMEN_STACK_DISTANCE = 2.0f;
 inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.0f;
 inline constexpr float ATTUMEN_STACK_TOLERANCE = 1.5f;
@@ -204,17 +204,19 @@ bool IsAttumenMounted(Unit const& midnight);
 // Both Attumens share a name. For up to 1 s after the merge, the unmounted one can be found
 // instead, and this returns null.
 Unit* GetMountedAttumen(Player* bot);
+// The bot's position behind mounted Attumen, or nothing while the bot is within tolerance of it.
+std::optional<Position> GetAttumenStackPosition(Player* bot, Unit const& attumen);
 // For all but the main tank, for 5 s from when Attumen mounts Midnight.
 bool IsAttumenDpsHeld(Player* bot);
 
 // Maiden of Virtue
 inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
-// She stops 6.8 yd from a tank she follows, so the tank aims this far past her spot.
+// She stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
 // Holy Ground hits a player within 12 yd of her centre, and breaks Repentance.
 inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
 inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
-// Her spawn point; the ranged spots are a ring around it.
+// Her spawn point; the ranged positions are a ring around it.
 inline Position const MAIDEN_OF_VIRTUE_POSITION = { -10945.881f, -2103.782f, 92.712f };
 inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10959.242f, -2119.617f, 92.180f }, // SE (opposite entrance)
@@ -324,7 +326,7 @@ inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
 inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
 
 bool IsAranCastingArcaneExplosion(Unit* aran);
-std::optional<Position> GetBlizzardEscapeSpot(Player* bot);
+std::optional<Position> GetBlizzardEscapePosition(Player* bot);
 bool IsFlameWreathInProgress(Player* bot, Unit* aran);
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran);
 
@@ -350,8 +352,8 @@ struct NetherspiteBeamState
     std::optional<Position> portal;
     ObjectGuid blocker;
     ObjectGuid next;
-    Position blockerSpot;
-    Position nextSpot;
+    Position blockerPosition;
+    Position nextPosition;
 };
 
 struct NetherspiteBeamOffset
@@ -363,7 +365,7 @@ struct NetherspiteBeamOffset
 struct NetherspiteBanishSlot
 {
     ObjectGuid guid;
-    Position spot;
+    Position position;
 };
 
 // In the order the tracker picks: an empty green beam heals him 4000 a second per stack, so green
@@ -391,8 +393,8 @@ inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5
 // Consumption is NPC AoE on target 15: exact distance, no reach.
 inline constexpr float VOID_ZONE_RADIUS = 2.0f;
 inline constexpr float VOID_ZONE_CLEARANCE = VOID_ZONE_RADIUS + 1.0f;
-inline constexpr float VOID_ZONE_BEAM_SPOT_CLEARANCE = VOID_ZONE_RADIUS + 0.5f;
-inline constexpr float NETHERSPITE_BEAM_SPOT_TOLERANCE = 0.5f;
+inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = VOID_ZONE_RADIUS + 0.5f;
+inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
 inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
     static_cast<float>(M_PI) * 6.0f / 180.0f;
 // Beams start 10 s into a portal phase.
@@ -400,7 +402,7 @@ inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
 // The next blocker needs a moment, and a cast it can't stop, to get on the beam.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
-inline constexpr uint8 NETHERSPITE_SPOT_TRIES = 12;
+inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
 inline constexpr float NETHERSPITE_BLOCKER_MIN_DISTANCE = 17.0f;
 inline constexpr float NETHERSPITE_HUNTER_BLOCKER_DISTANCE = 25.0f;
@@ -420,8 +422,8 @@ bool IsNetherspiteDpsHeld(Player* bot, Unit const& netherspite);
 bool AreNetherspitePortalsKnown(KaraInstanceState const& state);
 // Includes the red blocker.
 bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid);
-Position const* FindNetherspiteBlockerSpot(KaraInstanceState const& state, ObjectGuid guid);
-Position const* FindNetherspiteNextSpot(KaraInstanceState const& state, ObjectGuid guid);
+Position const* FindNetherspiteBlockerPosition(KaraInstanceState const& state, ObjectGuid guid);
+Position const* FindNetherspiteNextPosition(KaraInstanceState const& state, ObjectGuid guid);
 NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
     KaraInstanceState const& state, ObjectGuid guid);
 // Along the line from his centre, and to the side, positive counterclockwise.
@@ -434,11 +436,11 @@ float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam);
 // A tank just stays off the beams and out of void zones. Everyone else stands between green and
 // blue, on the side without red, at attack range. Healers keep the red tank in range.
-bool IsNetherspiteStandingSpotGood(
+bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y);
-// A random spot in the area, then the nearest safe spot if there is none. Neither crosses a beam
-// that will be up by the time the bot arrives.
-std::optional<Position> FindNetherspiteStandingSpot(
+// A random position in the area, then the nearest safe position if there is none. Neither crosses a
+// beam that will be up by the time the bot arrives.
+std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state);
 
 // Prince Malchezaar
@@ -467,10 +469,10 @@ bool IsClearOfInfernals(
 bool IsLineClearOfInfernals(
     Position const& from, Position const& to, std::vector<Position> const& infernals);
 bool CanWalkStraightTo(Player* bot, Position const& destination);
-// The nearest spot on rings around origin that passes isGood and can be walked to in a straight
+// The nearest position on rings around origin that passes isGood and can be walked to in a straight
 // line. A line clear of landed infernals comes first; with mayCross, any line after that.
 template <typename IsGood>
-std::optional<Position> FindMalchezaarSpot(
+std::optional<Position> FindMalchezaarPosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
     float maxDistance, bool mayCross, IsGood const& isGood)
 {
@@ -513,16 +515,17 @@ std::optional<Position> FindMalchezaarSpot(
 
     return std::nullopt;
 }
-// The nearest clear spot in range of the bot's target: for a ranged bot on a ring just out of
-// Shadow Nova, for melee on the target's melee ring. Failing that, the nearest clear spot anywhere.
-std::optional<Position> FindMalchezaarStandingSpot(
+// The nearest clear position in range of the bot's target: for a ranged bot on a ring just out of
+// Shadow Nova, for melee on the target's melee ring. Failing that, the nearest clear position
+// anywhere.
+std::optional<Position> FindMalchezaarClearPosition(
     PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals);
-bool IsMalchezaarStandingSpotGood(
+bool IsClearOfMalchezaarHazards(
     Player* bot, Unit const& malchezaar, std::vector<Position> const& infernals,
-    Position const& spot);
-// Sets clearance to what the spot is clear by: enough for his melee ring and his trail if it can,
-// then less.
-std::optional<Position> FindMalchezaarTankSpot(
+    Position const& position);
+// Sets clearance to what the position is clear by: enough for his melee ring and his trail if it
+// can, then less.
+std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance);
 
 // Nightbane
@@ -551,19 +554,19 @@ inline constexpr float TERRACE_ARC_END = 4.9241f;
 // on the stack can't reach it.
 inline constexpr float NIGHTBANE_STACK_RADIUS = 39.0f;
 // Within 50y of the flight position. Fireball Barrage hits players more than 52y from his centre.
-inline constexpr float NIGHTBANE_FLIGHT_SPOT_MIN_ANGLE = 1.2566f;
-inline constexpr float NIGHTBANE_FLIGHT_SPOT_MAX_ANGLE = 3.0020f;
-inline constexpr float NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE = 2.0944f;
+inline constexpr float NIGHTBANE_FLIGHT_STACK_MIN_ANGLE = 1.2566f;
+inline constexpr float NIGHTBANE_FLIGHT_STACK_MAX_ANGLE = 3.0020f;
+inline constexpr float NIGHTBANE_FLIGHT_STACK_HOME_ANGLE = 2.0944f;
 
 inline Position const NIGHTBANE_FLIGHT_POSITION = { -11160.125f, -1870.683f, 97.739f };
 inline Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f };
 
 // Normalized to the range starting at TERRACE_ARC_START.
 float GetTerraceAngle(Position const& position);
-// Searches the stack circle in both directions from startAngle, away from his landing spot first,
-// and returns the nearest spot within the limits for which isClear is true.
+// Searches the stack circle in both directions from startAngle, away from his landing position
+// first, and returns the nearest position within the limits for which isClear is true.
 template <typename IsClear>
-std::optional<Position> FindNightbaneStackSpot(
+std::optional<Position> FindNightbaneStackPosition(
     float startAngle, float minAngle, float maxAngle, IsClear const& isClear)
 {
     constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7y
@@ -576,12 +579,12 @@ std::optional<Position> FindNightbaneStackSpot(
             if (angle < minAngle || angle > maxAngle)
                 continue;
 
-            Position const spot(
+            Position const position(
                 TERRACE_DOME_CENTER.GetPositionX() + NIGHTBANE_STACK_RADIUS * std::cos(angle),
                 TERRACE_DOME_CENTER.GetPositionY() + NIGHTBANE_STACK_RADIUS * std::sin(angle),
                 NIGHTBANE_GROUND_Z);
-            if (isClear(spot))
-                return spot;
+            if (isClear(position))
+                return position;
         }
     }
 
@@ -610,7 +613,7 @@ struct KaraInstanceState
     std::vector<NetherspiteBanishSlot> netherspiteBanishSlots;
     std::optional<uint32> nightbaneDpsHoldTimer;
     std::optional<NightbaneFlightStage> nightbaneFlightStage;
-    std::optional<Position> nightbaneFlightSpot;
+    std::optional<Position> nightbaneFlightStackPosition;
     std::optional<Position> nightbaneRainOfBonesCenter;
 };
 

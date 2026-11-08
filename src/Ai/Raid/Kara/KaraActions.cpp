@@ -306,25 +306,21 @@ bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Mounted Attumen's CombatReach is 0 yards so defaults to 1.5 yards
+// Mounted Attumen's CombatReach is 2.25 yards
 bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
 {
     Unit* attumen = GetMountedAttumen(bot);
     if (!attumen)
         return false;
 
-    float const distanceBehind = bot->getClass() == CLASS_HUNTER ?
-        ATTUMEN_HUNTER_STACK_DISTANCE : ATTUMEN_STACK_DISTANCE;
-    float const orientation = attumen->GetOrientation() + M_PI;
-    float const rearX = attumen->GetPositionX() + std::cos(orientation) * distanceBehind;
-    float const rearY = attumen->GetPositionY() + std::sin(orientation) * distanceBehind;
-
-    if (bot->GetExactDist2d(rearX, rearY) <= ATTUMEN_STACK_TOLERANCE)
+    std::optional<Position> const position = GetAttumenStackPosition(bot, *attumen);
+    if (!position)
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, rearX, rearY, attumen->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(),
+        position->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED,
+        true, false);
 }
 
 bool AttumenTheHuntsmanStopAttackingAction::Execute(Event /*event*/)
@@ -397,8 +393,8 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (distToPosition <= MAIDEN_OF_VIRTUE_POSITION_TOLERANCE)
         return false;
 
-    // The tank leads her along the line from her through her spot, so it walks through her when
-    // she is between it and the spot.
+    // The tank leads her along the line from her through her position, so it walks through her when
+    // she is between it and the position.
     float const ratio = MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE / distToPosition;
     Position const destination(
         position.GetPositionX() + (position.GetPositionX() - maiden->GetPositionX()) * ratio,
@@ -713,16 +709,17 @@ bool ShadeOfAranRunOutOfBlizzardAction::Execute(Event /*event*/)
     if (!IsMovingAllowed() || IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
         return false;
 
-    std::optional<Position> const spot = GetBlizzardEscapeSpot(bot);
-    if (!spot)
+    std::optional<Position> const position = GetBlizzardEscapePosition(bot);
+    if (!position)
         return false;
 
     // A filling cast would hold the bot still.
     bot->CastStop();
 
     return MoveTo(
-        KARA_MAP_ID, spot->GetPositionX(), spot->GetPositionY(), spot->GetPositionZ(), false,
-        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(),
+        position->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED,
+        true, false);
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up
@@ -773,7 +770,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
         return false;
 
     float const angle = aran->GetAngle(bot);
-    Position const spot(
+    Position const position(
         aran->GetPositionX() + goal * std::cos(angle),
         aran->GetPositionY() + goal * std::sin(angle), bot->GetPositionZ());
 
@@ -782,7 +779,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     for (Position const& patch : GetDynamicObjectPositions(
              bot, ARAN_ROOM_SEARCH_RADIUS, Id(KaraSpells::SPELL_BLIZZARD)))
     {
-        if (patch.GetExactDist2d(spot) <= patchReach)
+        if (patch.GetExactDist2d(position) <= patchReach)
             return false;
     }
 
@@ -790,7 +787,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, spot, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -837,8 +834,8 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         _redBeamMoveTimer = getMSTime();
     }
 
-    float x = beam.blockerSpot.GetPositionX();
-    float y = beam.blockerSpot.GetPositionY();
+    float x = beam.blockerPosition.GetPositionX();
+    float y = beam.blockerPosition.GetPositionY();
     if (_lastBeamMoveSideways)
     {
         constexpr float sideDistance = 3.0f;
@@ -850,7 +847,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         y += (beam.portal->GetPositionX() - netherspite->GetPositionX()) / length * sideDistance;
     }
 
-    if (bot->GetExactDist2d(x, y) <= NETHERSPITE_BEAM_SPOT_TOLERANCE)
+    if (bot->GetExactDist2d(x, y) <= NETHERSPITE_BEAM_POSITION_TOLERANCE)
         return false;
 
     return MoveTo(
@@ -861,26 +858,28 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 bool NetherspiteBlockGreenOrBlueBeamAction::Execute(Event /*event*/)
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
-    Position const* spot = state ? FindNetherspiteBlockerSpot(*state, bot->GetGUID()) : nullptr;
-    if (!spot)
+    Position const* position =
+        state ? FindNetherspiteBlockerPosition(*state, bot->GetGUID()) : nullptr;
+    if (!position)
         return false;
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, spot->GetPositionX(), spot->GetPositionY(), bot->GetPositionZ(),
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
-    Position const* spot = state ? FindNetherspiteNextSpot(*state, bot->GetGUID()) : nullptr;
-    if (!spot)
+    Position const* position =
+        state ? FindNetherspiteNextPosition(*state, bot->GetGUID()) : nullptr;
+    if (!position)
         return false;
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, spot->GetPositionX(), spot->GetPositionY(), bot->GetPositionZ(),
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -894,10 +893,10 @@ bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
     if (!state || !AreNetherspitePortalsKnown(*state))
         return false;
 
-    if (!_destination || !IsNetherspiteStandingSpotGood(
+    if (!_destination || !IsBetweenNetherspiteBeams(
             bot, *netherspite, *state, _destination->GetPositionX(), _destination->GetPositionY()))
     {
-        _destination = FindNetherspiteStandingSpot(bot, *netherspite, *state);
+        _destination = FindPositionBetweenNetherspiteBeams(bot, *netherspite, *state);
         if (!_destination)
             return false;
     }
@@ -919,8 +918,9 @@ bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, slot->spot.GetPositionX(), slot->spot.GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, slot->position.GetPositionX(), slot->position.GetPositionY(),
+        bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
+        false);
 }
 
 bool NetherspiteStopAttackingAction::Execute(Event /*event*/)
@@ -1067,8 +1067,8 @@ std::vector<Player*> GetBeamCandidates(
     return candidates;
 }
 
-// The blocker's spot on the line: the clear point nearest where it wants to stand.
-float FindBeamSpotDistance(
+// The blocker's position on the line: the clear point nearest where it wants to stand.
+float FindBeamPositionDistance(
     Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
     Player* blocker)
 {
@@ -1090,7 +1090,7 @@ float FindBeamSpotDistance(
         float const x = netherspite.GetPositionX() + dirX * distance;
         float const y = netherspite.GetPositionY() + dirY * distance;
         float const gap = std::abs(distance - preferred);
-        if (gap < bestGap && IsClearOfVoidZones(state, x, y, VOID_ZONE_BEAM_SPOT_CLEARANCE))
+        if (gap < bestGap && IsClearOfVoidZones(state, x, y, VOID_ZONE_BEAM_POSITION_CLEARANCE))
         {
             best = distance;
             bestGap = gap;
@@ -1100,7 +1100,7 @@ float FindBeamSpotDistance(
     return best;
 }
 
-Position GetSpotOnBeam(Unit const& netherspite, Position const& portal, float distance)
+Position GetPositionOnBeam(Unit const& netherspite, Position const& portal, float distance)
 {
     float const length = netherspite.GetExactDist2d(portal);
     return Position(
@@ -1111,29 +1111,30 @@ Position GetSpotOnBeam(Unit const& netherspite, Position const& portal, float di
         netherspite.GetPositionZ());
 }
 
-bool IsNextSpotGood(
+bool IsNextPositionGood(
     Unit const& netherspite, Position const& portal, KaraInstanceState const& state, float side,
-    Position const& spot, float low)
+    Position const& position, float low)
 {
     NetherspiteBeamOffset const offset = GetNetherspiteBeamOffset(
-        netherspite, portal, spot.GetPositionX(), spot.GetPositionY());
+        netherspite, portal, position.GetPositionX(), position.GetPositionY());
     float const off = offset.off * side;
-    return off >= NETHERSPITE_NEXT_MIN_OFF_LINE - NETHERSPITE_BEAM_SPOT_TOLERANCE &&
-        off <= NETHERSPITE_NEXT_MAX_OFF_LINE + NETHERSPITE_BEAM_SPOT_TOLERANCE &&
-        offset.along >= low - NETHERSPITE_BEAM_SPOT_TOLERANCE &&
-        offset.along <= low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_SPOT_TOLERANCE &&
-        IsClearOfVoidZones(state, spot.GetPositionX(), spot.GetPositionY(), VOID_ZONE_CLEARANCE);
+    return off >= NETHERSPITE_NEXT_MIN_OFF_LINE - NETHERSPITE_BEAM_POSITION_TOLERANCE &&
+        off <= NETHERSPITE_NEXT_MAX_OFF_LINE + NETHERSPITE_BEAM_POSITION_TOLERANCE &&
+        offset.along >= low - NETHERSPITE_BEAM_POSITION_TOLERANCE &&
+        offset.along <= low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_POSITION_TOLERANCE &&
+        IsClearOfVoidZones(
+            state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_CLEARANCE);
 }
 
 // Off the line on the side facing the other beam, so a move out of a void zone can't cross it.
-std::optional<Position> FindNextSpot(
+std::optional<Position> FindNextPosition(
     Player* bot, Unit const& netherspite, Position const& portal,
     KaraInstanceState const& state, float side, float low)
 {
     float const length = netherspite.GetExactDist2d(portal);
     float const dirX = (portal.GetPositionX() - netherspite.GetPositionX()) / length;
     float const dirY = (portal.GetPositionY() - netherspite.GetPositionY()) / length;
-    for (uint8 i = 0; i < NETHERSPITE_SPOT_TRIES; ++i)
+    for (uint8 i = 0; i < NETHERSPITE_POSITION_TRIES; ++i)
     {
         float const along = low + frand(0.0f, NETHERSPITE_NEXT_ALONG_RANGE);
         float const off =
@@ -1281,8 +1282,8 @@ void UpdateBeamBlockers(
         taken.push_back(blockerGuid);
         // Red ignores void zones: moving out of one could leave melee range and walk him off.
         float const distance = data.beam == NetherspiteBeam::Red ? NETHERSPITE_BLOCKER_DISTANCE :
-            FindBeamSpotDistance(netherspite, *beamState.portal, state, blocker);
-        beamState.blockerSpot = GetSpotOnBeam(netherspite, *beamState.portal, distance);
+            FindBeamPositionDistance(netherspite, *beamState.portal, state, blocker);
+        beamState.blockerPosition = GetPositionOnBeam(netherspite, *beamState.portal, distance);
     }
 
     if (!next)
@@ -1292,30 +1293,30 @@ void UpdateBeamBlockers(
     if (blocker && HasBeamStackLimit(blocker, data.beam) &&
         GetBeamStacks(blocker, data) >= NETHERSPITE_NEXT_STEPS_ON_AT_STACKS)
     {
-        beamState.nextSpot = GetSpotOnBeam(
+        beamState.nextPosition = GetPositionOnBeam(
             netherspite, *beamState.portal,
-            FindBeamSpotDistance(netherspite, *beamState.portal, state, next));
+            FindBeamPositionDistance(netherspite, *beamState.portal, state, next));
         return;
     }
 
     float const side = GetNetherspiteInnerSide(netherspite, state, data.beam);
     float const low = next->getClass() == CLASS_HUNTER ?
         NETHERSPITE_HUNTER_BLOCKER_DISTANCE : NETHERSPITE_BLOCKER_MIN_DISTANCE;
-    if (isNextNew || !IsNextSpotGood(
-            netherspite, *beamState.portal, state, side, beamState.nextSpot, low))
+    if (isNextNew || !IsNextPositionGood(
+            netherspite, *beamState.portal, state, side, beamState.nextPosition, low))
     {
         // If there's nowhere for it yet, it stays where it is.
-        std::optional<Position> const spot =
-            FindNextSpot(bot, netherspite, *beamState.portal, state, side, low);
-        if (spot)
-            beamState.nextSpot = *spot;
+        std::optional<Position> const position =
+            FindNextPosition(bot, netherspite, *beamState.portal, state, side, low);
+        if (position)
+            beamState.nextPosition = *position;
         else if (isNextNew)
-            beamState.nextSpot = next->GetPosition();
+            beamState.nextPosition = next->GetPosition();
     }
 }
 
 // A slot keeps its bearing and comes in along it until it's on the floor and clear of void zones.
-Position GetBanishSpot(Player* bot, Unit const& netherspite, KaraInstanceState const& state,
+Position GetBanishPosition(Player* bot, Unit const& netherspite, KaraInstanceState const& state,
     float angle, float startRadius)
 {
     constexpr float minRadius = 6.0f;
@@ -1398,9 +1399,9 @@ void UpdateBanishSlots(Player* bot, Unit const& netherspite, KaraInstanceState& 
                 float score;
                 if (isHunter)
                 {
-                    Position const spot =
-                        GetBanishSpot(bot, netherspite, state, *angle, radius);
-                    score = netherspite.GetExactDist2d(spot);
+                    Position const position =
+                        GetBanishPosition(bot, netherspite, state, *angle, radius);
+                    score = netherspite.GetExactDist2d(position);
                 }
                 else
                 {
@@ -1418,7 +1419,7 @@ void UpdateBanishSlots(Player* bot, Unit const& netherspite, KaraInstanceState& 
             }
 
             slots.push_back({
-                member->GetGUID(), GetBanishSpot(bot, netherspite, state, *best, radius),
+                member->GetGUID(), GetBanishPosition(bot, netherspite, state, *best, radius),
             });
             angles.erase(best);
         }
@@ -1429,15 +1430,16 @@ void UpdateBanishSlots(Player* bot, Unit const& netherspite, KaraInstanceState& 
     for (NetherspiteBanishSlot& slot : slots)
     {
         if (IsClearOfVoidZones(
-                state, slot.spot.GetPositionX(), slot.spot.GetPositionY(), VOID_ZONE_CLEARANCE))
+                state, slot.position.GetPositionX(), slot.position.GetPositionY(),
+                VOID_ZONE_CLEARANCE))
         {
             continue;
         }
 
-        slot.spot = GetBanishSpot(
+        slot.position = GetBanishPosition(
             bot, netherspite, state,
-            netherspite.GetAngle(slot.spot.GetPositionX(), slot.spot.GetPositionY()),
-            netherspite.GetExactDist2d(slot.spot));
+            netherspite.GetAngle(slot.position.GetPositionX(), slot.position.GetPositionY()),
+            netherspite.GetExactDist2d(slot.position));
     }
 
     // A bot rezzed since the slots were made takes the slot of one that has died.
@@ -1554,7 +1556,7 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
     if (!_destination)
     {
         constexpr float searchDistance = 52.0f;
-        _destination = FindMalchezaarSpot(
+        _destination = FindMalchezaarPosition(
             bot, bot->GetPosition(), infernals, searchDistance, false,
             [&](Position const& candidate)
             {
@@ -1582,9 +1584,9 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
         backwards);
 }
 
-// Stock reach walks at the target and this takes over at a landed infernal. It holds its spot until
-// it gets there, or reach would walk the bot straight back in. The spot is in range, so reach has
-// nothing left to do on arrival.
+// Stock reach walks at the target and this takes over at a landed infernal. It holds its position
+// until it gets there, or reach would walk the bot straight back in. The position is in range, so
+// reach has nothing left to do on arrival.
 bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
@@ -1600,12 +1602,12 @@ bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
         return false;
 
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
-    if (_destination && !IsMalchezaarStandingSpotGood(bot, *malchezaar, infernals, *_destination))
+    if (_destination && !IsClearOfMalchezaarHazards(bot, *malchezaar, infernals, *_destination))
         _destination.reset();
 
     if (!_destination)
     {
-        _destination = FindMalchezaarStandingSpot(botAI, *malchezaar, infernals);
+        _destination = FindMalchezaarClearPosition(botAI, *malchezaar, infernals);
         if (!_destination)
             return false;
     }
@@ -1654,7 +1656,7 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
             return false;
 
         _searchedInfernalCount = infernals.size();
-        _destination = FindMalchezaarTankSpot(bot, infernals, _destinationClearance);
+        _destination = FindMalchezaarTankPosition(bot, infernals, _destinationClearance);
         if (!_destination)
             return false;
     }
@@ -1743,12 +1745,12 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::Execute(Event /*event*/)
         return false;
 
     if (bot == rangedLeader)
-        return MoveRangedLeaderToSafeSpot();
+        return MoveRangedLeaderToSafePosition();
 
     return StackOnRangedLeader(rangedLeader);
 }
 
-bool NightbaneRangedStackAndMoveFromCharredEarthAction::MoveRangedLeaderToSafeSpot()
+bool NightbaneRangedStackAndMoveFromCharredEarthAction::MoveRangedLeaderToSafePosition()
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
@@ -1765,23 +1767,23 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::MoveRangedLeaderToSafeSp
     std::vector<Position> const charredEarths = GetDynamicObjectPositions(
         bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
 
-    constexpr float spotMinBossDist = minBossDist + 1.0f;
-    constexpr float spotMaxBossDist = 35.0f;
-    std::optional<Position> const spot = FindNightbaneStackSpot(
+    constexpr float positionMinBossDist = minBossDist + 1.0f;
+    constexpr float positionMaxBossDist = 35.0f;
+    std::optional<Position> const position = FindNightbaneStackPosition(
         GetTerraceAngle(*bot), TERRACE_ARC_START, TERRACE_ARC_END,
         [&](Position const& candidate)
         {
             float const bossDist = nightbane->GetExactDist2d(candidate);
-            return bossDist >= spotMinBossDist && bossDist <= spotMaxBossDist &&
+            return bossDist >= positionMinBossDist && bossDist <= positionMaxBossDist &&
                 IsClearOfCharredEarth(candidate, charredEarths);
         });
 
-    if (!spot)
+    if (!position)
         return false;
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, spot->GetPositionX(), spot->GetPositionY(), bot->GetPositionZ(),
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), bot->GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -1859,7 +1861,7 @@ bool NightbaneSelectTargetForHoldAction::Execute(Event /*event*/)
         botAI, AI_VALUE(Unit*, PlayerbotAI::IsTank(bot) ? "tank target" : "dps target"));
 }
 
-// The shared spot is out of Rain of Bones and clear of Charred Earth (see the manage action).
+// The shared position is out of Rain of Bones and clear of Charred Earth (see the manage action).
 // Stacked, the skeletons come to everyone, with reach off. Fireball Barrage needs only range.
 bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
 {
@@ -1868,7 +1870,7 @@ bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
         return false;
 
     KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
-    if (!state || !state->nightbaneFlightSpot)
+    if (!state || !state->nightbaneFlightStackPosition)
         return false;
 
     constexpr float arrivalDist = 0.5f;
@@ -1876,7 +1878,8 @@ bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, *state->nightbaneFlightSpot, arrivalDist, nullptr, moveX, moveY, backwards))
+            bot, *state->nightbaneFlightStackPosition, arrivalDist, nullptr, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -1906,7 +1909,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!IsNightbaneFlying(*nightbane))
     {
         bool didSomething = ResetIfSet(state.nightbaneFlightStage);
-        didSomething |= ResetIfSet(state.nightbaneFlightSpot);
+        didSomething |= ResetIfSet(state.nightbaneFlightStackPosition);
         didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
         didSomething |= EmplaceIfUnset(state.nightbaneDpsHoldTimer, getMSTime());
         return didSomething;
@@ -1932,7 +1935,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (stage == NightbaneFlightStage::Landing)
     {
-        didSomething |= ResetIfSet(state.nightbaneFlightSpot);
+        didSomething |= ResetIfSet(state.nightbaneFlightStackPosition);
         didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
         return didSomething;
     }
@@ -1940,15 +1943,15 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     Position const* rainCenter = GetRainOfBonesCenter(*nightbane);
     bool const isNewRain = rainCenter && (!state.nightbaneRainOfBonesCenter ||
         state.nightbaneRainOfBonesCenter->GetExactDist2d(*rainCenter) > 0.1f);
-    if (state.nightbaneFlightSpot && !isNewRain)
+    if (state.nightbaneFlightStackPosition && !isNewRain)
         return didSomething;
 
     if (isNewRain)
         state.nightbaneRainOfBonesCenter = *rainCenter;
 
     float const rainClearDist = RAIN_OF_BONES_REACH + RAIN_OF_BONES_CLEARANCE;
-    if (state.nightbaneFlightSpot &&
-        state.nightbaneFlightSpot->GetExactDist2d(*rainCenter) >= rainClearDist)
+    if (state.nightbaneFlightStackPosition &&
+        state.nightbaneFlightStackPosition->GetExactDist2d(*rainCenter) >= rainClearDist)
     {
         return true;
     }
@@ -1957,25 +1960,25 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     std::vector<Position> const charredEarths = GetDynamicObjectPositions(
         bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
 
-    float const startAngle = state.nightbaneFlightSpot ?
-        GetTerraceAngle(*state.nightbaneFlightSpot) : NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE;
-    std::optional<Position> const spot = FindNightbaneStackSpot(
-        startAngle, NIGHTBANE_FLIGHT_SPOT_MIN_ANGLE, NIGHTBANE_FLIGHT_SPOT_MAX_ANGLE,
+    float const startAngle = state.nightbaneFlightStackPosition ?
+        GetTerraceAngle(*state.nightbaneFlightStackPosition) : NIGHTBANE_FLIGHT_STACK_HOME_ANGLE;
+    std::optional<Position> const position = FindNightbaneStackPosition(
+        startAngle, NIGHTBANE_FLIGHT_STACK_MIN_ANGLE, NIGHTBANE_FLIGHT_STACK_MAX_ANGLE,
         [&](Position const& candidate)
         {
             return IsClearOfCharredEarth(candidate, charredEarths) &&
                 (!rainCenter || candidate.GetExactDist2d(*rainCenter) >= rainClearDist);
         });
 
-    if (spot)
-        state.nightbaneFlightSpot = spot;
-    else if (!state.nightbaneFlightSpot)
+    if (position)
+        state.nightbaneFlightStackPosition = position;
+    else if (!state.nightbaneFlightStackPosition)
     {
-        state.nightbaneFlightSpot = Position(
+        state.nightbaneFlightStackPosition = Position(
             TERRACE_DOME_CENTER.GetPositionX() +
-                NIGHTBANE_STACK_RADIUS * std::cos(NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE),
+                NIGHTBANE_STACK_RADIUS * std::cos(NIGHTBANE_FLIGHT_STACK_HOME_ANGLE),
             TERRACE_DOME_CENTER.GetPositionY() +
-                NIGHTBANE_STACK_RADIUS * std::sin(NIGHTBANE_FLIGHT_SPOT_HOME_ANGLE),
+                NIGHTBANE_STACK_RADIUS * std::sin(NIGHTBANE_FLIGHT_STACK_HOME_ANGLE),
             NIGHTBANE_GROUND_Z);
     }
 

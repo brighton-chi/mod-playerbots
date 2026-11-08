@@ -478,7 +478,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveRangedLeaderToSafeSpot();
+    bool MoveRangedLeaderToSafePosition();
     bool StackOnRangedLeader(Player* rangedLeader);
 };
 
