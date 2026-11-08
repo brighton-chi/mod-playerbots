@@ -1101,8 +1101,7 @@ bool HasBeamStackLimit(Player* member, NetherspiteBeam beam)
     if (beam == NetherspiteBeam::Red)
         return false;
 
-    return beam == NetherspiteBeam::Blue || member->getPowerType() == POWER_MANA ||
-        PlayerbotAI::IsHeal(member);
+    return beam == NetherspiteBeam::Blue || IsManaUser(member) || PlayerbotAI::IsHeal(member);
 }
 
 uint8 GetBeamStacks(Player* member, NetherspiteBeamData const& data)
@@ -1145,7 +1144,7 @@ std::vector<Player*> GetBeamCandidates(
         if (HasBeamStackLimit(member, data.beam) && GetBeamStacks(member, data) >= stackLimit)
             continue;
 
-        bool const isMana = member->getPowerType() == POWER_MANA;
+        bool const isMana = IsManaUser(member);
         bool const isDps = PlayerbotAI::IsDps(member);
         bool const isHealer = PlayerbotAI::IsHeal(member);
         switch (data.beam)

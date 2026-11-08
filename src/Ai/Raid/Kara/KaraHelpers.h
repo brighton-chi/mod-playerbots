@@ -451,6 +451,9 @@ inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
 inline constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
 
 bool IsBanishPhase(Unit* netherspite);
+// Cat Form turns a druid's power to energy, so a druid goes by its strategies: cat and bear are not
+// mana users, balance and resto are.
+bool IsManaUser(Player* player);
 // Holds for 5 s from each portal phase, then until a tank is his victim. At 10 s the red beam's
 // threat settles it. The threat reset leaves him on the first player to make any threat.
 bool IsNetherspiteDpsHeld(Player* bot, Unit const& netherspite);

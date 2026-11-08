@@ -597,8 +597,8 @@ NetherspiteArc GetNetherspiteStandingArc(
         return { side.start + (side.width - width) / 2.0f, width };
     }
 
-    NetherspiteBeam const ownBeam = bot->getPowerType() == POWER_MANA ?
-        NetherspiteBeam::Blue : NetherspiteBeam::Green;
+    NetherspiteBeam const ownBeam =
+        IsManaUser(bot) ? NetherspiteBeam::Blue : NetherspiteBeam::Green;
     float const width = std::min(side.width, NETHERSPITE_MAX_OWN_LINE_ARC);
     float const own = GetBeamAngle(netherspite, state, ownBeam);
     bool const isStart = GetNetherspiteInnerSide(netherspite, state, ownBeam) > 0.0f;
@@ -719,6 +719,14 @@ bool GetFloorAt(Player* bot, float x, float y, float& outZ)
 bool IsBanishPhase(Unit* netherspite)
 {
     return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED));
+}
+
+bool IsManaUser(Player* player)
+{
+    if (player->getClass() == CLASS_DRUID)
+        return PlayerbotAI::IsRanged(player);
+
+    return player->getPowerType() == POWER_MANA;
 }
 
 bool IsNetherspiteDpsHeld(Player* bot, Unit const& netherspite)
