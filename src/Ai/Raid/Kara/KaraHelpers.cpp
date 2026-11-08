@@ -674,6 +674,30 @@ bool CrossesBeamAfterStart(
     return CrossesBeam(bot, netherspite, state, x, y);
 }
 
+// The nearest to the bot, so a step goes around that one first.
+Position const* FindFirstVoidZoneOnPath(
+    KaraInstanceState const& state, Position const& from, Position const& to)
+{
+    Position const* first = nullptr;
+    float firstDistance = std::numeric_limits<float>::max();
+    for (Position const& zone : state.netherspiteVoidZones)
+    {
+        float const fromZone = zone.GetExactDist2d(from);
+        if (fromZone < VOID_ZONE_RADIUS || fromZone >= firstDistance)
+            continue;
+
+        float const clearance =
+            fromZone < VOID_ZONE_CLEARANCE ? VOID_ZONE_RADIUS : VOID_ZONE_CLEARANCE;
+        if (GetDistanceToSegment2d(zone, from, to) < clearance)
+        {
+            first = &zone;
+            firstDistance = fromZone;
+        }
+    }
+
+    return first;
+}
+
 // False if the floor stops the way there short of it.
 bool GetFloorAt(Player* bot, float x, float y, float& outZ)
 {
@@ -799,6 +823,11 @@ bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float 
         [x, y, clearance](Position const& zone) { return zone.GetExactDist2d(x, y) < clearance; });
 }
 
+bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to)
+{
+    return FindFirstVoidZoneOnPath(state, from, to) != nullptr;
+}
+
 float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
 {
@@ -846,6 +875,14 @@ bool IsBetweenNetherspiteBeams(
     return fromRed > M_PI / 2.0f && fromRed < 3.0f * M_PI / 2.0f;
 }
 
+bool CanMoveBetweenNetherspiteBeams(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+{
+    return IsBetweenNetherspiteBeams(bot, netherspite, state, x, y) &&
+        !CrossesVoidZone(state, bot->GetPosition(), Position(x, y)) &&
+        !CrossesBeamAfterStart(bot, netherspite, state, x, y);
+}
+
 std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state)
 {
@@ -860,8 +897,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
             float const radius = frand(band.low, band.high);
             float const x = netherspite.GetPositionX() + std::cos(angle) * radius;
             float const y = netherspite.GetPositionY() + std::sin(angle) * radius;
-            if (IsBetweenNetherspiteBeams(bot, netherspite, state, x, y) &&
-                !CrossesBeamAfterStart(bot, netherspite, state, x, y) &&
+            if (CanMoveBetweenNetherspiteBeams(bot, netherspite, state, x, y) &&
                 GetFloorAt(bot, x, y, z))
             {
                 return Position(x, y, z);
@@ -889,6 +925,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
             float const y = bot->GetPositionY() + std::sin(angle) * distance;
             if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
                 IsClearOfBeams(netherspite, state, x, y) &&
+                !CrossesVoidZone(state, bot->GetPosition(), Position(x, y)) &&
                 !CrossesBeamAfterStart(bot, netherspite, state, x, y) &&
                 GetFloorAt(bot, x, y, z))
             {
@@ -898,6 +935,56 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
     }
 
     return std::nullopt;
+}
+
+std::optional<Position> GetStepAroundVoidZones(
+    Player* bot, Unit const& netherspite, KaraInstanceState const& state,
+    Position const& destination)
+{
+    Position const from = bot->GetPosition();
+    Position const* zone = FindFirstVoidZoneOnPath(state, from, destination);
+    float const length = from.GetExactDist2d(destination);
+    if (!zone || length == 0.0f)
+        return destination;
+
+    float const normalX = (from.GetPositionY() - destination.GetPositionY()) / length;
+    float const normalY = (destination.GetPositionX() - from.GetPositionX()) / length;
+    float const zoneSide = (zone->GetPositionX() - from.GetPositionX()) * normalX +
+        (zone->GetPositionY() - from.GetPositionY()) * normalY;
+    float const away = zoneSide > 0.0f ? -1.0f : 1.0f;
+    for (float const distance :
+         { VOID_ZONE_STEP_AROUND_DISTANCE, VOID_ZONE_WIDE_STEP_AROUND_DISTANCE })
+    {
+        for (float const side : { away, -away })
+        {
+            float const x = zone->GetPositionX() + normalX * side * distance;
+            float const y = zone->GetPositionY() + normalY * side * distance;
+            float z = bot->GetPositionZ();
+            if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
+                IsClearOfBeams(netherspite, state, x, y) &&
+                !CrossesVoidZone(state, from, Position(x, y)) &&
+                !CrossesBeamAfterStart(bot, netherspite, state, x, y) &&
+                GetFloorAt(bot, x, y, z))
+            {
+                return Position(x, y, z);
+            }
+        }
+    }
+
+    return std::nullopt;
+}
+
+Position GetReachEndPosition(Unit const& bot, Unit const& target, float range)
+{
+    float const distance = bot.GetExactDist2d(target);
+    float const end = range + bot.GetCombatReach() + target.GetCombatReach();
+    if (distance <= end)
+        return bot.GetPosition();
+
+    float const fraction = end / distance;
+    return Position(
+        target.GetPositionX() + (bot.GetPositionX() - target.GetPositionX()) * fraction,
+        target.GetPositionY() + (bot.GetPositionY() - target.GetPositionY()) * fraction);
 }
 
 // Prince Malchezaar

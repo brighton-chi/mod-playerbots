@@ -35,6 +35,22 @@ using namespace EncounterHelpers;
 
 // Shared
 
+namespace
+{
+
+bool IsRepositionAction(Player* bot, Action* action)
+{
+    return (bot->getClass() == CLASS_HUNTER && dynamic_cast<CastDisengageAction*>(action)) ||
+        (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
+}
+
+bool IsKillingSpree(Player* bot, Action* action)
+{
+    return bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action);
+}
+
+}
+
 float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -220,8 +236,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
 
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
+        !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
@@ -345,11 +360,8 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValueInEncounter(Action* a
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<CastKillingSpreeAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
+        !IsKillingSpree(bot, action))
     {
         return 1.0f;
     }
@@ -380,11 +392,8 @@ float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
 // I will not move when Flame Wreath is cast or the raid blows up.
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
-        !dynamic_cast<CastKillingSpreeAction*>(action))
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
+        !IsKillingSpree(bot, action))
     {
         return 1.0f;
     }
@@ -399,7 +408,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
     if (!IsFlameWreathInProgress(botAI, aran))
         return 1.0f;
 
-    bool const isReachingTarget =
+    bool const isReachToAttack =
         dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action);
 
     return isReachingTarget && CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
@@ -408,14 +417,15 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
 // Netherspite
 
 // The beam area and the banish slots are where every bot stands, so nothing else moves them. Bots
-// on a beam or waiting for one don't reach either, except that a red blocker can follow him.
+// on a beam or waiting for one don't reach either, except that a red blocker can follow him. Nobody
+// else reaches or charges through a void zone.
 float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<AvoidAoeAction*>(action) ||
         dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<CastKillingSpreeAction*>(action))
+        IsKillingSpree(bot, action) || IsRepositionAction(bot, action))
     {
         return 0.0f;
     }
@@ -433,7 +443,23 @@ float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
         return 1.0f;
     }
 
-    return IsNetherspiteBlockerOrNext(*state, bot->GetGUID()) ? 0.0f : 1.0f;
+    if (IsNetherspiteBlockerOrNext(*state, bot->GetGUID()))
+        return 0.0f;
+
+    Unit* target = action->GetTarget();
+    if (!target)
+        return 1.0f;
+
+    float range = 0.0f; // Charges end at the target.
+    if (dynamic_cast<ReachMeleeAction*>(action))
+        range = sPlayerbotAIConfig.MeleeDistance;
+    else if (dynamic_cast<ReachPartyMemberToHealAction*>(action))
+        range = botAI->GetRange("heal");
+    else if (dynamic_cast<ReachTargetAction*>(action))
+        range = botAI->GetRange("spell");
+
+    Position const end = GetReachEndPosition(*bot, *target, range);
+    return CrossesVoidZone(*state, bot->GetPosition(), end) ? 0.0f : 1.0f;
 }
 
 float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
@@ -585,9 +611,7 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
 
     bool const isBlockedMovement =
         dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) ||
-        dynamic_cast<CastDisengageAction*>(action) ||
-        dynamic_cast<FleeAction*>(action);
+        IsRepositionAction(bot, action) || dynamic_cast<FleeAction*>(action);
 
     if (!isReachAction && !isBlockedMovement && !dynamic_cast<FollowAction*>(action))
         return 1.0f;

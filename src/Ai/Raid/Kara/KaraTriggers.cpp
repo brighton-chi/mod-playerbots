@@ -365,6 +365,12 @@ bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
     if (!netherspite)
         return false;
 
+    if (netherspite->GetExactDist2d(bot) > netherspite->GetExactDist2d(slot->position) +
+            NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE)
+    {
+        return true;
+    }
+
     float const gap = Position::NormalizeOrientation(
         netherspite->GetAngle(bot->GetPositionX(), bot->GetPositionY()) -
         netherspite->GetAngle(slot->position.GetPositionX(), slot->position.GetPositionY()));

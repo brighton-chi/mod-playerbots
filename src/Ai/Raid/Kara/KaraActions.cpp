@@ -941,30 +941,48 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 
 bool NetherspiteBlockGreenOrBlueBeamAction::Execute(Event /*event*/)
 {
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
+    if (!netherspite)
+        return false;
+
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     Position const* position =
         state ? FindNetherspiteBlockerPosition(*state, bot->GetGUID()) : nullptr;
     if (!position)
         return false;
 
+    std::optional<Position> const step =
+        GetStepAroundVoidZones(bot, *netherspite, *state, *position);
+    if (!step)
+        return false;
+
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false,
+        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
 {
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
+    if (!netherspite)
+        return false;
+
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     Position const* position =
         state ? FindNetherspiteNextPosition(*state, bot->GetGUID()) : nullptr;
     if (!position)
         return false;
 
+    std::optional<Position> const step =
+        GetStepAroundVoidZones(bot, *netherspite, *state, *position);
+    if (!step)
+        return false;
+
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false,
+        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
@@ -977,7 +995,7 @@ bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
     if (!state || !AreNetherspitePortalsKnown(*state))
         return false;
 
-    if (!_destination || !IsBetweenNetherspiteBeams(
+    if (!_destination || !CanMoveBetweenNetherspiteBeams(
             bot, *netherspite, *state, _destination->GetPositionX(), _destination->GetPositionY()))
     {
         _destination = FindPositionBetweenNetherspiteBeams(bot, *netherspite, *state);
@@ -994,17 +1012,25 @@ bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
 
 bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
 {
+    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
+    if (!netherspite)
+        return false;
+
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     NetherspiteBanishSlot const* slot =
         state ? FindNetherspiteBanishSlot(*state, bot->GetGUID()) : nullptr;
     if (!slot)
         return false;
 
+    std::optional<Position> const step =
+        GetStepAroundVoidZones(bot, *netherspite, *state, slot->position);
+    if (!step)
+        return false;
+
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, slot->position.GetPositionX(), slot->position.GetPositionY(),
-        bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED, true,
-        false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false,
+        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool NetherspiteStopAttackingAction::Execute(Event /*event*/)
@@ -1165,11 +1191,12 @@ float FindBeamPositionDistance(
     float const dirX = (portal.GetPositionX() - netherspite.GetPositionX()) / length;
     float const dirY = (portal.GetPositionY() - netherspite.GetPositionY()) / length;
 
+    // Past the portal, a bot is off the beam.
+    float const high = std::min(NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE, length - 1.0f);
     constexpr float searchStep = 0.5f;
     float best = preferred;
     float bestGap = std::numeric_limits<float>::max();
-    for (float distance = low; distance <= NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE;
-         distance += searchStep)
+    for (float distance = low; distance <= high; distance += searchStep)
     {
         float const x = netherspite.GetPositionX() + dirX * distance;
         float const y = netherspite.GetPositionY() + dirY * distance;
