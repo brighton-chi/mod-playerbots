@@ -60,18 +60,18 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("maiden of virtue ranged should spread",
         { NextAction("maiden of virtue position ranged between pillars", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("maiden of virtue should ground holy fire",
+    triggers.push_back(new TriggerNode("maiden of virtue shaman should ground holy fire",
         { NextAction("maiden of virtue set grounding totem", ACTION_RAID) }));
 
     // The Big Bad Wolf
-    triggers.push_back(new TriggerNode("big bad wolf chasing red hood",
+    triggers.push_back(new TriggerNode("big bad wolf should be tanked",
+        { NextAction("big bad wolf tank position boss", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("big bad wolf chases red hood",
         { NextAction("big bad wolf red hood run away", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("big bad wolf paladin should protect red hood",
         { NextAction("big bad wolf cast hand of protection on red hood", ACTION_EMERGENCY + 5) }));
-
-    triggers.push_back(new TriggerNode("big bad wolf should be tanked",
-        { NextAction("big bad wolf position boss", ACTION_RAID) }));
 
     // Romulo and Julianne
     triggers.push_back(new TriggerNode("romulo and julianne should be killed together",
@@ -89,7 +89,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("the curator mark astral flare", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("the curator should be tanked",
-        { NextAction("the curator position boss", ACTION_RAID) }));
+        { NextAction("the curator tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("the curator ranged should spread",
         { NextAction("the curator spread ranged", ACTION_RAID) }));
@@ -99,16 +99,16 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("terestian illhoof mark target", ACTION_RAID) }));
 
     // Shade of Aran
-    triggers.push_back(new TriggerNode("shade of aran arcane explosion is casting",
+    triggers.push_back(new TriggerNode("shade of aran casting arcane explosion",
         { NextAction("shade of aran run away from arcane explosion", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("shade of aran ranged is in blizzard",
+    triggers.push_back(new TriggerNode("shade of aran ranged in blizzard",
         { NextAction("shade of aran run out of blizzard", ACTION_EMERGENCY + 5) }));
 
-    triggers.push_back(new TriggerNode("shade of aran flame wreath is active",
+    triggers.push_back(new TriggerNode("shade of aran flame wreath active",
         { NextAction("shade of aran stop moving during flame wreath", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("shade of aran conjured elementals summoned",
+    triggers.push_back(new TriggerNode("shade of aran should prioritize conjured elementals",
         { NextAction("shade of aran mark conjured elemental", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("shade of aran ranged should maintain distance",
@@ -118,14 +118,14 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("netherspite should block red beam",
         { NextAction("netherspite block red beam", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite should block beam",
-        { NextAction("netherspite block beam", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("netherspite should block green or blue beam",
+        { NextAction("netherspite block green or blue beam", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("netherspite next beam blocker should prepare",
         { NextAction("netherspite wait to block beam", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite should position around beams",
-        { NextAction("netherspite move to beam area", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("netherspite should stand between beams",
+        { NextAction("netherspite move between beams", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("netherspite should spread for netherbreath",
         { NextAction("netherspite move to banish slot", ACTION_EMERGENCY + 1) }));
@@ -144,18 +144,19 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("prince malchezaar bot is enfeebled",
         { NextAction("prince malchezaar enfeebled bot avoid hazard", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("prince malchezaar bot in hazard",
+    triggers.push_back(new TriggerNode("prince malchezaar near hazard",
         { NextAction("prince malchezaar move clear of hazards", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("prince malchezaar should be tanked",
-        { NextAction("prince malchezaar tanks position boss", ACTION_EMERGENCY + 6) }));
+        { NextAction("prince malchezaar tank position boss", ACTION_EMERGENCY + 6) }));
 
     // Nightbane
     triggers.push_back(new TriggerNode("nightbane should be tanked",
         { NextAction("nightbane tank position boss", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("nightbane ranged should stack",
-        { NextAction("nightbane ranged stack", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("nightbane ranged should avoid charred earth",
+        { NextAction(
+            "nightbane ranged stack and move from charred earth", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("nightbane pets should be held",
         { NextAction("nightbane control pet aggression", ACTION_EMERGENCY + 7) }));
@@ -164,11 +165,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane stop attacking", ACTION_RAID + 3),
           NextAction("nightbane select target for hold", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("nightbane should stack in flight",
-        { NextAction("nightbane stack in flight", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("nightbane should avoid rain of bones",
+        { NextAction("nightbane stack away from rain of bones", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("nightbane should stand down",
-        { NextAction("nightbane stand down", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("nightbane in landing phase",
+        { NextAction("nightbane leave combat for landing", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("nightbane should manage timers and trackers",
         { NextAction("nightbane manage timers and trackers", ACTION_EMERGENCY + 10) }));

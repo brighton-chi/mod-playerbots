@@ -26,6 +26,7 @@
 #include "ThreatHelpers.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include <array>
 
 using namespace KaraHelpers;
 using namespace EncounterHelpers;

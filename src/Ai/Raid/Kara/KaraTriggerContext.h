@@ -62,15 +62,15 @@ public:
         creators["maiden of virtue ranged should spread"] =
             &RaidKarazhanTriggerContext::maiden_of_virtue_ranged_should_spread;
 
-        creators["maiden of virtue should ground holy fire"] =
-            &RaidKarazhanTriggerContext::maiden_of_virtue_should_ground_holy_fire;
+        creators["maiden of virtue shaman should ground holy fire"] =
+            &RaidKarazhanTriggerContext::maiden_of_virtue_shaman_should_ground_holy_fire;
 
         // The Big Bad Wolf
         creators["big bad wolf should be tanked"] =
             &RaidKarazhanTriggerContext::big_bad_wolf_should_be_tanked;
 
-        creators["big bad wolf chasing red hood"] =
-            &RaidKarazhanTriggerContext::big_bad_wolf_chasing_red_hood;
+        creators["big bad wolf chases red hood"] =
+            &RaidKarazhanTriggerContext::big_bad_wolf_chases_red_hood;
 
         creators["big bad wolf paladin should protect red hood"] =
             &RaidKarazhanTriggerContext::big_bad_wolf_paladin_should_protect_red_hood;
@@ -101,17 +101,17 @@ public:
             &RaidKarazhanTriggerContext::terestian_illhoof_should_prioritize_chains;
 
         // Shade of Aran
-        creators["shade of aran arcane explosion is casting"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_arcane_explosion_is_casting;
+        creators["shade of aran casting arcane explosion"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_casting_arcane_explosion;
 
-        creators["shade of aran ranged is in blizzard"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_ranged_is_in_blizzard;
+        creators["shade of aran ranged in blizzard"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_ranged_in_blizzard;
 
-        creators["shade of aran flame wreath is active"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_is_active;
+        creators["shade of aran flame wreath active"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_active;
 
-        creators["shade of aran conjured elementals summoned"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_conjured_elementals_summoned;
+        creators["shade of aran should prioritize conjured elementals"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_should_prioritize_conjured_elementals;
 
         creators["shade of aran ranged should maintain distance"] =
             &RaidKarazhanTriggerContext::shade_of_aran_ranged_should_maintain_distance;
@@ -120,14 +120,14 @@ public:
         creators["netherspite should block red beam"] =
             &RaidKarazhanTriggerContext::netherspite_should_block_red_beam;
 
-        creators["netherspite should block beam"] =
-            &RaidKarazhanTriggerContext::netherspite_should_block_beam;
+        creators["netherspite should block green or blue beam"] =
+            &RaidKarazhanTriggerContext::netherspite_should_block_green_or_blue_beam;
 
         creators["netherspite next beam blocker should prepare"] =
             &RaidKarazhanTriggerContext::netherspite_next_beam_blocker_should_prepare;
 
-        creators["netherspite should position around beams"] =
-            &RaidKarazhanTriggerContext::netherspite_should_position_around_beams;
+        creators["netherspite should stand between beams"] =
+            &RaidKarazhanTriggerContext::netherspite_should_stand_between_beams;
 
         creators["netherspite should spread for netherbreath"] =
             &RaidKarazhanTriggerContext::netherspite_should_spread_for_netherbreath;
@@ -139,14 +139,14 @@ public:
             &RaidKarazhanTriggerContext::netherspite_pets_should_be_held;
 
         creators["netherspite should manage timers and trackers"] =
-            &RaidKarazhanTriggerContext::netherspite_need_to_manage_timers_and_trackers;
+            &RaidKarazhanTriggerContext::netherspite_should_manage_timers_and_trackers;
 
         // Prince Malchezaar
         creators["prince malchezaar bot is enfeebled"] =
             &RaidKarazhanTriggerContext::prince_malchezaar_bot_is_enfeebled;
 
-        creators["prince malchezaar bot in hazard"] =
-            &RaidKarazhanTriggerContext::prince_malchezaar_bot_in_hazard;
+        creators["prince malchezaar near hazard"] =
+            &RaidKarazhanTriggerContext::prince_malchezaar_near_hazard;
 
         creators["prince malchezaar should be tanked"] =
             &RaidKarazhanTriggerContext::prince_malchezaar_should_be_tanked;
@@ -155,8 +155,8 @@ public:
         creators["nightbane should be tanked"] =
             &RaidKarazhanTriggerContext::nightbane_should_be_tanked;
 
-        creators["nightbane ranged should stack"] =
-            &RaidKarazhanTriggerContext::nightbane_ranged_should_stack;
+        creators["nightbane ranged should avoid charred earth"] =
+            &RaidKarazhanTriggerContext::nightbane_ranged_should_avoid_charred_earth;
 
         creators["nightbane pets should be held"] =
             &RaidKarazhanTriggerContext::nightbane_pets_should_be_held;
@@ -164,11 +164,11 @@ public:
         creators["nightbane should hold dps"] =
             &RaidKarazhanTriggerContext::nightbane_should_hold_dps;
 
-        creators["nightbane should stack in flight"] =
-            &RaidKarazhanTriggerContext::nightbane_should_stack_in_flight;
+        creators["nightbane should avoid rain of bones"] =
+            &RaidKarazhanTriggerContext::nightbane_should_avoid_rain_of_bones;
 
-        creators["nightbane should stand down"] =
-            &RaidKarazhanTriggerContext::nightbane_should_stand_down;
+        creators["nightbane in landing phase"] =
+            &RaidKarazhanTriggerContext::nightbane_in_landing_phase;
 
         creators["nightbane should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::nightbane_should_manage_timers_and_trackers;
@@ -240,9 +240,9 @@ private:
     {
         return new MaidenOfVirtueRangedShouldSpreadTrigger(botAI);
     }
-    static Trigger* maiden_of_virtue_should_ground_holy_fire(PlayerbotAI* botAI)
+    static Trigger* maiden_of_virtue_shaman_should_ground_holy_fire(PlayerbotAI* botAI)
     {
-        return new MaidenOfVirtueShouldGroundHolyFireTrigger(botAI);
+        return new MaidenOfVirtueShamanShouldGroundHolyFireTrigger(botAI);
     }
 
     // The Big Bad Wolf
@@ -250,9 +250,9 @@ private:
     {
         return new BigBadWolfShouldBeTankedTrigger(botAI);
     }
-    static Trigger* big_bad_wolf_chasing_red_hood(PlayerbotAI* botAI)
+    static Trigger* big_bad_wolf_chases_red_hood(PlayerbotAI* botAI)
     {
-        return new BigBadWolfChasingRedHoodTrigger(botAI);
+        return new BigBadWolfChasesRedHoodTrigger(botAI);
     }
     static Trigger* big_bad_wolf_paladin_should_protect_red_hood(PlayerbotAI* botAI)
     {
@@ -296,21 +296,21 @@ private:
     }
 
     // Shade of Aran
-    static Trigger* shade_of_aran_arcane_explosion_is_casting(PlayerbotAI* botAI)
+    static Trigger* shade_of_aran_casting_arcane_explosion(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranArcaneExplosionIsCastingTrigger(botAI);
+        return new ShadeOfAranCastingArcaneExplosionTrigger(botAI);
     }
-    static Trigger* shade_of_aran_ranged_is_in_blizzard(PlayerbotAI* botAI)
+    static Trigger* shade_of_aran_ranged_in_blizzard(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranRangedIsInBlizzardTrigger(botAI);
+        return new ShadeOfAranRangedInBlizzardTrigger(botAI);
     }
-    static Trigger* shade_of_aran_flame_wreath_is_active(PlayerbotAI* botAI)
+    static Trigger* shade_of_aran_flame_wreath_active(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranFlameWreathIsActiveTrigger(botAI);
+        return new ShadeOfAranFlameWreathActiveTrigger(botAI);
     }
-    static Trigger* shade_of_aran_conjured_elementals_summoned(PlayerbotAI* botAI)
+    static Trigger* shade_of_aran_should_prioritize_conjured_elementals(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranConjuredElementalsSummonedTrigger(botAI);
+        return new ShadeOfAranShouldPrioritizeConjuredElementalsTrigger(botAI);
     }
     static Trigger* shade_of_aran_ranged_should_maintain_distance(PlayerbotAI* botAI)
     {
@@ -322,17 +322,17 @@ private:
     {
         return new NetherspiteShouldBlockRedBeamTrigger(botAI);
     }
-    static Trigger* netherspite_should_block_beam(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_block_green_or_blue_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteShouldBlockBeamTrigger(botAI);
+        return new NetherspiteShouldBlockGreenOrBlueBeamTrigger(botAI);
     }
     static Trigger* netherspite_next_beam_blocker_should_prepare(PlayerbotAI* botAI)
     {
         return new NetherspiteNextBeamBlockerShouldPrepareTrigger(botAI);
     }
-    static Trigger* netherspite_should_position_around_beams(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_stand_between_beams(PlayerbotAI* botAI)
     {
-        return new NetherspiteShouldPositionAroundBeamsTrigger(botAI);
+        return new NetherspiteShouldStandBetweenBeamsTrigger(botAI);
     }
     static Trigger* netherspite_should_spread_for_netherbreath(PlayerbotAI* botAI)
     {
@@ -346,7 +346,7 @@ private:
     {
         return new NetherspitePetsShouldBeHeldTrigger(botAI);
     }
-    static Trigger* netherspite_need_to_manage_timers_and_trackers(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_manage_timers_and_trackers(PlayerbotAI* botAI)
     {
         return new NetherspiteShouldManageTimersAndTrackersTrigger(botAI);
     }
@@ -356,9 +356,9 @@ private:
     {
         return new PrinceMalchezaarBotIsEnfeebledTrigger(botAI);
     }
-    static Trigger* prince_malchezaar_bot_in_hazard(PlayerbotAI* botAI)
+    static Trigger* prince_malchezaar_near_hazard(PlayerbotAI* botAI)
     {
-        return new PrinceMalchezaarBotInHazardTrigger(botAI);
+        return new PrinceMalchezaarNearHazardTrigger(botAI);
     }
     static Trigger* prince_malchezaar_should_be_tanked(PlayerbotAI* botAI)
     {
@@ -370,9 +370,9 @@ private:
     {
         return new NightbaneShouldBeTankedTrigger(botAI);
     }
-    static Trigger* nightbane_ranged_should_stack(PlayerbotAI* botAI)
+    static Trigger* nightbane_ranged_should_avoid_charred_earth(PlayerbotAI* botAI)
     {
-        return new NightbaneRangedShouldStackTrigger(botAI);
+        return new NightbaneRangedShouldAvoidCharredEarthTrigger(botAI);
     }
     static Trigger* nightbane_pets_should_be_held(PlayerbotAI* botAI)
     {
@@ -382,13 +382,13 @@ private:
     {
         return new NightbaneShouldHoldDpsTrigger(botAI);
     }
-    static Trigger* nightbane_should_stack_in_flight(PlayerbotAI* botAI)
+    static Trigger* nightbane_should_avoid_rain_of_bones(PlayerbotAI* botAI)
     {
-        return new NightbaneShouldStackInFlightTrigger(botAI);
+        return new NightbaneShouldAvoidRainOfBonesTrigger(botAI);
     }
-    static Trigger* nightbane_should_stand_down(PlayerbotAI* botAI)
+    static Trigger* nightbane_in_landing_phase(PlayerbotAI* botAI)
     {
-        return new NightbaneShouldStandDownTrigger(botAI);
+        return new NightbaneInLandingPhaseTrigger(botAI);
     }
     static Trigger* nightbane_should_manage_timers_and_trackers(PlayerbotAI* botAI)
     {

@@ -143,7 +143,7 @@ enum class KaraBosses : uint32
     DATA_TERESTIAN                  = 5,
     DATA_ARAN                       = 6,
     DATA_NETHERSPITE                = 7,
-    DATA_CHESS_EVENT                = 8,
+    // DATA_CHESS_EVENT             = 8, // No strategy
     DATA_MALCHEZAAR                 = 9,
     DATA_NIGHTBANE                  = 10,
 };
@@ -173,9 +173,9 @@ inline constexpr float SHADOWFURY_REACH = 30.0f;
 inline constexpr float WAR_STOMP_RADIUS = 8.0f;
 // A stunner out of reach walks to this far inside it.
 inline constexpr float MANA_WARP_STUN_APPROACH_MARGIN = 1.0f;
+inline constexpr float MANA_WARP_PACKS_RADIUS = 60.0f;
 // The nine Mana Warps stand in four packs within 30 yd of this point.
 inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
-inline constexpr float MANA_WARP_PACKS_RADIUS = 60.0f;
 
 bool IsNearManaWarpPacks(Player* bot);
 // Stunners: Hammer of Justice, Concussion Blow or Shockwave, Bash, Kidney Shot, Maim, Shadowfury,
@@ -187,7 +187,6 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
 Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
-inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 // Shadow Cleave jumps from the tank to two more players within 10 yd in front of Attumen.
 inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
 // Intangible Presence curses every player within 10 yd of Attumen.
@@ -198,6 +197,7 @@ inline constexpr float ATTUMEN_HAZARD_CLEARANCE = 1.0f;
 inline constexpr float ATTUMEN_STACK_DISTANCE = 2.0f;
 inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.0f;
 inline constexpr float ATTUMEN_STACK_TOLERANCE = 1.5f;
+inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 
 // Midnight turns invisible when mounted Attumen is summoned.
 bool IsAttumenMounted(Unit const& midnight);
@@ -208,11 +208,14 @@ Unit* GetMountedAttumen(Player* bot);
 bool IsAttumenDpsHeld(Player* bot);
 
 // Maiden of Virtue
-// Her spawn point; the ranged spots are a ring around it.
-inline Position const MAIDEN_OF_VIRTUE_POSITION = { -10945.881f, -2103.782f, 92.712f };
 inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
 // She stops 6.8 yd from a tank she follows, so the tank aims this far past her spot.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
+// Holy Ground hits a player within 12 yd of her centre, and breaks Repentance.
+inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
+inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
+// Her spawn point; the ranged spots are a ring around it.
+inline Position const MAIDEN_OF_VIRTUE_POSITION = { -10945.881f, -2103.782f, 92.712f };
 inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10959.242f, -2119.617f, 92.180f }, // SE (opposite entrance)
     Position{ -10944.495f, -2123.857f, 92.180f }, // E
@@ -223,9 +226,6 @@ inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10947.590f, -2082.815f, 92.180f }, // W
     Position{ -10933.089f, -2088.502f, 92.180f }, // NW (entrance)
 };
-// Holy Ground hits a player within 12 yd of her centre, and breaks Repentance.
-inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
-inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
 
 // Repentance stuns every healer at once; the tank takes her to the nearest one.
 Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden);
@@ -296,8 +296,6 @@ inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Shade of Aran
-// He blinks here before each super spell. Blizzard patches land in a ring around it.
-inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
 // Hits within 21 yd of his centre, no reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
 inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
@@ -322,6 +320,8 @@ inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20000;
 // No one moves this soon after the rings land, which also outlasts the ring value's cache.
 inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
 inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
+// He blinks here before each super spell. Blizzard patches land in a ring around it.
+inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
 
 bool IsAranCastingArcaneExplosion(Unit* aran);
 std::optional<Position> GetBlizzardEscapeSpot(Player* bot);
@@ -397,6 +397,21 @@ inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
     static_cast<float>(M_PI) * 6.0f / 180.0f;
 // Beams start 10 s into a portal phase.
 inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
+inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
+// The next blocker needs a moment, and a cast it can't stop, to get on the beam.
+inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
+inline constexpr uint8 NETHERSPITE_SPOT_TRIES = 12;
+inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
+inline constexpr float NETHERSPITE_BLOCKER_MIN_DISTANCE = 17.0f;
+inline constexpr float NETHERSPITE_HUNTER_BLOCKER_DISTANCE = 25.0f;
+inline constexpr float NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE = 34.0f;
+inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
+inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
+inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
+inline constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
+inline constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
+inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
+inline constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
 
 bool IsBanishPhase(Unit* netherspite);
 // Holds for 5 s from each portal phase, then until a tank is his victim. At 10 s the red beam's

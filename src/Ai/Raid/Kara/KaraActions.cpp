@@ -39,9 +39,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* areaAction = context->GetAction("netherspite move to beam area");
+    Action* areaAction = context->GetAction("netherspite move between beams");
     if (areaAction &&
-        static_cast<NetherspiteMoveToBeamAreaAction*>(areaAction)->ResetDestination())
+        static_cast<NetherspiteMoveBetweenBeamsAction*>(areaAction)->ResetDestination())
     {
         reset = true;
     }
@@ -68,9 +68,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* tankAction = context->GetAction("prince malchezaar tanks position boss");
+    Action* tankAction = context->GetAction("prince malchezaar tank position boss");
     if (tankAction &&
-        static_cast<PrinceMalchezaarTanksPositionBossAction*>(tankAction)->ResetWalk())
+        static_cast<PrinceMalchezaarTankPositionBossAction*>(tankAction)->ResetWalk())
     {
         reset = true;
     }
@@ -485,7 +485,7 @@ bool MaidenOfVirtueSetGroundingTotemAction::Execute(Event /*event*/)
 
 // The Big Bad Wolf
 
-bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
+bool BigBadWolfTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!wolf)
@@ -639,7 +639,7 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event /*event*/)
     return flare && MarkTargetWithSkull(bot, flare);
 }
 
-bool TheCuratorPositionBossAction::Execute(Event /*event*/)
+bool TheCuratorTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* curator = GetKaraBoss(bot, KaraBosses::DATA_CURATOR);
     if (!curator)
@@ -858,7 +858,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool NetherspiteBlockBeamAction::Execute(Event /*event*/)
+bool NetherspiteBlockGreenOrBlueBeamAction::Execute(Event /*event*/)
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     Position const* spot = state ? FindNetherspiteBlockerSpot(*state, bot->GetGUID()) : nullptr;
@@ -884,7 +884,7 @@ bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool NetherspiteMoveToBeamAreaAction::Execute(Event /*event*/)
+bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
@@ -984,18 +984,6 @@ bool NetherspiteControlPetAggressionAction::ResetPetStance()
 
 namespace
 {
-
-constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
-// The next blocker needs a moment, and a cast it can't stop, to get on the beam.
-constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
-constexpr uint8 NETHERSPITE_SPOT_TRIES = 12;
-constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
-constexpr float NETHERSPITE_BLOCKER_MIN_DISTANCE = 17.0f;
-constexpr float NETHERSPITE_HUNTER_BLOCKER_DISTANCE = 25.0f;
-constexpr float NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE = 34.0f;
-constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
-constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
-constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
 
 bool HasBeamStackLimit(Player* member, NetherspiteBeam beam)
 {
@@ -1638,7 +1626,7 @@ bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
         backwards);
 }
 
-bool PrinceMalchezaarTanksPositionBossAction::Execute(Event /*event*/)
+bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
@@ -1725,7 +1713,7 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
 
 // Ranged bots will stack on one "ranged leader" that can be designated by the assistant flag
 // The ranged leader will lead the ranged group out of Charred Earths
-bool NightbaneRangedStackAction::Execute(Event /*event*/)
+bool NightbaneRangedStackAndMoveFromCharredEarthAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1760,7 +1748,7 @@ bool NightbaneRangedStackAction::Execute(Event /*event*/)
     return StackOnRangedLeader(rangedLeader);
 }
 
-bool NightbaneRangedStackAction::MoveRangedLeaderToSafeSpot()
+bool NightbaneRangedStackAndMoveFromCharredEarthAction::MoveRangedLeaderToSafeSpot()
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
@@ -1797,7 +1785,7 @@ bool NightbaneRangedStackAction::MoveRangedLeaderToSafeSpot()
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool NightbaneRangedStackAction::StackOnRangedLeader(Player* rangedLeader)
+bool NightbaneRangedStackAndMoveFromCharredEarthAction::StackOnRangedLeader(Player* rangedLeader)
 {
     if (bot->GetExactDist2d(rangedLeader) < 0.5f)
         return false;
@@ -1873,7 +1861,7 @@ bool NightbaneSelectTargetForHoldAction::Execute(Event /*event*/)
 
 // The shared spot is out of Rain of Bones and clear of Charred Earth (see the manage action).
 // Stacked, the skeletons come to everyone, with reach off. Fireball Barrage needs only range.
-bool NightbaneStackInFlightAction::Execute(Event /*event*/)
+bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
@@ -1901,7 +1889,7 @@ bool NightbaneStackInFlightAction::Execute(Event /*event*/)
 
 // He casts nothing during the landing, so bots drop to their non-combat engine, where stock follow
 // lets the master reposition them. The target exclusion keeps him from being picked again.
-bool NightbaneStandDownAction::Execute(Event /*event*/)
+bool NightbaneLeaveCombatForLandingAction::Execute(Event /*event*/)
 {
     StandDown(botAI);
     return true;

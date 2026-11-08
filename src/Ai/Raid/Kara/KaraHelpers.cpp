@@ -464,12 +464,6 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
 namespace
 {
 
-constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
-constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
-constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
-constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
-constexpr uint8 NETHERSPITE_SPOT_TRIES = 12;
-
 struct NetherspiteArc
 {
     float start;

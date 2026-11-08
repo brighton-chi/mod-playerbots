@@ -119,7 +119,12 @@ bool MaidenOfVirtueShouldBreakRepentanceTrigger::IsActiveInEncounter()
     return maiden && maiden->GetVictim() == bot;
 }
 
-bool MaidenOfVirtueShouldGroundHolyFireTrigger::IsActiveInEncounter()
+bool MaidenOfVirtueRangedShouldSpreadTrigger::IsActiveInEncounter()
+{
+    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
+}
+
+bool MaidenOfVirtueShamanShouldGroundHolyFireTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
@@ -128,11 +133,6 @@ bool MaidenOfVirtueShouldGroundHolyFireTrigger::IsActiveInEncounter()
         return false;
 
     return !AI_VALUE2(bool, "has totem", "grounding totem");
-}
-
-bool MaidenOfVirtueRangedShouldSpreadTrigger::IsActiveInEncounter()
-{
-    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
 }
 
 // The Big Bad Wolf
@@ -148,7 +148,7 @@ bool BigBadWolfShouldBeTankedTrigger::IsActiveInEncounter()
     return !bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
 
-bool BigBadWolfChasingRedHoodTrigger::IsActiveInEncounter()
+bool BigBadWolfChasesRedHoodTrigger::IsActiveInEncounter()
 {
     return bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
 }
@@ -223,24 +223,24 @@ bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActiveInEncounter()
 
 // Shade of Aran
 
-bool ShadeOfAranArcaneExplosionIsCastingTrigger::IsActiveInEncounter()
+bool ShadeOfAranCastingArcaneExplosionTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
     return aran && IsAranCastingArcaneExplosion(aran);
 }
 
-bool ShadeOfAranRangedIsInBlizzardTrigger::IsActiveInEncounter()
+bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 {
     return bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)) && PlayerbotAI::IsRanged(bot);
 }
 
-bool ShadeOfAranFlameWreathIsActiveTrigger::IsActiveInEncounter()
+bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
     return IsFlameWreathInProgress(bot, aran) && !CanReachTargetDuringFlameWreath(botAI, aran);
 }
 
-bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActiveInEncounter()
+bool ShadeOfAranShouldPrioritizeConjuredElementalsTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, KARA_MAP_ID) && FindThreatTarget(bot, "conjured elemental");
 }
@@ -269,7 +269,7 @@ bool NetherspiteShouldBlockRedBeamTrigger::IsActiveInEncounter()
         state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID();
 }
 
-bool NetherspiteShouldBlockBeamTrigger::IsActiveInEncounter()
+bool NetherspiteShouldBlockGreenOrBlueBeamTrigger::IsActiveInEncounter()
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())
@@ -286,7 +286,7 @@ bool NetherspiteNextBeamBlockerShouldPrepareTrigger::IsActiveInEncounter()
     return spot && bot->GetExactDist2d(*spot) > NETHERSPITE_BEAM_SPOT_TOLERANCE;
 }
 
-bool NetherspiteShouldPositionAroundBeamsTrigger::IsActiveInEncounter()
+bool NetherspiteShouldStandBetweenBeamsTrigger::IsActiveInEncounter()
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     if (!state || !AreNetherspitePortalsKnown(*state) ||
@@ -366,7 +366,7 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
         static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action)->HasDestination();
 }
 
-bool PrinceMalchezaarBotInHazardTrigger::IsActiveInEncounter()
+bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
 {
     Unit* malchezaar = GetEncounterBoss();
     if (!malchezaar)
@@ -410,7 +410,7 @@ bool NightbaneShouldBeTankedTrigger::IsActiveInEncounter()
     return nightbane && !IsNightbaneFlying(*nightbane);
 }
 
-bool NightbaneRangedShouldStackTrigger::IsActiveInEncounter()
+bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
@@ -435,7 +435,7 @@ bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()
     return nightbane && IsNightbaneDpsHeld(bot, *nightbane);
 }
 
-bool NightbaneShouldStackInFlightTrigger::IsActiveInEncounter()
+bool NightbaneShouldAvoidRainOfBonesTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
     if (!nightbane || !IsNightbaneFlying(*nightbane))
@@ -445,7 +445,7 @@ bool NightbaneShouldStackInFlightTrigger::IsActiveInEncounter()
     return state && state->nightbaneFlightSpot;
 }
 
-bool NightbaneShouldStandDownTrigger::IsActiveInEncounter()
+bool NightbaneInLandingPhaseTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
     return nightbane && IsNightbaneFlying(*nightbane) &&

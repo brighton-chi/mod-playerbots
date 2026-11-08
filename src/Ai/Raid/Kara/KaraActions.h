@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "KaraHelpers.h"
 #include "MovementActions.h"
+#include <optional>
 
 // Shared
 
@@ -155,11 +156,11 @@ public:
 
 // The Big Bad Wolf
 
-class BigBadWolfPositionBossAction : public AttackAction
+class BigBadWolfTankPositionBossAction : public AttackAction
 {
 public:
-    BigBadWolfPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "big bad wolf position boss") {}
+    BigBadWolfTankPositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "big bad wolf tank position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -171,9 +172,9 @@ public:
     bool Execute(Event event) override;
     bool ResetRun()
     {
+        _run = {};
         if (!_lastRunStepTime)
             return false;
-        _run = {};
         _lastRunStepTime = 0;
         return true;
     }
@@ -229,11 +230,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class TheCuratorPositionBossAction : public AttackAction
+class TheCuratorTankPositionBossAction : public AttackAction
 {
 public:
-    TheCuratorPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "the curator position boss") {}
+    TheCuratorTankPositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "the curator tank position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -320,11 +321,11 @@ private:
     bool _redBeamTimerWasSet = false;
 };
 
-class NetherspiteBlockBeamAction : public MovementAction
+class NetherspiteBlockGreenOrBlueBeamAction : public MovementAction
 {
 public:
-    NetherspiteBlockBeamAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite block beam") {}
+    NetherspiteBlockGreenOrBlueBeamAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite block green or blue beam") {}
     bool Execute(Event event) override;
 };
 
@@ -336,11 +337,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class NetherspiteMoveToBeamAreaAction : public MovementAction
+class NetherspiteMoveBetweenBeamsAction : public MovementAction
 {
 public:
-    NetherspiteMoveToBeamAreaAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite move to beam area") {}
+    NetherspiteMoveBetweenBeamsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite move between beams") {}
     bool Execute(Event event) override;
     bool ResetDestination()
     {
@@ -437,16 +438,17 @@ private:
     std::optional<Position> _destination;
 };
 
-class PrinceMalchezaarTanksPositionBossAction : public AttackAction
+class PrinceMalchezaarTankPositionBossAction : public AttackAction
 {
 public:
-    PrinceMalchezaarTanksPositionBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "prince malchezaar tanks position boss") {}
+    PrinceMalchezaarTankPositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "prince malchezaar tank position boss") {}
     bool Execute(Event event) override;
     bool ResetWalk()
     {
         bool const wasSet = _destination.has_value() || _searchedInfernalCount.has_value();
         _destination.reset();
+        _destinationClearance = 0.0f;
         _searchedInfernalCount.reset();
         return wasSet;
     }
@@ -468,11 +470,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class NightbaneRangedStackAction : public MovementAction
+class NightbaneRangedStackAndMoveFromCharredEarthAction : public MovementAction
 {
 public:
-    NightbaneRangedStackAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "nightbane ranged stack") {}
+    NightbaneRangedStackAndMoveFromCharredEarthAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "nightbane ranged stack and move from charred earth") {}
     bool Execute(Event event) override;
 
 private:
@@ -510,19 +512,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class NightbaneStackInFlightAction : public MovementAction
+class NightbaneStackAwayFromRainOfBonesAction : public MovementAction
 {
 public:
-    NightbaneStackInFlightAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "nightbane stack in flight") {}
+    NightbaneStackAwayFromRainOfBonesAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "nightbane stack away from rain of bones") {}
     bool Execute(Event event) override;
 };
 
-class NightbaneStandDownAction : public Action
+class NightbaneLeaveCombatForLandingAction : public Action
 {
 public:
-    NightbaneStandDownAction(PlayerbotAI* botAI)
-        : Action(botAI, "nightbane stand down") {}
+    NightbaneLeaveCombatForLandingAction(PlayerbotAI* botAI)
+        : Action(botAI, "nightbane leave combat for landing") {}
     bool Execute(Event event) override;
 };
 
