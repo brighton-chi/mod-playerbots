@@ -60,7 +60,7 @@ KalecgosEncounterState& GetPreparedEncounterState(Player* player)
 
 bool CanReachPortalBeforeExpiry(Player* bot)
 {
-    Aura* exhaustion = bot->GetAura(Id(SwpSpells::SPELL_SPECTRAL_EXHAUSTION));
+    Aura const* exhaustion = bot->GetAura(Id(SwpSpells::SPELL_SPECTRAL_EXHAUSTION));
     if (!exhaustion)
         return true;
 

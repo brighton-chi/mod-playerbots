@@ -2080,7 +2080,7 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
         return (hash >> 8) / static_cast<float>(1 << 24);
     };
 
-    Aura* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA));
+    Aura const* lapse = bot->GetAura(Id(TkSpells::SPELL_GRAVITY_LAPSE_AURA));
     if (!lapse)
         return false;
 

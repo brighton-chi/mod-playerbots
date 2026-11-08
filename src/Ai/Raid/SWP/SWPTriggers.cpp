@@ -166,7 +166,7 @@ bool KalecgosTooManyArcaneBuffetStacksTrigger::IsActiveInEncounter()
     if (IsInSpectralRealm(bot))
         return false;
 
-    Aura* arcaneBuffet = bot->GetAura(Id(SwpSpells::SPELL_ARCANE_BUFFET));
+    Aura const* arcaneBuffet = bot->GetAura(Id(SwpSpells::SPELL_ARCANE_BUFFET));
     return arcaneBuffet && arcaneBuffet->GetStackAmount() >= 10;
 }
 
@@ -526,11 +526,11 @@ bool EredarTwinsTooManyFlameTouchedStacksTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Aura* flameSear = bot->GetAura(Id(SwpSpells::SPELL_FLAME_SEAR));
+    Aura const* flameSear = bot->GetAura(Id(SwpSpells::SPELL_FLAME_SEAR));
     if (!flameSear || flameSear->GetDuration() > FLAME_SEAR_PROTECT_WINDOW_MS)
         return false;
 
-    Aura* flameTouched = bot->GetAura(Id(SwpSpells::SPELL_FLAME_TOUCHED));
+    Aura const* flameTouched = bot->GetAura(Id(SwpSpells::SPELL_FLAME_TOUCHED));
     return flameTouched && flameTouched->GetStackAmount() >= FLAME_TOUCHED_PROTECT_STACKS;
 }
 

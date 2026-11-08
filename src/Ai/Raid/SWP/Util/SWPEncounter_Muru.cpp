@@ -163,7 +163,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     uint32 const instanceId = bot->GetInstanceId();
     uint32 const now = getMSTime();
 
-    if (Aura* darkness = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS)))
+    if (Aura const* darkness = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS)))
     {
         int32 const remainingMs = std::max(darkness->GetDuration(), 0);
         int32 const elapsedZoneMs = std::max(darkness->GetMaxDuration() - remainingMs, 0);
@@ -173,7 +173,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
             MURU_DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
             static_cast<uint32>(remainingMs));
     }
-    else if (Aura* preEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
+    else if (Aura const* preEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
     {
         int32 const duration = preEffect->GetDuration();
         uint32 const remainingPreEffectMs = duration < 0 ?

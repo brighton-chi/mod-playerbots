@@ -229,7 +229,7 @@ bool KazrogalMarkOnMageOrPaladinTrigger::IsActiveInEncounter()
     if (!kazrogal || kazrogal->GetVictim() == bot)
         return false;
 
-    Aura* mark = bot->GetAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
+    Aura const* mark = bot->GetAura(Id(HyjalSpells::SPELL_MARK_OF_KAZROGAL));
     if (!mark)
         return false;
 

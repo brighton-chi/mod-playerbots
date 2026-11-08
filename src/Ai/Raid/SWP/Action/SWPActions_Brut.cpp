@@ -31,8 +31,8 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
     if (!mainTank || !assistTank)
         return false;
 
-    Aura* mainTankAura = mainTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
-    Aura* assistTankAura = assistTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
+    Aura const* mainTankAura = mainTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
+    Aura const* assistTankAura = assistTank->GetAura(Id(SwpSpells::SPELL_METEOR_SLASH));
 
     if (mainTank == bot)
     {
