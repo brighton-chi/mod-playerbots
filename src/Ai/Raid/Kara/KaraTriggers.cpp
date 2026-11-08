@@ -9,6 +9,7 @@
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
@@ -240,26 +241,46 @@ bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActiveInEncounter()
 
 // Shade of Aran
 
+// Not for a bot that can't move: the pull still drags a rooted bot to him, and the run would
+// only stop its casts.
 bool ShadeOfAranCastingArcaneExplosionTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
-    return aran && IsAranCastingArcaneExplosion(aran);
+    return aran && IsAranCastingArcaneExplosion(aran) && botAI->CanMove();
 }
 
+// Not for a bot that can't move: a rooted bot can't run, so it keeps casting.
 bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)) && PlayerbotAI::IsRanged(bot);
+    return bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)) && PlayerbotAI::IsRanged(bot) &&
+        botAI->CanMove();
 }
 
+// Not for a bot that can't move: under Mass Polymorph it wanders, as a player would.
 bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
-    return IsFlameWreathInProgress(bot, aran) && !CanReachTargetDuringFlameWreath(botAI, aran);
+    return IsFlameWreathInProgress(botAI, aran) && botAI->CanMove() &&
+        !CanReachTargetDuringFlameWreath(botAI, aran);
 }
 
+// The elementals never re-zone, so a resurrected tracker finds them by a search, not by threat.
 bool ShadeOfAranShouldPrioritizeConjuredElementalsTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && FindThreatTarget(bot, "conjured elemental");
+    if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
+        return false;
+
+    GuidVector const elementals =
+        context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get();
+    if (elementals.empty())
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const skull = group->GetTargetIcon(RtiTargetValue::skullIndex);
+    return std::find(elementals.begin(), elementals.end(), skull) == elementals.end();
 }
 
 bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
@@ -274,7 +295,18 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
     if (bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
         return false;
 
-    return !IsAranCastingArcaneExplosion(aran) && !IsFlameWreathInProgress(bot, aran);
+    float const distance = bot->GetExactDist2d(aran);
+    if (distance >= ARAN_RANGED_MIN_DISTANCE - ARAN_RANGED_BAND_TOLERANCE &&
+        distance <= ARAN_RANGED_MAX_DISTANCE + ARAN_RANGED_BAND_TOLERANCE)
+    {
+        return false;
+    }
+
+    if (IsAranCastingArcaneExplosion(aran) || IsFlameWreathInProgress(botAI, aran))
+        return false;
+
+    // Off while the elementals are up: ranged stand wherever reaches the one they are killing.
+    return context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get().empty();
 }
 
 // Netherspite

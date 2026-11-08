@@ -775,13 +775,26 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
         return false;
 
     bot->CastStop();
-    return MoveAway(aran, ARAN_ARCANE_EXPLOSION_CLEARANCE - distance);
+    if (bot->GetExactDist2d(aran) > ARAN_PULLED_ONTO_BOSS_DISTANCE)
+        return MoveAway(aran, ARAN_ARCANE_EXPLOSION_CLEARANCE - distance);
+
+    uint32 const direction = bot->GetGUID().GetCounter() % ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS;
+    float const angle =
+        2.0f * static_cast<float>(M_PI) * direction / ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS;
+    float x = aran->GetPositionX() + ARAN_ARCANE_EXPLOSION_CLEARANCE * std::cos(angle);
+    float y = aran->GetPositionY() + ARAN_ARCANE_EXPLOSION_CLEARANCE * std::sin(angle);
+    float z = bot->GetPositionZ();
+    bool const exact = bot->GetMap()->CheckCollisionAndGetValidCoords(
+        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z);
+
+    return MoveTo(
+        KARA_MAP_ID, x, y, z, false, false, true, exact, MovementPriority::MOVEMENT_COMBAT, false);
 }
 
 // Ranged only: a patch's reach stops short of melee range on Aran.
 bool ShadeOfAranRunOutOfBlizzardAction::Execute(Event /*event*/)
 {
-    if (!IsMovingAllowed() || IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
         return false;
 
     std::optional<Position> const position = GetBlizzardEscapePosition(bot);
@@ -811,18 +824,12 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
 
 bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
 {
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 75.0f;
-
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(KaraNpcs::NPC_CONJURED_ELEMENTAL), searchRadius);
-
-    for (Creature* elemental : creatureList)
+    GuidVector const elementals =
+        context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get();
+    for (ObjectGuid const& guid : elementals)
     {
-        if (!elemental || !elemental->IsAlive())
-            continue;
-
-        if (!botAI->HasAura("banish", elemental))
+        Unit* elemental = botAI->GetUnit(guid);
+        if (elemental && elemental->IsAlive())
             return MarkTargetWithSkull(bot, elemental);
     }
 
@@ -849,6 +856,15 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
         aran->GetPositionX() + goal * std::cos(angle),
         aran->GetPositionY() + goal * std::sin(angle), bot->GetPositionZ());
 
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, position, ARAN_RANGED_BAND_TOLERANCE, nullptr, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
     // Wait out a Blizzard rather than walk back into it.
     float const patchReach = ARAN_BLIZZARD_HAZARD_RADIUS + bot->GetCombatReach();
     for (Position const& patch : GetDynamicObjectPositions(
@@ -857,13 +873,6 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
         if (patch.GetExactDist2d(position) <= patchReach)
             return false;
     }
-
-    constexpr float arrivalDist = 0.5f;
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
-        return false;
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,

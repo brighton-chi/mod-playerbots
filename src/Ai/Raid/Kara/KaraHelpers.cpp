@@ -471,13 +471,20 @@ std::optional<Position> GetBlizzardEscapePosition(Player* bot)
         bot->GetPositionZ());
 }
 
-bool IsFlameWreathInProgress(Player* bot, Unit* aran)
+bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
 {
-    if (bot->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
+    if (botAI->GetBot()->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
         return true;
 
-    return aran && (aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)) ||
-                    aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)));
+    // A resurrected bot can't find him until he re-zones, but it can see the rings.
+    if (!aran)
+    {
+        return !botAI->GetAiObjectContext()
+            ->GetValue<std::vector<Position>>("shade of aran flame wreath rings")->Get().empty();
+    }
+
+    return aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_FLAME_WREATH_CAST)) ||
+        aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA));
 }
 
 // The only movement allowed around Flame Wreath is a stuck bot walking to its own target. That is
@@ -517,6 +524,26 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
     }
 
     return true;
+}
+
+GuidVector FindUnbanishedConjuredElementals(Player* bot)
+{
+    std::list<Creature*> elementals;
+    bot->GetCreatureListWithEntryInGrid(
+        elementals, Id(KaraNpcs::NPC_CONJURED_ELEMENTAL), ARAN_ROOM_SEARCH_RADIUS);
+
+    GuidVector guids;
+    for (Creature* elemental : elementals)
+    {
+        if (elemental && elemental->IsAlive() &&
+            !elemental->HasAura(Id(KaraSpells::SPELL_BANISH_RANK_1)) &&
+            !elemental->HasAura(Id(KaraSpells::SPELL_BANISH_RANK_2)))
+        {
+            guids.push_back(elemental->GetGUID());
+        }
+    }
+
+    return guids;
 }
 
 // Netherspite

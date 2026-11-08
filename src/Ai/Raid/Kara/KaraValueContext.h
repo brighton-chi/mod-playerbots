@@ -30,6 +30,18 @@ protected:
     }
 };
 
+class ShadeOfAranUnbanishedElementalsValue : public CalculatedValue<GuidVector>
+{
+public:
+    ShadeOfAranUnbanishedElementalsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "shade of aran unbanished elementals",
+              KaraHelpers::ARAN_ELEMENTALS_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return KaraHelpers::FindUnbanishedConjuredElementals(bot); }
+};
+
 class PrinceMalchezaarLandedInfernalsValue : public CalculatedValue<std::vector<Position>>
 {
 public:
@@ -50,6 +62,9 @@ public:
         creators["shade of aran flame wreath rings"] =
             &RaidKarazhanValueContext::shade_of_aran_flame_wreath_rings;
 
+        creators["shade of aran unbanished elementals"] =
+            &RaidKarazhanValueContext::shade_of_aran_unbanished_elementals;
+
         creators["prince malchezaar landed infernals"] =
             &RaidKarazhanValueContext::prince_malchezaar_landed_infernals;
     }
@@ -58,6 +73,11 @@ private:
     static UntypedValue* shade_of_aran_flame_wreath_rings(PlayerbotAI* botAI)
     {
         return new ShadeOfAranFlameWreathRingsValue(botAI);
+    }
+
+    static UntypedValue* shade_of_aran_unbanished_elementals(PlayerbotAI* botAI)
+    {
+        return new ShadeOfAranUnbanishedElementalsValue(botAI);
     }
 
     static UntypedValue* prince_malchezaar_landed_infernals(PlayerbotAI* botAI)

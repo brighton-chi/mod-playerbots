@@ -79,6 +79,10 @@ enum class KaraSpells : uint32
     // Shaman
     SPELL_TREMOR_TOTEM            = 8143,
     SPELL_GROUNDING_TOTEM         = 8177,
+
+    // Warlock
+    SPELL_BANISH_RANK_1           = 710,
+    SPELL_BANISH_RANK_2           = 18647,
 };
 
 enum class KaraNpcs : uint32
@@ -321,11 +325,16 @@ bool IsTerestianSacrificeActive(Player* bot);
 // Hits within 21 yd of his centre, no reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
 inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
+// The pull lands everyone on his spot, so each bot takes its own way out.
+inline constexpr float ARAN_PULLED_ONTO_BOSS_DISTANCE = 1.0f;
+inline constexpr uint32 ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS = 16;
 // Hits within 9 yd of his centre, no reach added.
 inline constexpr float ARAN_COUNTERSPELL_HAZARD_RADIUS = 9.0f;
 // Ranged stand here, centre to centre: outside Counterspell, and inside most Blizzard patches.
 inline constexpr float ARAN_RANGED_MIN_DISTANCE = ARAN_COUNTERSPELL_HAZARD_RADIUS + 1.0f;
 inline constexpr float ARAN_RANGED_MAX_DISTANCE = 13.0f;
+inline constexpr float ARAN_RANGED_BAND_TOLERANCE = 0.5f;
+inline constexpr uint32 ARAN_ELEMENTALS_CACHE_INTERVAL_MS = 1000;
 // A patch reaches 13 yd plus the player's reach.
 inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 13.0f;
 inline constexpr float ARAN_ROOM_SEARCH_RADIUS = 60.0f;
@@ -347,8 +356,9 @@ inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
 
 bool IsAranCastingArcaneExplosion(Unit* aran);
 std::optional<Position> GetBlizzardEscapePosition(Player* bot);
-bool IsFlameWreathInProgress(Player* bot, Unit* aran);
+bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran);
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran);
+GuidVector FindUnbanishedConjuredElementals(Player* bot);
 
 // Netherspite
 

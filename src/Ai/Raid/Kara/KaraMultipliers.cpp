@@ -345,17 +345,17 @@ float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValueInEncounter(Action* a
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<ShadeOfAranRunAwayFromArcaneExplosionAction*>(action))
-    {
-        return 1.0f;
-    }
-
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action) &&
         !dynamic_cast<CastKillingSpreeAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<ShadeOfAranRunAwayFromArcaneExplosionAction*>(action))
     {
         return 1.0f;
     }
@@ -380,12 +380,6 @@ float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
 // I will not move when Flame Wreath is cast or the raid blows up.
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<ShadeOfAranStopMovingDuringFlameWreathAction*>(action))
-    {
-        return 1.0f;
-    }
-
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastBlinkBackAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action) &&
@@ -395,8 +389,14 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<ShadeOfAranStopMovingDuringFlameWreathAction*>(action))
+    {
+        return 1.0f;
+    }
+
     Unit* aran = GetEncounterBoss();
-    if (!IsFlameWreathInProgress(bot, aran))
+    if (!IsFlameWreathInProgress(botAI, aran))
         return 1.0f;
 
     bool const isReachingTarget =
