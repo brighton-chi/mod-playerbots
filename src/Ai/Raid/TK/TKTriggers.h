@@ -17,8 +17,8 @@
 class TempestKeepEncounterTrigger : public Trigger
 {
 public:
-    TempestKeepEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
-        : Trigger(botAI, name, checkInterval) {}
+    TempestKeepEncounterTrigger(PlayerbotAI* botAI, std::string const name)
+        : Trigger(botAI, name) {}
 
     bool IsActive() final
     {

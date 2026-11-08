@@ -17,8 +17,7 @@
 class GruulsLairEncounterTrigger : public Trigger
 {
 public:
-    GruulsLairEncounterTrigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval = 1)
-        : Trigger(botAI, name, checkInterval) {}
+    GruulsLairEncounterTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
 
     bool IsActive() final
     {
