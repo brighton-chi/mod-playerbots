@@ -27,6 +27,7 @@
 #include "ThreatHelpers.h"
 #include "WarlockActions.h"
 #include "WarriorActions.h"
+#include "WipeAction.h"
 #include <array>
 
 using namespace KaraHelpers;
@@ -268,14 +269,31 @@ float MaidenOfVirtueSetGroundingTotemMultiplier::GetValueInEncounter(Action* act
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
+    // Call of the Elements drops whatever air totem the totem bar holds.
     if (!dynamic_cast<CastWrathOfAirTotemAction*>(action) &&
         !dynamic_cast<CastNatureResistanceTotemAction*>(action) &&
-        !dynamic_cast<CastWindfuryTotemAction*>(action))
+        !dynamic_cast<CastWindfuryTotemAction*>(action) &&
+        !dynamic_cast<CastCallOfTheElementsAction*>(action))
     {
         return 1.0f;
     }
 
     return GetEncounterBoss() ? 0.0f : 1.0f;
+}
+
+// The Big Bad Wolf
+
+// Moving, turning or casting ends Feign Death, and standing up with Hood on brings him back, so a
+// feigning Hood target does nothing until Hood ends.
+float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER || !bot->HasAura(Id(KaraSpells::SPELL_FEIGN_DEATH)))
+        return 1.0f;
+
+    if (!IsLittleRedRidingHood(bot))
+        return 1.0f;
+
+    return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
 }
 
 // The Curator

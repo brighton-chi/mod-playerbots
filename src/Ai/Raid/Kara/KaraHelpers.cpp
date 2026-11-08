@@ -340,6 +340,11 @@ Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden)
 
 // The Big Bad Wolf
 
+bool IsLittleRedRidingHood(Player* bot)
+{
+    return bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+}
+
 uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction)
 {
     int32 const count = static_cast<int32>(BIG_BAD_WOLF_RUN_POSITIONS.size());
@@ -376,21 +381,58 @@ BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seco
     return best;
 }
 
-Player* GetBigBadWolfTargetToProtect(Unit const& wolf)
+Player* GetBigBadWolfRedHood(Unit const& wolf)
 {
     Unit* victim = wolf.GetVictim();
     Player* target = victim ? victim->ToPlayer() : nullptr;
-    if (!target || PlayerbotAI::IsTank(target) ||
-        wolf.GetExactDist2d(target) > BIG_BAD_WOLF_PROTECT_DISTANCE)
+    if (!target || !IsLittleRedRidingHood(target) ||
+        target->IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL))
     {
         return nullptr;
     }
+
+    return target;
+}
+
+Player* GetBigBadWolfTargetToProtect(Unit const& wolf)
+{
+    Player* target = GetBigBadWolfRedHood(wolf);
+    if (!target)
+        return nullptr;
 
     Aura const* hood = target->GetAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
     if (!hood || hood->GetMaxDuration() - hood->GetDuration() < BIG_BAD_WOLF_PROTECT_REACTION_MS)
         return nullptr;
 
+    if (hood->GetDuration() > HAND_OF_PROTECTION_DURATION_MS &&
+        target->GetHealthPct() >= BIG_BAD_WOLF_PROTECT_HEALTH_PCT)
+    {
+        return nullptr;
+    }
+
+    // The test his swings use, with the leeway while both move.
+    if (!wolf.IsWithinMeleeRange(target) || GET_PLAYERBOT_AI(target) || PlayerbotAI::IsTank(target))
+        return nullptr;
+
     return target;
+}
+
+// Terestian Illhoof
+
+bool IsTerestianSacrificeActive(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->HasAura(Id(KaraSpells::SPELL_SACRIFICE)))
+            return true;
+    }
+
+    return false;
 }
 
 // Shade of Aran

@@ -134,6 +134,20 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// The Big Bad Wolf
+
+class BigBadWolfRedHoodHunterStayDownMultiplier : public KarazhanEncounterMultiplier
+{
+public:
+    BigBadWolfRedHoodHunterStayDownMultiplier(PlayerbotAI* botAI)
+        : KarazhanEncounterMultiplier(
+            botAI, "big bad wolf red hood hunter stay down",
+            KaraHelpers::KaraBosses::DATA_OPERA_PERFORMANCE) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // The Curator
 
 class TheCuratorDisableTankAssistMultiplier : public KarazhanEncounterMultiplier

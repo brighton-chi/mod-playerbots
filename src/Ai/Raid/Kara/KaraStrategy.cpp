@@ -70,8 +70,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("big bad wolf chases red hood",
         { NextAction("big bad wolf red hood run away", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("big bad wolf paladin should protect red hood",
-        { NextAction("big bad wolf cast hand of protection on red hood", ACTION_EMERGENCY + 5) }));
+    triggers.push_back(new TriggerNode("big bad wolf red hood should use escape",
+        { NextAction("big bad wolf red hood use escape", ACTION_EMERGENCY + 7) }));
+
+    triggers.push_back(new TriggerNode("big bad wolf victim has red hood",
+        { NextAction("big bad wolf protect red hood", ACTION_EMERGENCY + 5) }));
 
     // Romulo and Julianne
     triggers.push_back(new TriggerNode("romulo and julianne should be killed together",
@@ -79,10 +82,10 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // The Wizard of Oz
     triggers.push_back(new TriggerNode("wizard of oz should prioritize targets",
-        { NextAction("wizard of oz mark target", ACTION_RAID) }));
+        { NextAction("wizard of oz mark target", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("wizard of oz mage should burn strawman",
-        { NextAction("wizard of oz cast scorch on strawman", ACTION_RAID + 1) }));
+        { NextAction("wizard of oz cast scorch on strawman", ACTION_RAID) }));
 
     // The Curator
     triggers.push_back(new TriggerNode("the curator should prioritize astral flares",
@@ -185,6 +188,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new AttumenTheHuntsmanHoldDpsMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueSetGroundingTotemMultiplier(botAI));
+    multipliers.push_back(new BigBadWolfRedHoodHunterStayDownMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TerestianIllhoofDontDotFiendishImpsMultiplier(botAI));

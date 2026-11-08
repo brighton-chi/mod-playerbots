@@ -184,12 +184,23 @@ private:
     uint32 _lastRunStepTime = 0;
 };
 
-class BigBadWolfCastHandOfProtectionOnRedHoodAction : public Action
+class BigBadWolfRedHoodUseEscapeAction : public Action
 {
 public:
-    BigBadWolfCastHandOfProtectionOnRedHoodAction(PlayerbotAI* botAI)
-        : Action(botAI, "big bad wolf cast hand of protection on red hood") {}
+    BigBadWolfRedHoodUseEscapeAction(PlayerbotAI* botAI)
+        : Action(botAI, "big bad wolf red hood use escape") {}
     bool Execute(Event event) override;
+};
+
+class BigBadWolfProtectRedHoodAction : public Action
+{
+public:
+    BigBadWolfProtectRedHoodAction(PlayerbotAI* botAI)
+        : Action(botAI, "big bad wolf protect red hood") {}
+    bool Execute(Event event) override;
+
+private:
+    bool CastOnTarget(char const* spell, Player* target, float range);
 };
 
 // Romulo and Julianne

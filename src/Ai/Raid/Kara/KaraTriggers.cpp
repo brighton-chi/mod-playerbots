@@ -146,24 +146,40 @@ bool BigBadWolfShouldBeTankedTrigger::IsActiveInEncounter()
     if (!GetOperaActor(bot, "the big bad wolf"))
         return false;
 
-    return !bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    return !IsLittleRedRidingHood(bot);
 }
 
 bool BigBadWolfChasesRedHoodTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    return IsLittleRedRidingHood(bot);
 }
 
-bool BigBadWolfPaladinShouldProtectRedHoodTrigger::IsActiveInEncounter()
+// Hunters feign death; every other bot, and a hunter whose Feign Death is on cooldown, gets the
+// speed cheat.
+bool BigBadWolfRedHoodShouldUseEscapeTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_PALADIN)
+    if (!IsLittleRedRidingHood(bot) ||
+        bot->HasAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS)) ||
+        bot->HasAura(Id(KaraSpells::SPELL_FEIGN_DEATH)))
+    {
+        return false;
+    }
+
+    return GetOperaActor(bot, "the big bad wolf");
+}
+
+// Paladins, priests and warriors can help the Hood target; the action decides when.
+bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
+{
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_PALADIN && botClass != CLASS_PRIEST && botClass != CLASS_WARRIOR)
         return false;
 
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!wolf)
         return false;
 
-    Player* target = GetBigBadWolfTargetToProtect(*wolf);
+    Player* target = GetBigBadWolfRedHood(*wolf);
     return target && target != bot;
 }
 

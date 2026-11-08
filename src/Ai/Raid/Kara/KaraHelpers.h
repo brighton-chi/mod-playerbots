@@ -43,9 +43,16 @@ enum class KaraSpells : uint32
 
     // Opera Event
     SPELL_LITTLE_RED_RIDING_HOOD  = 30756,
+    SPELL_GOBLIN_ROCKET_BOOTS     = 8892,  // the Little Red Riding Hood speed cheat (70% vs. 50%)
+    SPELL_FEIGN_DEATH             = 5384,
+    SPELL_INTERVENE               = 3411,
 
     // The Curator
     SPELL_CURATOR_EVOCATION       = 30254,
+
+    // Terestian Illhoof
+    SPELL_BROKEN_PACT             = 30065, // on Terestian from Kil'rek's death to his return
+    SPELL_SACRIFICE               = 30115, // on the player until the Demon Chains die
 
     // Shade of Aran
     SPELL_FLAME_WREATH_CAST       = 30004,
@@ -243,10 +250,15 @@ struct BigBadWolfRunPlan
 inline constexpr float BIG_BAD_WOLF_RUN_TURN_DISTANCE = 3.5f;
 // No step for this long means a new Hood or the end of a fear or stun, so the run is replanned.
 inline constexpr uint32 BIG_BAD_WOLF_RUN_RESTART_MS = 1000;
-// A settled chase stays further off than this, so a run going well doesn't use the long cooldown.
-inline constexpr float BIG_BAD_WOLF_PROTECT_DISTANCE = 8.5f;
 inline constexpr int32 BIG_BAD_WOLF_PROTECT_REACTION_MS = 500;
 inline constexpr float HAND_OF_PROTECTION_RANGE = 30.0f;
+inline constexpr float POWER_WORD_SHIELD_RANGE = 40.0f;
+inline constexpr float INTERVENE_MIN_RANGE = 8.0f;
+inline constexpr float INTERVENE_MAX_RANGE = 25.0f;
+// Hand of Protection (rank 3) lasts 10 s, so it waits for the end of Hood or a target in trouble:
+// one hit does 6.8-9.6k with Hood's armour at 0.
+inline constexpr int32 HAND_OF_PROTECTION_DURATION_MS = 10 * IN_MILLISECONDS;
+inline constexpr float BIG_BAD_WOLF_PROTECT_HEALTH_PCT = 50.0f;
 // He stays at the stage edge between Hoods; from mid-stage he would catch any run.
 inline Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };
 // Round the stage edge, on the stage's own axes, clear of the trees and the backdrop.
@@ -267,12 +279,16 @@ inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
     Position{ -10879.527f, -1778.071f, 90.477f },
 };
 
+bool IsLittleRedRidingHood(Player* bot);
 uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction);
 // He runs straight at the bot, cutting inside any route, so a poor start runs into him. This
 // forecasts the chase for every point and direction, and returns the one that keeps him furthest
 // away at his closest.
 BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds);
-// His victim, if it is a non-tank on Hood that he has caught up with.
+// His victim, if it is on Hood and his swings can still hurt it.
+Player* GetBigBadWolfRedHood(Unit const& wolf);
+// A human Hood target that isn't a tank, within his melee range, near the end of Hood or below
+// half health. Bots have the speed cheat.
 Player* GetBigBadWolfTargetToProtect(Unit const& wolf);
 
 // Romulo and Julianne
@@ -296,6 +312,10 @@ inline std::array const OZ_TARGETS = {
 // Arcing Sear jumps 13 yd centre to centre between players, so this spread only cuts its jumps.
 inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
+
+// Terestian Illhoof
+// Demon Chains exist only while a group member is sacrificed.
+bool IsTerestianSacrificeActive(Player* bot);
 
 // Shade of Aran
 // Hits within 21 yd of his centre, no reach added.

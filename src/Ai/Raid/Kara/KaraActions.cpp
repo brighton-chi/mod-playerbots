@@ -440,6 +440,14 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
 
 bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
 {
+    // A bot only stands on its own position, so the group isn't searched once it arrives.
+    constexpr float arrivalDist = 2.0f;
+    for (Position const& position : MAIDEN_OF_VIRTUE_RANGED_POSITIONS)
+    {
+        if (bot->GetExactDist2d(position) <= arrivalDist)
+            return false;
+    }
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -465,9 +473,6 @@ bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
     }
 
     Position const& position = MAIDEN_OF_VIRTUE_RANGED_POSITIONS[index];
-    if (bot->GetExactDist2d(position) <= 2.0f)
-        return false;
-
     return MoveTo(
         KARA_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
         false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -518,6 +523,10 @@ bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
     // would keep filling and hold the bot still.
     bot->CastStop();
 
+    // Feared or stunned: the first step after it replans from where both are then.
+    if (!botAI->CanMove())
+        return false;
+
     if (GetMSTimeDiffToNow(_lastRunStepTime) > BIG_BAD_WOLF_RUN_RESTART_MS)
     {
         _run = GetBigBadWolfRunPlan(
@@ -551,18 +560,63 @@ bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
     return true;
 }
 
-bool BigBadWolfCastHandOfProtectionOnRedHoodAction::Execute(Event /*event*/)
+bool BigBadWolfRedHoodUseEscapeAction::Execute(Event /*event*/)
+{
+    // He drops a feigning hunter despite the taunt, and comes back if it stands up during Hood.
+    // A hunter whose Feign Death is on cooldown gets the boots below.
+    if (bot->getClass() == CLASS_HUNTER &&
+        !bot->HasSpellCooldown(Id(KaraSpells::SPELL_FEIGN_DEATH)))
+    {
+        return botAI->CanCastSpell("feign death", bot) && botAI->CastSpell("feign death", bot);
+    }
+
+    // A cheat, for a bugged mechanic: with AC's reach (4.5) and speed (8.5 yd/s) he catches any
+    // runner at Hood's +50%. The largest speed aura wins, so the boots' +70% replaces Hood's, and
+    // like Hood it lasts 20 s, so it is never removed.
+    return bot->AddAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS), bot);
+}
+
+bool BigBadWolfProtectRedHoodAction::Execute(Event /*event*/)
 {
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!wolf)
         return false;
 
-    Player* target = GetBigBadWolfTargetToProtect(*wolf);
-    if (!target || target == bot || !bot->IsWithinCombatRange(target, HAND_OF_PROTECTION_RANGE))
-        return false;
+    switch (bot->getClass())
+    {
+        // Human targets only, once he can swing at them, near the end of Hood or below half health.
+        case CLASS_PALADIN:
+        {
+            return CastOnTarget(
+                "hand of protection", GetBigBadWolfTargetToProtect(*wolf),
+                HAND_OF_PROTECTION_RANGE);
+        }
+        // Weakened Soul fails CanCastSpell, so only one priest shields at a time.
+        case CLASS_PRIEST:
+        {
+            return CastOnTarget(
+                "power word: shield", GetBigBadWolfRedHood(*wolf), POWER_WORD_SHIELD_RANGE);
+        }
+        // The next swing at the target hits the warrior instead. Defensive Stance only, which
+        // CanCastSpell tests.
+        case CLASS_WARRIOR:
+        {
+            Player* target = GetBigBadWolfRedHood(*wolf);
+            return target && !target->HasAura(Id(KaraSpells::SPELL_INTERVENE)) &&
+                !bot->IsWithinCombatRange(target, INTERVENE_MIN_RANGE) &&
+                CastOnTarget("intervene", target, INTERVENE_MAX_RANGE);
+        }
+        default:
+            return false;
+    }
+}
 
-    return botAI->CanCastSpell("hand of protection", target) &&
-        botAI->CastSpell("hand of protection", target);
+// Range edge to edge, as spell range: CanCastSpell passes targets out of range, and a failed cast
+// still turns the bot.
+bool BigBadWolfProtectRedHoodAction::CastOnTarget(char const* spell, Player* target, float range)
+{
+    return target && target != bot && bot->IsWithinCombatRange(target, range) &&
+        botAI->CanCastSpell(spell, target) && botAI->CastSpell(spell, target);
 }
 
 // Romulo and Julianne
@@ -671,19 +725,40 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 100.0f;
-    static constexpr std::array illhoofAdds = {
-        KaraNpcs::NPC_DEMON_CHAINS,
-        KaraNpcs::NPC_KILREK,
-    };
+    // Neither is on a threat list for sure: chains never attack, and a resummoned Kil'rek isn't
+    // zoned in. So it is a search, but only for what can be up: chains during a Sacrifice, and
+    // Kil'rek while Terestian has no Broken Pact.
+    Unit* terestian = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
+    std::vector<uint32> entries;
+    if (IsTerestianSacrificeActive(bot))
+        entries.push_back(Id(KaraNpcs::NPC_DEMON_CHAINS));
 
-    for (KaraNpcs add : illhoofAdds)
+    if (!terestian || !terestian->HasAura(Id(KaraSpells::SPELL_BROKEN_PACT)))
+        entries.push_back(Id(KaraNpcs::NPC_KILREK));
+
+    if (!entries.empty())
     {
-        if (Unit* target = bot->FindNearestCreature(Id(add), searchRadius))
-            return MarkTargetWithSkull(bot, target);
+        // It also returns corpses.
+        constexpr float searchRadius = 100.0f;
+        std::list<Creature*> adds;
+        bot->GetCreatureListWithEntryInGrid(adds, entries, searchRadius);
+
+        Creature* kilrek = nullptr;
+        for (Creature* add : adds)
+        {
+            if (!add->IsAlive())
+                continue;
+
+            if (add->GetEntry() == Id(KaraNpcs::NPC_DEMON_CHAINS))
+                return MarkTargetWithSkull(bot, add);
+
+            kilrek = add;
+        }
+
+        if (kilrek)
+            return MarkTargetWithSkull(bot, kilrek);
     }
 
-    Unit* terestian = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
     return terestian && MarkTargetWithSkull(bot, terestian);
 }
 

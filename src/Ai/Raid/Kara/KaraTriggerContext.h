@@ -72,8 +72,11 @@ public:
         creators["big bad wolf chases red hood"] =
             &RaidKarazhanTriggerContext::big_bad_wolf_chases_red_hood;
 
-        creators["big bad wolf paladin should protect red hood"] =
-            &RaidKarazhanTriggerContext::big_bad_wolf_paladin_should_protect_red_hood;
+        creators["big bad wolf red hood should use escape"] =
+            &RaidKarazhanTriggerContext::big_bad_wolf_red_hood_should_use_escape;
+
+        creators["big bad wolf victim has red hood"] =
+            &RaidKarazhanTriggerContext::big_bad_wolf_victim_has_red_hood;
 
         // Romulo and Julianne
         creators["romulo and julianne should be killed together"] =
@@ -254,9 +257,13 @@ private:
     {
         return new BigBadWolfChasesRedHoodTrigger(botAI);
     }
-    static Trigger* big_bad_wolf_paladin_should_protect_red_hood(PlayerbotAI* botAI)
+    static Trigger* big_bad_wolf_red_hood_should_use_escape(PlayerbotAI* botAI)
     {
-        return new BigBadWolfPaladinShouldProtectRedHoodTrigger(botAI);
+        return new BigBadWolfRedHoodShouldUseEscapeTrigger(botAI);
+    }
+    static Trigger* big_bad_wolf_victim_has_red_hood(PlayerbotAI* botAI)
+    {
+        return new BigBadWolfVictimHasRedHoodTrigger(botAI);
     }
 
     // Romulo and Julianne
