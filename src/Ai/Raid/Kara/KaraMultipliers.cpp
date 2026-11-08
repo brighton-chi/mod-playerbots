@@ -411,7 +411,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
     bool const isReachToAttack =
         dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action);
 
-    return isReachingTarget && CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
+    return isReachToAttack && CanReachTargetDuringFlameWreath(botAI, aran) ? 1.0f : 0.0f;
 }
 
 // Netherspite
