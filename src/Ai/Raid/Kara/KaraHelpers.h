@@ -596,8 +596,13 @@ inline constexpr float CHARRED_EARTH_CLEARANCE = 1.5f;
 // Rain of Bones ticks land up to 8y from its centre and hit 6y around that, with no player reach.
 inline constexpr float RAIN_OF_BONES_REACH = 14.0f;
 inline constexpr float RAIN_OF_BONES_CLEARANCE = 1.0f;
+// Blizzard, Hurricane, Rain of Fire and Volley
+inline constexpr float PLAYER_GROUND_AOE_RADIUS = 8.0f;
+// Below this on the ground, he has landed for the last time: crossing 25% sends him up at once.
+inline constexpr float NIGHTBANE_FINAL_PHASE_HEALTH_PCT = 20.0f;
 // The terrace is a ring around the dome. Terrace angles are measured around the dome in world
 // coordinates, running from the west end through the south side to the east end.
+inline constexpr float TERRACE_INNER_RADIUS = 36.0f; // the dome's wall is at 33.5-35.8y
 inline constexpr float TERRACE_OUTER_RADIUS = 51.0f;
 inline constexpr float TERRACE_ARC_RADIUS = 47.856f;
 inline constexpr float TERRACE_ARC_START = 0.2418f;
@@ -615,6 +620,9 @@ inline Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f }
 
 // Normalized to the range starting at TERRACE_ARC_START.
 float GetTerraceAngle(Position const& position);
+// The destination, unless the straight line to it cuts through the dome; then a step round the
+// ring toward it.
+Position GetTerraceWalkPosition(Position const& from, Position const& destination);
 // Searches the stack circle in both directions from startAngle, away from his landing position
 // first, and returns the nearest position within the limits for which isClear is true.
 template <typename IsClear>
@@ -653,6 +661,8 @@ bool IsNightbaneFlightPhaseActive(Unit const& nightbane);
 bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane);
 // Where the current Rain of Bones channel is aimed, or nullptr. A rain doesn't follow its target.
 Position const* GetRainOfBonesCenter(Unit const& nightbane);
+// A living pet or guardian with pet controls, which can be called back and set passive.
+bool IsControllableMinion(Unit* unit);
 
 // Shared encounter state
 

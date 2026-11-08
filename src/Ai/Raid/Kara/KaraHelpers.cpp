@@ -1184,6 +1184,25 @@ float GetTerraceAngle(Position const& position)
     return angle < TERRACE_ARC_START ? angle + 2.0f * static_cast<float>(M_PI) : angle;
 }
 
+Position GetTerraceWalkPosition(Position const& from, Position const& destination)
+{
+    if (GetDistanceToSegment2d(TERRACE_DOME_CENTER, from, destination) >= TERRACE_INNER_RADIUS)
+        return destination;
+
+    constexpr float stepDist = 3.5f;
+    float const radius =
+        std::max(from.GetExactDist2d(TERRACE_DOME_CENTER), NIGHTBANE_STACK_RADIUS);
+    float const fromAngle = GetTerraceAngle(from);
+    float const angleLeft = GetTerraceAngle(destination) - fromAngle;
+    float const angle =
+        fromAngle + std::copysign(std::min(stepDist / radius, std::fabs(angleLeft)), angleLeft);
+
+    return Position(
+        TERRACE_DOME_CENTER.GetPositionX() + radius * std::cos(angle),
+        TERRACE_DOME_CENTER.GetPositionY() + radius * std::sin(angle),
+        from.GetPositionZ());
+}
+
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths)
 {
     for (Position const& charredEarth : charredEarths)
@@ -1224,14 +1243,15 @@ bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane)
     if (IsNightbaneFlying(nightbane))
         return true;
 
-    if (PlayerbotAI::IsMainTank(bot))
-        return false;
-
+    // The timer first: IsMainTank can loop over the group.
     KaraInstanceState const* state = FindKaraState(nightbane.GetInstanceId());
-    if (!state || !state->nightbaneDpsHoldTimer)
-        return true;
+    if (state && state->nightbaneDpsHoldTimer &&
+        getMSTimeDiff(*state->nightbaneDpsHoldTimer, getMSTime()) >= NIGHTBANE_DPS_HOLD_MS)
+    {
+        return false;
+    }
 
-    return getMSTimeDiff(*state->nightbaneDpsHoldTimer, getMSTime()) < NIGHTBANE_DPS_HOLD_MS;
+    return !PlayerbotAI::IsMainTank(bot);
 }
 
 Position const* GetRainOfBonesCenter(Unit const& nightbane)
@@ -1244,6 +1264,12 @@ Position const* GetRainOfBonesCenter(Unit const& nightbane)
     }
 
     return channel->m_targets.GetDstPos();
+}
+
+bool IsControllableMinion(Unit* unit)
+{
+    Creature* creature = unit ? unit->ToCreature() : nullptr;
+    return creature && creature->IsAlive() && creature->GetCharmInfo();
 }
 
 // Shared encounter state

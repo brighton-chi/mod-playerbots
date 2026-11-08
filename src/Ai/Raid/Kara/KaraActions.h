@@ -12,6 +12,8 @@
 #include "KaraHelpers.h"
 #include "MovementActions.h"
 #include <optional>
+#include <utility>
+#include <vector>
 
 // Shared
 
@@ -508,8 +510,8 @@ public:
     bool ResetPetStance();
 
 private:
-    ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    // In the order set; a unit set passive again after a change keeps its latest stance.
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class NightbaneStopAttackingAction : public Action

@@ -535,32 +535,36 @@ float PrinceMalchezaarEnfeebleMultiplier::GetValueInEncounter(Action* action)
 
 // Nightbane
 
-// Pets tend to run out of bounds and cause skeletons to spawn off the map
-// Pets also tend to pull adds from inside of the tower through the floor
-// This multiplier DOES NOT impact Hunter and Warlock pets
-// Hunter and Warlock pets are addressed in ControlPetAggressionAction
+// In flight, pets would leave the terrace after skeletons or him. Summons wait out the hold, since
+// it sets them passive (see the pet action). The Fire Elemental Totem's elemental can't be called
+// back, so it waits for the last ground phase.
 float NightbaneDisablePetsMultiplier::GetValueInEncounter(Action* action)
 {
-    bool const isTemporarySummonSpell =
-        dynamic_cast<CastForceOfNatureAction*>(action) ||
-        dynamic_cast<CastFeralSpiritAction*>(action) ||
+    bool const isFireElementalTotem =
         dynamic_cast<CastFireElementalTotemAction*>(action) ||
-        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-        dynamic_cast<CastSummonWaterElementalAction*>(action) ||
-        dynamic_cast<CastShadowfiendAction*>(action);
+        dynamic_cast<CastFireElementalTotemMeleeAction*>(action);
 
-    if (!isTemporarySummonSpell && !dynamic_cast<PetAttackAction*>(action))
+    bool const isSummon = isFireElementalTotem ||
+        dynamic_cast<CastShadowfiendAction*>(action) ||
+        dynamic_cast<CastSummonWaterElementalAction*>(action) ||
+        dynamic_cast<CastFeralSpiritAction*>(action) ||
+        dynamic_cast<CastForceOfNatureAction*>(action);
+
+    if (!isSummon && !dynamic_cast<PetAttackAction*>(action))
         return 1.0f;
 
     Unit* nightbane = GetEncounterBoss();
     if (!nightbane)
         return 1.0f;
 
-    if (isTemporarySummonSpell)
+    if (!isSummon)
+        return IsNightbaneFlying(*nightbane) ? 0.0f : 1.0f;
+
+    if (IsNightbaneDpsHeld(bot, *nightbane))
         return 0.0f;
 
-    // PetAttackAction
-    return IsNightbaneFlying(*nightbane) ? 0.0f : 1.0f;
+    return (!isFireElementalTotem ||
+            nightbane->GetHealthPct() <= NIGHTBANE_FINAL_PHASE_HEALTH_PCT) ? 1.0f : 0.0f;
 }
 
 // In flight, a unit hold on Nightbane, with drop target zeroed until he leaves the flight position
@@ -602,19 +606,21 @@ float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
 
 float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<SetBehindTargetAction*>(action))
+    bool const isSetBehind = dynamic_cast<SetBehindTargetAction*>(action);
+
+    bool const isReachAction = !isSetBehind &&
+        (dynamic_cast<ReachTargetAction*>(action) ||
+         dynamic_cast<CastReachTargetSpellAction*>(action));
+
+    bool const isBlockedMovement = !isSetBehind &&
+        (dynamic_cast<CombatFormationMoveAction*>(action) ||
+         IsRepositionAction(bot, action) || dynamic_cast<FleeAction*>(action));
+
+    if (!isSetBehind && !isReachAction && !isBlockedMovement &&
+        !dynamic_cast<FollowAction*>(action))
+    {
         return 1.0f;
-
-    bool const isReachAction =
-        dynamic_cast<ReachTargetAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action);
-
-    bool const isBlockedMovement =
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        IsRepositionAction(bot, action) || dynamic_cast<FleeAction*>(action);
-
-    if (!isReachAction && !isBlockedMovement && !dynamic_cast<FollowAction*>(action))
-        return 1.0f;
+    }
 
     Unit* nightbane = GetEncounterBoss();
     if (!nightbane)
@@ -629,6 +635,7 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
     if (isReachAction)
         return 0.0f;
 
-    // Once he leaves the flight position to land, bots freely follow their master
+    // Follow, and set behind on a skeleton, would pull bots off the stack. Once he leaves the
+    // flight position to land, bots freely follow their master.
     return IsNightbaneFlightPhaseActive(*nightbane) ? 0.0f : 1.0f;
 }

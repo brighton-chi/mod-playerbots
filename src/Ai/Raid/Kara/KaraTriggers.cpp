@@ -464,7 +464,8 @@ bool NightbaneShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && !IsNightbaneFlying(*nightbane);
+    return nightbane && !IsNightbaneFlying(*nightbane) &&
+        (nightbane->GetVictim() == bot || PlayerbotAI::IsMainTank(bot));
 }
 
 bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
@@ -478,12 +479,22 @@ bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
 
 bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
 {
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
+    Unit::ControlSet const& minions = bot->m_Controlled;
+    if (std::none_of(minions.begin(), minions.end(), IsControllableMinion))
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && IsNightbaneDpsHeld(bot, *nightbane) != pet->HasReactState(REACT_PASSIVE);
+    if (!nightbane)
+        return false;
+
+    bool const isHeld = IsNightbaneDpsHeld(bot, *nightbane);
+    return std::any_of(
+        minions.begin(), minions.end(),
+        [isHeld](Unit* unit)
+        {
+            return IsControllableMinion(unit) &&
+                unit->ToCreature()->HasReactState(REACT_PASSIVE) != isHeld;
+        });
 }
 
 bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()

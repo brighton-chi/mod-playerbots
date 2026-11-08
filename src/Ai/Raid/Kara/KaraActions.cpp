@@ -12,6 +12,7 @@
 #include "Playerbots.h"
 #include "Random.h"
 #include "RtiTargetValue.h"
+#include "Spell.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <array>
@@ -1845,24 +1846,29 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
+    // A player leads only when flagged assistant, since a role check on a player costs a talent
+    // scan. Without one, the ranged bot with the lowest GUID leads.
     Player* rangedLeader = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != KARA_MAP_ID ||
-            !member->IsAlive() || !PlayerbotAI::IsRanged(member))
+        if (!member || member->GetMapId() != KARA_MAP_ID || !member->IsAlive())
+            continue;
+
+        bool const isAssistant = group->IsAssistant(member->GetGUID());
+        if (!isAssistant &&
+            (!GET_PLAYERBOT_AI(member) ||
+             (rangedLeader && member->GetGUID() > rangedLeader->GetGUID())))
         {
             continue;
         }
 
-        if (group->IsAssistant(member->GetGUID()))
-        {
-            rangedLeader = member;
-            break;
-        }
+        if (!PlayerbotAI::IsRanged(member))
+            continue;
 
-        if (!rangedLeader || member->GetGUID() < rangedLeader->GetGUID())
-            rangedLeader = member;
+        rangedLeader = member;
+        if (isAssistant)
+            break;
     }
 
     if (!rangedLeader)
@@ -1923,51 +1929,87 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::StackOnRangedLeader(Play
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
+// Guardians too (Shadowfiend, Water Elemental, Feral Spirit, Force of Nature): called back alone,
+// they would attack again and chase skeletons or him off the terrace.
 bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 {
-    Pet* pet = bot->GetPet();
-    if (!pet)
-        return false;
-
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
-    if (IsNightbaneDpsHeld(bot, *nightbane))
+    if (!IsNightbaneDpsHeld(bot, *nightbane))
     {
-        if (!pet->HasReactState(REACT_PASSIVE))
-        {
-            _previousReactState = pet->GetReactState();
-            _setPassive = true;
-            CallBackPets(bot);
-            pet->SetReactState(REACT_PASSIVE);
-        }
-    }
-    else
         ResetPetStance();
+        return false;
+    }
+
+    std::vector<Creature*> minionsToHold;
+    for (Unit* unit : bot->m_Controlled)
+    {
+        if (IsControllableMinion(unit) && !unit->ToCreature()->HasReactState(REACT_PASSIVE))
+            minionsToHold.push_back(unit->ToCreature());
+    }
+
+    if (minionsToHold.empty())
+        return false;
+
+    CallBackPets(bot);
+    for (Creature* minion : minionsToHold)
+    {
+        _previousReactStates.emplace_back(minion->GetGUID(), minion->GetReactState());
+        minion->SetReactState(REACT_PASSIVE);
+    }
 
     return false;
 }
 
 bool NightbaneControlPetAggressionAction::ResetPetStance()
 {
-    if (!_setPassive)
+    if (_previousReactStates.empty())
         return false;
 
-    if (Pet* pet = bot->GetPet())
-        pet->SetReactState(_previousReactState);
+    for (auto const& [guid, reactState] : _previousReactStates)
+    {
+        if (Creature* minion = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, guid))
+            minion->SetReactState(reactState);
+    }
 
-    _setPassive = false;
+    _previousReactStates.clear();
     return true;
 }
 
+// The hold doesn't block a ground AoE on skeletons, and off the terrace he is out of its reach, so
+// a ground channel is stopped only if its area reaches him.
 bool NightbaneStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
-    return StopAttackingTarget(bot, *nightbane);
+    Spell const* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (!channel || !channel->m_targets.GetUnitTargetGUID().IsEmpty() ||
+        !channel->m_targets.HasDst() ||
+        channel->m_targets.GetDstPos()->GetExactDist(nightbane) <=
+            PLAYER_GROUND_AOE_RADIUS + nightbane->GetCombatReach())
+    {
+        return StopAttackingTarget(bot, *nightbane);
+    }
+
+    bool isStopped = false;
+    if (bot->GetVictim() == nightbane)
+    {
+        bot->AttackStop();
+        isStopped = true;
+    }
+
+    Spell const* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
+    if (shot && shot->m_targets.GetUnitTargetGUID() == nightbane->GetGUID())
+    {
+        bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+        isStopped = true;
+    }
+
+    return isStopped;
 }
 
 bool NightbaneSelectTargetForHoldAction::isUseful()
@@ -1997,16 +2039,14 @@ bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
     if (!state || !state->nightbaneFlightStackPosition)
         return false;
 
+    Position const walkPosition =
+        GetTerraceWalkPosition(*bot, *state->nightbaneFlightStackPosition);
     constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(
-            bot, *state->nightbaneFlightStackPosition, arrivalDist, nullptr, moveX, moveY,
-            backwards))
-    {
+    if (!GetStepToPosition(bot, walkPosition, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
-    }
 
     bot->CastStop();
     return MoveTo(
