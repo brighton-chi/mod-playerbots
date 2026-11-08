@@ -504,10 +504,12 @@ inline constexpr float MALCHEZAAR_MELEE_RANGE = 6.83f;
 // With him this clear of a landed infernal, all of his melee ring is clear of it.
 inline constexpr float MALCHEZAAR_RING_CLEARANCE = HELLFIRE_CLEARANCE + MALCHEZAAR_MELEE_RANGE;
 // He ends about this far behind a tank walking him away.
-inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 5.5f;
+inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
 // The model the infernal has until Infernal Rain lands on it.
 inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
+// The movers' arrival distance, and how far short of a spot a straight walk may stop.
+inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr uint32 LANDED_INFERNALS_CACHE_INTERVAL_MS = 200;
 
 std::vector<Position> FindLandedInfernals(Player* bot);
@@ -565,12 +567,13 @@ std::optional<Position> FindMalchezaarPosition(
     return std::nullopt;
 }
 // The nearest clear position in range of the bot's target: for a ranged bot on a ring just out of
-// Shadow Nova, for melee on the target's melee ring. Failing that, the nearest clear position
-// anywhere.
+// Shadow Nova, for melee on the target's melee ring. Failing that, or with him not found (a rezzed
+// bot isn't on his threat list yet), the nearest clear position anywhere.
 std::optional<Position> FindMalchezaarClearPosition(
-    PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals);
+    PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals);
+// Without him, only the infernals are tested.
 bool IsClearOfMalchezaarHazards(
-    Player* bot, Unit const& malchezaar, std::vector<Position> const& infernals,
+    Player* bot, Unit const* malchezaar, std::vector<Position> const& infernals,
     Position const& position);
 // Sets clearance to what the position is clear by: enough for his melee ring and his trail if it
 // can, then less.

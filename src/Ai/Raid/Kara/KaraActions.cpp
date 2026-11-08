@@ -514,7 +514,7 @@ bool BigBadWolfTankPositionBossAction::Execute(Event /*event*/)
 // Run away, little girl, run away
 bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
 {
-    Aura* hood = bot->GetAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
+    Aura const* hood = bot->GetAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!hood || !wolf)
         return false;
@@ -1655,9 +1655,14 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
     if (!malchezaar)
         return false;
 
+    Aura const* enfeeble = bot->GetAura(Id(KaraSpells::SPELL_ENFEEBLE));
+    if (!enfeeble)
+        return false;
+
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
     if (_destination &&
-        (!IsClearOfInfernals(*_destination, infernals, HELLFIRE_CLEARANCE) ||
+        (_enfeebleApplyTime != enfeeble->GetApplyTime() ||
+         !IsClearOfInfernals(*_destination, infernals, HELLFIRE_CLEARANCE) ||
          malchezaar->GetExactDist2d(*_destination) < SHADOW_NOVA_MOVE_DISTANCE ||
          !IsLineClearOfInfernals(bot->GetPosition(), *_destination, infernals)))
     {
@@ -1677,13 +1682,23 @@ bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
 
         if (!_destination)
             return false;
+
+        _enfeebleApplyTime = enfeeble->GetApplyTime();
+
+        // A fire or Nova move cut short by Enfeeble would otherwise resume once the aura is gone.
+        Action* hazardAction = context->GetAction("prince malchezaar move clear of hazards");
+        if (hazardAction)
+        {
+            static_cast<PrinceMalchezaarMoveClearOfHazardsAction*>(hazardAction)
+                ->ResetDestination();
+        }
     }
 
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, *_destination, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, *_destination, MALCHEZAAR_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
     {
         _destination.reset();
         return false;
@@ -1708,26 +1723,24 @@ bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
     if (IsWaitingForLastMove(priority))
         return true;
 
+    // Null for a rezzed bot until it is back on his threat list. Leaving fire doesn't need him.
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
-    if (!malchezaar)
-        return false;
-
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
-    if (_destination && !IsClearOfMalchezaarHazards(bot, *malchezaar, infernals, *_destination))
+    if (_destination && !IsClearOfMalchezaarHazards(bot, malchezaar, infernals, *_destination))
         _destination.reset();
 
     if (!_destination)
     {
-        _destination = FindMalchezaarClearPosition(botAI, *malchezaar, infernals);
+        _destination = FindMalchezaarClearPosition(botAI, malchezaar, infernals);
         if (!_destination)
             return false;
     }
 
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, *_destination, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, *_destination, MALCHEZAAR_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
     {
         _destination.reset();
         return false;
@@ -1772,11 +1785,11 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
             return false;
     }
 
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, *_destination, arrivalDist, malchezaar, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, *_destination, MALCHEZAAR_ARRIVAL_DISTANCE, malchezaar, moveX, moveY, backwards))
     {
         _destination.reset();
         return false;

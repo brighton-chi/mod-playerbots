@@ -1041,13 +1041,16 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
         return false;
 
-    // An incomplete path can cut the point short without counting as a collision.
-    constexpr float truncationTolerance = 1.0f;
+    // An incomplete path can cut the point short without counting as a collision. A point the walk
+    // stops further short of than the movers' arrival distance is rejected, not clamped.
     return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
-        truncationTolerance;
+        MALCHEZAAR_ARRIVAL_DISTANCE;
 }
 
-std::optional<Position> FindMalchezaarClearPosition(
+namespace
+{
+
+std::optional<Position> FindMalchezaarRingPosition(
     PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
 {
     Player* bot = botAI->GetBot();
@@ -1103,22 +1106,41 @@ std::optional<Position> FindMalchezaarClearPosition(
         }
     }
 
+    return std::nullopt;
+}
+
+}
+
+std::optional<Position> FindMalchezaarClearPosition(
+    PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals)
+{
+    if (malchezaar)
+    {
+        std::optional<Position> const position =
+            FindMalchezaarRingPosition(botAI, *malchezaar, infernals);
+        if (position)
+            return position;
+    }
+
+    Player* bot = botAI->GetBot();
+    bool const isRanged = PlayerbotAI::IsRanged(bot);
     constexpr float searchDistance = 60.0f;
     return FindMalchezaarPosition(
-        bot, origin, infernals, searchDistance, true, [&](Position const& candidate)
+        bot, bot->GetPosition(), infernals, searchDistance, true, [&](Position const& candidate)
         {
             return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
-                (!isRanged || malchezaar.GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
+                (!isRanged || !malchezaar ||
+                 malchezaar->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
         });
 }
 
 bool IsClearOfMalchezaarHazards(
-    Player* bot, Unit const& malchezaar, std::vector<Position> const& infernals,
+    Player* bot, Unit const* malchezaar, std::vector<Position> const& infernals,
     Position const& position)
 {
     return IsClearOfInfernals(position, infernals, HELLFIRE_CLEARANCE) &&
-        (!PlayerbotAI::IsRanged(bot) ||
-         malchezaar.GetExactDist2d(position) >= SHADOW_NOVA_MOVE_DISTANCE);
+        (!malchezaar || !PlayerbotAI::IsRanged(bot) ||
+         malchezaar->GetExactDist2d(position) >= SHADOW_NOVA_MOVE_DISTANCE);
 }
 
 std::optional<Position> FindMalchezaarTankPosition(

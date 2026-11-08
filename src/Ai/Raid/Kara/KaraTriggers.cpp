@@ -404,7 +404,8 @@ bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 
 bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
 {
-    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
+    Aura const* enfeeble = bot->GetAura(Id(KaraSpells::SPELL_ENFEEBLE));
+    if (!enfeeble)
         return false;
 
     Unit* malchezaar = GetEncounterBoss();
@@ -419,23 +420,23 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
 
     Action* action = context->GetAction("prince malchezaar enfeebled bot avoid hazard");
     return action &&
-        static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action)->HasDestination();
+        static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action)->HasDestinationFor(
+            enfeeble->GetApplyTime());
 }
 
 bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
 {
+    if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
+        return false;
+
+    // A bot rezzed in fire doesn't find him until it is back on his threat list.
     Unit* malchezaar = GetEncounterBoss();
-    if (!malchezaar)
+    if (malchezaar && PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot)
         return false;
 
-    if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)) ||
-        (PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot))
-    {
-        return false;
-    }
-
-    if ((PlayerbotAI::IsRanged(bot) && bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE) ||
-        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE))
+    if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE) ||
+        (malchezaar && PlayerbotAI::IsRanged(bot) &&
+         bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE))
     {
         return true;
     }
@@ -451,8 +452,8 @@ bool PrinceMalchezaarShouldBeTankedTrigger::IsActiveInEncounter()
     if (!malchezaar)
         return false;
 
-    return (PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot) ||
-        PlayerbotAI::IsMainTank(bot);
+    return PlayerbotAI::IsTank(bot) &&
+        (malchezaar->GetVictim() == bot || PlayerbotAI::IsMainTank(bot));
 }
 
 // Nightbane
