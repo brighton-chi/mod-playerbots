@@ -890,7 +890,7 @@ bool DoIllidanTanksHaveAggro(Player* bot, Unit* illidan, IllidanPhase phase);
 bool IsIllidanPickupPending(Player* bot, Unit* illidan);
 bool IsIllidanPickupExemptTarget(Unit* target, bool isAoe);
 bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan);
-bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const& channel);
+bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const* channel);
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
 Position GetIllidanSettlePosition(Unit const& illidan);

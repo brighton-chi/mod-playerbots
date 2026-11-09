@@ -1037,7 +1037,7 @@ bool NetherspiteStopAttackingAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    return StopAttackingTarget(bot, *netherspite);
+    return StopAttackingTarget(bot, netherspite);
 }
 
 bool NetherspiteSelectTargetForHoldAction::isUseful()
@@ -1871,7 +1871,7 @@ bool NightbaneStopAttackingAction::Execute(Event /*event*/)
         channel->m_targets.GetDstPos()->GetExactDist(nightbane) <=
             PLAYER_GROUND_AOE_RADIUS + nightbane->GetCombatReach())
     {
-        return StopAttackingTarget(bot, *nightbane);
+        return StopAttackingTarget(bot, nightbane);
     }
 
     bool isStopped = false;

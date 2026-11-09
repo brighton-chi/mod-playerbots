@@ -188,7 +188,7 @@ bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
     if (!pain)
         return false;
 
-    if (StopAttackingTarget(bot, *pain))
+    if (StopAttackingTarget(bot, pain))
         return true;
 
     // With no other add to attack, the bot keeps Pain selected to stay in its combat engine but
@@ -1137,7 +1137,7 @@ bool GurtoggBloodboilRangedMoveOutOfFrontalConeAction::Execute(Event /*event*/)
 bool GurtoggBloodboilStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* gurtogg = GetBtBoss(bot, BtBosses::DATA_GURTOGG_BLOODBOIL);
-    return gurtogg && StopAttackingTarget(bot, *gurtogg);
+    return gurtogg && StopAttackingTarget(bot, gurtogg);
 }
 
 // Reliquary of Souls
@@ -2690,14 +2690,13 @@ bool IllidanStormrageStopAttackingAction::Execute(Event /*event*/)
         return false;
 
     bool isStopped = false;
-    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (channel && IsIllidanPickupChannelHeld(bot, illidan, *channel))
+    if (IsIllidanPickupChannelHeld(bot, illidan, bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL)))
     {
         bot->InterruptSpell(CURRENT_CHANNELED_SPELL);
         isStopped = true;
     }
 
-    return StopAttackingTarget(bot, *illidan) || isStopped;
+    return StopAttackingTarget(bot, illidan) || isStopped;
 }
 
 bool IllidanStormrageSpreadRangedAction::Execute(Event /*event*/)

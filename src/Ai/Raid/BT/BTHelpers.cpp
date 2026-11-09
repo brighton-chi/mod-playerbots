@@ -144,7 +144,7 @@ bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 dep
 
     bool const canProc = !triggered || spellInfo->HasAttribute(SPELL_ATTR3_NOT_A_PROC);
     bool builds = false;
-    for (SpellEffectInfo const& effect : spellInfo->GetEffects())
+    for (SpellEffectInfo const& effect : spellInfo->Effects)
     {
         uint32 triggerSpell = 0;
         switch (effect.Effect)
@@ -2096,16 +2096,16 @@ bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan)
 // results in Illidan immediately killing the channeler before the main tank can pick him up. The
 // main culprit is Evocation. So everybody other than the main tank should cancel a channel (other
 // than single-target damage on an add).
-bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const& channel)
+bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const* channel)
 {
-    if (!illidan || !IsIllidanPickupPending(bot, illidan))
+    if (!illidan || !channel || !IsIllidanPickupPending(bot, illidan))
         return false;
 
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
     return !IsIllidanPickupExemptTarget(
-        channel.m_targets.GetUnitTarget(), channel.GetSpellInfo()->IsAffectingArea());
+        channel->m_targets.GetUnitTarget(), channel->GetSpellInfo()->IsAffectingArea());
 }
 
 // The point's angle from the grate center: 0 north, increasing counterclockwise.

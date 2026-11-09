@@ -358,7 +358,7 @@ bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
 
     if (shouldHoldThreat)
     {
-        return IsAttackingTarget(bot, *twinTarget) ? StopAttackingTarget(bot, *twinTarget) :
+        return IsAttackingTarget(bot, twinTarget) ? StopAttackingTarget(bot, twinTarget) :
             SelectTarget(botAI, twinTarget);
     }
 

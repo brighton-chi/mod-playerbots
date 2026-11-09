@@ -336,7 +336,7 @@ bool GurtoggBloodboilFelRageOnBotTrigger::IsActiveInEncounter()
 bool GurtoggBloodboilShouldStopAttackingTrigger::IsActiveInEncounter()
 {
     Unit* gurtogg = GetEncounterBoss();
-    return gurtogg && IsAttackingTarget(bot, *gurtogg) &&
+    return gurtogg && IsAttackingTarget(bot, gurtogg) &&
         IsGurtoggThreatHoldActive(botAI, gurtogg);
 }
 
@@ -910,11 +910,10 @@ bool IllidanStormrageShouldStopAttackingTrigger::IsActiveInEncounter()
     if (!illidan)
         return false;
 
-    Spell* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (channel && IsIllidanPickupChannelHeld(bot, illidan, *channel))
+    if (IsIllidanPickupChannelHeld(bot, illidan, bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL)))
         return true;
 
-    return IsAttackingTarget(bot, *illidan) &&
+    return IsAttackingTarget(bot, illidan) &&
         GetIllidanDpsHold(bot, illidan) != IllidanDpsHold::None;
 }
 
