@@ -777,7 +777,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
     IllidanPhase const phase = GetIllidanPhase(illidan);
     if (phase == IllidanPhase::Demon)
     {
-        if (GetShadowDemonForPetToAttack(botAI, *pet))
+        if (GetShadowDemonForPetToAttack(botAI, pet))
             return false;
     }
     else if (phase == IllidanPhase::Initial || phase == IllidanPhase::Flying ||
@@ -797,7 +797,7 @@ bool IllidanStormragePetShouldAttackShadowfiendTrigger::IsActiveInEncounter()
         return false;
     }
 
-    return GetNearestParasiticShadowfiend(botAI, *pet);
+    return GetNearestParasiticShadowfiend(botAI, pet);
 }
 
 bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
@@ -814,7 +814,7 @@ bool IllidanStormragePetShouldAttackShadowDemonTrigger::IsActiveInEncounter()
     if (!illidan || GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return false;
 
-    return GetShadowDemonForPetToAttack(botAI, *pet);
+    return GetShadowDemonForPetToAttack(botAI, pet);
 }
 
 bool IllidanStormrageShouldPositionAboveGrateTrigger::IsActiveInEncounter()
@@ -889,7 +889,7 @@ bool IllidanStormrageShamanHasTotemsBeforeTanksHaveAggroTrigger::IsActiveInEncou
         return false;
 
     Unit* illidan = GetEncounterBoss();
-    return illidan && IsIllidanTankAggroPending(*illidan, GetIllidanPhase(illidan));
+    return illidan && IsIllidanTankAggroPending(illidan, GetIllidanPhase(illidan));
 }
 
 bool IllidanStormrageShouldPositionForLandingTrigger::IsActiveInEncounter()
@@ -1031,7 +1031,7 @@ bool IllidanStormrageShouldAssignTargetPriorityTrigger::IsActiveInEncounter()
         return true;
 
     return phase == IllidanPhase::Demon &&
-        !IsIllidanDemonFormEnding(*illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS);
+        !IsIllidanDemonFormEnding(illidan, ILLIDAN_MAIN_TANK_MOVE_IN_MS);
 }
 
 bool IllidanStormrageShouldManageDpsTimersTrigger::IsActiveInEncounter()

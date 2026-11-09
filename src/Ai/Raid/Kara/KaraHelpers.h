@@ -14,6 +14,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -211,12 +212,12 @@ inline constexpr float ATTUMEN_STACK_TOLERANCE = 1.5f;
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 
 // Midnight turns invisible when mounted Attumen is summoned.
-bool IsAttumenMounted(Unit const& midnight);
+bool IsAttumenMounted(Unit* midnight);
 // Both Attumens share a name. For up to 1 s after the merge, the unmounted one can be found
 // instead, and this returns null.
 Unit* GetMountedAttumen(Player* bot);
 // The bot's position behind mounted Attumen, or nothing while the bot is within tolerance of it.
-std::optional<Position> GetAttumenStackPosition(Player* bot, Unit const& attumen);
+std::optional<Position> GetAttumenStackPosition(Player* bot, Unit* attumen);
 // For all but the main tank, for 5 s from when Attumen mounts Midnight.
 bool IsAttumenDpsHeld(Player* bot);
 
@@ -241,7 +242,7 @@ inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
 };
 
 // Repentance stuns every healer at once; the tank takes her to the nearest one.
-Player* GetNearestRepentantHealer(Player* bot, Unit const& maiden);
+Player* GetNearestRepentantHealer(Player* bot, Unit* maiden);
 
 // The Big Bad Wolf
 struct BigBadWolfRunPlan
@@ -290,10 +291,10 @@ uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction);
 // away at his closest.
 BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds);
 // His victim, if it is on Hood and his swings can still hurt it.
-Player* GetBigBadWolfRedHood(Unit const& wolf);
+Player* GetBigBadWolfRedHood(Unit* wolf);
 // A human Hood target that isn't a tank, within his melee range, near the end of Hood or below
 // half health. Bots have the speed cheat.
-Player* GetBigBadWolfTargetToProtect(Unit const& wolf);
+Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 
 // Romulo and Julianne
 // Once one is down, the other must die within 10 s. The skull moves to the healthier one only
@@ -456,7 +457,9 @@ bool IsBanishPhase(Unit* netherspite);
 bool IsManaUser(Player* player);
 // Holds for 5 s from each portal phase, then until a tank is his victim. At 10 s the red beam's
 // threat settles it. The threat reset leaves him on the first player to make any threat.
-bool IsNetherspiteDpsHeld(Player* bot, Unit const& netherspite);
+bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite);
+bool HasNetherspiteBeamStackLimit(Player* player, NetherspiteBeam beam);
+uint8 GetNetherspiteBeamStacks(Player* player, NetherspiteBeamData const& data);
 bool AreNetherspitePortalsKnown(KaraInstanceState const& state);
 // Includes the red blocker.
 bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid);
@@ -464,14 +467,23 @@ Position const* FindNetherspiteBlockerPosition(KaraInstanceState const& state, O
 Position const* FindNetherspiteNextPosition(KaraInstanceState const& state, ObjectGuid guid);
 NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
     KaraInstanceState const& state, ObjectGuid guid);
+float GetNetherspiteBanishRadius(Player* player);
+void YellNetherspiteBeamText(Player* player, std::string const& key, std::string const& text);
+void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteBeam beam);
 // Along the line from his centre, and to the side, positive counterclockwise.
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
     Unit const& netherspite, Position const& portal, float x, float y);
-bool IsOnNetherspiteBeam(Unit const& netherspite, Position const& portal, Unit const& unit);
+bool IsOnNetherspiteBeam(Unit* netherspite, Position const& portal, Unit* unit);
+Position GetPositionOnNetherspiteBeam(
+    Unit const& netherspite, Position const& portal, float distance);
 bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance);
 // Within the clearance of a void zone on the way. A bot already in one can leave it any way, and a
 // bot inside the clearance can pass it but not enter it.
 bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to);
+// The blocker's position on the line: the clear point nearest where it wants to stand.
+float FindNetherspiteBeamPositionDistance(
+    Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
+    Player* blocker);
 // The side of the green or blue beam that faces the other one, away from red: +1 counterclockwise.
 float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam);
@@ -482,15 +494,15 @@ bool IsBetweenNetherspiteBeams(
 // In the area, and the way there crosses no void zone, and no beam that will be up by the time the
 // bot arrives.
 bool CanMoveBetweenNetherspiteBeams(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y);
+    Player* bot, Unit* netherspite, KaraInstanceState const& state, float x, float y);
 // A random position in the area, then the nearest safe position if there is none. Neither crosses a
 // void zone, or a beam that will be up by the time the bot arrives.
 std::optional<Position> FindPositionBetweenNetherspiteBeams(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state);
+    Player* bot, Unit* netherspite, KaraInstanceState const& state);
 // The destination, or a step around the first void zone on the way there. None if neither side of
 // that zone is clear.
 std::optional<Position> GetStepAroundVoidZones(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state,
+    Player* bot, Unit* netherspite, KaraInstanceState const& state,
     Position const& destination);
 // Where a reach toward the target stops: range plus both reaches from it, as ReachCombatTo has it.
 Position GetReachEndPosition(Unit const& bot, Unit const& target, float range);

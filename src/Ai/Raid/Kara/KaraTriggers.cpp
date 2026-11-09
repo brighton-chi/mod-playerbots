@@ -51,7 +51,7 @@ bool ManaWarpStunnerShouldHoldTrigger::IsActive()
 bool AttumenTheHuntsmanShouldBeTankedTrigger::IsActiveInEncounter()
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    if (!midnight || IsAttumenMounted(*midnight))
+    if (!midnight || IsAttumenMounted(midnight))
         return false;
 
     // First assist tank
@@ -61,7 +61,7 @@ bool AttumenTheHuntsmanShouldBeTankedTrigger::IsActiveInEncounter()
 bool AttumenTheHuntsmanMidnightShouldBeFocusedTrigger::IsActiveInEncounter()
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    if (!midnight || IsAttumenMounted(*midnight) || AI_VALUE(Unit*, "current target") == midnight)
+    if (!midnight || IsAttumenMounted(midnight) || AI_VALUE(Unit*, "current target") == midnight)
         return false;
 
     // The first assist tank takes Attumen once he is up.
@@ -81,7 +81,7 @@ bool AttumenTheHuntsmanShouldStackBehindTrigger::IsActiveInEncounter()
 {
     Unit* attumen = GetMountedAttumen(bot);
     return attumen && attumen->GetVictim() != bot &&
-        GetAttumenStackPosition(bot, *attumen).has_value();
+        GetAttumenStackPosition(bot, attumen).has_value();
 }
 
 bool AttumenTheHuntsmanShouldHoldDpsTrigger::IsActiveInEncounter()
@@ -95,7 +95,7 @@ bool AttumenTheHuntsmanShouldManageDpsTimerTrigger::IsActiveInEncounter()
         return false;
 
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    return midnight && IsAttumenMounted(*midnight);
+    return midnight && IsAttumenMounted(midnight);
 }
 
 // Moroes
@@ -180,7 +180,7 @@ bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
     if (!wolf)
         return false;
 
-    Player* target = GetBigBadWolfRedHood(*wolf);
+    Player* target = GetBigBadWolfRedHood(wolf);
     return target && target != bot;
 }
 
@@ -383,7 +383,7 @@ bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
 bool NetherspiteShouldHoldDpsTrigger::IsActiveInEncounter()
 {
     Unit* netherspite = GetEncounterBoss();
-    return netherspite && IsNetherspiteDpsHeld(bot, *netherspite);
+    return netherspite && IsNetherspiteDpsHeld(bot, netherspite);
 }
 
 bool NetherspitePetsShouldBeHeldTrigger::IsActiveInEncounter()
@@ -394,7 +394,7 @@ bool NetherspitePetsShouldBeHeldTrigger::IsActiveInEncounter()
 
     Unit* netherspite = GetEncounterBoss();
     return netherspite &&
-        IsNetherspiteDpsHeld(bot, *netherspite) != pet->HasReactState(REACT_PASSIVE);
+        IsNetherspiteDpsHeld(bot, netherspite) != pet->HasReactState(REACT_PASSIVE);
 }
 
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()

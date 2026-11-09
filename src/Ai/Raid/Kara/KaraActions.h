@@ -411,6 +411,26 @@ public:
     NetherspiteManageTimersAndTrackersAction(PlayerbotAI* botAI)
         : Action(botAI, "netherspite manage timers and trackers") {}
     bool Execute(Event event) override;
+
+private:
+    std::vector<Player*> GetBeamCandidates(
+        KaraHelpers::NetherspiteBeamData const& data,
+        KaraHelpers::NetherspiteBeamState const& beamState,
+        std::vector<ObjectGuid> const& taken);
+    bool IsNextPositionGood(
+        Unit* netherspite, Position const& portal, KaraHelpers::KaraInstanceState const& state,
+        float side, Position const& position, float low);
+    std::optional<Position> FindNextPosition(
+        Unit* netherspite, Position const& portal, KaraHelpers::KaraInstanceState const& state,
+        float side, float low);
+    void UpdateBeamBlockers(
+        Unit* netherspite, KaraHelpers::KaraInstanceState& state,
+        KaraHelpers::NetherspiteBeamData const& data, std::vector<ObjectGuid>& taken);
+    Position GetBanishPosition(
+        Unit const& netherspite, KaraHelpers::KaraInstanceState const& state, float angle,
+        float startRadius);
+    void UpdateBanishSlots(Unit* netherspite, KaraHelpers::KaraInstanceState& state);
+    void UpdateVoidZones(KaraHelpers::KaraInstanceState& state);
 };
 
 // Prince Malchezaar

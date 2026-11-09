@@ -220,7 +220,7 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
 
     // Mounted Attumen is the only target left, so stock targeting finds him.
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    return midnight && !IsAttumenMounted(*midnight) ? 0.0f : 1.0f;
+    return midnight && !IsAttumenMounted(midnight) ? 0.0f : 1.0f;
 }
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* action)
@@ -242,7 +242,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     }
 
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    if (!midnight || !IsAttumenMounted(*midnight))
+    if (!midnight || !IsAttumenMounted(midnight))
         return 1.0f;
 
     // Whoever Attumen is on, and the main tank, move freely; everyone else stays stacked.
@@ -478,7 +478,7 @@ float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* netherspite = GetEncounterBoss();
-    if (!netherspite || !IsNetherspiteDpsHeld(bot, *netherspite))
+    if (!netherspite || !IsNetherspiteDpsHeld(bot, netherspite))
         return 1.0f;
 
     return action->GetTarget() == netherspite ? GetDpsHoldValue(bot, action) : 1.0f;
