@@ -213,7 +213,7 @@ void RaidKarazhanStrategy::AppendTargetExclusions(
     if (!nightbane)
         return;
 
-    if (KaraHelpers::IsNightbaneFlying(*nightbane))
+    if (KaraHelpers::IsNightbaneFlying(nightbane))
         exclusions.insert(nightbane->GetGUID());
 
     // Reach would walk a bot off the terrace after a skeleton that spawned out of bounds.
@@ -226,7 +226,7 @@ void RaidKarazhanStrategy::AppendTargetExclusions(
             continue;
 
         Unit* skeleton = botAI->GetUnit(guid);
-        if (skeleton && KaraHelpers::IsOutsideNightbaneTerrace(*skeleton))
+        if (skeleton && KaraHelpers::IsOutsideNightbaneTerrace(skeleton))
             exclusions.insert(guid);
     }
 }

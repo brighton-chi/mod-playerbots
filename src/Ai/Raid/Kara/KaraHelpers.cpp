@@ -168,7 +168,7 @@ bool IsKarazhanFearCasterActive(Player* bot)
         return true;
 
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (nightbane && !IsNightbaneFlying(*nightbane))
+    if (nightbane && !IsNightbaneFlying(nightbane))
         return true;
 
     return GetOperaActor(bot, "dorothee") || GetOperaActor(bot, "roar");
@@ -1222,37 +1222,43 @@ bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const
     return true;
 }
 
-bool IsOutsideNightbaneTerrace(Unit const& unit)
+bool IsOutsideNightbaneTerrace(Unit* unit)
 {
+    if (!unit)
+        return false;
+
     constexpr float belowTerraceLeeway = 5.0f;
-    if (unit.GetPositionZ() < NIGHTBANE_GROUND_Z - belowTerraceLeeway)
+    if (unit->GetPositionZ() < NIGHTBANE_GROUND_Z - belowTerraceLeeway)
         return true;
 
-    return unit.GetExactDist2d(TERRACE_DOME_CENTER) > TERRACE_OUTER_RADIUS &&
-        GetTerraceAngle(unit) <= TERRACE_ARC_END;
+    return unit->GetExactDist2d(TERRACE_DOME_CENTER) > TERRACE_OUTER_RADIUS &&
+        GetTerraceAngle(*unit) <= TERRACE_ARC_END;
 }
 
-bool IsNightbaneFlying(Unit const& nightbane)
+bool IsNightbaneFlying(Unit* nightbane)
 {
-    return nightbane.GetPositionZ() > NIGHTBANE_FLIGHT_Z;
+    return nightbane && nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z;
 }
 
-bool IsNightbaneFlightPhaseActive(Unit const& nightbane)
+bool IsNightbaneFlightPhaseActive(Unit* nightbane)
 {
     if (!IsNightbaneFlying(nightbane))
         return false;
 
-    KaraInstanceState const* state = FindKaraState(nightbane.GetInstanceId());
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
     return !state || state->nightbaneFlightStage != NightbaneFlightStage::Landing;
 }
 
-bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane)
+bool IsNightbaneDpsHeld(Player* bot, Unit* nightbane)
 {
+    if (!nightbane)
+        return false;
+
     if (IsNightbaneFlying(nightbane))
         return true;
 
     // The timer first: IsMainTank can loop over the group.
-    KaraInstanceState const* state = FindKaraState(nightbane.GetInstanceId());
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
     if (state && state->nightbaneDpsHoldTimer &&
         getMSTimeDiff(*state->nightbaneDpsHoldTimer, getMSTime()) >= NIGHTBANE_DPS_HOLD_MS)
     {
@@ -1262,9 +1268,12 @@ bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane)
     return !PlayerbotAI::IsMainTank(bot);
 }
 
-Position const* GetRainOfBonesCenter(Unit const& nightbane)
+Position const* GetRainOfBonesCenter(Unit* nightbane)
 {
-    Spell const* channel = nightbane.GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    if (!nightbane)
+        return nullptr;
+
+    Spell const* channel = nightbane->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     if (!channel || channel->m_spellInfo->Id != Id(KaraSpells::SPELL_RAIN_OF_BONES) ||
         !channel->m_targets.HasDst())
     {

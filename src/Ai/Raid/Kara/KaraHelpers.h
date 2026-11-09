@@ -655,15 +655,15 @@ std::optional<Position> FindNightbaneStackPosition(
 }
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
 // True for a unit off the ring (the terrace is only a plain ring within the arc) or below it.
-bool IsOutsideNightbaneTerrace(Unit const& unit);
-bool IsNightbaneFlying(Unit const& nightbane);
+bool IsOutsideNightbaneTerrace(Unit* unit);
+bool IsNightbaneFlying(Unit* nightbane);
 // True in flight until he leaves the flight position. The landing that follows has no air-phase
 // spells, and bots are free to follow their master then.
-bool IsNightbaneFlightPhaseActive(Unit const& nightbane);
+bool IsNightbaneFlightPhaseActive(Unit* nightbane);
 // In flight, and for all but the main tank until 8s after he is on the ground.
-bool IsNightbaneDpsHeld(Player* bot, Unit const& nightbane);
+bool IsNightbaneDpsHeld(Player* bot, Unit* nightbane);
 // Where the current Rain of Bones channel is aimed, or nullptr. A rain doesn't follow its target.
-Position const* GetRainOfBonesCenter(Unit const& nightbane);
+Position const* GetRainOfBonesCenter(Unit* nightbane);
 // A living pet or guardian with pet controls, which can be called back and set passive.
 bool IsControllableMinion(Unit* unit);
 

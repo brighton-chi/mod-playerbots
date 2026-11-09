@@ -1845,29 +1845,25 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    // A player leads only when flagged assistant, since a role check on a player costs a talent
-    // scan. Without one, the ranged bot with the lowest GUID leads.
+    // Assign the longest-standing assistant that is a ranged bot. If there is no such assistant,
+    // then assign the longest-standing (non-assistant) ranged bot.
     Player* rangedLeader = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != KARA_MAP_ID || !member->IsAlive())
-            continue;
-
-        bool const isAssistant = group->IsAssistant(member->GetGUID());
-        if (!isAssistant &&
-            (!GET_PLAYERBOT_AI(member) ||
-             (rangedLeader && member->GetGUID() > rangedLeader->GetGUID())))
+        if (!member || member->GetMapId() != KARA_MAP_ID || !member->IsAlive() ||
+            !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member))
         {
             continue;
         }
 
-        if (!PlayerbotAI::IsRanged(member))
-            continue;
+        if (group->IsAssistant(member->GetGUID()))
+        {
+            rangedLeader = member;
+            break;
+        }
 
         rangedLeader = member;
-        if (isAssistant)
-            break;
     }
 
     if (!rangedLeader)
@@ -1936,7 +1932,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
     if (!nightbane)
         return false;
 
-    if (!IsNightbaneDpsHeld(bot, *nightbane))
+    if (!IsNightbaneDpsHeld(bot, nightbane))
     {
         ResetPetStance();
         return false;
@@ -2019,7 +2015,7 @@ bool NightbaneSelectTargetForHoldAction::isUseful()
 bool NightbaneSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (!nightbane || IsNightbaneFlying(*nightbane))
+    if (!nightbane || IsNightbaneFlying(nightbane))
         return false;
 
     return SelectTarget(
@@ -2069,7 +2065,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     KaraInstanceState& state = KaraState(nightbane->GetInstanceId());
 
-    if (!IsNightbaneFlying(*nightbane))
+    if (!IsNightbaneFlying(nightbane))
     {
         bool didSomething = ResetIfSet(state.nightbaneFlightStage);
         didSomething |= ResetIfSet(state.nightbaneFlightStackPosition);
@@ -2103,7 +2099,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         return didSomething;
     }
 
-    Position const* rainCenter = GetRainOfBonesCenter(*nightbane);
+    Position const* rainCenter = GetRainOfBonesCenter(nightbane);
     bool const isNewRain = rainCenter && (!state.nightbaneRainOfBonesCenter ||
         state.nightbaneRainOfBonesCenter->GetExactDist2d(*rainCenter) > 0.1f);
     if (state.nightbaneFlightStackPosition && !isNewRain)

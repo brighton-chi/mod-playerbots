@@ -252,8 +252,10 @@ bool ShadeOfAranCastingArcaneExplosionTrigger::IsActiveInEncounter()
 // Not for a bot that can't move: a rooted bot can't run, so it keeps casting.
 bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 {
-    return bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)) && PlayerbotAI::IsRanged(bot) &&
-        botAI->CanMove();
+    if (!bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
+        return false;
+
+    return PlayerbotAI::IsRanged(bot) && botAI->CanMove();
 }
 
 // Not for a bot that can't move: under Mass Polymorph it wanders, as a player would.
@@ -448,12 +450,14 @@ bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
 
 bool PrinceMalchezaarShouldBeTankedTrigger::IsActiveInEncounter()
 {
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
     Unit* malchezaar = GetEncounterBoss();
     if (!malchezaar)
         return false;
 
-    return PlayerbotAI::IsTank(bot) &&
-        (malchezaar->GetVictim() == bot || PlayerbotAI::IsMainTank(bot));
+    return malchezaar->GetVictim() == bot || PlayerbotAI::IsMainTank(bot);
 }
 
 // Nightbane
@@ -464,8 +468,10 @@ bool NightbaneShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && !IsNightbaneFlying(*nightbane) &&
-        (nightbane->GetVictim() == bot || PlayerbotAI::IsMainTank(bot));
+    if (!nightbane || IsNightbaneFlying(nightbane))
+        return false;
+
+    return nightbane->GetVictim() == bot || PlayerbotAI::IsMainTank(bot);
 }
 
 bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
@@ -474,7 +480,7 @@ bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && !IsNightbaneFlying(*nightbane);
+    return nightbane && !IsNightbaneFlying(nightbane);
 }
 
 bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
@@ -487,7 +493,7 @@ bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
     if (!nightbane)
         return false;
 
-    bool const isHeld = IsNightbaneDpsHeld(bot, *nightbane);
+    bool const isHeld = IsNightbaneDpsHeld(bot, nightbane);
     return std::any_of(
         minions.begin(), minions.end(),
         [isHeld](Unit* unit)
@@ -500,13 +506,13 @@ bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
 bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && IsNightbaneDpsHeld(bot, *nightbane);
+    return nightbane && IsNightbaneDpsHeld(bot, nightbane);
 }
 
 bool NightbaneShouldAvoidRainOfBonesTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane || !IsNightbaneFlying(*nightbane))
+    if (!nightbane || !IsNightbaneFlying(nightbane))
         return false;
 
     KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
@@ -516,8 +522,10 @@ bool NightbaneShouldAvoidRainOfBonesTrigger::IsActiveInEncounter()
 bool NightbaneInLandingPhaseTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
-    return nightbane && IsNightbaneFlying(*nightbane) &&
-        !IsNightbaneFlightPhaseActive(*nightbane) &&
+    if (!nightbane || !IsNightbaneFlying(nightbane))
+        return false;
+
+    return !IsNightbaneFlightPhaseActive(nightbane) &&
         AI_VALUE(Unit*, "current target") == nightbane;
 }
 
