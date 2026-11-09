@@ -246,13 +246,13 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
     return pain && pain->IsAlive() ? pain : nullptr;
 }
 
-Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
+Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
     for (ObjectGuid const& sisterGuid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet())
     {
         Unit* sister = botAI->GetUnit(sisterGuid);
-        if (pain && GetLinkedSisterOfPain(sister) == pain)
+        if (GetLinkedSisterOfPain(sister))
             return sister;
     }
 
@@ -261,14 +261,11 @@ Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
 
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
 {
-    if (!pain)
-        return nullptr;
-
     for (ObjectGuid const& sisterGuid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("sisters of pleasure")->RefGet())
     {
         Unit* sister = botAI->GetUnit(sisterGuid);
-        if (sister && GetLinkedSisterOfPain(sister) == pain)
+        if (pain && GetLinkedSisterOfPain(sister) == pain)
             return sister;
     }
 

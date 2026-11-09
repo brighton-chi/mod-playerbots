@@ -42,8 +42,7 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 // Nearby bots should flee from the tank if it has Treacherous Aura or Bane of Treachery
 bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 {
-    Unit* omor = FindThreatTarget(bot, "omor the unscarred");
-    if (!omor)
+    if (!FindThreatTarget(bot, "omor the unscarred"))
         return false;
 
     Unit* tank = GetGroupMainTank(bot);
