@@ -34,21 +34,21 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
 
 // Trash
 
-bool ManaWarpCastsWarpBreachTrigger::IsActive()
+bool ManaWarpIncomingWarpBreachTrigger::IsActive()
 {
     return GetManaWarpToStun(botAI, WARP_BREACH_MIN_REACTION_MS);
 }
 
-bool ManaWarpStunnerShouldHoldTrigger::IsActive()
+bool ManaWarpTargetAtLowHealthTrigger::IsActive()
 {
-    return GetManaWarpToHoldFor(botAI);
+    return GetManaWarpToStunNext(botAI);
 }
 
 // Attumen the Huntsman
 
 // Midnight is still present as a separate (invisible) unit after Attumen mounts.
 // A Midnight threat list check will capture the entire encounter.
-bool AttumenTheHuntsmanShouldBeTankedTrigger::IsActiveInEncounter()
+bool AttumenTheHuntsmanUnmountedShouldBeTankedTrigger::IsActiveInEncounter()
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
     if (!midnight || IsAttumenMounted(midnight))
@@ -155,20 +155,6 @@ bool BigBadWolfChasesRedHoodTrigger::IsActiveInEncounter()
     return IsLittleRedRidingHood(bot);
 }
 
-// Hunters feign death; every other bot, and a hunter whose Feign Death is on cooldown, gets the
-// speed cheat.
-bool BigBadWolfRedHoodShouldUseEscapeTrigger::IsActiveInEncounter()
-{
-    if (!IsLittleRedRidingHood(bot) ||
-        bot->HasAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS)) ||
-        bot->HasAura(Id(KaraSpells::SPELL_FEIGN_DEATH)))
-    {
-        return false;
-    }
-
-    return GetOperaActor(bot, "the big bad wolf");
-}
-
 // Paladins, priests and warriors can help the Hood target; the action decides when.
 bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
 {
@@ -186,7 +172,7 @@ bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
 
 // Romulo and Julianne
 
-bool RomuloAndJulianneShouldBeKilledTogetherTrigger::IsActiveInEncounter()
+bool RomuloAndJulianneShouldDieTogetherTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
@@ -234,7 +220,7 @@ bool TheCuratorRangedShouldSpreadTrigger::IsActiveInEncounter()
 
 // Terestian Illhoof
 
-bool TerestianIllhoofShouldPrioritizeChainsTrigger::IsActiveInEncounter()
+bool TerestianIllhoofShouldPrioritizeTargetsTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
 }
@@ -267,7 +253,7 @@ bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
 }
 
 // The elementals never re-zone, so a resurrected tracker finds them by a search, not by threat.
-bool ShadeOfAranShouldPrioritizeConjuredElementalsTrigger::IsActiveInEncounter()
+bool ShadeOfAranShouldPrioritizeElementalsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
@@ -386,7 +372,7 @@ bool NetherspiteShouldHoldDpsTrigger::IsActiveInEncounter()
     return netherspite && IsNetherspiteDpsHeld(bot, netherspite);
 }
 
-bool NetherspitePetsShouldBeHeldTrigger::IsActiveInEncounter()
+bool NetherspiteShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
     if (!pet || !pet->IsAlive())
@@ -483,7 +469,7 @@ bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
     return nightbane && !IsNightbaneFlying(nightbane);
 }
 
-bool NightbanePetsShouldBeHeldTrigger::IsActiveInEncounter()
+bool NightbaneShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
     Unit::ControlSet const& minions = bot->m_Controlled;
     if (std::none_of(minions.begin(), minions.end(), IsControllableMinion))

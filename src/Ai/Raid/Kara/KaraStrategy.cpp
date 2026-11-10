@@ -20,14 +20,14 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("karazhan set tremor totem", ACTION_RAID) }));
 
     // Trash
-    triggers.push_back(new TriggerNode("mana warp casts warp breach",
-        { NextAction("mana warp stun warp breach", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("mana warp incoming warp breach",
+        { NextAction("mana warp cast stun spell", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("mana warp stunner should hold",
-        { NextAction("mana warp stunner hold for warp breach", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("mana warp target at low health",
+        { NextAction("mana warp stand by to stun", ACTION_RAID) }));
 
     // Attumen the Huntsman
-    triggers.push_back(new TriggerNode("attumen the huntsman should be tanked",
+    triggers.push_back(new TriggerNode("attumen the huntsman unmounted should be tanked",
         { NextAction("attumen the huntsman assist tank position unmounted", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("attumen the huntsman midnight should be focused",
@@ -68,17 +68,15 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("big bad wolf tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("big bad wolf chases red hood",
-        { NextAction("big bad wolf red hood run away", ACTION_EMERGENCY + 6) }));
-
-    triggers.push_back(new TriggerNode("big bad wolf red hood should use escape",
-        { NextAction("big bad wolf red hood use escape", ACTION_EMERGENCY + 7) }));
+        { NextAction("big bad wolf red hood use escape ability", ACTION_EMERGENCY + 7),
+          NextAction("big bad wolf red hood run away", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("big bad wolf victim has red hood",
         { NextAction("big bad wolf protect red hood", ACTION_EMERGENCY + 5) }));
 
     // Romulo and Julianne
-    triggers.push_back(new TriggerNode("romulo and julianne should be killed together",
-        { NextAction("romulo and julianne mark target", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("romulo and julianne should die together",
+        { NextAction("romulo and julianne skull higher health", ACTION_RAID) }));
 
     // The Wizard of Oz
     triggers.push_back(new TriggerNode("wizard of oz should prioritize targets",
@@ -98,7 +96,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("the curator spread ranged", ACTION_RAID) }));
 
     // Terestian Illhoof
-    triggers.push_back(new TriggerNode("terestian illhoof should prioritize chains",
+    triggers.push_back(new TriggerNode("terestian illhoof should prioritize targets",
         { NextAction("terestian illhoof mark target", ACTION_RAID) }));
 
     // Shade of Aran
@@ -111,8 +109,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("shade of aran flame wreath active",
         { NextAction("shade of aran stop moving during flame wreath", ACTION_EMERGENCY + 7) }));
 
-    triggers.push_back(new TriggerNode("shade of aran should prioritize conjured elementals",
-        { NextAction("shade of aran mark conjured elemental", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("shade of aran should prioritize elementals",
+        { NextAction("shade of aran mark elemental", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("shade of aran ranged should maintain distance",
         { NextAction("shade of aran ranged maintain distance", ACTION_RAID + 1) }));
@@ -134,11 +132,11 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("netherspite move to banish slot", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("netherspite should hold dps",
-        { NextAction("netherspite stop attacking", ACTION_RAID + 3),
+        { NextAction("netherspite stop attacking", ACTION_EMERGENCY + 8),
           NextAction("netherspite select target for hold", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("netherspite pets should be held",
-        { NextAction("netherspite control pet aggression", ACTION_EMERGENCY + 7) }));
+    triggers.push_back(new TriggerNode("netherspite should manage pet aggression",
+        { NextAction("netherspite set pet stance", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("netherspite should manage timers and trackers",
         { NextAction("netherspite manage timers and trackers", ACTION_EMERGENCY + 10) }));
@@ -161,8 +159,8 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction(
             "nightbane ranged stack and move from charred earth", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("nightbane pets should be held",
-        { NextAction("nightbane control pet aggression", ACTION_EMERGENCY + 7) }));
+    triggers.push_back(new TriggerNode("nightbane should manage pet aggression",
+        { NextAction("nightbane set pet stance", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("nightbane should hold dps",
         { NextAction("nightbane stop attacking", ACTION_RAID + 3),

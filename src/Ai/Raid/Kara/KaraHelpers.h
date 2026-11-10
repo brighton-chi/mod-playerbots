@@ -177,7 +177,7 @@ bool IsKarazhanFearCasterActive(Player* bot);
 inline constexpr uint32 WARP_BREACH_MIN_REACTION_MS = 200;
 inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 300; // War Stomp's 0.5 s cast still lands
 // From here a stunner on the warp casts nothing else, keeping its global cooldown free.
-inline constexpr float MANA_WARP_STUNNER_HOLD_HEALTH_PCT = 15.0f;
+inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 15.0f;
 // Stun reaches, centre to centre
 inline constexpr float MELEE_STUN_REACH = 5.0f;
 inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
@@ -195,8 +195,8 @@ bool IsNearManaWarpPacks(Player* bot);
 float GetManaWarpStunReach(Player* bot);
 // Rogues and cat druids stun only their target, which holds their combo points.
 Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
-// Tanks and healers stun without holding.
-Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI);
+// Tanks and healers stun without standing by.
+Unit* GetManaWarpToStunNext(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
 // Shadow Cleave jumps from the tank to two more players within 10 yd in front of Attumen.
@@ -297,8 +297,8 @@ Player* GetBigBadWolfRedHood(Unit* wolf);
 Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 
 // Romulo and Julianne
-// Once one is down, the other must die within 10 s. The skull moves to the healthier one only
-// once it is this far ahead.
+// Once one is down, the other must die within 10 s. The skull moves to the one with higher health
+// only once it is this far ahead.
 inline constexpr float ROMULO_AND_JULIANNE_HEALTH_GAP_PCT = 10.0f;
 
 // Wizard of Oz

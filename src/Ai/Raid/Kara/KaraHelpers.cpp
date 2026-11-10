@@ -243,7 +243,7 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
     return nullptr;
 }
 
-Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI)
+Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     if (GetManaWarpStunReach(bot) <= 0.0f || !IsNearManaWarpPacks(bot) ||
@@ -254,7 +254,7 @@ Unit* GetManaWarpToHoldFor(PlayerbotAI* botAI)
 
     Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     if (!target || target->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) || !target->IsAlive() ||
-        target->GetHealthPct() > MANA_WARP_STUNNER_HOLD_HEALTH_PCT)
+        target->GetHealthPct() > MANA_WARP_STAND_BY_HEALTH_PCT)
     {
         return nullptr;
     }

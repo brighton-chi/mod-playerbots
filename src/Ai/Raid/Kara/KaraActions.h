@@ -35,21 +35,21 @@ public:
 
 // Trash
 
-class ManaWarpStunWarpBreachAction : public Action
+class ManaWarpCastStunSpellAction : public Action
 {
 public:
-    ManaWarpStunWarpBreachAction(PlayerbotAI* botAI);
+    ManaWarpCastStunSpellAction(PlayerbotAI* botAI);
     bool Execute(Event event) override;
 
 private:
     uint32 const _reactionMs; // drawn once per bot
 };
 
-class ManaWarpStunnerHoldForWarpBreachAction : public MovementAction
+class ManaWarpStandByToStunAction : public MovementAction
 {
 public:
-    ManaWarpStunnerHoldForWarpBreachAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "mana warp stunner hold for warp breach") {}
+    ManaWarpStandByToStunAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "mana warp stand by to stun") {}
     bool Execute(Event event) override;
 };
 
@@ -166,6 +166,15 @@ public:
     bool Execute(Event event) override;
 };
 
+class BigBadWolfRedHoodUseEscapeAbilityAction : public Action
+{
+public:
+    BigBadWolfRedHoodUseEscapeAbilityAction(PlayerbotAI* botAI)
+        : Action(botAI, "big bad wolf red hood use escape ability") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 class BigBadWolfRedHoodRunAwayAction : public MovementAction
 {
 public:
@@ -186,14 +195,6 @@ private:
     uint32 _lastRunStepTime = 0;
 };
 
-class BigBadWolfRedHoodUseEscapeAction : public Action
-{
-public:
-    BigBadWolfRedHoodUseEscapeAction(PlayerbotAI* botAI)
-        : Action(botAI, "big bad wolf red hood use escape") {}
-    bool Execute(Event event) override;
-};
-
 class BigBadWolfProtectRedHoodAction : public Action
 {
 public:
@@ -207,11 +208,11 @@ private:
 
 // Romulo and Julianne
 
-class RomuloAndJulianneMarkTargetAction : public Action
+class RomuloAndJulianneSkullHigherHealthAction : public Action
 {
 public:
-    RomuloAndJulianneMarkTargetAction(PlayerbotAI* botAI)
-        : Action(botAI, "romulo and julianne mark target") {}
+    RomuloAndJulianneSkullHigherHealthAction(PlayerbotAI* botAI)
+        : Action(botAI, "romulo and julianne skull higher health") {}
     bool Execute(Event event) override;
 };
 
@@ -295,11 +296,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ShadeOfAranMarkConjuredElementalAction : public Action
+class ShadeOfAranMarkElementalAction : public Action
 {
 public:
-    ShadeOfAranMarkConjuredElementalAction(PlayerbotAI* botAI)
-        : Action(botAI, "shade of aran mark conjured elemental") {}
+    ShadeOfAranMarkElementalAction(PlayerbotAI* botAI)
+        : Action(botAI, "shade of aran mark elemental") {}
     bool Execute(Event event) override;
 };
 
@@ -392,11 +393,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class NetherspiteControlPetAggressionAction : public Action
+class NetherspiteSetPetStanceAction : public Action
 {
 public:
-    NetherspiteControlPetAggressionAction(PlayerbotAI* botAI)
-        : Action(botAI, "netherspite control pet aggression") {}
+    NetherspiteSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "netherspite set pet stance") {}
     bool Execute(Event event) override;
     bool ResetPetStance();
 
@@ -521,11 +522,11 @@ private:
     bool StackOnRangedLeader(Player* rangedLeader);
 };
 
-class NightbaneControlPetAggressionAction : public Action
+class NightbaneSetPetStanceAction : public Action
 {
 public:
-    NightbaneControlPetAggressionAction(PlayerbotAI* botAI)
-        : Action(botAI, "nightbane control pet aggression") {}
+    NightbaneSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "nightbane set pet stance") {}
     bool Execute(Event event) override;
     bool ResetPetStance();
 

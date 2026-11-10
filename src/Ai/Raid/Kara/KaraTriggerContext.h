@@ -23,15 +23,15 @@ public:
             &RaidKarazhanTriggerContext::karazhan_enemies_cast_fear;
 
         // Trash
-        creators["mana warp casts warp breach"] =
-            &RaidKarazhanTriggerContext::mana_warp_casts_warp_breach;
+        creators["mana warp incoming warp breach"] =
+            &RaidKarazhanTriggerContext::mana_warp_incoming_warp_breach;
 
-        creators["mana warp stunner should hold"] =
-            &RaidKarazhanTriggerContext::mana_warp_stunner_should_hold;
+        creators["mana warp target at low health"] =
+            &RaidKarazhanTriggerContext::mana_warp_target_at_low_health;
 
         // Attumen the Huntsman
-        creators["attumen the huntsman should be tanked"] =
-            &RaidKarazhanTriggerContext::attumen_the_huntsman_should_be_tanked;
+        creators["attumen the huntsman unmounted should be tanked"] =
+            &RaidKarazhanTriggerContext::attumen_the_huntsman_unmounted_should_be_tanked;
 
         creators["attumen the huntsman midnight should be focused"] =
             &RaidKarazhanTriggerContext::attumen_the_huntsman_midnight_should_be_focused;
@@ -72,15 +72,12 @@ public:
         creators["big bad wolf chases red hood"] =
             &RaidKarazhanTriggerContext::big_bad_wolf_chases_red_hood;
 
-        creators["big bad wolf red hood should use escape"] =
-            &RaidKarazhanTriggerContext::big_bad_wolf_red_hood_should_use_escape;
-
         creators["big bad wolf victim has red hood"] =
             &RaidKarazhanTriggerContext::big_bad_wolf_victim_has_red_hood;
 
         // Romulo and Julianne
-        creators["romulo and julianne should be killed together"] =
-            &RaidKarazhanTriggerContext::romulo_and_julianne_should_be_killed_together;
+        creators["romulo and julianne should die together"] =
+            &RaidKarazhanTriggerContext::romulo_and_julianne_should_die_together;
 
         // The Wizard of Oz
         creators["wizard of oz should prioritize targets"] =
@@ -100,8 +97,8 @@ public:
             &RaidKarazhanTriggerContext::the_curator_ranged_should_spread;
 
         // Terestian Illhoof
-        creators["terestian illhoof should prioritize chains"] =
-            &RaidKarazhanTriggerContext::terestian_illhoof_should_prioritize_chains;
+        creators["terestian illhoof should prioritize targets"] =
+            &RaidKarazhanTriggerContext::terestian_illhoof_should_prioritize_targets;
 
         // Shade of Aran
         creators["shade of aran casting arcane explosion"] =
@@ -113,8 +110,8 @@ public:
         creators["shade of aran flame wreath active"] =
             &RaidKarazhanTriggerContext::shade_of_aran_flame_wreath_active;
 
-        creators["shade of aran should prioritize conjured elementals"] =
-            &RaidKarazhanTriggerContext::shade_of_aran_should_prioritize_conjured_elementals;
+        creators["shade of aran should prioritize elementals"] =
+            &RaidKarazhanTriggerContext::shade_of_aran_should_prioritize_elementals;
 
         creators["shade of aran ranged should maintain distance"] =
             &RaidKarazhanTriggerContext::shade_of_aran_ranged_should_maintain_distance;
@@ -138,8 +135,8 @@ public:
         creators["netherspite should hold dps"] =
             &RaidKarazhanTriggerContext::netherspite_should_hold_dps;
 
-        creators["netherspite pets should be held"] =
-            &RaidKarazhanTriggerContext::netherspite_pets_should_be_held;
+        creators["netherspite should manage pet aggression"] =
+            &RaidKarazhanTriggerContext::netherspite_should_manage_pet_aggression;
 
         creators["netherspite should manage timers and trackers"] =
             &RaidKarazhanTriggerContext::netherspite_should_manage_timers_and_trackers;
@@ -161,8 +158,8 @@ public:
         creators["nightbane ranged should avoid charred earth"] =
             &RaidKarazhanTriggerContext::nightbane_ranged_should_avoid_charred_earth;
 
-        creators["nightbane pets should be held"] =
-            &RaidKarazhanTriggerContext::nightbane_pets_should_be_held;
+        creators["nightbane should manage pet aggression"] =
+            &RaidKarazhanTriggerContext::nightbane_should_manage_pet_aggression;
 
         creators["nightbane should hold dps"] =
             &RaidKarazhanTriggerContext::nightbane_should_hold_dps;
@@ -189,19 +186,19 @@ private:
     }
 
     // Trash
-    static Trigger* mana_warp_casts_warp_breach(PlayerbotAI* botAI)
+    static Trigger* mana_warp_incoming_warp_breach(PlayerbotAI* botAI)
     {
-        return new ManaWarpCastsWarpBreachTrigger(botAI);
+        return new ManaWarpIncomingWarpBreachTrigger(botAI);
     }
-    static Trigger* mana_warp_stunner_should_hold(PlayerbotAI* botAI)
+    static Trigger* mana_warp_target_at_low_health(PlayerbotAI* botAI)
     {
-        return new ManaWarpStunnerShouldHoldTrigger(botAI);
+        return new ManaWarpTargetAtLowHealthTrigger(botAI);
     }
 
     // Attumen the Huntsman
-    static Trigger* attumen_the_huntsman_should_be_tanked(PlayerbotAI* botAI)
+    static Trigger* attumen_the_huntsman_unmounted_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new AttumenTheHuntsmanShouldBeTankedTrigger(botAI);
+        return new AttumenTheHuntsmanUnmountedShouldBeTankedTrigger(botAI);
     }
     static Trigger* attumen_the_huntsman_midnight_should_be_focused(PlayerbotAI* botAI)
     {
@@ -257,19 +254,15 @@ private:
     {
         return new BigBadWolfChasesRedHoodTrigger(botAI);
     }
-    static Trigger* big_bad_wolf_red_hood_should_use_escape(PlayerbotAI* botAI)
-    {
-        return new BigBadWolfRedHoodShouldUseEscapeTrigger(botAI);
-    }
     static Trigger* big_bad_wolf_victim_has_red_hood(PlayerbotAI* botAI)
     {
         return new BigBadWolfVictimHasRedHoodTrigger(botAI);
     }
 
     // Romulo and Julianne
-    static Trigger* romulo_and_julianne_should_be_killed_together(PlayerbotAI* botAI)
+    static Trigger* romulo_and_julianne_should_die_together(PlayerbotAI* botAI)
     {
-        return new RomuloAndJulianneShouldBeKilledTogetherTrigger(botAI);
+        return new RomuloAndJulianneShouldDieTogetherTrigger(botAI);
     }
 
     // The Wizard of Oz
@@ -297,9 +290,9 @@ private:
     }
 
     // Terestian Illhoof
-    static Trigger* terestian_illhoof_should_prioritize_chains(PlayerbotAI* botAI)
+    static Trigger* terestian_illhoof_should_prioritize_targets(PlayerbotAI* botAI)
     {
-        return new TerestianIllhoofShouldPrioritizeChainsTrigger(botAI);
+        return new TerestianIllhoofShouldPrioritizeTargetsTrigger(botAI);
     }
 
     // Shade of Aran
@@ -315,9 +308,9 @@ private:
     {
         return new ShadeOfAranFlameWreathActiveTrigger(botAI);
     }
-    static Trigger* shade_of_aran_should_prioritize_conjured_elementals(PlayerbotAI* botAI)
+    static Trigger* shade_of_aran_should_prioritize_elementals(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranShouldPrioritizeConjuredElementalsTrigger(botAI);
+        return new ShadeOfAranShouldPrioritizeElementalsTrigger(botAI);
     }
     static Trigger* shade_of_aran_ranged_should_maintain_distance(PlayerbotAI* botAI)
     {
@@ -349,9 +342,9 @@ private:
     {
         return new NetherspiteShouldHoldDpsTrigger(botAI);
     }
-    static Trigger* netherspite_pets_should_be_held(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
-        return new NetherspitePetsShouldBeHeldTrigger(botAI);
+        return new NetherspiteShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* netherspite_should_manage_timers_and_trackers(PlayerbotAI* botAI)
     {
@@ -381,9 +374,9 @@ private:
     {
         return new NightbaneRangedShouldAvoidCharredEarthTrigger(botAI);
     }
-    static Trigger* nightbane_pets_should_be_held(PlayerbotAI* botAI)
+    static Trigger* nightbane_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
-        return new NightbanePetsShouldBeHeldTrigger(botAI);
+        return new NightbaneShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* nightbane_should_hold_dps(PlayerbotAI* botAI)
     {

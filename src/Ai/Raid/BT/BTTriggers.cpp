@@ -738,7 +738,7 @@ bool IllidanStormrageFlamesOfAzzinothShouldBeTankedTrigger::IsActiveInEncounter(
     return IsFlameOfAzzinothTank(bot) && !IsIllidanInfectionPositionKeptInFlight(bot);
 }
 
-bool IllidanStormragePetsDieToHazardsTrigger::IsActiveInEncounter()
+bool IllidanStormrageShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
     Pet* pet = bot->GetPet();
     if (!pet || !pet->IsAlive())

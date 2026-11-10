@@ -73,16 +73,16 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* netherspitePetAction = context->GetAction("netherspite control pet aggression");
+    Action* netherspitePetAction = context->GetAction("netherspite set pet stance");
     if (netherspitePetAction &&
-        static_cast<NetherspiteControlPetAggressionAction*>(netherspitePetAction)->ResetPetStance())
+        static_cast<NetherspiteSetPetStanceAction*>(netherspitePetAction)->ResetPetStance())
     {
         reset = true;
     }
 
-    Action* petAction = context->GetAction("nightbane control pet aggression");
+    Action* petAction = context->GetAction("nightbane set pet stance");
     if (petAction &&
-        static_cast<NightbaneControlPetAggressionAction*>(petAction)->ResetPetStance())
+        static_cast<NightbaneSetPetStanceAction*>(petAction)->ResetPetStance())
     {
         reset = true;
     }
@@ -121,11 +121,11 @@ bool KarazhanSetTremorTotemAction::Execute(Event /*event*/)
 
 // Trash
 
-ManaWarpStunWarpBreachAction::ManaWarpStunWarpBreachAction(PlayerbotAI* botAI)
-    : Action(botAI, "mana warp stun warp breach"),
+ManaWarpCastStunSpellAction::ManaWarpCastStunSpellAction(PlayerbotAI* botAI)
+    : Action(botAI, "mana warp cast stun spell"),
       _reactionMs(urand(WARP_BREACH_MIN_REACTION_MS, WARP_BREACH_MAX_REACTION_MS)) {}
 
-bool ManaWarpStunWarpBreachAction::Execute(Event /*event*/)
+bool ManaWarpCastStunSpellAction::Execute(Event /*event*/)
 {
     Unit* warp = GetManaWarpToStun(botAI, _reactionMs);
     if (!warp)
@@ -175,10 +175,10 @@ bool ManaWarpStunWarpBreachAction::Execute(Event /*event*/)
         botAI->CanCastSpell("war stomp", bot) && botAI->CastSpell("war stomp", bot);
 }
 
-// Holding casts nothing, so the stun is off the global cooldown when the cast bar comes.
-bool ManaWarpStunnerHoldForWarpBreachAction::Execute(Event /*event*/)
+// Standing by casts nothing, so the stun is off the global cooldown when the cast bar comes.
+bool ManaWarpStandByToStunAction::Execute(Event /*event*/)
 {
-    Unit* warp = GetManaWarpToHoldFor(botAI);
+    Unit* warp = GetManaWarpToStunNext(botAI);
     if (!warp)
         return false;
 
@@ -509,6 +509,29 @@ bool BigBadWolfTankPositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
+bool BigBadWolfRedHoodUseEscapeAbilityAction::isUseful()
+{
+    return IsLittleRedRidingHood(bot) &&
+        !bot->HasAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS)) &&
+        !bot->HasAura(Id(KaraSpells::SPELL_FEIGN_DEATH));
+}
+
+bool BigBadWolfRedHoodUseEscapeAbilityAction::Execute(Event /*event*/)
+{
+    // He drops a feigning hunter despite the taunt, and comes back if it stands up during Hood.
+    // A hunter whose Feign Death is on cooldown gets the boots below.
+    if (bot->getClass() == CLASS_HUNTER &&
+        !bot->HasSpellCooldown(Id(KaraSpells::SPELL_FEIGN_DEATH)))
+    {
+        return botAI->CanCastSpell("feign death", bot) && botAI->CastSpell("feign death", bot);
+    }
+
+    // A cheat, for a bugged mechanic: with AC's reach (4.5) and speed (8.5 yd/s) he catches any
+    // runner at Hood's +50%. The largest speed aura wins, so the boots' +70% replaces Hood's, and
+    // like Hood it lasts 20 s, so it is never removed.
+    return bot->AddAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS), bot);
+}
+
 // Run away, little girl, run away
 bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
 {
@@ -558,22 +581,6 @@ bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
     return true;
 }
 
-bool BigBadWolfRedHoodUseEscapeAction::Execute(Event /*event*/)
-{
-    // He drops a feigning hunter despite the taunt, and comes back if it stands up during Hood.
-    // A hunter whose Feign Death is on cooldown gets the boots below.
-    if (bot->getClass() == CLASS_HUNTER &&
-        !bot->HasSpellCooldown(Id(KaraSpells::SPELL_FEIGN_DEATH)))
-    {
-        return botAI->CanCastSpell("feign death", bot) && botAI->CastSpell("feign death", bot);
-    }
-
-    // A cheat, for a bugged mechanic: with AC's reach (4.5) and speed (8.5 yd/s) he catches any
-    // runner at Hood's +50%. The largest speed aura wins, so the boots' +70% replaces Hood's, and
-    // like Hood it lasts 20 s, so it is never removed.
-    return bot->AddAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS), bot);
-}
-
 bool BigBadWolfProtectRedHoodAction::Execute(Event /*event*/)
 {
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
@@ -619,7 +626,7 @@ bool BigBadWolfProtectRedHoodAction::CastOnTarget(char const* spell, Player* tar
 
 // Romulo and Julianne
 
-bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
+bool RomuloAndJulianneSkullHigherHealthAction::Execute(Event /*event*/)
 {
     Unit* romulo = GetOperaActor(bot, "romulo");
     if (!romulo)
@@ -642,12 +649,12 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
         return MarkTargetWithSkull(bot, romulo);
 
     // Within the gap the skull stays where it is; phase 2 leaves it on Romulo.
-    Unit* healthier = romulo->GetHealthPct() >= julianne->GetHealthPct() ? romulo : julianne;
-    Unit* other = healthier == romulo ? julianne : romulo;
-    if (healthier->GetHealthPct() - other->GetHealthPct() <= ROMULO_AND_JULIANNE_HEALTH_GAP_PCT)
+    Unit* higher = romulo->GetHealthPct() >= julianne->GetHealthPct() ? romulo : julianne;
+    Unit* lower = higher == romulo ? julianne : romulo;
+    if (higher->GetHealthPct() - lower->GetHealthPct() <= ROMULO_AND_JULIANNE_HEALTH_GAP_PCT)
         return false;
 
-    return MarkTargetWithSkull(bot, healthier);
+    return MarkTargetWithSkull(bot, higher);
 }
 
 // The Wizard of Oz
@@ -820,7 +827,7 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
     return true;
 }
 
-bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
+bool ShadeOfAranMarkElementalAction::Execute(Event /*event*/)
 {
     GuidVector const elementals =
         context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get();
@@ -1052,7 +1059,7 @@ bool NetherspiteSelectTargetForHoldAction::Execute(Event /*event*/)
 }
 
 // Pets on him through the banish keep hitting after its threat reset, ahead of the tank.
-bool NetherspiteControlPetAggressionAction::Execute(Event /*event*/)
+bool NetherspiteSetPetStanceAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
     if (!pet)
@@ -1062,23 +1069,20 @@ bool NetherspiteControlPetAggressionAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    if (IsNetherspiteDpsHeld(bot, netherspite))
-    {
-        if (!pet->HasReactState(REACT_PASSIVE))
-        {
-            _previousReactState = pet->GetReactState();
-            _setPassive = true;
-            CallBackPets(bot);
-            pet->SetReactState(REACT_PASSIVE);
-        }
-    }
-    else
-        ResetPetStance();
+    if (!IsNetherspiteDpsHeld(bot, netherspite))
+        return ResetPetStance();
 
-    return false;
+    if (pet->HasReactState(REACT_PASSIVE))
+        return false;
+
+    _previousReactState = pet->GetReactState();
+    _setPassive = true;
+    CallBackPets(bot);
+    pet->SetReactState(REACT_PASSIVE);
+    return true;
 }
 
-bool NetherspiteControlPetAggressionAction::ResetPetStance()
+bool NetherspiteSetPetStanceAction::ResetPetStance()
 {
     if (!_setPassive)
         return false;
@@ -1810,17 +1814,14 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::StackOnRangedLeader(Play
 
 // Guardians too (Shadowfiend, Water Elemental, Feral Spirit, Force of Nature): called back alone,
 // they would attack again and chase skeletons or him off the terrace.
-bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
+bool NightbaneSetPetStanceAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
     if (!IsNightbaneDpsHeld(bot, nightbane))
-    {
-        ResetPetStance();
-        return false;
-    }
+        return ResetPetStance();
 
     std::vector<Creature*> minionsToHold;
     for (Unit* unit : bot->m_Controlled)
@@ -1839,10 +1840,10 @@ bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
         minion->SetReactState(REACT_PASSIVE);
     }
 
-    return false;
+    return true;
 }
 
-bool NightbaneControlPetAggressionAction::ResetPetStance()
+bool NightbaneSetPetStanceAction::ResetPetStance()
 {
     if (_previousReactStates.empty())
         return false;
