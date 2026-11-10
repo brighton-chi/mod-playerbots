@@ -436,11 +436,11 @@ private:
 
 // Prince Malchezaar
 
-class PrinceMalchezaarEnfeebledBotAvoidHazardAction : public MovementAction
+class PrinceMalchezaarEnfeebledBotRunToSafetyAction : public MovementAction
 {
 public:
-    PrinceMalchezaarEnfeebledBotAvoidHazardAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "prince malchezaar enfeebled bot avoid hazard") {}
+    PrinceMalchezaarEnfeebledBotRunToSafetyAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "prince malchezaar enfeebled bot run to safety") {}
     bool Execute(Event event) override;
     // A destination from an earlier Enfeeble doesn't count.
     bool HasDestinationFor(time_t enfeebleApplyTime) const

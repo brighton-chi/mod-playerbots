@@ -404,9 +404,9 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
         return true;
     }
 
-    Action* action = context->GetAction("prince malchezaar enfeebled bot avoid hazard");
+    Action* action = context->GetAction("prince malchezaar enfeebled bot run to safety");
     return action &&
-        static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action)->HasDestinationFor(
+        static_cast<PrinceMalchezaarEnfeebledBotRunToSafetyAction*>(action)->HasDestinationFor(
             enfeeble->GetApplyTime());
 }
 

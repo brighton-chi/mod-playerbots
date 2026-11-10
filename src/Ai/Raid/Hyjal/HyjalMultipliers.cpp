@@ -397,7 +397,7 @@ float ArchimondeControlDoomfireAvoidanceMultiplier::GetValueInEncounter(Action* 
     return IsNearDoomfire(botAI, DOOMFIRE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
-float ArchimondeSetTremorTotemMultiplier::GetValueInEncounter(Action* action)
+float ArchimondeKeepTremorTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;

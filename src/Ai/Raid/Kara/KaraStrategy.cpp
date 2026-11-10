@@ -143,7 +143,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Prince Malchezaar
     triggers.push_back(new TriggerNode("prince malchezaar bot is enfeebled",
-        { NextAction("prince malchezaar enfeebled bot avoid hazard", ACTION_EMERGENCY + 6) }));
+        { NextAction("prince malchezaar enfeebled bot run to safety", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("prince malchezaar near hazard",
         { NextAction("prince malchezaar move clear of hazards", ACTION_EMERGENCY + 1) }));
@@ -178,26 +178,26 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new KarazhanSetTremorTotemMultiplier(botAI));
+    multipliers.push_back(new KarazhanKeepTremorTotemMultiplier(botAI));
     multipliers.push_back(new KarazhanDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new ManaWarpSaveStunsMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanDisableAutoTargetingMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanHoldDpsMultiplier(botAI));
     multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
-    multipliers.push_back(new MaidenOfVirtueSetGroundingTotemMultiplier(botAI));
+    multipliers.push_back(new MaidenOfVirtueKeepGroundingTotemMultiplier(botAI));
     multipliers.push_back(new BigBadWolfRedHoodHunterStayDownMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
-    multipliers.push_back(new TerestianIllhoofDontDotFiendishImpsMultiplier(botAI));
-    multipliers.push_back(new ShadeOfAranArcaneExplosionRunAwayMultiplier(botAI));
+    multipliers.push_back(new TerestianIllhoofDisableDotsOnFiendishImpsMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAranArcaneExplosionDisableMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteHoldDpsMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarDisableReactiveMovementMultiplier(botAI));
-    multipliers.push_back(new PrinceMalchezaarEnfeebleMultiplier(botAI));
-    multipliers.push_back(new NightbaneDisablePetsMultiplier(botAI));
+    multipliers.push_back(new PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier(botAI));
+    multipliers.push_back(new NightbaneDelaySummonsAndPetAttacksMultiplier(botAI));
     multipliers.push_back(new NightbaneHoldDpsMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));

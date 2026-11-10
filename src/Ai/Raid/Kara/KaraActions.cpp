@@ -51,9 +51,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* enfeebleAction = context->GetAction("prince malchezaar enfeebled bot avoid hazard");
+    Action* enfeebleAction = context->GetAction("prince malchezaar enfeebled bot run to safety");
     if (enfeebleAction &&
-        static_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(enfeebleAction)
+        static_cast<PrinceMalchezaarEnfeebledBotRunToSafetyAction*>(enfeebleAction)
             ->ResetDestination())
     {
         reset = true;
@@ -1508,7 +1508,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateVoidZones(KaraInstanceState
 
 // One tick kills at 1 health, so this run never crosses a landed infernal. Shadow Nova lands 7.5 s
 // after Enfeeble, which is about 52 yd of walking.
-bool PrinceMalchezaarEnfeebledBotAvoidHazardAction::Execute(Event /*event*/)
+bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
     if (!IsMovingAllowed())

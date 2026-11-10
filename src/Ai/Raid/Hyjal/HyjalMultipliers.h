@@ -188,11 +188,11 @@ protected:
 
 // Archimonde
 
-class ArchimondeSetTremorTotemMultiplier : public HyjalEncounterMultiplier
+class ArchimondeKeepTremorTotemMultiplier : public HyjalEncounterMultiplier
 {
 public:
-    ArchimondeSetTremorTotemMultiplier(PlayerbotAI* botAI)
-        : HyjalEncounterMultiplier(botAI, "archimonde set tremor totem") {}
+    ArchimondeKeepTremorTotemMultiplier(PlayerbotAI* botAI)
+        : HyjalEncounterMultiplier(botAI, "archimonde keep tremor totem") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

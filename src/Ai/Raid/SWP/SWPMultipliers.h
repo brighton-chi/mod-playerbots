@@ -221,11 +221,11 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FelmystDontDotAddsMultiplier : public SunwellEncounterMultiplier
+class FelmystDisableDotsOnAddsMultiplier : public SunwellEncounterMultiplier
 {
 public:
-    FelmystDontDotAddsMultiplier(PlayerbotAI* botAI)
-        : SunwellEncounterMultiplier(botAI, "felmyst don't dot adds") {}
+    FelmystDisableDotsOnAddsMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(botAI, "felmyst disable dots on adds") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

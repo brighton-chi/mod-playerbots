@@ -268,7 +268,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystPrioritizeDemonicVaporAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
-    multipliers.push_back(new FelmystDontDotAddsMultiplier(botAI));
+    multipliers.push_back(new FelmystDisableDotsOnAddsMultiplier(botAI));
 
     // Eredar Twins
     multipliers.push_back(new EredarTwinsDisableAutoTargetingMultiplier(botAI));

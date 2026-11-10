@@ -151,8 +151,8 @@ public:
             &RaidKarazhanActionContext::netherspite_manage_timers_and_trackers;
 
         // Prince Malchezaar
-        creators["prince malchezaar enfeebled bot avoid hazard"] =
-            &RaidKarazhanActionContext::prince_malchezaar_enfeebled_bot_avoid_hazard;
+        creators["prince malchezaar enfeebled bot run to safety"] =
+            &RaidKarazhanActionContext::prince_malchezaar_enfeebled_bot_run_to_safety;
 
         creators["prince malchezaar move clear of hazards"] =
             &RaidKarazhanActionContext::prince_malchezaar_move_clear_of_hazards;
@@ -376,9 +376,9 @@ private:
     }
 
     // Prince Malchezaar
-    static Action* prince_malchezaar_enfeebled_bot_avoid_hazard(PlayerbotAI* botAI)
+    static Action* prince_malchezaar_enfeebled_bot_run_to_safety(PlayerbotAI* botAI)
     {
-        return new PrinceMalchezaarEnfeebledBotAvoidHazardAction(botAI);
+        return new PrinceMalchezaarEnfeebledBotRunToSafetyAction(botAI);
     }
     static Action* prince_malchezaar_move_clear_of_hazards(PlayerbotAI* botAI)
     {

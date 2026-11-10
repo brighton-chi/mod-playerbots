@@ -51,7 +51,7 @@ bool IsKillingSpree(Player* bot, Action* action)
 
 }
 
-float KarazhanSetTremorTotemMultiplier::GetValue(Action* action)
+float KarazhanKeepTremorTotemMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -279,7 +279,7 @@ float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValueInEncounter(Ac
     return GetEncounterBoss() ? 0.0f : 1.0f;
 }
 
-float MaidenOfVirtueSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
+float MaidenOfVirtueKeepGroundingTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
@@ -340,7 +340,7 @@ float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action
 
 // Terestian Illhoof
 
-float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValueInEncounter(Action* action)
+float TerestianIllhoofDisableDotsOnFiendishImpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -355,7 +355,7 @@ float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValueInEncounter(Action*
 
 // Shade of Aran
 
-float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValueInEncounter(Action* action)
+float ShadeOfAranArcaneExplosionDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -498,13 +498,13 @@ float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Act
     return isReactiveMovement ? 0.0f : 1.0f;
 }
 
-float PrinceMalchezaarEnfeebleMultiplier::GetValueInEncounter(Action* action)
+float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(Action* action)
 {
     if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action))
+        dynamic_cast<PrinceMalchezaarEnfeebledBotRunToSafetyAction*>(action))
     {
         return 1.0f;
     }
@@ -583,7 +583,7 @@ float PrinceMalchezaarEnfeebleMultiplier::GetValueInEncounter(Action* action)
 // In flight, pets would leave the terrace after skeletons or him. Summons wait out the hold, since
 // it sets them passive (see the pet action). The Fire Elemental Totem's elemental can't be called
 // back, so it waits for the last ground phase.
-float NightbaneDisablePetsMultiplier::GetValueInEncounter(Action* action)
+float NightbaneDelaySummonsAndPetAttacksMultiplier::GetValueInEncounter(Action* action)
 {
     bool isFireElementalTotem = false;
     bool isSummon = false;

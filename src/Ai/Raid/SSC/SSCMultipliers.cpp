@@ -928,7 +928,7 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
 
 // Lady Vashj <Coilfang Matron>
 
-float LadyVashjSetGroundingTotemMultiplier::GetValueInEncounter(Action* action)
+float LadyVashjKeepGroundingTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return 1.0f;

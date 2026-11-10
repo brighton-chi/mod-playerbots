@@ -543,7 +543,7 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValueInEncounter(Action* 
         bot->GetExactDist2d(charmedPlayer) < FELMYST_CHARMED_TARGET_RANGE ? 0.0f : 1.0f;
 }
 
-float FelmystDontDotAddsMultiplier::GetValueInEncounter(Action* action)
+float FelmystDisableDotsOnAddsMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;

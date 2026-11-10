@@ -358,11 +358,11 @@ protected:
 
 // Lady Vashj <Coilfang Matron>
 
-class LadyVashjSetGroundingTotemMultiplier : public SscEncounterMultiplier
+class LadyVashjKeepGroundingTotemMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjSetGroundingTotemMultiplier(PlayerbotAI* botAI)
-        : SscEncounterMultiplier(botAI, "lady vashj set grounding totem") {}
+    LadyVashjKeepGroundingTotemMultiplier(PlayerbotAI* botAI)
+        : SscEncounterMultiplier(botAI, "lady vashj keep grounding totem") {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
