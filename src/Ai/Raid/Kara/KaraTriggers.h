@@ -28,7 +28,6 @@ public:
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
-
     Unit* GetEncounterBoss() { return KaraHelpers::GetKaraBoss(bot, _boss); }
 
 private:

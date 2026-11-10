@@ -54,8 +54,11 @@ bool AttumenTheHuntsmanUnmountedShouldBeTankedTrigger::IsActiveInEncounter()
     if (!midnight || IsAttumenMounted(midnight))
         return false;
 
-    // First assist tank
-    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) && GetEncounterBoss();
+    // Return true only after Attumen spawns in Phase 1.
+    if (!FindThreatTarget(bot, "attumen the huntsman"))
+        return false;
+
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool AttumenTheHuntsmanMidnightShouldBeFocusedTrigger::IsActiveInEncounter()
@@ -64,8 +67,7 @@ bool AttumenTheHuntsmanMidnightShouldBeFocusedTrigger::IsActiveInEncounter()
     if (!midnight || IsAttumenMounted(midnight) || AI_VALUE(Unit*, "current target") == midnight)
         return false;
 
-    // The first assist tank takes Attumen once he is up.
-    return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) || !GetEncounterBoss();
+    return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 }
 
 bool AttumenTheHuntsmanMountedShouldBeTankedTrigger::IsActiveInEncounter()
@@ -80,8 +82,10 @@ bool AttumenTheHuntsmanMountedShouldBeTankedTrigger::IsActiveInEncounter()
 bool AttumenTheHuntsmanShouldStackBehindTrigger::IsActiveInEncounter()
 {
     Unit* attumen = GetMountedAttumen(bot);
-    return attumen && attumen->GetVictim() != bot &&
-        GetAttumenStackPosition(bot, attumen).has_value();
+    if (!attumen || attumen->GetVictim() != bot)
+        return false;
+
+    return GetAttumenStackPosition(bot, attumen).has_value();
 }
 
 bool AttumenTheHuntsmanShouldHoldDpsTrigger::IsActiveInEncounter()
@@ -102,14 +106,14 @@ bool AttumenTheHuntsmanShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 bool MoroesShouldPrioritizeAddsTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID);
 }
 
 // Maiden of Virtue
 
 bool MaidenOfVirtueShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
+    return PlayerbotAI::IsTank(bot);
 }
 
 bool MaidenOfVirtueShouldBreakRepentanceTrigger::IsActiveInEncounter()
@@ -123,18 +127,12 @@ bool MaidenOfVirtueShouldBreakRepentanceTrigger::IsActiveInEncounter()
 
 bool MaidenOfVirtueRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
+    return PlayerbotAI::IsRanged(bot);
 }
 
 bool MaidenOfVirtueShamanShouldGroundHolyFireTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_SHAMAN)
-        return false;
-
-    if (!GetEncounterBoss())
-        return false;
-
-    return !AI_VALUE2(bool, "has totem", "grounding totem");
+    return bot->getClass() == CLASS_SHAMAN && !AI_VALUE2(bool, "has totem", "grounding totem");
 }
 
 // The Big Bad Wolf
@@ -155,12 +153,14 @@ bool BigBadWolfChasesRedHoodTrigger::IsActiveInEncounter()
     return IsLittleRedRidingHood(bot);
 }
 
-// Paladins, priests and warriors can help the Hood target; the action decides when.
+// Paladins, priests, and warriors can help the Hood target; the action decides when.
 bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
 {
-    uint8 const botClass = bot->getClass();
-    if (botClass != CLASS_PALADIN && botClass != CLASS_PRIEST && botClass != CLASS_WARRIOR)
+    if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_PRIEST &&
+        bot->getClass() != CLASS_WARRIOR)
+    {
         return false;
+    }
 
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!wolf)
@@ -210,19 +210,19 @@ bool TheCuratorShouldPrioritizeAstralFlaresTrigger::IsActiveInEncounter()
 
 bool TheCuratorShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && GetEncounterBoss();
+    return PlayerbotAI::IsTank(bot);
 }
 
 bool TheCuratorRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && GetEncounterBoss();
+    return PlayerbotAI::IsRanged(bot);
 }
 
 // Terestian Illhoof
 
 bool TerestianIllhoofShouldPrioritizeTargetsTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID);
 }
 
 // Shade of Aran
@@ -248,8 +248,13 @@ bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
-    return IsFlameWreathInProgress(botAI, aran) && botAI->CanMove() &&
-        !CanReachTargetDuringFlameWreath(botAI, aran);
+    if (!aran)
+        return false;
+
+    if (!IsFlameWreathInProgress(botAI, aran))
+        return false;
+
+    return botAI->CanMove() && !CanReachTargetDuringFlameWreath(botAI, aran);
 }
 
 // The elementals never re-zone, so a resurrected tracker finds them by a search, not by threat.
@@ -383,7 +388,7 @@ bool NetherspiteShouldManagePetAggressionTrigger::IsActiveInEncounter()
 
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, KARA_MAP_ID) && GetEncounterBoss();
+    return IsMechanicTrackerBot(bot, KARA_MAP_ID);
 }
 
 // Prince Malchezaar
@@ -495,11 +500,10 @@ bool NightbaneShouldAvoidRainOfBonesTrigger::IsActiveInEncounter()
 bool NightbaneInLandingPhaseTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane || !IsNightbaneFlying(nightbane))
+    if (!nightbane || !IsNightbaneFlying(nightbane) || IsNightbaneFlightPhaseActive(nightbane))
         return false;
 
-    return !IsNightbaneFlightPhaseActive(nightbane) &&
-        AI_VALUE(Unit*, "current target") == nightbane;
+    return AI_VALUE(Unit*, "current target") == nightbane;
 }
 
 bool NightbaneShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()

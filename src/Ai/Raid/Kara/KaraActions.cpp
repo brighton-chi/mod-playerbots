@@ -270,7 +270,7 @@ bool AttumenTheHuntsmanAssistTankPositionUnmountedAction::Execute(Event /*event*
 bool AttumenTheHuntsmanAttackMidnightAction::Execute(Event /*event*/)
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    return midnight && AI_VALUE(Unit*, "current target") != midnight && Attack(midnight);
+    return midnight && Attack(midnight);
 }
 
 bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
@@ -316,9 +316,8 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(),
-        position->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED,
-        true, false);
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool AttumenTheHuntsmanStopAttackingAction::Execute(Event /*event*/)
@@ -382,7 +381,6 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (maiden->GetVictim() != bot || !bot->IsWithinMeleeRange(maiden))
         return false;
 
-    // While a healer is stunned she is taken to them, and stays until Holy Ground breaks it.
     if (GetNearestRepentantHealer(bot, maiden))
         return false;
 
@@ -438,7 +436,6 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
 
 bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
 {
-    // A bot only stands on its own position, so the group isn't searched once it arrives.
     constexpr float arrivalDist = 2.0f;
     for (Position const& position : MAIDEN_OF_VIRTUE_RANGED_POSITIONS)
     {
@@ -593,8 +590,7 @@ bool BigBadWolfProtectRedHoodAction::Execute(Event /*event*/)
         case CLASS_PALADIN:
         {
             return CastOnTarget(
-                "hand of protection", GetBigBadWolfTargetToProtect(wolf),
-                HAND_OF_PROTECTION_RANGE);
+                "hand of protection", GetBigBadWolfTargetToProtect(wolf), HAND_OF_PROTECTION_RANGE);
         }
         // Weakened Soul fails CanCastSpell, so only one priest shields at a time.
         case CLASS_PRIEST:
@@ -806,13 +802,10 @@ bool ShadeOfAranRunOutOfBlizzardAction::Execute(Event /*event*/)
     if (!position)
         return false;
 
-    // A filling cast would hold the bot still.
     bot->CastStop();
-
     return MoveTo(
-        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(),
-        position->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED,
-        true, false);
+        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up
@@ -963,8 +956,8 @@ bool NetherspiteBlockGreenOrBlueBeamAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false,
-        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
@@ -1011,8 +1004,8 @@ bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
     bot->CastStop();
     return MoveTo(
         KARA_MAP_ID, _destination->GetPositionX(), _destination->GetPositionY(),
-        bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true,
-        false);
+        bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+        true, false);
 }
 
 bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
@@ -1041,10 +1034,7 @@ bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
 bool NetherspiteStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
-    if (!netherspite)
-        return false;
-
-    return StopAttackingTarget(bot, netherspite);
+    return netherspite && StopAttackingTarget(bot, netherspite);
 }
 
 bool NetherspiteSelectTargetForHoldAction::isUseful()
@@ -1165,10 +1155,13 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
         switch (data.beam)
         {
             case NetherspiteBeam::Red:
+            {
                 if (PlayerbotAI::IsTank(member))
                     tiers[0].push_back(member);
                 break;
+            }
             case NetherspiteBeam::Green:
+            {
                 if (isDps && !isMana)
                     tiers[0].push_back(member);
                 else if (isHealer)
@@ -1176,11 +1169,16 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
                 else if (isDps)
                     tiers[2].push_back(member);
                 break;
+            }
             case NetherspiteBeam::Blue:
+            {
                 if (isDps && isMana)
                     tiers[0].push_back(member);
                 else if (isDps)
                     tiers[1].push_back(member);
+                break;
+            }
+            default:
                 break;
         }
     }
@@ -1199,11 +1197,20 @@ bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
     NetherspiteBeamOffset const offset = GetNetherspiteBeamOffset(
         *netherspite, portal, position.GetPositionX(), position.GetPositionY());
     float const off = offset.off * side;
-    return off >= NETHERSPITE_NEXT_MIN_OFF_LINE - NETHERSPITE_BEAM_POSITION_TOLERANCE &&
-        off <= NETHERSPITE_NEXT_MAX_OFF_LINE + NETHERSPITE_BEAM_POSITION_TOLERANCE &&
-        offset.along >= low - NETHERSPITE_BEAM_POSITION_TOLERANCE &&
-        offset.along <= low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_POSITION_TOLERANCE &&
-        IsClearOfVoidZones(
+
+    if (off >= NETHERSPITE_NEXT_MIN_OFF_LINE - NETHERSPITE_BEAM_POSITION_TOLERANCE ||
+        off <= NETHERSPITE_NEXT_MAX_OFF_LINE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    {
+        return false;
+    }
+
+    if (offset.along >= low - NETHERSPITE_BEAM_POSITION_TOLERANCE &&
+        offset.along <= low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    {
+        return false;
+    }
+
+    return IsClearOfVoidZones(
             state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_CLEARANCE);
 }
 
@@ -1914,7 +1921,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (nightbane->GetExactDist(NIGHTBANE_FLIGHT_POSITION) < atFlightPositionDist)
         stage = NightbaneFlightStage::Hover;
     else if (state.nightbaneFlightStage &&
-             *state.nightbaneFlightStage != NightbaneFlightStage::TakeOff)
+        *state.nightbaneFlightStage != NightbaneFlightStage::TakeOff)
     {
         stage = NightbaneFlightStage::Landing;
     }

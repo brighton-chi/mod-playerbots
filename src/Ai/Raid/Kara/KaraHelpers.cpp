@@ -53,11 +53,6 @@ float GetDistanceToSegment2d(Position const& point, Position const& start, Posit
         start.GetPositionX() + segmentX * fraction, start.GetPositionY() + segmentY * fraction);
 }
 
-bool IsInBearForm(Player* bot)
-{
-    return bot->GetShapeshiftForm() == FORM_BEAR || bot->GetShapeshiftForm() == FORM_DIREBEAR;
-}
-
 bool NeedsComboPointsForManaWarpStun(Player* bot)
 {
     return bot->getClass() == CLASS_ROGUE ||
@@ -190,9 +185,14 @@ float GetManaWarpStunReach(Player* bot)
     switch (bot->getClass())
     {
         case CLASS_DRUID:
-            if (IsInBearForm(bot) || bot->GetShapeshiftForm() == FORM_CAT)
+        {
+            if (bot->GetShapeshiftForm() == FORM_CAT || bot->GetShapeshiftForm() == FORM_BEAR ||
+                bot->GetShapeshiftForm() == FORM_DIREBEAR)
+            {
                 reach = MELEE_STUN_REACH;
+            }
             break;
+        }
         case CLASS_PALADIN:
             reach = HAMMER_OF_JUSTICE_REACH;
             break;
@@ -291,6 +291,7 @@ std::optional<Position> GetAttumenStackPosition(Player* bot, Unit* attumen)
         attumen->GetPositionX() + std::cos(orientation) * distanceBehind,
         attumen->GetPositionY() + std::sin(orientation) * distanceBehind,
         attumen->GetPositionZ());
+
     if (bot->GetExactDist2d(position) <= ATTUMEN_STACK_TOLERANCE)
         return std::nullopt;
 
@@ -1075,6 +1076,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
             float const angle = i * 2.0f * M_PI / numAngles;
             float const x = bot->GetPositionX() + std::cos(angle) * distance;
             float const y = bot->GetPositionY() + std::sin(angle) * distance;
+
             if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
                 IsClearOfBeams(*netherspite, state, x, y) &&
                 !CrossesVoidZone(state, bot->GetPosition(), Position(x, y)) &&
@@ -1107,6 +1109,7 @@ std::optional<Position> GetStepAroundVoidZones(
     float const zoneSide = (zone->GetPositionX() - from.GetPositionX()) * normalX +
         (zone->GetPositionY() - from.GetPositionY()) * normalY;
     float const away = zoneSide > 0.0f ? -1.0f : 1.0f;
+
     for (float const distance :
          { VOID_ZONE_STEP_AROUND_DISTANCE, VOID_ZONE_WIDE_STEP_AROUND_DISTANCE })
     {
@@ -1115,6 +1118,7 @@ std::optional<Position> GetStepAroundVoidZones(
             float const x = zone->GetPositionX() + normalX * side * distance;
             float const y = zone->GetPositionY() + normalY * side * distance;
             float z = bot->GetPositionZ();
+
             if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
                 IsClearOfBeams(*netherspite, state, x, y) &&
                 !CrossesVoidZone(state, from, Position(x, y)) &&
@@ -1404,7 +1408,6 @@ bool IsNightbaneDpsHeld(Player* bot, Unit* nightbane)
     if (IsNightbaneFlying(nightbane))
         return true;
 
-    // The timer first: IsMainTank can loop over the group.
     KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
     if (state && state->nightbaneDpsHoldTimer &&
         getMSTimeDiff(*state->nightbaneDpsHoldTimer, getMSTime()) >= NIGHTBANE_DPS_HOLD_MS)
@@ -1456,8 +1459,8 @@ bool KaraResetInstance(uint32 instanceId)
     bool const wasSet = state.attumenDpsHoldTimer || state.netherspiteDpsHoldTimer ||
         AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
         !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
-        state.nightbaneFlightStage ||
-        state.nightbaneFlightStackPosition || state.nightbaneRainOfBonesCenter;
+        state.nightbaneFlightStage || state.nightbaneFlightStackPosition ||
+        state.nightbaneRainOfBonesCenter;
 
     karaStates.erase(it);
     return wasSet;
