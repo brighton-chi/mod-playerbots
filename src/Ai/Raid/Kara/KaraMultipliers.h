@@ -35,7 +35,6 @@ public:
 
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
-
     Unit* GetEncounterBoss()
     {
         return _boss ? KaraHelpers::GetKaraBoss(bot, *_boss) : nullptr;
@@ -68,12 +67,23 @@ protected:
 class ManaWarpSaveStunsMultiplier : public Multiplier
 {
 public:
-    ManaWarpSaveStunsMultiplier(PlayerbotAI* botAI)
-        : Multiplier(botAI, "mana warp save stuns") {}
+    ManaWarpSaveStunsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "mana warp save stuns") {}
     float GetValue(Action* action) override;
 };
 
 // Attumen the Huntsman
+
+class AttumenTheHuntsmanDisableCombatFormationMoveMultiplier : public KarazhanEncounterMultiplier
+{
+public:
+    AttumenTheHuntsmanDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
+        : KarazhanEncounterMultiplier(
+            botAI, "attumen the huntsman disable combat formation move",
+            KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
 
 class AttumenTheHuntsmanDisableAutoTargetingMultiplier : public KarazhanEncounterMultiplier
 {

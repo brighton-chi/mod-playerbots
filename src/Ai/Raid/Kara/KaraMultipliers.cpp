@@ -210,6 +210,21 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 
 // Attumen the Huntsman
 
+float AttumenTheHuntsmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    // Blocked for phase 2 in AttumenTheHuntsmanStayStackedMultiplier
+    if (dynamic_cast<SetBehindTargetAction*>(action))
+        return 1.0f;
+
+    return GetEncounterBoss() ? 0.0f : 1.0f;
+}
+
 float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -218,7 +233,7 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
-    // Mounted Attumen is the only target left, so stock targeting finds him.
+    // Mounted Attumen is the only valid target left, so standard targeting is fine.
     Unit* midnight = FindThreatTarget(bot, "midnight");
     return midnight && !IsAttumenMounted(midnight) ? 0.0f : 1.0f;
 }
@@ -234,12 +249,8 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !IsRepositionAction(bot, action))
-    {
+    if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action))
         return 1.0f;
-    }
 
     Unit* midnight = FindThreatTarget(bot, "midnight");
     if (!midnight || !IsAttumenMounted(midnight))
