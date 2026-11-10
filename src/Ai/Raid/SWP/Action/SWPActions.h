@@ -14,6 +14,7 @@
 #include "Position.h"
 #include <limits>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Creature;
@@ -404,16 +405,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsControlPetAggressionAction : public Action
+class EredarTwinsSetPetStanceAction : public Action
 {
 public:
-    EredarTwinsControlPetAggressionAction(PlayerbotAI* botAI)
-        : Action(botAI, "eredar twins control pet aggression") {}
+    EredarTwinsSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "eredar twins set pet stance") {}
     bool Execute(Event event) override;
+    bool ResetPetStance();
 
 private:
-    ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class EredarTwinsConflagrationTargetMoveFromGroupAction : public MovementAction

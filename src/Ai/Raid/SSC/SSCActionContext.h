@@ -122,8 +122,8 @@ public:
         creators["fathom-lord karathress assign dps priority"] =
             &RaidSscActionContext::fathom_lord_karathress_assign_dps_priority;
 
-        creators["fathom-lord karathress control pet aggression"] =
-            &RaidSscActionContext::fathom_lord_karathress_control_pet_aggression;
+        creators["fathom-lord karathress set pet stance"] =
+            &RaidSscActionContext::fathom_lord_karathress_set_pet_stance;
 
         creators["fathom-lord karathress manage dps timer"] =
             &RaidSscActionContext::fathom_lord_karathress_manage_dps_timer;
@@ -207,6 +207,9 @@ public:
 
         creators["lady vashj destroy tainted core"] =
             &RaidSscActionContext::lady_vashj_destroy_tainted_core;
+
+        creators["lady vashj set pet stance"] =
+            &RaidSscActionContext::lady_vashj_set_pet_stance;
 
         creators["lady vashj command pet target"] =
             &RaidSscActionContext::lady_vashj_command_pet_target;
@@ -384,9 +387,9 @@ private:
     {
         return new FathomLordKarathressAssignDpsPriorityAction(botAI);
     }
-    static Action* fathom_lord_karathress_control_pet_aggression(PlayerbotAI* botAI)
+    static Action* fathom_lord_karathress_set_pet_stance(PlayerbotAI* botAI)
     {
-        return new FathomLordKarathressControlPetAggressionAction(botAI);
+        return new FathomLordKarathressSetPetStanceAction(botAI);
     }
     static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI)
     {
@@ -503,6 +506,10 @@ private:
     static Action* lady_vashj_destroy_tainted_core(PlayerbotAI* botAI)
     {
         return new LadyVashjDestroyTaintedCoreAction(botAI);
+    }
+    static Action* lady_vashj_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new LadyVashjSetPetStanceAction(botAI);
     }
     static Action* lady_vashj_command_pet_target(PlayerbotAI* botAI)
     {

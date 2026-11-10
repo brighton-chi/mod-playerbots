@@ -59,6 +59,13 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* twinsPetAction = context->GetAction("eredar twins set pet stance");
+    if (twinsPetAction &&
+        static_cast<EredarTwinsSetPetStanceAction*>(twinsPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // M'uru
     Action* muruAction = context->GetAction("m'uru position ranged by phase");
     if (muruAction && static_cast<MuruPositionRangedByPhaseAction*>(muruAction)

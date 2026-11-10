@@ -358,11 +358,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class FathomLordKarathressPetsShouldBeHeldTrigger : public SscEncounterTrigger
+class FathomLordKarathressShouldManagePetAggressionTrigger : public SscEncounterTrigger
 {
 public:
-    FathomLordKarathressPetsShouldBeHeldTrigger(PlayerbotAI* botAI)
-        : SscEncounterTrigger(botAI, "fathom-lord karathress pets should be held") {}
+    FathomLordKarathressShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "fathom-lord karathress should manage pet aggression") {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -607,6 +607,16 @@ class LadyVashjShouldDestroyTaintedCoreTrigger : public SscEncounterTrigger
 public:
     LadyVashjShouldDestroyTaintedCoreTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(botAI, "lady vashj should destroy tainted core") {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LadyVashjShouldManagePetAggressionTrigger : public SscEncounterTrigger
+{
+public:
+    LadyVashjShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(botAI, "lady vashj should manage pet aggression") {}
 
 protected:
     bool IsActiveInEncounter() override;

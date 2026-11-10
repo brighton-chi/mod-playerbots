@@ -19,8 +19,7 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Shared
     triggers.push_back(new TriggerNode("ssc no encounter in progress",
         { NextAction("ssc reset encounter states", ACTION_EMERGENCY + 10),
-          NextAction("leotheras the blind announce class roles", ACTION_EMERGENCY + 8),
-          NextAction("fathom-lord karathress control pet aggression", ACTION_RAID + 4) }));
+          NextAction("leotheras the blind announce class roles", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("ssc class roles should be assigned",
         { NextAction("ssc assign class roles", ACTION_EMERGENCY + 9) }));
@@ -120,8 +119,8 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority",
         { NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("fathom-lord karathress pets should be held",
-        { NextAction("fathom-lord karathress control pet aggression", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("fathom-lord karathress should manage pet aggression",
+        { NextAction("fathom-lord karathress set pet stance", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage dps timer",
         { NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10) }));
@@ -206,6 +205,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("lady vashj should destroy tainted core",
         { NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 11) }));
+
+    triggers.push_back(new TriggerNode("lady vashj should manage pet aggression",
+        { NextAction("lady vashj set pet stance", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("lady vashj pet should switch target",
         { NextAction("lady vashj command pet target", ACTION_RAID + 2) }));

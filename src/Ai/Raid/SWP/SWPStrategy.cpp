@@ -19,10 +19,8 @@ using namespace EncounterHelpers;
 void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Shared
-    // A pet still passive after a wipe gets its stance back.
     triggers.push_back(new TriggerNode("sunwell no encounter in progress",
-        { NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10),
-          NextAction("eredar twins control pet aggression", ACTION_RAID + 4) }));
+        { NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("sunwell aura to remove",
         { NextAction("sunwell remove aura", ACTION_EMERGENCY) }));
@@ -143,8 +141,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins should focus dps",
         { NextAction("eredar twins dps prioritize sacrolash", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins pets should be held",
-        { NextAction("eredar twins control pet aggression", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("eredar twins should manage pet aggression",
+        { NextAction("eredar twins set pet stance", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("eredar twins too many flame touched stacks",
         { NextAction("eredar twins remove flame sear", ACTION_RAID + 3) }));

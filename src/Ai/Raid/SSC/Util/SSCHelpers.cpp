@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Map.h"
 #include "PathGenerator.h"
+#include "Pet.h"
 #include "Random.h"
 #include "RtiTargetValue.h"
 #include "ObjectAccessor.h"
@@ -2447,6 +2448,15 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
         return enchanted;
 
     return phase == 3 ? vashj : nullptr;
+}
+
+bool ShouldVashjPetsBePassive(PlayerbotAI* botAI, Unit* vashj)
+{
+    if (!vashj || GetLadyVashjPhase(vashj) != 2)
+        return false;
+
+    Guardian* pet = botAI->GetBot()->GetGuardianPet();
+    return pet && !GetVashjPetTarget(botAI, pet, vashj);
 }
 
 // Vashj: Tainted Elemental

@@ -1430,12 +1430,6 @@ Position const* GetRainOfBonesCenter(Unit* nightbane)
     return channel->m_targets.GetDstPos();
 }
 
-bool IsControllableMinion(Unit* unit)
-{
-    Creature* creature = unit ? unit->ToCreature() : nullptr;
-    return creature && creature->IsAlive() && creature->GetCharmInfo();
-}
-
 // Shared encounter state
 
 KaraInstanceState& KaraState(uint32 instanceId)

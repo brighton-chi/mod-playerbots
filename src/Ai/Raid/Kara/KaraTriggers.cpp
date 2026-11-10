@@ -374,13 +374,11 @@ bool NetherspiteShouldHoldDpsTrigger::IsActiveInEncounter()
 
 bool NetherspiteShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
+    if (bot->m_Controlled.empty())
         return false;
 
     Unit* netherspite = GetEncounterBoss();
-    return netherspite &&
-        IsNetherspiteDpsHeld(bot, netherspite) != pet->HasReactState(REACT_PASSIVE);
+    return netherspite && IsMinionStanceWrongForHold(bot, IsNetherspiteDpsHeld(bot, netherspite));
 }
 
 bool NetherspiteShouldManageTimersAndTrackersTrigger::IsActiveInEncounter()
@@ -471,22 +469,11 @@ bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
 
 bool NightbaneShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    Unit::ControlSet const& minions = bot->m_Controlled;
-    if (std::none_of(minions.begin(), minions.end(), IsControllableMinion))
+    if (bot->m_Controlled.empty())
         return false;
 
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane)
-        return false;
-
-    bool const isHeld = IsNightbaneDpsHeld(bot, nightbane);
-    return std::any_of(
-        minions.begin(), minions.end(),
-        [isHeld](Unit* unit)
-        {
-            return IsControllableMinion(unit) &&
-                unit->ToCreature()->HasReactState(REACT_PASSIVE) != isHeld;
-        });
+    return nightbane && IsMinionStanceWrongForHold(bot, IsNightbaneDpsHeld(bot, nightbane));
 }
 
 bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()

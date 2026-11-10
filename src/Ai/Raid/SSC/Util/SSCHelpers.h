@@ -716,6 +716,10 @@ bool IsTankedStriderInStepInReach(Player* bot, Unit* unit);
 // Pets skip targets they're useless on: Vashj while she's immune in Phase 2, Striders (Panic fears
 // any pet in melee range), and Sporebats (out of reach).
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
+// In Phase 2, when the bot's pet has nothing useful to attack. Called back without a stance
+// change, it would attack its owner's next target, which may be a Strider, whose Panic fears
+// pets in melee range.
+bool ShouldVashjPetsBePassive(PlayerbotAI* botAI, Unit* vashj);
 
 // Vashj: Tainted Elemental
 

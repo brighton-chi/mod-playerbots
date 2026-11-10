@@ -17,7 +17,6 @@
 #include <limits>
 #include <list>
 #include <optional>
-#include <utility>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;
@@ -2585,33 +2584,14 @@ bool IllidanStormrageAssistTanksHandleFlamesAction::RepositionToAvoidBlaze(
 // tank aggro. Pets easily ruin pickups so their stances need to be managed.
 bool IllidanStormrageSetPetStanceAction::Execute(Event /*event*/)
 {
-    Pet* pet = bot->GetPet();
-    if (!pet)
-        return false;
-
-    if (!ShouldIllidanPetsBePassive(bot, GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE)))
-        return ResetPetStance();
-
-    if (pet->HasReactState(REACT_PASSIVE))
-        return false;
-
-    _previousReactState = pet->GetReactState();
-    _setPassive = true;
-    CallBackPets(bot);
-    pet->SetReactState(REACT_PASSIVE);
-    return true;
+    Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
+    return SetMinionStancesForHold(
+        bot, ShouldIllidanPetsBePassive(bot, illidan), _previousReactStates);
 }
 
 bool IllidanStormrageSetPetStanceAction::ResetPetStance()
 {
-    if (!_setPassive)
-        return false;
-
-    if (Pet* pet = bot->GetPet())
-        pet->SetReactState(_previousReactState);
-
-    _setPassive = false;
-    return true;
+    return SetMinionStancesForHold(bot, false, _previousReactStates);
 }
 
 bool IllidanStormrageCommandPetAttackAddAction::Execute(Event /*event*/)

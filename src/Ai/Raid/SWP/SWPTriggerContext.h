@@ -139,8 +139,8 @@ public:
         creators["eredar twins should focus dps"] =
             &RaidSwpTriggerContext::eredar_twins_should_focus_dps;
 
-        creators["eredar twins pets should be held"] =
-            &RaidSwpTriggerContext::eredar_twins_pets_should_be_held;
+        creators["eredar twins should manage pet aggression"] =
+            &RaidSwpTriggerContext::eredar_twins_should_manage_pet_aggression;
 
         creators["eredar twins active conflagration target"] =
             &RaidSwpTriggerContext::eredar_twins_active_conflagration_target;
@@ -399,9 +399,9 @@ private:
     {
         return new EredarTwinsShouldFocusDpsTrigger(botAI);
     }
-    static Trigger* eredar_twins_pets_should_be_held(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
-        return new EredarTwinsPetsShouldBeHeldTrigger(botAI);
+        return new EredarTwinsShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* eredar_twins_active_conflagration_target(PlayerbotAI* botAI)
     {

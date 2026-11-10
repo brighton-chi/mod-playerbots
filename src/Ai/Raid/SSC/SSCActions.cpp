@@ -40,6 +40,20 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* karathressPetAction = context->GetAction("fathom-lord karathress set pet stance");
+    if (karathressPetAction &&
+        static_cast<FathomLordKarathressSetPetStanceAction*>(karathressPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
+    Action* vashjPetAction = context->GetAction("lady vashj set pet stance");
+    if (vashjPetAction &&
+        static_cast<LadyVashjSetPetStanceAction*>(vashjPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     if (!IsMechanicTrackerBot(bot, SSC_MAP_ID))
         return reset;
 
@@ -1198,29 +1212,14 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
         SscState(karathress->GetInstanceId()).karathressDpsHoldTimer, getMSTime());
 }
 
-bool FathomLordKarathressControlPetAggressionAction::Execute(Event /*event*/)
+bool FathomLordKarathressSetPetStanceAction::Execute(Event /*event*/)
 {
-    Pet* pet = bot->GetPet();
-    if (!pet)
-        return false;
+    return SetMinionStancesForHold(bot, IsKarathressBlessingHoldActive(bot), _previousReactStates);
+}
 
-    if (IsKarathressBlessingHoldActive(bot))
-    {
-        if (!pet->HasReactState(REACT_PASSIVE))
-        {
-            _previousReactState = pet->GetReactState();
-            _setPassive = true;
-            CallBackPets(bot);
-            pet->SetReactState(REACT_PASSIVE);
-        }
-    }
-    else if (_setPassive)
-    {
-        pet->SetReactState(_previousReactState);
-        _setPassive = false;
-    }
-
-    return false;
+bool FathomLordKarathressSetPetStanceAction::ResetPetStance()
+{
+    return SetMinionStancesForHold(bot, false, _previousReactStates);
 }
 
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
@@ -2342,8 +2341,21 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
     return true;
 }
 
+bool LadyVashjSetPetStanceAction::Execute(Event /*event*/)
+{
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
+    return vashj &&
+        SetMinionStancesForHold(bot, ShouldVashjPetsBePassive(botAI, vashj), _previousReactStates);
+}
+
+bool LadyVashjSetPetStanceAction::ResetPetStance()
+{
+    return SetMinionStancesForHold(bot, false, _previousReactStates);
+}
+
 // Pets never leave a living target on their own (PetAI::OwnerAttacked), so they would stay on
-// Vashj through phase 2 and be useless. This directs them to their master's target instead.
+// Vashj through phase 2 and be useless. This directs them to their master's target instead. With
+// nothing useful to attack, the stance action holds them.
 bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -2352,13 +2364,7 @@ bool LadyVashjCommandPetTargetAction::Execute(Event /*event*/)
         return false;
 
     Unit* target = GetVashjPetTarget(botAI, pet, vashj);
-    if (!target)
-    {
-        CallBackPets(bot);
-        return true;
-    }
-
-    return CommandPetAttack(pet, target);
+    return target && CommandPetAttack(pet, target);
 }
 
 bool LadyVashjReturnToTheGroundAction::Execute(Event /*event*/)

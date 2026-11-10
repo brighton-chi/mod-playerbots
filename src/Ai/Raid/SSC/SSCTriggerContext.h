@@ -114,8 +114,8 @@ public:
         creators["fathom-lord karathress should assign dps priority"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_assign_dps_priority;
 
-        creators["fathom-lord karathress pets should be held"] =
-            &RaidSscTriggerContext::fathom_lord_karathress_pets_should_be_held;
+        creators["fathom-lord karathress should manage pet aggression"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_should_manage_pet_aggression;
 
         creators["fathom-lord karathress should manage dps timer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
@@ -199,6 +199,9 @@ public:
 
         creators["lady vashj should destroy tainted core"] =
             &RaidSscTriggerContext::lady_vashj_should_destroy_tainted_core;
+
+        creators["lady vashj should manage pet aggression"] =
+            &RaidSscTriggerContext::lady_vashj_should_manage_pet_aggression;
 
         creators["lady vashj pet should switch target"] =
             &RaidSscTriggerContext::lady_vashj_pet_should_switch_target;
@@ -360,9 +363,9 @@ private:
     {
         return new FathomLordKarathressShouldAssignDpsPriorityTrigger(botAI);
     }
-    static Trigger* fathom_lord_karathress_pets_should_be_held(PlayerbotAI* botAI)
+    static Trigger* fathom_lord_karathress_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
-        return new FathomLordKarathressPetsShouldBeHeldTrigger(botAI);
+        return new FathomLordKarathressShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI)
     {
@@ -477,6 +480,10 @@ private:
     static Trigger* lady_vashj_should_destroy_tainted_core(PlayerbotAI* botAI)
     {
         return new LadyVashjShouldDestroyTaintedCoreTrigger(botAI);
+    }
+    static Trigger* lady_vashj_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new LadyVashjShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* lady_vashj_pet_should_switch_target(PlayerbotAI* botAI)
     {

@@ -420,11 +420,11 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsPetsShouldBeHeldTrigger : public SunwellEncounterTrigger
+class EredarTwinsShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
 {
 public:
-    EredarTwinsPetsShouldBeHeldTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins pets should be held") {}
+    EredarTwinsShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(botAI, "eredar twins should manage pet aggression") {}
 
 protected:
     bool IsActiveInEncounter() override;

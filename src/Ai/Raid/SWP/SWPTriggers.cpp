@@ -546,13 +546,12 @@ bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
     return !IsAnySacrolashTank(bot) && !IsAlythessTank(bot);
 }
 
-bool EredarTwinsPetsShouldBeHeldTrigger::IsActiveInEncounter()
+bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
+    if (bot->m_Controlled.empty())
         return false;
 
-    return IsEredarTwinsStartHoldActive(botAI) != pet->HasReactState(REACT_PASSIVE);
+    return IsMinionStanceWrongForHold(bot, IsEredarTwinsStartHoldActive(botAI));
 }
 
 bool EredarTwinsActiveConflagrationTargetTrigger::IsActiveInEncounter()

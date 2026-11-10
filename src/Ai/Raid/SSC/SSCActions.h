@@ -14,6 +14,7 @@
 #include "SSCHelpers.h"
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 class GameObject;
@@ -357,16 +358,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class FathomLordKarathressControlPetAggressionAction : public Action
+class FathomLordKarathressSetPetStanceAction : public Action
 {
 public:
-    FathomLordKarathressControlPetAggressionAction(PlayerbotAI* botAI)
-        : Action(botAI, "fathom-lord karathress control pet aggression") {}
+    FathomLordKarathressSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "fathom-lord karathress set pet stance") {}
     bool Execute(Event event) override;
+    bool ResetPetStance();
 
 private:
-    ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class FathomLordKarathressDropToGroundAfterCycloneAction : public MovementAction
@@ -588,6 +589,18 @@ public:
     LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI)
         : Action(botAI, "lady vashj destroy tainted core") {}
     bool Execute(Event event) override;
+};
+
+class LadyVashjSetPetStanceAction : public Action
+{
+public:
+    LadyVashjSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "lady vashj set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class LadyVashjCommandPetTargetAction : public Action

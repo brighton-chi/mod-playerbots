@@ -14,6 +14,7 @@
 #include "Unit.h"
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 // Shared
@@ -692,8 +693,7 @@ public:
     bool ResetPetStance();
 
 private:
-    ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class IllidanStormrageCommandPetAttackAddAction : public Action

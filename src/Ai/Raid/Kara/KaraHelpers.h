@@ -676,8 +676,6 @@ bool IsNightbaneFlightPhaseActive(Unit* nightbane);
 bool IsNightbaneDpsHeld(Player* bot, Unit* nightbane);
 // Where the current Rain of Bones channel is aimed, or nullptr. A rain doesn't follow its target.
 Position const* GetRainOfBonesCenter(Unit* nightbane);
-// A living pet or guardian with pet controls, which can be called back and set passive.
-bool IsControllableMinion(Unit* unit);
 
 // Shared encounter state
 

@@ -415,13 +415,12 @@ bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && FindThreatTarget(bot, "fathom-lord karathress");
 }
 
-bool FathomLordKarathressPetsShouldBeHeldTrigger::IsActiveInEncounter()
+bool FathomLordKarathressShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    Pet* pet = bot->GetPet();
-    if (!pet || !pet->IsAlive())
+    if (bot->m_Controlled.empty())
         return false;
 
-    return IsKarathressBlessingHoldActive(bot) != pet->HasReactState(REACT_PASSIVE);
+    return IsMinionStanceWrongForHold(bot, IsKarathressBlessingHoldActive(bot));
 }
 
 bool FathomLordKarathressRangedShouldSpreadTrigger::IsActiveInEncounter()
@@ -777,6 +776,15 @@ bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
     return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
 }
 
+bool LadyVashjShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (bot->m_Controlled.empty())
+        return false;
+
+    Unit* vashj = FindThreatTarget(bot, "lady vashj");
+    return vashj && IsMinionStanceWrongForHold(bot, ShouldVashjPetsBePassive(botAI, vashj));
+}
+
 bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -791,10 +799,8 @@ bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (phase != 2 && phase != 3)
         return false;
 
-    if (Unit* target = GetVashjPetTarget(botAI, pet, vashj))
-        return pet->GetVictim() != target;
-
-    return pet->GetVictim() == vashj;
+    Unit* target = GetVashjPetTarget(botAI, pet, vashj);
+    return target && pet->GetVictim() != target;
 }
 
 // Bots attacking Sporebats tend to walk up into the air, sometimes onto the ceiling pipes.

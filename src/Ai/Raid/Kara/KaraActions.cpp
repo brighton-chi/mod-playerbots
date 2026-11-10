@@ -1061,37 +1061,14 @@ bool NetherspiteSelectTargetForHoldAction::Execute(Event /*event*/)
 // Pets on him through the banish keep hitting after its threat reset, ahead of the tank.
 bool NetherspiteSetPetStanceAction::Execute(Event /*event*/)
 {
-    Pet* pet = bot->GetPet();
-    if (!pet)
-        return false;
-
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
-    if (!netherspite)
-        return false;
-
-    if (!IsNetherspiteDpsHeld(bot, netherspite))
-        return ResetPetStance();
-
-    if (pet->HasReactState(REACT_PASSIVE))
-        return false;
-
-    _previousReactState = pet->GetReactState();
-    _setPassive = true;
-    CallBackPets(bot);
-    pet->SetReactState(REACT_PASSIVE);
-    return true;
+    return netherspite && SetMinionStancesForHold(
+        bot, IsNetherspiteDpsHeld(bot, netherspite), _previousReactStates);
 }
 
 bool NetherspiteSetPetStanceAction::ResetPetStance()
 {
-    if (!_setPassive)
-        return false;
-
-    if (Pet* pet = bot->GetPet())
-        pet->SetReactState(_previousReactState);
-
-    _setPassive = false;
-    return true;
+    return SetMinionStancesForHold(bot, false, _previousReactStates);
 }
 
 // Only the tracker writes the beam state. Everyone else reads it.
@@ -1812,50 +1789,17 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::StackOnRangedLeader(Play
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// Guardians too (Shadowfiend, Water Elemental, Feral Spirit, Force of Nature): called back alone,
-// they would attack again and chase skeletons or him off the terrace.
+// Pets and guardians left attacking chase skeletons, or him off the terrace.
 bool NightbaneSetPetStanceAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (!nightbane)
-        return false;
-
-    if (!IsNightbaneDpsHeld(bot, nightbane))
-        return ResetPetStance();
-
-    std::vector<Creature*> minionsToHold;
-    for (Unit* unit : bot->m_Controlled)
-    {
-        if (IsControllableMinion(unit) && !unit->ToCreature()->HasReactState(REACT_PASSIVE))
-            minionsToHold.push_back(unit->ToCreature());
-    }
-
-    if (minionsToHold.empty())
-        return false;
-
-    CallBackPets(bot);
-    for (Creature* minion : minionsToHold)
-    {
-        _previousReactStates.emplace_back(minion->GetGUID(), minion->GetReactState());
-        minion->SetReactState(REACT_PASSIVE);
-    }
-
-    return true;
+    return nightbane && SetMinionStancesForHold(
+        bot, IsNightbaneDpsHeld(bot, nightbane), _previousReactStates);
 }
 
 bool NightbaneSetPetStanceAction::ResetPetStance()
 {
-    if (_previousReactStates.empty())
-        return false;
-
-    for (auto const& [guid, reactState] : _previousReactStates)
-    {
-        if (Creature* minion = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, guid))
-            minion->SetReactState(reactState);
-    }
-
-    _previousReactStates.clear();
-    return true;
+    return SetMinionStancesForHold(bot, false, _previousReactStates);
 }
 
 // The hold doesn't block a ground AoE on skeletons, and off the terrace he is out of its reach, so

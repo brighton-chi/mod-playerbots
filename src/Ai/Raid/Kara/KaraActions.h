@@ -402,8 +402,7 @@ public:
     bool ResetPetStance();
 
 private:
-    ReactStates _previousReactState = REACT_DEFENSIVE;
-    bool _setPassive = false;
+    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 
 class NetherspiteManageTimersAndTrackersAction : public Action
@@ -531,7 +530,6 @@ public:
     bool ResetPetStance();
 
 private:
-    // In the order set; a unit set passive again after a change keeps its latest stance.
     std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
 };
 

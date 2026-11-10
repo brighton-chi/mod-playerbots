@@ -13,7 +13,6 @@
 #include <array>
 #include <cmath>
 #include <iterator>
-#include <utility>
 #include <vector>
 
 using namespace SwpHelpers;
