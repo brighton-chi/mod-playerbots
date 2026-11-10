@@ -417,7 +417,7 @@ bool FathomLordKarathressShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 bool FathomLordKarathressShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    if (bot->m_Controlled.empty())
+    if (!HasControllableMinion(bot) || !FindThreatTarget(bot, "fathom-lord karathress"))
         return false;
 
     return IsMinionStanceWrongForHold(bot, IsKarathressBlessingHoldActive(bot));
@@ -778,7 +778,7 @@ bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
 
 bool LadyVashjShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    if (bot->m_Controlled.empty())
+    if (!HasControllableMinion(bot))
         return false;
 
     Unit* vashj = FindThreatTarget(bot, "lady vashj");

@@ -9,12 +9,12 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "EncounterHelpers.h"
 #include "MovementActions.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <limits>
 #include <string>
-#include <utility>
 #include <vector>
 
 class Creature;
@@ -414,7 +414,7 @@ public:
     bool ResetPetStance();
 
 private:
-    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 class EredarTwinsConflagrationTargetMoveFromGroupAction : public MovementAction

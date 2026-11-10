@@ -9,12 +9,12 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "EncounterHelpers.h"
 #include "MovementActions.h"
 #include "Position.h"
 #include "SSCHelpers.h"
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 class GameObject;
@@ -367,7 +367,7 @@ public:
     bool ResetPetStance();
 
 private:
-    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 class FathomLordKarathressDropToGroundAfterCycloneAction : public MovementAction
@@ -600,7 +600,7 @@ public:
     bool ResetPetStance();
 
 private:
-    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 class LadyVashjCommandPetTargetAction : public Action

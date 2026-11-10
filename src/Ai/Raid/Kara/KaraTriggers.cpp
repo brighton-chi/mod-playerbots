@@ -374,7 +374,7 @@ bool NetherspiteShouldHoldDpsTrigger::IsActiveInEncounter()
 
 bool NetherspiteShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    if (bot->m_Controlled.empty())
+    if (!HasControllableMinion(bot))
         return false;
 
     Unit* netherspite = GetEncounterBoss();
@@ -469,7 +469,7 @@ bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
 
 bool NightbaneShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    if (bot->m_Controlled.empty())
+    if (!HasControllableMinion(bot))
         return false;
 
     Unit* nightbane = GetEncounterBoss();

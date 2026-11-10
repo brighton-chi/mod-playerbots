@@ -1068,7 +1068,9 @@ bool NetherspiteSetPetStanceAction::Execute(Event /*event*/)
 
 bool NetherspiteSetPetStanceAction::ResetPetStance()
 {
-    return SetMinionStancesForHold(bot, false, _previousReactStates);
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 // Only the tracker writes the beam state. Everyone else reads it.
@@ -1799,7 +1801,9 @@ bool NightbaneSetPetStanceAction::Execute(Event /*event*/)
 
 bool NightbaneSetPetStanceAction::ResetPetStance()
 {
-    return SetMinionStancesForHold(bot, false, _previousReactStates);
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 // The hold doesn't block a ground AoE on skeletons, and off the terrace he is out of its reach, so

@@ -1219,7 +1219,9 @@ bool FathomLordKarathressSetPetStanceAction::Execute(Event /*event*/)
 
 bool FathomLordKarathressSetPetStanceAction::ResetPetStance()
 {
-    return SetMinionStancesForHold(bot, false, _previousReactStates);
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/)
@@ -2350,7 +2352,9 @@ bool LadyVashjSetPetStanceAction::Execute(Event /*event*/)
 
 bool LadyVashjSetPetStanceAction::ResetPetStance()
 {
-    return SetMinionStancesForHold(bot, false, _previousReactStates);
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 // Pets never leave a living target on their own (PetAI::OwnerAttacked), so they would stay on

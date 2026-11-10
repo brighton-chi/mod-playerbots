@@ -9,6 +9,7 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "EncounterHelpers.h"
 #include "KaraHelpers.h"
 #include "MovementActions.h"
 #include <optional>
@@ -402,7 +403,7 @@ public:
     bool ResetPetStance();
 
 private:
-    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 class NetherspiteManageTimersAndTrackersAction : public Action
@@ -530,7 +531,7 @@ public:
     bool ResetPetStance();
 
 private:
-    std::vector<std::pair<ObjectGuid, ReactStates>> _previousReactStates;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 class NightbaneStopAttackingAction : public Action

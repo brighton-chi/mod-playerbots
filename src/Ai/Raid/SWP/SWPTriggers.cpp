@@ -548,7 +548,7 @@ bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
 
 bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
-    if (bot->m_Controlled.empty())
+    if (!HasControllableMinion(bot))
         return false;
 
     return IsMinionStanceWrongForHold(bot, IsEredarTwinsStartHoldActive(botAI));
