@@ -394,7 +394,8 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 
     Position const& position = MAIDEN_OF_VIRTUE_POSITION;
     float const distToPosition = maiden->GetExactDist2d(position);
-    if (distToPosition <= MAIDEN_OF_VIRTUE_POSITION_TOLERANCE)
+    constexpr float arrivalDist = 2.0f;
+    if (distToPosition <= arrivalDist)
         return false;
 
     // The tank leads her along the line from her through her position, so it walks through her when
@@ -405,7 +406,6 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
         position.GetPositionY() + (position.GetPositionY() - maiden->GetPositionY()) * ratio,
         bot->GetPositionZ());
 
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
@@ -413,8 +413,8 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
@@ -434,7 +434,7 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, *healer, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, *healer, arrivalDist, maiden, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -653,9 +653,9 @@ bool RomuloAndJulianneSkullHigherHealthAction::Execute(Event /*event*/)
         return MarkTargetWithSkull(bot, romulo);
 
     // Within the gap the skull stays where it is; phase 2 leaves it on Romulo.
-    Unit* higher = romulo->GetHealthPct() >= julianne->GetHealthPct() ? romulo : julianne;
+    Unit* higher = romulo->GetHealth() >= julianne->GetHealth() ? romulo : julianne;
     Unit* lower = higher == romulo ? julianne : romulo;
-    if (higher->GetHealthPct() - lower->GetHealthPct() <= ROMULO_AND_JULIANNE_HEALTH_GAP_PCT)
+    if (higher->GetHealth() - lower->GetHealth() <= ROMULO_AND_JULIANNE_HEALTH_GAP)
         return false;
 
     return MarkTargetWithSkull(bot, higher);

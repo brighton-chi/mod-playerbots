@@ -189,8 +189,10 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
             break;
         }
         case CLASS_WARLOCK:
+        {
             isStun = dynamic_cast<CastShadowfuryAction*>(action);
             break;
+        }
         case CLASS_WARRIOR:
         {
             isStun = dynamic_cast<CastConcussionBlowAction*>(action) ||

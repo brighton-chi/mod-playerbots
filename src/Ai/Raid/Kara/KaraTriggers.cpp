@@ -201,7 +201,11 @@ bool WizardOfOzShouldPrioritizeTargetsTrigger::IsActiveInEncounter()
 
 bool WizardOfOzMageShouldBurnStrawmanTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_MAGE && GetOperaActor(bot, "strawman");
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
+
+    Unit* strawman = GetOperaActor(bot, "strawman");
+    return strawman && !strawman->HasAura(Id(KaraSpells::SPELL_BURNING_STRAW));
 }
 
 // The Curator

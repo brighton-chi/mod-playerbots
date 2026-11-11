@@ -42,11 +42,14 @@ enum class KaraSpells : uint32
     // Maiden of Virtue
     SPELL_REPENTANCE              = 29511,
 
-    // Opera Event
+    // The Big Bad Wolf
     SPELL_LITTLE_RED_RIDING_HOOD  = 30756,
     SPELL_GOBLIN_ROCKET_BOOTS     = 8892,  // the Little Red Riding Hood speed cheat (70% vs. 50%)
     SPELL_FEIGN_DEATH             = 5384,
     SPELL_INTERVENE               = 3411,
+
+    // The Wizard of Oz
+    SPELL_BURNING_STRAW           = 31075,
 
     // The Curator
     SPELL_CURATOR_EVOCATION       = 30254,
@@ -278,10 +281,10 @@ inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
     Position{ -10873.346f, -1767.691f, 90.477f },
     Position{ -10873.569f, -1760.625f, 90.477f },
     Position{ -10876.827f, -1753.725f, 90.477f },
-    Position{ -10883.397f, -1749.476f, 90.477f },
-    Position{ -10893.279f, -1747.877f, 90.477f },
-    Position{ -10901.284f, -1747.492f, 90.477f },
-    Position{ -10908.019f, -1749.260f, 90.477f },
+    Position{ -10883.397f, -1751.176f, 90.477f },
+    Position{ -10893.279f, -1750.877f, 90.477f },
+    Position{ -10901.284f, -1750.492f, 90.477f },
+    Position{ -10908.019f, -1751.260f, 90.477f },
     Position{ -10912.599f, -1754.285f, 90.477f },
     Position{ -10913.570f, -1761.219f, 90.477f },
     Position{ -10912.652f, -1768.362f, 90.477f },
@@ -306,7 +309,7 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 // Romulo and Julianne
 // Once one is down, the other must die within 10 s. The skull moves to the one with higher health
 // only once it is this far ahead.
-inline constexpr float ROMULO_AND_JULIANNE_HEALTH_GAP_PCT = 10.0f;
+inline constexpr uint32 ROMULO_AND_JULIANNE_HEALTH_GAP = 25000;
 
 // Wizard of Oz
 inline constexpr float SCORCH_RANGE = 30.0f;
