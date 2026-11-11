@@ -164,7 +164,7 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
 // Trash
 
-// Stock rotations spend these stuns on the pack (Shockwave and Shadowfury on AoE, Bash in the
+// Standard rotations spend these stuns on the pack (Shockwave and Shadowfury on AoE, Bash in the
 // rotation), so every stunner saves its stun for the cast bar.
 float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 {
@@ -379,7 +379,7 @@ float ShadeOfAranArcaneExplosionDisableMovementMultiplier::GetValueInEncounter(A
         return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
-        !IsKillingSpree(bot, action))
+        !IsKillingSpree(bot, action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
