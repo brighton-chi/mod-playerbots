@@ -31,6 +31,8 @@ using namespace EncounterHelpers;
 namespace KaraHelpers
 {
 
+// Shared
+
 namespace
 {
 
@@ -51,63 +53,6 @@ float GetDistanceToSegment2d(Position const& point, Position const& start, Posit
     float const fraction = std::clamp(along, 0.0f, 1.0f);
     return point.GetExactDist2d(
         start.GetPositionX() + segmentX * fraction, start.GetPositionY() + segmentY * fraction);
-}
-
-bool NeedsComboPointsForManaWarpStun(Player* bot)
-{
-    return bot->getClass() == CLASS_ROGUE ||
-        (bot->getClass() == CLASS_DRUID && bot->GetShapeshiftForm() == FORM_CAT);
-}
-
-bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs)
-{
-    Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
-    return breach && breach->getState() == SPELL_STATE_PREPARING &&
-        breach->GetCastTime() - breach->GetCastTimeRemaining() >= static_cast<int32>(reactionMs);
-}
-
-bool IsManaWarpToStun(Player* bot, Unit* unit, float reach, uint32 reactionMs)
-{
-    return unit && unit->GetEntry() == Id(KaraNpcs::NPC_MANA_WARP) &&
-        bot->GetExactDist(unit) <= reach && IsManaWarpCastingWarpBreach(unit, reactionMs);
-}
-
-void StepToward(Position& from, Position const& to, float distance)
-{
-    float const remaining = from.GetExactDist2d(to);
-    if (remaining <= distance)
-    {
-        from.Relocate(to.GetPositionX(), to.GetPositionY());
-        return;
-    }
-
-    float const ratio = distance / remaining;
-    from.Relocate(
-        from.GetPositionX() + (to.GetPositionX() - from.GetPositionX()) * ratio,
-        from.GetPositionY() + (to.GetPositionY() - from.GetPositionY()) * ratio);
-}
-
-float GetSmallestBigBadWolfRunGap(
-    Position runner, Position wolf, BigBadWolfRunPlan plan, float runnerStep, float wolfStep,
-    float wolfStopDistance, uint32 steps)
-{
-    float smallestGap = std::numeric_limits<float>::max();
-    for (uint32 step = 0; step < steps; ++step)
-    {
-        if (runner.GetExactDist2d(BIG_BAD_WOLF_RUN_POSITIONS[plan.index]) <
-            BIG_BAD_WOLF_RUN_TURN_DISTANCE)
-        {
-            plan.index = GetNextBigBadWolfRunIndex(plan.index, plan.direction);
-        }
-
-        StepToward(runner, BIG_BAD_WOLF_RUN_POSITIONS[plan.index], runnerStep);
-        if (wolf.GetExactDist2d(runner) > wolfStopDistance)
-            StepToward(wolf, runner, wolfStep);
-
-        smallestGap = std::min(smallestGap, wolf.GetExactDist2d(runner));
-    }
-
-    return smallestGap;
 }
 
 // The Opera is three plays with several actors each, and the Chess Event has no boss on a
@@ -139,9 +84,7 @@ constexpr std::string_view BossName(KaraBosses boss)
     }
 }
 
-} // end anonymous namespace
-
-// Shared
+} // end anonymous namespace (Shared)
 
 Unit* GetKaraBoss(Player* bot, KaraBosses boss)
 {
@@ -173,6 +116,30 @@ bool IsKarazhanFearCasterActive(Player* bot)
 }
 
 // Trash
+
+namespace
+{
+
+bool NeedsComboPointsForManaWarpStun(Player* bot)
+{
+    return bot->getClass() == CLASS_ROGUE ||
+        (bot->getClass() == CLASS_DRUID && bot->GetShapeshiftForm() == FORM_CAT);
+}
+
+bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs)
+{
+    Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
+    return breach && breach->getState() == SPELL_STATE_PREPARING &&
+        breach->GetCastTime() - breach->GetCastTimeRemaining() >= static_cast<int32>(reactionMs);
+}
+
+bool IsManaWarpToStun(Player* bot, Unit* unit, float reach, uint32 reactionMs)
+{
+    return unit && unit->GetEntry() == Id(KaraNpcs::NPC_MANA_WARP) &&
+        bot->GetExactDist(unit) <= reach && IsManaWarpCastingWarpBreach(unit, reactionMs);
+}
+
+} // end anonymous namespace (Trash)
 
 bool IsNearManaWarpPacks(Player* bot)
 {
@@ -349,6 +316,49 @@ Player* GetNearestRepentantHealer(Player* bot, Unit* maiden)
 }
 
 // The Big Bad Wolf
+
+namespace
+{
+
+void StepToward(Position& from, Position const& to, float distance)
+{
+    float const remaining = from.GetExactDist2d(to);
+    if (remaining <= distance)
+    {
+        from.Relocate(to.GetPositionX(), to.GetPositionY());
+        return;
+    }
+
+    float const ratio = distance / remaining;
+    from.Relocate(
+        from.GetPositionX() + (to.GetPositionX() - from.GetPositionX()) * ratio,
+        from.GetPositionY() + (to.GetPositionY() - from.GetPositionY()) * ratio);
+}
+
+float GetSmallestBigBadWolfRunGap(
+    Position runner, Position wolf, BigBadWolfRunPlan plan, float runnerStep, float wolfStep,
+    float wolfStopDistance, uint32 steps)
+{
+    float smallestGap = std::numeric_limits<float>::max();
+    for (uint32 step = 0; step < steps; ++step)
+    {
+        if (runner.GetExactDist2d(BIG_BAD_WOLF_RUN_POSITIONS[plan.index]) <
+            BIG_BAD_WOLF_RUN_TURN_DISTANCE)
+        {
+            plan.index = GetNextBigBadWolfRunIndex(plan.index, plan.direction);
+        }
+
+        StepToward(runner, BIG_BAD_WOLF_RUN_POSITIONS[plan.index], runnerStep);
+        if (wolf.GetExactDist2d(runner) > wolfStopDistance)
+            StepToward(wolf, runner, wolfStep);
+
+        smallestGap = std::min(smallestGap, wolf.GetExactDist2d(runner));
+    }
+
+    return smallestGap;
+}
+
+} // end anonymous namespace (The Big Bad Wolf)
 
 bool IsLittleRedRidingHood(Player* bot)
 {
