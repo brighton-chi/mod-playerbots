@@ -178,7 +178,7 @@ inline constexpr uint32 WARP_BREACH_MIN_REACTION_MS = 200;
 inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 300; // War Stomp's 0.5 s cast still lands
 // From here a stunner on the warp casts nothing else, keeping its global cooldown free.
 inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 15.0f;
-// Stun reaches, centre to centre
+// Stun reaches, center to center
 inline constexpr float MELEE_STUN_REACH = 5.0f;
 inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
 inline constexpr float SHADOWFURY_REACH = 30.0f;
@@ -204,11 +204,16 @@ inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
 // Intangible Presence curses every player within 10 yd of Attumen.
 inline constexpr float INTANGIBLE_PRESENCE_RADIUS = 10.0f;
 inline constexpr float ATTUMEN_HAZARD_CLEARANCE = 1.0f;
-// Behind mounted Attumen, centre to centre. Charge goes to a player more than 8 yd away edge to
-// edge (11.75 yd centre to centre), and Auto Shot fails within 5.08 yd.
-inline constexpr float ATTUMEN_STACK_DISTANCE = 2.0f;
-inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.0f;
-inline constexpr float ATTUMEN_STACK_TOLERANCE = 1.5f;
+// Behind mounted Attumen, center to center. Charge goes to a player more than 8 yd away edge to
+// edge (11.75 yd center to center), and Auto Shot fails within 5.08 yd.
+inline constexpr float ATTUMEN_STACK_DISTANCE = 3.0f;
+// Mounted Attumen's CombatReach is 2.25 yards. The Hunter dead zone has a minimum distance of 8 yd,
+// which means the target's reach has no impact on the dead zone with respect to a Hunter without
+// Bloodlust until ~2.167 yd. In this case, it results in a dead zone starting at ~8.167 yd. The
+// minimum distance of a spell takes into account the target's CombatReach but not the caster's,
+// giving Berserker Charge a minimum range of 9.5 yd (8 yd minimum distance + player reach).
+inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.5f;
+inline constexpr float ATTUMEN_STACK_TOLERANCE = 0.3f;
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 
 // Midnight turns invisible when mounted Attumen is summoned.
@@ -225,7 +230,7 @@ bool IsAttumenDpsHeld(Player* bot);
 inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
 // She stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
-// Holy Ground hits a player within 12 yd of her centre, and breaks Repentance.
+// Holy Ground hits a player within 12 yd of her center, and breaks Repentance.
 inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
 inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
 // Her spawn point; the ranged positions are a ring around it.
@@ -314,7 +319,7 @@ inline std::array const OZ_TARGETS = {
 };
 
 // The Curator
-// Arcing Sear jumps 13 yd centre to centre between players, so this spread only cuts its jumps.
+// Arcing Sear jumps 13 yd center to center between players, so this spread only cuts its jumps.
 inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
@@ -323,15 +328,15 @@ inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165
 bool IsTerestianSacrificeActive(Player* bot);
 
 // Shade of Aran
-// Hits within 21 yd of his centre, no reach added.
+// Hits within 21 yd of his center, no reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
 inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
 // The pull lands everyone on his spot, so each bot takes its own way out.
 inline constexpr float ARAN_PULLED_ONTO_BOSS_DISTANCE = 1.0f;
 inline constexpr uint32 ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS = 16;
-// Hits within 9 yd of his centre, no reach added.
+// Hits within 9 yd of his center, no reach added.
 inline constexpr float ARAN_COUNTERSPELL_HAZARD_RADIUS = 9.0f;
-// Ranged stand here, centre to centre: outside Counterspell, and inside most Blizzard patches.
+// Ranged stand here, center to center: outside Counterspell, and inside most Blizzard patches.
 inline constexpr float ARAN_RANGED_MIN_DISTANCE = ARAN_COUNTERSPELL_HAZARD_RADIUS + 1.0f;
 inline constexpr float ARAN_RANGED_MAX_DISTANCE = 13.0f;
 inline constexpr float ARAN_RANGED_BAND_TOLERANCE = 0.5f;
@@ -339,7 +344,7 @@ inline constexpr uint32 ARAN_ELEMENTALS_CACHE_INTERVAL_MS = 1000;
 // A patch reaches 13 yd plus the player's reach.
 inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 13.0f;
 inline constexpr float ARAN_ROOM_SEARCH_RADIUS = 60.0f;
-// Ranged run here from a patch, measured from the room centre. The train goes clockwise and stops
+// Ranged run here from a patch, measured from the room center. The train goes clockwise and stops
 // short of a full lap, so it doesn't come back to ground behind its oldest patch.
 inline constexpr float ARAN_BLIZZARD_ESCAPE_DISTANCE = ARAN_RANGED_MIN_DISTANCE + 0.5f;
 inline constexpr float ARAN_BLIZZARD_ESCAPE_ANGLE = static_cast<float>(M_PI) * 40.0f / 180.0f;
@@ -417,7 +422,7 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
 };
 
 // The script takes a player within 1.5 yd of the line only if their 2D distance to the portal, less
-// both reaches, beats Netherspite's. His reach is 18, so that starts 18 - 1.5 yd from his centre.
+// both reaches, beats Netherspite's. His reach is 18, so that starts 18 - 1.5 yd from his center.
 inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
@@ -470,7 +475,7 @@ NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
 float GetNetherspiteBanishRadius(Player* player);
 void YellNetherspiteBeamText(Player* player, std::string const& key, std::string const& text);
 void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteBeam beam);
-// Along the line from his centre, and to the side, positive counterclockwise.
+// Along the line from his center, and to the side, positive counterclockwise.
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
     Unit const& netherspite, Position const& portal, float x, float y);
 bool IsOnNetherspiteBeam(Unit* netherspite, Position const& portal, Unit* unit);
@@ -608,7 +613,7 @@ inline constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 inline constexpr uint32 NIGHTBANE_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
 inline constexpr float CHARRED_EARTH_REACH = 11.5f; // 10y patch + 1.5y player reach
 inline constexpr float CHARRED_EARTH_CLEARANCE = 1.5f;
-// Rain of Bones ticks land up to 8y from its centre and hit 6y around that, with no player reach.
+// Rain of Bones ticks land up to 8y from its center and hit 6y around that, with no player reach.
 inline constexpr float RAIN_OF_BONES_REACH = 14.0f;
 inline constexpr float RAIN_OF_BONES_CLEARANCE = 1.0f;
 // Blizzard, Hurricane, Rain of Fire and Volley
@@ -625,7 +630,7 @@ inline constexpr float TERRACE_ARC_END = 4.9241f;
 // All floor, and 10.5y from the outer wall, so skeletons appearing up to 10y from a Rain of Bones
 // on the stack can't reach it.
 inline constexpr float NIGHTBANE_STACK_RADIUS = 39.0f;
-// Within 50y of the flight position. Fireball Barrage hits players more than 52y from his centre.
+// Within 50y of the flight position. Fireball Barrage hits players more than 52y from his center.
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MIN_ANGLE = 1.2566f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MAX_ANGLE = 3.0020f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_HOME_ANGLE = 2.0944f;

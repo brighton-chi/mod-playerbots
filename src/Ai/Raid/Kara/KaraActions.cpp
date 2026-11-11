@@ -285,6 +285,8 @@ bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
     if (attumen->GetVictim() != bot || !bot->IsWithinMeleeRange(attumen))
         return false;
 
+    // LoS check here because it is possible that the party pulls Midnight to a place where the
+    // tank position (the middle of the stable) is out of LoS and not reachable in a straight move.
     Position const& position = ATTUMEN_TANK_POSITION;
     if (!bot->IsWithinLOS(
             position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
@@ -304,7 +306,6 @@ bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Mounted Attumen's CombatReach is 2.25 yards
 bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
 {
     Unit* attumen = GetMountedAttumen(bot);

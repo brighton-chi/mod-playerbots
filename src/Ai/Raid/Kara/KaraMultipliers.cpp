@@ -230,8 +230,13 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action))
+    // Throw Blade Flurry in here because it's also used as a pure DPS cooldown, not just for AoE,
+    // so the target exclusion doesn't cover it entirely. Save it for phase 2.
+    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
+        !(bot->getClass() == CLASS_ROGUE && dynamic_cast<CastBladeFlurryAction*>(action)))
+    {
         return 1.0f;
+    }
 
     // Mounted Attumen is the only valid target left, so standard targeting is fine.
     Unit* midnight = FindThreatTarget(bot, "midnight");

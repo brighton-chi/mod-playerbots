@@ -279,7 +279,7 @@ bool IsAttumenDpsHeld(Player* bot)
         return false;
     }
 
-    return !PlayerbotAI::IsMainTank(bot);
+    return !PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsMainTank(bot);
 }
 
 // Maiden of Virtue
@@ -645,7 +645,7 @@ NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
     return { 18.0f, 25.0f };
 }
 
-// Up to his centre, past where the script counts a player: a bot shouldn't rely on that cutoff.
+// Up to his center, past where the script counts a player: a bot shouldn't rely on that cutoff.
 bool IsClearOfBeams(
     Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {

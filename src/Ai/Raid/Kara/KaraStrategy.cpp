@@ -204,8 +204,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));
 }
 
-void RaidKarazhanStrategy::AppendTargetExclusions(
-    GuidSet& exclusions, TargetValueExclusionType /*type*/)
+void AppendNightbaneFlightPhaseExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Unit* nightbane =
         KaraHelpers::GetKaraBoss(botAI->GetBot(), KaraHelpers::KaraBosses::DATA_NIGHTBANE);
@@ -228,4 +227,28 @@ void RaidKarazhanStrategy::AppendTargetExclusions(
         if (skeleton && KaraHelpers::IsOutsideNightbaneTerrace(skeleton))
             exclusions.insert(guid);
     }
+}
+
+// Midnight is the phase 1 target. Do not count Attumen for AoE or put secondary DoTs on him, or
+// DPS him at all.
+void AppendAttumenUnmountedNonTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Unit* attumen = KaraHelpers::GetKaraBoss(
+        botAI->GetBot(), KaraHelpers::KaraBosses::DATA_ATTUMEN);
+    if (!attumen || KaraHelpers::IsAttumenMounted(attumen))
+        return;
+
+    exclusions.insert(attumen->GetGUID());
+}
+
+void RaidKarazhanStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
+{
+    if (botAI->GetBot()->GetMapId() != KaraHelpers::KARA_MAP_ID)
+        return;
+
+    AppendNightbaneFlightPhaseExclusions(botAI, exclusions);
+
+    if (type != TargetValueExclusionType::TankTarget)
+        return AppendAttumenUnmountedNonTankExclusions(botAI, exclusions);
 }
