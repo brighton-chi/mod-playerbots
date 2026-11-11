@@ -204,14 +204,11 @@ inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
 // Intangible Presence curses every player within 10 yd of Attumen.
 inline constexpr float INTANGIBLE_PRESENCE_RADIUS = 10.0f;
 inline constexpr float ATTUMEN_HAZARD_CLEARANCE = 1.0f;
-// Behind mounted Attumen, center to center. Charge goes to a player more than 8 yd away edge to
-// edge (11.75 yd center to center), and Auto Shot fails within 5.08 yd.
+// Behind mounted Attumen, center to center. His CombatReach is 2.25 yd; a player's is 1.5, or 1.95
+// with Bloodlust. Charge skips a player within 8 yd edge to edge (both reaches added): 11.75 yd
+// center to center, 12.2 with Bloodlust. Hunter shots have no stored minimum range, so a shot
+// fails only within melee range: 5.08 yd, 5.53 with Bloodlust. Hunters stand between the two.
 inline constexpr float ATTUMEN_STACK_DISTANCE = 3.0f;
-// Mounted Attumen's CombatReach is 2.25 yards. The Hunter dead zone has a minimum distance of 8 yd,
-// which means the target's reach has no impact on the dead zone with respect to a Hunter without
-// Bloodlust until ~2.167 yd. In this case, it results in a dead zone starting at ~8.167 yd. The
-// minimum distance of a spell takes into account the target's CombatReach but not the caster's,
-// giving Berserker Charge a minimum range of 9.5 yd (8 yd minimum distance + player reach).
 inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.5f;
 inline constexpr float ATTUMEN_STACK_TOLERANCE = 0.3f;
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };

@@ -279,7 +279,7 @@ bool IsAttumenDpsHeld(Player* bot)
         return false;
     }
 
-    return !PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsMainTank(bot);
+    return !(PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot));
 }
 
 // Maiden of Virtue

@@ -85,10 +85,10 @@ bool AttumenTheHuntsmanShouldStackBehindTrigger::IsActiveInEncounter()
     if (!attumen || attumen->GetVictim() == bot)
         return false;
 
-    if (!GetAttumenStackPosition(bot, attumen).has_value())
+    if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
-    return !PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsMainTank(bot);
+    return GetAttumenStackPosition(bot, attumen).has_value();
 }
 
 bool AttumenTheHuntsmanShouldHoldDpsTrigger::IsActiveInEncounter()

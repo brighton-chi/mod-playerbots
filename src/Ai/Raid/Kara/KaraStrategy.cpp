@@ -235,8 +235,11 @@ void AppendAttumenUnmountedNonTankExclusions(PlayerbotAI* botAI, GuidSet& exclus
 {
     Unit* attumen = KaraHelpers::GetKaraBoss(
         botAI->GetBot(), KaraHelpers::KaraBosses::DATA_ATTUMEN);
-    if (!attumen || KaraHelpers::IsAttumenMounted(attumen))
+    if (!attumen || attumen->GetEntry() ==
+            KaraHelpers::Id(KaraHelpers::KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED))
+    {
         return;
+    }
 
     exclusions.insert(attumen->GetGUID());
 }
@@ -250,5 +253,5 @@ void RaidKarazhanStrategy::AppendTargetExclusions(
     AppendNightbaneFlightPhaseExclusions(botAI, exclusions);
 
     if (type != TargetValueExclusionType::TankTarget)
-        return AppendAttumenUnmountedNonTankExclusions(botAI, exclusions);
+        AppendAttumenUnmountedNonTankExclusions(botAI, exclusions);
 }
