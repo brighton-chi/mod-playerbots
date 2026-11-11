@@ -349,19 +349,26 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
 
 bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
-    static constexpr std::array moroesGuests = {
-        "baroness dorothea millstipe",
-        "lady catriona von'indi",
-        "lady keira berrybuck",
-        "baron rafe dreuger",
-        "lord robin daris",
-        "lord crispin ference",
+    // A guest zones in only on its own aggro, so it can be late onto threat lists. In kill order.
+    static std::vector<uint32> const guestEntries = {
+        Id(KaraNpcs::NPC_BARONESS_DOROTHEA_MILLSTIPE),
+        Id(KaraNpcs::NPC_LADY_CATRIONA_VON_INDI),
+        Id(KaraNpcs::NPC_LADY_KEIRA_BERRYBUCK),
+        Id(KaraNpcs::NPC_BARON_RAFE_DREUGER),
+        Id(KaraNpcs::NPC_LORD_ROBIN_DARIS),
+        Id(KaraNpcs::NPC_LORD_CRISPIN_FERENCE),
     };
+    // It also returns corpses.
+    std::list<Creature*> guests;
+    bot->GetCreatureListWithEntryInGrid(guests, guestEntries, MOROES_GUEST_SEARCH_RADIUS);
 
-    for (char const* name : moroesGuests)
+    for (uint32 entry : guestEntries)
     {
-        if (Unit* guest = FindThreatTarget(bot, name))
-            return MarkTargetWithSkull(bot, guest);
+        for (Creature* guest : guests)
+        {
+            if (guest->GetEntry() == entry && guest->IsAlive())
+                return MarkTargetWithSkull(bot, guest);
+        }
     }
 
     return false;

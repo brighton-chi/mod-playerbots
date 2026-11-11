@@ -17,8 +17,9 @@ class KarazhanEncounterTrigger : public Trigger
 {
 public:
     KarazhanEncounterTrigger(
-        PlayerbotAI* botAI, std::string const name, KaraHelpers::KaraBosses boss)
-        : Trigger(botAI, name), _boss(boss) {}
+        PlayerbotAI* botAI, std::string const name, KaraHelpers::KaraBosses boss,
+        int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval), _boss(boss) {}
 
     bool IsActive() final
     {
@@ -146,12 +147,13 @@ protected:
 
 // Moroes <Tower Steward>
 
-class MoroesShouldPrioritizeAddsTrigger : public KarazhanEncounterTrigger
+class MoroesShouldPrioritizeGuestsTrigger : public KarazhanEncounterTrigger
 {
 public:
-    MoroesShouldPrioritizeAddsTrigger(PlayerbotAI* botAI)
+    // Once a second: its action runs a grid search, and marking needs no more than human speed.
+    MoroesShouldPrioritizeGuestsTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "moroes should prioritize adds", KaraHelpers::KaraBosses::DATA_MOROES) {}
+            botAI, "moroes should prioritize guests", KaraHelpers::KaraBosses::DATA_MOROES, 1000) {}
 
 protected:
     bool IsActiveInEncounter() override;

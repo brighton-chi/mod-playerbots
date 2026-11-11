@@ -47,7 +47,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("attumen the huntsman manage dps timer", ACTION_EMERGENCY + 10) }));
 
     // Moroes
-    triggers.push_back(new TriggerNode("moroes should prioritize adds",
+    triggers.push_back(new TriggerNode("moroes should prioritize guests",
         { NextAction("moroes mark target", ACTION_RAID) }));
 
     // Maiden of Virtue

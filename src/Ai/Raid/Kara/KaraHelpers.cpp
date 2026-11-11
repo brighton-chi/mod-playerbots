@@ -271,10 +271,9 @@ bool IsAttumenDpsHeld(Player* bot)
     if (!midnight || !IsAttumenMounted(midnight))
         return false;
 
-    constexpr uint32 holdMs = 5 * IN_MILLISECONDS;
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     if (state && state->attumenDpsHoldTimer &&
-        getMSTimeDiff(*state->attumenDpsHoldTimer, getMSTime()) >= holdMs)
+        getMSTimeDiff(*state->attumenDpsHoldTimer, getMSTime()) >= ATTUMEN_MOUNTED_DPS_HOLD_MS)
     {
         return false;
     }
@@ -773,9 +772,8 @@ bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite)
     if (!state || !state->netherspiteDpsHoldTimer)
         return true;
 
-    constexpr uint32 minimumHoldMs = 5 * IN_MILLISECONDS;
     uint32 const elapsed = getMSTimeDiff(*state->netherspiteDpsHoldTimer, getMSTime());
-    if (elapsed < minimumHoldMs)
+    if (elapsed < NETHERSPITE_DPS_HOLD_MS)
         return true;
     if (elapsed >= NETHERSPITE_BEAMS_START_MS)
         return false;

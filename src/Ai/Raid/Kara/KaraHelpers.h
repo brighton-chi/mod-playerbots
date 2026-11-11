@@ -204,6 +204,7 @@ inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
 // Intangible Presence curses every player within 10 yd of Attumen.
 inline constexpr float INTANGIBLE_PRESENCE_RADIUS = 10.0f;
 inline constexpr float ATTUMEN_HAZARD_CLEARANCE = 1.0f;
+inline constexpr uint32 ATTUMEN_MOUNTED_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
 // Behind mounted Attumen, center to center. His CombatReach is 2.25 yd; a player's is 1.5, or 1.95
 // with Bloodlust. Charge skips a player within 8 yd edge to edge (both reaches added): 11.75 yd
 // center to center, 12.2 with Bloodlust. Hunter shots have no stored minimum range, so a shot
@@ -222,6 +223,10 @@ Unit* GetMountedAttumen(Player* bot);
 std::optional<Position> GetAttumenStackPosition(Player* bot, Unit* attumen);
 // For all but the main tank, for 5 s from when Attumen mounts Midnight.
 bool IsAttumenDpsHeld(Player* bot);
+
+// Moroes
+// Guests can't leave his room: Moroes evades if one does.
+inline constexpr float MOROES_GUEST_SEARCH_RADIUS = 100.0f;
 
 // Maiden of Virtue
 inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
@@ -435,7 +440,9 @@ inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
     static_cast<float>(M_PI) * 6.0f / 180.0f;
 // Netherbreath throws a bot about 25 yd out along its bearing, past the healers' range.
 inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
-// Beams start 10 s into a portal phase.
+// Beams start 10s into a portal phase. Between 0 and 5s, all non-tanks hold DPS. Between 5s and
+// 10s, non-tanks hold DPS unless a tank is the victim. After beams spawn, nobody holds DPS.
+inline constexpr uint32 NETHERSPITE_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
 // The next blocker needs a moment, and a cast it can't stop, to get on the beam.

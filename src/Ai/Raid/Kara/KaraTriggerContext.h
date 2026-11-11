@@ -49,8 +49,8 @@ public:
             &RaidKarazhanTriggerContext::attumen_the_huntsman_should_manage_dps_timer;
 
         // Moroes
-        creators["moroes should prioritize adds"] =
-            &RaidKarazhanTriggerContext::moroes_should_prioritize_adds;
+        creators["moroes should prioritize guests"] =
+            &RaidKarazhanTriggerContext::moroes_should_prioritize_guests;
 
         // Maiden of Virtue
         creators["maiden of virtue should be tanked"] =
@@ -222,9 +222,9 @@ private:
     }
 
     // Moroes
-    static Trigger* moroes_should_prioritize_adds(PlayerbotAI* botAI)
+    static Trigger* moroes_should_prioritize_guests(PlayerbotAI* botAI)
     {
-        return new MoroesShouldPrioritizeAddsTrigger(botAI);
+        return new MoroesShouldPrioritizeGuestsTrigger(botAI);
     }
 
     // Maiden of Virtue

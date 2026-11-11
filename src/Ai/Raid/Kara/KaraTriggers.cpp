@@ -107,7 +107,7 @@ bool AttumenTheHuntsmanShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 // Moroes
 
-bool MoroesShouldPrioritizeAddsTrigger::IsActiveInEncounter()
+bool MoroesShouldPrioritizeGuestsTrigger::IsActiveInEncounter()
 {
     return IsMechanicTrackerBot(bot, KARA_MAP_ID);
 }
