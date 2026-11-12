@@ -142,8 +142,8 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     {
         if (boss->GetEntry() == Id(KaraNpcs::NPC_PRINCE_MALCHEZAAR))
         {
-            constexpr float finalPhaseHpThreshold = 30.0f;
-            return boss->GetHealthPct() > finalPhaseHpThreshold ? 0.0f : 1.0f;
+            constexpr float finalPhaseHealthPct = 30.0f;
+            return boss->GetHealthPct() > finalPhaseHealthPct ? 0.0f : 1.0f;
         }
 
         if (boss->GetEntry() == Id(KaraNpcs::NPC_THE_CURATOR))
@@ -164,8 +164,8 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
 // Trash
 
-// Standard rotations spend these stuns on the pack (Shockwave and Shadowfury on AoE, Bash in the
-// rotation), so every stunner saves its stun for the cast bar.
+// Some stun abilities are used in standard rotations. Every stunner should save them for the mana
+// warps at the right time. Block all stuns used by the stun action just for belt-and-suspenders.
 float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT || !IsNearManaWarpPacks(bot))
@@ -220,7 +220,7 @@ float AttumenTheHuntsmanDisableCombatFormationMoveMultiplier::GetValueInEncounte
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    // Blocked for phase 2 in AttumenTheHuntsmanStayStackedMultiplier
+    // Blocked for phase 2 in AttumenTheHuntsmanStayStackedMultiplier.
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
@@ -232,15 +232,15 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    // Throw Blade Flurry in here because it's also used as a pure DPS cooldown, not just for AoE,
-    // so the target exclusion doesn't cover it entirely. Save it for phase 2.
+    // Include Blade Flurry because it's also used as a pure DPS cooldown, not just for AoE, so the
+    // target exclusion doesn't cover it entirely. Save it for phase 2.
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
         !(bot->getClass() == CLASS_ROGUE && dynamic_cast<CastBladeFlurryAction*>(action)))
     {
         return 1.0f;
     }
 
-    // Mounted Attumen is the only valid target left, so standard targeting is fine.
+    // Mounted Attumen is the only valid target in phase 2, so standard targeting is fine.
     Unit* midnight = FindThreatTarget(bot, "midnight");
     return midnight && !IsAttumenMounted(midnight) ? 0.0f : 1.0f;
 }
@@ -263,7 +263,6 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!midnight || !IsAttumenMounted(midnight))
         return 1.0f;
 
-    // Whoever Attumen is on, and the main tank, move freely; everyone else stays stacked.
     Unit* attumen = GetMountedAttumen(bot);
     if (attumen && attumen->GetVictim() == bot)
         return 1.0f;
@@ -271,8 +270,6 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* actio
     return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
 }
 
-// Give the main tank 5 seconds to grab aggro when Attumen mounts Midnight. Mounted Attumen is the
-// only thing left to attack then, so the hold doesn't need to look at the target.
 float AttumenTheHuntsmanHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<CastHealingSpellAction*>(action))
@@ -316,8 +313,8 @@ float MaidenOfVirtueKeepGroundingTotemMultiplier::GetValueInEncounter(Action* ac
 
 // The Big Bad Wolf
 
-// Moving, turning or casting ends Feign Death, and standing up with Hood on brings him back, so a
-// feigning Hood target does nothing until Hood ends.
+// Feign Death must be held through the entire 20s chase sequence to keep the boss away. Moving,
+// turning, or casting ends Feign Death, so a feigning Hood does nothing until Hood ends.
 float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_HUNTER || !bot->HasAura(Id(KaraSpells::SPELL_FEIGN_DEATH)))

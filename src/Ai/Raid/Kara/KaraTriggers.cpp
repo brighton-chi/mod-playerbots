@@ -61,7 +61,10 @@ bool AttumenTheHuntsmanUnmountedShouldBeTankedTrigger::IsActiveInEncounter()
 bool AttumenTheHuntsmanMidnightShouldBeFocusedTrigger::IsActiveInEncounter()
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
-    if (!midnight || IsAttumenMounted(midnight) || AI_VALUE(Unit*, "current target") == midnight)
+    if (!midnight || IsAttumenMounted(midnight))
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") == midnight)
         return false;
 
     return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
@@ -153,7 +156,6 @@ bool BigBadWolfChasesRedHoodTrigger::IsActiveInEncounter()
     return IsLittleRedRidingHood(bot);
 }
 
-// Paladins, priests, and warriors can help the Hood target; the action decides when.
 bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_PRIEST &&
@@ -231,24 +233,23 @@ bool TerestianIllhoofShouldPrioritizeTargetsTrigger::IsActiveInEncounter()
 
 // Shade of Aran
 
-// Not for a bot that can't move: the pull still drags a rooted bot to him, and the run would
-// only stop its casts.
 bool ShadeOfAranCastingArcaneExplosionTrigger::IsActiveInEncounter()
 {
+    // Return false for rooted bots (Chains of Ice) so they can at least keep casting.
     Unit* aran = GetEncounterBoss();
     return aran && IsAranCastingArcaneExplosion(aran) && botAI->CanMove();
 }
 
-// Not for a bot that can't move: a rooted bot can't run, so it keeps casting.
+// Ranged only. Blizzard moves around Aran in a band, and melee range is inside the minimum radius.
 bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 {
     if (!bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
         return false;
 
+    // Return false for rooted bots (Chains of Ice) so they can at least keep casting.
     return PlayerbotAI::IsRanged(bot) && botAI->CanMove();
 }
 
-// Not for a bot that can't move: under Mass Polymorph it wanders, as a player would.
 bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
 {
     Unit* aran = GetEncounterBoss();
@@ -258,10 +259,11 @@ bool ShadeOfAranFlameWreathActiveTrigger::IsActiveInEncounter()
     if (!IsFlameWreathInProgress(botAI, aran))
         return false;
 
+    // The Flame Wreath stop cannot be permitted to stop sheeped bots from wandering.
     return botAI->CanMove() && !CanReachTargetDuringFlameWreath(botAI, aran);
 }
 
-// The elementals never re-zone, so a resurrected tracker finds them by a search, not by threat.
+// The elementals never refresh zone combat, so a resurrected tracker cannot find them by threat.
 bool ShadeOfAranShouldPrioritizeElementalsTrigger::IsActiveInEncounter()
 {
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
@@ -302,7 +304,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
     if (IsAranCastingArcaneExplosion(aran) || IsFlameWreathInProgress(botAI, aran))
         return false;
 
-    // Off while the elementals are up: ranged stand wherever reaches the one they are killing.
+    // If elementals are up, let ranged have freedom to reach them even if outside the band.
     return context->GetValue<GuidVector>("shade of aran unbanished elementals")->Get().empty();
 }
 
@@ -424,9 +426,8 @@ bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
     if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
         return false;
 
-    // A bot rezzed in fire doesn't find him until it is back on his threat list.
     Unit* malchezaar = GetEncounterBoss();
-    if (malchezaar && PlayerbotAI::IsTank(bot) && malchezaar->GetVictim() == bot)
+    if (malchezaar && malchezaar->GetVictim() == bot && PlayerbotAI::IsTank(bot))
         return false;
 
     if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE) ||

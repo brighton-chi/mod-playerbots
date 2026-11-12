@@ -194,8 +194,6 @@ bool ManaWarpStandByToStunAction::Execute(Event /*event*/)
 
 // Attumen the Huntsman
 
-// Midnight's CombatReach is 1.6 yards
-// Unmounted Attumen's CombatReach is 1.5 yards
 // Steps the tank away from every player in reach of Shadow Cleave (from the tank) or Intangible
 // Presence (from Attumen), until each is clear.
 bool AttumenTheHuntsmanAssistTankPositionUnmountedAction::Execute(Event /*event*/)
@@ -255,8 +253,8 @@ bool AttumenTheHuntsmanAssistTankPositionUnmountedAction::Execute(Event /*event*
 
     float moveZ = bot->GetPositionZ();
     if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), moveX, moveY,
-            moveZ, false))
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), moveX, moveY, moveZ,
+            false))
     {
         return false;
     }
@@ -284,8 +282,8 @@ bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
     if (attumen->GetVictim() != bot || !bot->IsWithinMeleeRange(attumen))
         return false;
 
-    // LoS check here because it is possible that the party pulls Midnight to a place where the
-    // tank position (the middle of the stable) is out of LoS and not reachable in a straight move.
+    // Do an LoS check because the party may pull Midnight to a place where the tank position (the
+    // middle of the stable) is out of LoS and not reachable in a straight move.
     Position const& position = ATTUMEN_TANK_POSITION;
     if (!bot->IsWithinLOS(
             position.GetPositionX(), position.GetPositionY(), position.GetPositionZ()))
@@ -330,7 +328,7 @@ bool AttumenTheHuntsmanSelectTargetForHoldAction::isUseful()
     return botAI->GetState() == BOT_STATE_NON_COMBAT;
 }
 
-// Midnight turning invisible makes her an invalid target, so every bot on her drops to its
+// Midnight turning invisible makes her an invalid target, so every bot on her would drop to its
 // non-combat engine at the merge.
 bool AttumenTheHuntsmanSelectTargetForHoldAction::Execute(Event /*event*/)
 {
@@ -357,7 +355,6 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
         Id(KaraNpcs::NPC_LORD_ROBIN_DARIS),
         Id(KaraNpcs::NPC_LORD_CRISPIN_FERENCE),
     };
-    // It also returns corpses.
     std::list<Creature*> guests;
     bot->GetCreatureListWithEntryInGrid(guests, guestEntries, MOROES_GUEST_SEARCH_RADIUS);
 
@@ -374,7 +371,6 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
 }
 
 // Maiden of Virtue
-// CombatReach is 4.8 yards
 
 bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 {
@@ -397,8 +393,6 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (distToPosition <= arrivalDist)
         return false;
 
-    // The tank leads her along the line from her through her position, so it walks through her when
-    // she is between it and the position.
     float const ratio = MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE / distToPosition;
     Position const destination(
         position.GetPositionX() + (position.GetPositionX() - maiden->GetPositionX()) * ratio,
@@ -522,21 +516,21 @@ bool BigBadWolfRedHoodUseEscapeAbilityAction::isUseful()
 
 bool BigBadWolfRedHoodUseEscapeAbilityAction::Execute(Event /*event*/)
 {
-    // He drops a feigning hunter despite the taunt, and comes back if it stands up during Hood.
-    // A hunter whose Feign Death is on cooldown gets the boots below.
     if (bot->getClass() == CLASS_HUNTER &&
         !bot->HasSpellCooldown(Id(KaraSpells::SPELL_FEIGN_DEATH)))
     {
         return botAI->CanCastSpell("feign death", bot) && botAI->CastSpell("feign death", bot);
     }
 
-    // A cheat, for a bugged mechanic: with AC's reach (4.5) and speed (8.5 yd/s) he catches any
-    // runner at Hood's +50%. The largest speed aura wins, so the boots' +70% replaces Hood's, and
-    // like Hood it lasts 20 s, so it is never removed.
+    // I'm not sure what the exact issue is, but with BBW's reach (4.5 yd) and speed (8.5 yd/s),
+    // which are from sniffs, it is geometrically impossible to outrun him with Hood's +50% speed.
+    // Perhaps the chase mechanics in retail were different? In any case, something is clearly
+    // wrong, so to get around it, a cheat is implemented to give +70% speed instead, which is in
+    // most cases enough to avoid getting hit. The aura lasts 20s, same as Hood, so there's no need
+    // to separately remove it, conveniently enough.
     return bot->AddAura(Id(KaraSpells::SPELL_GOBLIN_ROCKET_BOOTS), bot);
 }
 
-// Run away, little girl, run away
 bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
 {
     Aura const* hood = bot->GetAura(Id(KaraSpells::SPELL_LITTLE_RED_RIDING_HOOD));
@@ -544,10 +538,7 @@ bool BigBadWolfRedHoodRunAwayAction::Execute(Event /*event*/)
     if (!hood || !wolf)
         return false;
 
-    // Hood silences and pacifies, but only stops silence-type casts. A cast like Steady Shot
-    // would keep filling and hold the bot still.
     bot->CastStop();
-
     // Feared or stunned: the first step after it replans from where both are then.
     if (!botAI->CanMove())
         return false;
@@ -593,7 +584,7 @@ bool BigBadWolfProtectRedHoodAction::Execute(Event /*event*/)
 
     switch (bot->getClass())
     {
-        // Human targets only, once he can swing at them, near the end of Hood or below half health.
+        // GetBigBadWolfTargetToProtect returns only humans.
         case CLASS_PALADIN:
         {
             return CastOnTarget(
@@ -619,8 +610,8 @@ bool BigBadWolfProtectRedHoodAction::Execute(Event /*event*/)
     }
 }
 
-// Range edge to edge, as spell range: CanCastSpell passes targets out of range, and a failed cast
-// still turns the bot.
+// Range is edge to edge. As I've noted ad nauseaum across raid strategy comments, CanCastSpell
+// passes targets out of range.
 bool BigBadWolfProtectRedHoodAction::CastOnTarget(char const* spell, Player* target, float range)
 {
     return target && target != bot && bot->IsWithinCombatRange(target, range) &&
@@ -629,6 +620,8 @@ bool BigBadWolfProtectRedHoodAction::CastOnTarget(char const* spell, Player* tar
 
 // Romulo and Julianne
 
+// Since Julianne is present (but faking death) in phase 2, the skull gets put on Romulo in phase 2,
+// but he is the only valid target. This is useless but not adverse so I've let it be.
 bool RomuloAndJulianneSkullHigherHealthAction::Execute(Event /*event*/)
 {
     Unit* romulo = GetOperaActor(bot, "romulo");
@@ -639,7 +632,6 @@ bool RomuloAndJulianneSkullHigherHealthAction::Execute(Event /*event*/)
     if (!julianne)
         return false;
 
-    // Faking death
     bool const romuloDown = romulo->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
     bool const julianneDown = julianne->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
     if (romuloDown && julianneDown)
@@ -651,7 +643,6 @@ bool RomuloAndJulianneSkullHigherHealthAction::Execute(Event /*event*/)
     if (julianneDown)
         return MarkTargetWithSkull(bot, romulo);
 
-    // Within the gap the skull stays where it is; phase 2 leaves it on Romulo.
     Unit* higher = romulo->GetHealth() >= julianne->GetHealth() ? romulo : julianne;
     Unit* lower = higher == romulo ? julianne : romulo;
     if (higher->GetHealth() - lower->GetHealth() <= ROMULO_AND_JULIANNE_HEALTH_GAP)
@@ -718,8 +709,8 @@ bool TheCuratorTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
@@ -733,9 +724,9 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    // Neither is on a threat list for sure: chains never attack, and a resummoned Kil'rek isn't
-    // zoned in. So it is a search, but only for what can be up: chains during a Sacrifice, and
-    // Kil'rek while Terestian has no Broken Pact.
+    // Chains do not attack and are not zoned in, and neither is Kil'rek after being resummoned.
+    // Thus, we need to use grid searches, but they can be limited: chains only during a Sacrifice,
+    // Kil'rek only when Illhoof does not have Broken Pact.
     Unit* terestian = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
     std::vector<uint32> entries;
     if (IsTerestianSacrificeActive(bot))
@@ -746,7 +737,6 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 
     if (!entries.empty())
     {
-        // It also returns corpses.
         constexpr float searchRadius = 100.0f;
         std::list<Creature*> adds;
         bot->GetCreatureListWithEntryInGrid(adds, entries, searchRadius);
@@ -799,8 +789,7 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
         KARA_MAP_ID, x, y, z, false, false, true, exact, MovementPriority::MOVEMENT_COMBAT, false);
 }
 
-// Ranged only: a patch's reach stops short of melee range on Aran.
-bool ShadeOfAranRunOutOfBlizzardAction::Execute(Event /*event*/)
+bool ShadeOfAranMoveBehindBlizzardAction::Execute(Event /*event*/)
 {
     if (IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
         return false;
@@ -815,7 +804,7 @@ bool ShadeOfAranRunOutOfBlizzardAction::Execute(Event /*event*/)
         false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// I will not move when Flame Wreath is cast or the raid blows up
+// I will not move when Flame Wreath is cast or the raid blows up.
 bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
 {
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
@@ -885,9 +874,8 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 }
 
 // Netherspite
-// CombatReach is 18 yards
 
-// The red beam dance (5 seconds in, 5 seconds out)
+// The red beam dance (5 seconds in, 5 seconds out).
 bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
@@ -1070,7 +1058,6 @@ bool NetherspiteSetPetStanceAction::ResetPetStance()
     return restored;
 }
 
-// Only the tracker writes the beam state. Everyone else reads it.
 bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
@@ -1520,8 +1507,8 @@ void NetherspiteManageTimersAndTrackersAction::UpdateVoidZones(KaraInstanceState
 // Prince Malchezaar
 // CombatReach is 4 yards
 
-// One tick kills at 1 health, so this run never crosses a landed infernal. Shadow Nova lands 7.5 s
-// after Enfeeble, which is about 52 yd of walking.
+// One tick kills at 1 health, so this run never crosses a landed infernal. Shadow Nova lands 7.5s
+// after Enfeeble, which is about 52 yd of movement.
 bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
@@ -1591,9 +1578,9 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
         backwards);
 }
 
-// Stock reach walks at the target and this takes over at a landed infernal. It holds its position
-// until it gets there, or reach would walk the bot straight back in. The position is in range, so
-// reach has nothing left to do on arrival.
+// Standard reach moves to the target. and this takes over at a landed infernal. It holds its
+// position until it gets there, or reach would walk the bot straight back in. The position is in
+// range, so reach has nothing left to do on arrival.
 bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
@@ -1682,7 +1669,6 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
 }
 
 // Nightbane
-// CombatReach is 10.5 yards
 
 // On the arc, he stands about 10y inside the tank and faces the parapet with the dome wall close
 // behind him, so Smoldering Breath and Tail Sweep have little of the terrace to hit. Nothing else
@@ -1726,8 +1712,8 @@ bool NightbaneRangedStackAndMoveFromCharredEarthAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    // Assign the longest-standing assistant that is a ranged bot. If there is no such assistant,
-    // then assign the longest-standing (non-assistant) ranged bot.
+    // Assign the first (i.e., most recently linked) assistant that is a ranged bot. If there is no
+    // such assistant, then assign the first (non-assistant) ranged bot.
     Player* rangedLeader = nullptr;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {

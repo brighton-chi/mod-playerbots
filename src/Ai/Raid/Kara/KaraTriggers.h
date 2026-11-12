@@ -38,8 +38,6 @@ private:
 class KarazhanNoEncounterInProgressTrigger : public Trigger
 {
 public:
-    // Throttled to once per second. This trigger is true for all trash and downtime and, being
-    // for between-encounter clean-up, has no real urgency to it.
     KarazhanNoEncounterInProgressTrigger(PlayerbotAI* botAI)
         : Trigger(botAI, "karazhan no encounter in progress", 1000) {}
     bool IsActive() override;
@@ -150,7 +148,6 @@ protected:
 class MoroesShouldPrioritizeGuestsTrigger : public KarazhanEncounterTrigger
 {
 public:
-    // Once a second: its action runs a grid search, and marking needs no more than human speed.
     MoroesShouldPrioritizeGuestsTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
             botAI, "moroes should prioritize guests", KaraHelpers::KaraBosses::DATA_MOROES, 1000) {}

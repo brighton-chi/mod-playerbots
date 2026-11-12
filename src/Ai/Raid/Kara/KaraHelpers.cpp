@@ -55,8 +55,8 @@ float GetDistanceToSegment2d(Position const& point, Position const& start, Posit
         start.GetPositionX() + segmentX * fraction, start.GetPositionY() + segmentY * fraction);
 }
 
-// The Opera is three plays with several actors each, and the Chess Event has no boss on a
-// threat list, so neither has a name.
+// The Opera Event consists of three plays with several actors each, and the Chess Event has no boss
+// on a threat list, so neither has a name.
 constexpr std::string_view BossName(KaraBosses boss)
 {
     switch (boss)
@@ -105,14 +105,15 @@ Unit* GetOperaActor(Player* bot, std::string_view name)
 
 bool IsKarazhanFearCasterActive(Player* bot)
 {
-    if (FindThreatTarget(bot, "spectral charger") || GetOperaActor(bot, "the big bad wolf"))
-        return true;
-
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (nightbane && !IsNightbaneFlying(nightbane))
         return true;
 
-    return GetOperaActor(bot, "dorothee") || GetOperaActor(bot, "roar");
+    if (FindThreatTarget(bot, "spectral charger"))
+        return true;
+
+    return GetOperaActor(bot, "the big bad wolf") || GetOperaActor(bot, "dorothee") ||
+        GetOperaActor(bot, "roar");
 }
 
 // Trash
@@ -128,6 +129,9 @@ bool NeedsComboPointsForManaWarpStun(Player* bot)
 
 bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs)
 {
+    if (!warp)
+        return false;
+
     Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
     return breach && breach->getState() == SPELL_STATE_PREPARING &&
         breach->GetCastTime() - breach->GetCastTimeRemaining() >= static_cast<int32>(reactionMs);
@@ -226,7 +230,7 @@ Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
         return nullptr;
     }
 
-    // A rogue or cat druid with no combo points on it keeps building them.
+    // A rogue or cat druid with no combo points on the mana warp keeps building them.
     return !NeedsComboPointsForManaWarpStun(bot) || bot->GetComboPoints(target) ? target : nullptr;
 }
 
@@ -416,6 +420,8 @@ Player* GetBigBadWolfRedHood(Unit* wolf)
     return target;
 }
 
+// Since only bots get the +70% rocket boots buff, humans will get hit without some other ability
+// to use (e.g., Sprint). Thus, Hand of Protection is saved for human Hoods.
 Player* GetBigBadWolfTargetToProtect(Unit* wolf)
 {
     if (!wolf)
@@ -435,7 +441,6 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf)
         return nullptr;
     }
 
-    // The test his swings use, with the leeway while both move.
     if (!wolf->IsWithinMeleeRange(target) || GET_PLAYERBOT_AI(target) ||
         PlayerbotAI::IsTank(target))
     {
@@ -504,7 +509,7 @@ bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
     if (botAI->GetBot()->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
         return true;
 
-    // A resurrected bot can't find him until he re-zones, but it can see the rings.
+    // A resurrected bot can't find him until zone combat refreshes, but it can see the rings.
     if (!aran)
     {
         return !botAI->GetAiObjectContext()
@@ -515,8 +520,8 @@ bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
         aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA));
 }
 
-// The only movement allowed around Flame Wreath is a stuck bot walking to its own target. That is
-// the one stock destination a check can see, and the bot stops well short of every ring.
+// The only movement allowed around Flame Wreath is a stuck bot moving to its target, provided that
+// the movement does not come close to crossing any ring.
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
 {
     Player* bot = botAI->GetBot();
@@ -633,6 +638,9 @@ NetherspiteArc GetNetherspiteStandingArc(
     return { isStart ? own : own - width, width };
 }
 
+// Netherspite's combat reach is 18 yd. I believe in retail, the beams extended all the way to his
+// center, but in AC, they are measured with combat reach taken into account and thus cannot be
+// blocked inside of his combat reach.
 NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
 {
     if (PlayerbotAI::IsHeal(bot))
@@ -645,8 +653,7 @@ NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
 }
 
 // Up to his center, past where the script counts a player: a bot shouldn't rely on that cutoff.
-bool IsClearOfBeams(
-    Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+bool IsClearOfBeams(Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
     for (NetherspiteBeamState const& beam : state.netherspiteBeams)
     {
@@ -742,7 +749,7 @@ bool GetFloorAt(Player* bot, float x, float y, float& outZ)
     return std::abs(clippedX - x) < 1.0f && std::abs(clippedY - y) < 1.0f;
 }
 
-}
+} // end anonymous namespace (Netherspite)
 
 bool IsBanishPhase(Unit* netherspite)
 {
@@ -1100,8 +1107,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
 }
 
 std::optional<Position> GetStepAroundVoidZones(
-    Player* bot, Unit* netherspite, KaraInstanceState const& state,
-    Position const& destination)
+    Player* bot, Unit* netherspite, KaraInstanceState const& state, Position const& destination)
 {
     if (!netherspite)
         return std::nullopt;

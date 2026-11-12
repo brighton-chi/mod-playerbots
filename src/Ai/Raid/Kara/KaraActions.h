@@ -29,8 +29,7 @@ public:
 class KarazhanSetTremorTotemAction : public Action
 {
 public:
-    KarazhanSetTremorTotemAction(PlayerbotAI* botAI)
-        : Action(botAI, "karazhan set tremor totem") {}
+    KarazhanSetTremorTotemAction(PlayerbotAI* botAI) : Action(botAI, "karazhan set tremor totem") {}
     bool Execute(Event event) override;
 };
 
@@ -118,8 +117,7 @@ public:
 class MoroesMarkTargetAction : public Action
 {
 public:
-    MoroesMarkTargetAction(PlayerbotAI* botAI)
-        : Action(botAI, "moroes mark target") {}
+    MoroesMarkTargetAction(PlayerbotAI* botAI) : Action(botAI, "moroes mark target") {}
     bool Execute(Event event) override;
 };
 
@@ -222,8 +220,7 @@ public:
 class WizardOfOzMarkTargetAction : public Action
 {
 public:
-    WizardOfOzMarkTargetAction(PlayerbotAI* botAI)
-        : Action(botAI, "wizard of oz mark target") {}
+    WizardOfOzMarkTargetAction(PlayerbotAI* botAI) : Action(botAI, "wizard of oz mark target") {}
     bool Execute(Event event) override;
 };
 
@@ -281,11 +278,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ShadeOfAranRunOutOfBlizzardAction : public MovementAction
+class ShadeOfAranMoveBehindBlizzardAction : public MovementAction
 {
 public:
-    ShadeOfAranRunOutOfBlizzardAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "shade of aran run out of blizzard") {}
+    ShadeOfAranMoveBehindBlizzardAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "shade of aran move behind blizzard") {}
     bool Execute(Event event) override;
 };
 
@@ -442,7 +439,6 @@ public:
     PrinceMalchezaarEnfeebledBotRunToSafetyAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "prince malchezaar enfeebled bot run to safety") {}
     bool Execute(Event event) override;
-    // A destination from an earlier Enfeeble doesn't count.
     bool HasDestinationFor(time_t enfeebleApplyTime) const
     {
         return _destination.has_value() && _enfeebleApplyTime == enfeebleApplyTime;
@@ -496,7 +492,6 @@ public:
 private:
     std::optional<Position> _destination;
     float _destinationClearance = 0.0f;
-    // No new search until the number of landed infernals changes.
     std::optional<size_t> _searchedInfernalCount;
 };
 
@@ -525,8 +520,7 @@ private:
 class NightbaneSetPetStanceAction : public Action
 {
 public:
-    NightbaneSetPetStanceAction(PlayerbotAI* botAI)
-        : Action(botAI, "nightbane set pet stance") {}
+    NightbaneSetPetStanceAction(PlayerbotAI* botAI) : Action(botAI, "nightbane set pet stance") {}
     bool Execute(Event event) override;
     bool ResetPetStance();
 
@@ -537,8 +531,7 @@ private:
 class NightbaneStopAttackingAction : public Action
 {
 public:
-    NightbaneStopAttackingAction(PlayerbotAI* botAI)
-        : Action(botAI, "nightbane stop attacking") {}
+    NightbaneStopAttackingAction(PlayerbotAI* botAI) : Action(botAI, "nightbane stop attacking") {}
     bool Execute(Event event) override;
 };
 

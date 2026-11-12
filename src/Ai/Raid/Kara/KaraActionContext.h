@@ -52,8 +52,7 @@ public:
             &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
         // Moroes
-        creators["moroes mark target"] =
-            &RaidKarazhanActionContext::moroes_mark_target;
+        creators["moroes mark target"] = &RaidKarazhanActionContext::moroes_mark_target;
 
         // Maiden of Virtue
         creators["maiden of virtue tank position boss"] =
@@ -110,8 +109,8 @@ public:
         creators["shade of aran run away from arcane explosion"] =
             &RaidKarazhanActionContext::shade_of_aran_run_away_from_arcane_explosion;
 
-        creators["shade of aran run out of blizzard"] =
-            &RaidKarazhanActionContext::shade_of_aran_run_out_of_blizzard;
+        creators["shade of aran move behind blizzard"] =
+            &RaidKarazhanActionContext::shade_of_aran_move_behind_blizzard;
 
         creators["shade of aran stop moving during flame wreath"] =
             &RaidKarazhanActionContext::shade_of_aran_stop_moving_during_flame_wreath;
@@ -167,11 +166,9 @@ public:
         creators["nightbane ranged stack and move from charred earth"] =
             &RaidKarazhanActionContext::nightbane_ranged_stack_and_move_from_charred_earth;
 
-        creators["nightbane set pet stance"] =
-            &RaidKarazhanActionContext::nightbane_set_pet_stance;
+        creators["nightbane set pet stance"] = &RaidKarazhanActionContext::nightbane_set_pet_stance;
 
-        creators["nightbane stop attacking"] =
-            &RaidKarazhanActionContext::nightbane_stop_attacking;
+        creators["nightbane stop attacking"] = &RaidKarazhanActionContext::nightbane_stop_attacking;
 
         creators["nightbane select target for hold"] =
             &RaidKarazhanActionContext::nightbane_select_target_for_hold;
@@ -320,9 +317,9 @@ private:
     {
         return new ShadeOfAranRunAwayFromArcaneExplosionAction(botAI);
     }
-    static Action* shade_of_aran_run_out_of_blizzard(PlayerbotAI* botAI)
+    static Action* shade_of_aran_move_behind_blizzard(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranRunOutOfBlizzardAction(botAI);
+        return new ShadeOfAranMoveBehindBlizzardAction(botAI);
     }
     static Action* shade_of_aran_stop_moving_during_flame_wreath(PlayerbotAI* botAI)
     {

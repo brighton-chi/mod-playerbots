@@ -519,8 +519,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
 // The destination, or a step around the first void zone on the way there. None if neither side of
 // that zone is clear.
 std::optional<Position> GetStepAroundVoidZones(
-    Player* bot, Unit* netherspite, KaraInstanceState const& state,
-    Position const& destination);
+    Player* bot, Unit* netherspite, KaraInstanceState const& state, Position const& destination);
 // Where a reach toward the target stops: range plus both reaches from it, as ReachCombatTo has it.
 Position GetReachEndPosition(Unit const& bot, Unit const& target, float range);
 
