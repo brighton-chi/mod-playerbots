@@ -215,10 +215,7 @@ float AttumenTheHuntsmanDisableCombatFormationMoveMultiplier::GetValueInEncounte
         return 1.0f;
 
     // Blocked for phase 2 in AttumenTheHuntsmanStayStackedMultiplier.
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    return GetEncounterBoss() ? 0.0f : 1.0f;
+    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
 }
 
 float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
@@ -273,10 +270,7 @@ float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValueInEncounter(Ac
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    return GetEncounterBoss() ? 0.0f : 1.0f;
+    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
 }
 
 float MaidenOfVirtueKeepGroundingTotemMultiplier::GetValueInEncounter(Action* action)
@@ -285,15 +279,10 @@ float MaidenOfVirtueKeepGroundingTotemMultiplier::GetValueInEncounter(Action* ac
         return 1.0f;
 
     // Call of the Elements drops whatever air totem the totem bar holds.
-    if (!dynamic_cast<CastWrathOfAirTotemAction*>(action) &&
-        !dynamic_cast<CastNatureResistanceTotemAction*>(action) &&
-        !dynamic_cast<CastWindfuryTotemAction*>(action) &&
-        !dynamic_cast<CastCallOfTheElementsAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return GetEncounterBoss() ? 0.0f : 1.0f;
+    return dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
+        dynamic_cast<CastWindfuryTotemAction*>(action) ||
+        dynamic_cast<CastCallOfTheElementsAction*>(action) ? 0.0f : 1.0f;
 }
 
 // The Big Bad Wolf
@@ -315,10 +304,7 @@ float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* act
 
 float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<TankAssistAction*>(action))
-        return 1.0f;
-
-    return GetEncounterBoss() ? 0.0f : 1.0f;
+    return dynamic_cast<TankAssistAction*>(action) ? 0.0f : 1.0f;
 }
 
 float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
@@ -326,10 +312,7 @@ float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<SetBehindTargetAction*>(action))
-        return 1.0f;
-
-    return GetEncounterBoss() ? 0.0f : 1.0f;
+    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
 }
 
 // Terestian Illhoof
