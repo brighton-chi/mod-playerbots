@@ -168,33 +168,31 @@ Unit* GetKaraBoss(Player* bot, KaraBosses boss);
 // actor counts only once released, as the script itself tests.
 Unit* GetOperaActor(Player* bot, std::string_view name);
 
-// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf, Dorothee or Roar is
+// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf, Dorothee, or Roar is
 // fighting, or Nightbane is on the ground.
 bool IsKarazhanFearCasterActive(Player* bot);
 
 // Trash
 
-// A stun stops Warp Breach for good if it lands during the 1 s cast; interrupts do nothing.
+// A stun stops Warp Breach for good if it lands during the 1s cast; interrupts do nothing.
 // Each stunner waits its own delay after the cast starts, so the first stun ends that cast and the
 // others go to a warp still casting.
 inline constexpr uint32 WARP_BREACH_MIN_REACTION_MS = 200;
-inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 300; // War Stomp's 0.5 s cast still lands
-// From here a stunner on the warp casts nothing else, keeping its global cooldown free.
+inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 300;
+// From here, a stunner on the warp casts nothing else, keeping its global cooldown free.
 inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 15.0f;
-// Stun reaches, center to center
-inline constexpr float MELEE_STUN_REACH = 5.0f;
+// Stun spell reaches, center to center.
+inline constexpr float MELEE_STUN_REACH = 5.0f; // Kidney Shot, Bash, Maim, Concussion Blow
 inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
 inline constexpr float SHADOWFURY_REACH = 30.0f;
 inline constexpr float WAR_STOMP_RADIUS = 8.0f;
-// A stunner out of reach walks to this far inside it.
+// A stunner out of reach moves to this far inside max range.
 inline constexpr float MANA_WARP_STUN_APPROACH_MARGIN = 1.0f;
 inline constexpr float MANA_WARP_PACKS_RADIUS = 60.0f;
-// The nine Mana Warps stand in four packs within 30 yd of this point.
+// The nine Mana Warps spawn in four packs within 30 yd of this point.
 inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
 
 bool IsNearManaWarpPacks(Player* bot);
-// Stunners: Hammer of Justice, Concussion Blow or Shockwave, Bash, Kidney Shot, Maim, Shadowfury,
-// War Stomp. 0 for a bot with none.
 float GetManaWarpStunReach(Player* bot);
 // Rogues and cat druids stun only their target, which holds their combo points.
 Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
@@ -202,6 +200,7 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
+
 // Shadow Cleave jumps from the tank to two more players within 10 yd in front of Attumen.
 inline constexpr float SHADOW_CLEAVE_JUMP_RADIUS = 10.0f;
 // Intangible Presence curses every player within 10 yd of Attumen.
@@ -217,21 +216,21 @@ inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.5f;
 inline constexpr float ATTUMEN_STACK_TOLERANCE = 0.3f;
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 
-// Midnight turns invisible when mounted Attumen is summoned.
+// Midnight remains present but turns invisible when mounted Attumen is summoned. She stays on
+// threat lists, and thus FindThreatTarget for Midnight will capture the entire encounter.
 bool IsAttumenMounted(Unit* midnight);
-// Both Attumens share a name. For up to 1 s after the merge, the unmounted one can be found
-// instead, and this returns null.
+// Both Attumens share a name. For up to 1s after mounting, both are present, and this returns null.
 Unit* GetMountedAttumen(Player* bot);
-// The bot's position behind mounted Attumen, or nothing while the bot is within tolerance of it.
 std::optional<Position> GetAttumenStackPosition(Player* bot, Unit* attumen);
-// For all but the main tank, for 5 s from when Attumen mounts Midnight.
 bool IsAttumenDpsHeld(Player* bot);
 
 // Moroes
-// Guests can't leave his room: Moroes evades if one does.
+
+// Guests can't leave his room. Moroes evades if one does.
 inline constexpr float MOROES_GUEST_SEARCH_RADIUS = 100.0f;
 
 // Maiden of Virtue
+
 inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
 // She stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
@@ -255,6 +254,7 @@ inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
 Player* GetNearestRepentantHealer(Player* bot, Unit* maiden);
 
 // The Big Bad Wolf
+
 struct BigBadWolfRunPlan
 {
     uint8 index = 0;
@@ -307,11 +307,13 @@ Player* GetBigBadWolfRedHood(Unit* wolf);
 Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 
 // Romulo and Julianne
+
 // Once one is down, the other must die within 10 s. The skull moves to the one with higher health
 // only once it is this far ahead.
 inline constexpr uint32 ROMULO_AND_JULIANNE_HEALTH_GAP = 25000;
 
 // Wizard of Oz
+
 inline constexpr float SCORCH_RANGE = 30.0f;
 // A mage out of range walks to this far inside it; Strawman moves fast.
 inline constexpr float SCORCH_APPROACH_MARGIN = 2.0f;
@@ -324,15 +326,18 @@ inline std::array const OZ_TARGETS = {
 };
 
 // The Curator
+
 // Arcing Sear jumps 13 yd center to center between players, so this spread only cuts its jumps.
 inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Terestian Illhoof
+
 // Demon Chains exist only while a group member is sacrificed.
 bool IsTerestianSacrificeActive(Player* bot);
 
 // Shade of Aran
+
 // Hits within 21 yd of his center, no reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
 inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
@@ -520,6 +525,7 @@ std::optional<Position> GetStepAroundVoidZones(
 Position GetReachEndPosition(Unit const& bot, Unit const& target, float range);
 
 // Prince Malchezaar
+
 // Hellfire and Shadow Nova are NPC AoE on target 16 and 15: exact distance, no reach.
 inline constexpr float HELLFIRE_RADIUS = 20.0f;
 inline constexpr float HELLFIRE_CLEARANCE = HELLFIRE_RADIUS + 1.0f;
@@ -608,6 +614,7 @@ std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance);
 
 // Nightbane
+
 enum class NightbaneFlightStage : uint8
 {
     TakeOff,

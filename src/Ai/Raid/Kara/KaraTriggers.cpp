@@ -46,15 +46,12 @@ bool ManaWarpTargetAtLowHealthTrigger::IsActive()
 
 // Attumen the Huntsman
 
-// Midnight is still present as a separate (invisible) unit after Attumen mounts.
-// A Midnight threat list check will capture the entire encounter.
 bool AttumenTheHuntsmanUnmountedShouldBeTankedTrigger::IsActiveInEncounter()
 {
     Unit* midnight = FindThreatTarget(bot, "midnight");
     if (!midnight || IsAttumenMounted(midnight))
         return false;
 
-    // Return true only after Attumen spawns in Phase 1.
     if (!FindThreatTarget(bot, "attumen the huntsman"))
         return false;
 
