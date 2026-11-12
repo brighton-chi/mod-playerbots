@@ -132,8 +132,10 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             return 1.0f;
     }
 
+    // If the boss cannot be found but the encounter is in progress, it is probably because the bot
+    // was rezzed and zone combat hasn't reapplied, so block cooldowns.
     if (!boss)
-        return 1.0f;
+        return 0.0f;
 
     if (isBloodlust)
     {
