@@ -237,10 +237,12 @@ inline constexpr float MOROES_GUEST_SEARCH_RADIUS = 100.0f;
 
 // Maiden of Virtue
 
-inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 1.5f;
+// For both her distance to her position and the tank's distance to its destination. These are
+// checked at different steps and don't have to be identical, but they are for simplicity.
+inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 2.0f;
 // She stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
-// Holy Ground hits a player within 12 yd of her center, and breaks Repentance.
+// Holy Ground hits a player within 12 yd of her center and breaks Repentance.
 inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
 inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
 // Her spawn point; the ranged positions are a ring around it.

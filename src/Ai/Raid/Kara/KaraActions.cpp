@@ -395,8 +395,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 
     Position const& position = MAIDEN_OF_VIRTUE_POSITION;
     float const distToPosition = maiden->GetExactDist2d(position);
-    constexpr float arrivalDist = 2.0f;
-    if (distToPosition <= arrivalDist)
+    if (distToPosition <= MAIDEN_OF_VIRTUE_POSITION_TOLERANCE)
         return false;
 
     float const ratio = MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE / distToPosition;
@@ -408,8 +407,11 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, destination, arrivalDist, maiden, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, destination, MAIDEN_OF_VIRTUE_POSITION_TOLERANCE, maiden, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -732,7 +734,7 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
     // Chains do not attack and are not zoned in, and neither is Kil'rek after being resummoned.
     // Thus, we need to use grid searches, but they can be limited: chains only during a Sacrifice,
-    // Kil'rek only when Illhoof does not have Broken Pact.
+    // and Kil'rek only when Illhoof does not have Broken Pact.
     Unit* terestian = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
     std::vector<uint32> entries;
     if (IsTerestianSacrificeActive(bot))
