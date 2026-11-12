@@ -158,6 +158,9 @@ public:
         creators["nightbane ranged should avoid charred earth"] =
             &RaidKarazhanTriggerContext::nightbane_ranged_should_avoid_charred_earth;
 
+        creators["nightbane melee should avoid charred earth"] =
+            &RaidKarazhanTriggerContext::nightbane_melee_should_avoid_charred_earth;
+
         creators["nightbane should manage pet aggression"] =
             &RaidKarazhanTriggerContext::nightbane_should_manage_pet_aggression;
 
@@ -373,6 +376,10 @@ private:
     static Trigger* nightbane_ranged_should_avoid_charred_earth(PlayerbotAI* botAI)
     {
         return new NightbaneRangedShouldAvoidCharredEarthTrigger(botAI);
+    }
+    static Trigger* nightbane_melee_should_avoid_charred_earth(PlayerbotAI* botAI)
+    {
+        return new NightbaneMeleeShouldAvoidCharredEarthTrigger(botAI);
     }
     static Trigger* nightbane_should_manage_pet_aggression(PlayerbotAI* botAI)
     {

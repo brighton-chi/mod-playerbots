@@ -1712,94 +1712,64 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Ranged bots will stack on one "ranged leader" that can be designated by the assistant flag
-// The ranged leader will lead the ranged group out of Charred Earths
-bool NightbaneRangedStackAndMoveFromCharredEarthAction::Execute(Event /*event*/)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    // Assign the first (i.e., most recently linked) assistant that is a ranged bot. If there is no
-    // such assistant, then assign the first (non-assistant) ranged bot.
-    Player* rangedLeader = nullptr;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != KARA_MAP_ID || !member->IsAlive() ||
-            !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member))
-        {
-            continue;
-        }
-
-        if (group->IsAssistant(member->GetGUID()))
-        {
-            rangedLeader = member;
-            break;
-        }
-
-        rangedLeader = member;
-    }
-
-    if (!rangedLeader)
-        return false;
-
-    if (bot == rangedLeader)
-        return MoveRangedLeaderToSafePosition();
-
-    return StackOnRangedLeader(rangedLeader);
-}
-
-bool NightbaneRangedStackAndMoveFromCharredEarthAction::MoveRangedLeaderToSafePosition()
+// Ranged stack on the tracker's shared position.
+bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
     if (!nightbane)
         return false;
 
-    constexpr float minBossDist = 15.0f;
-    if (!bot->HasAura(Id(KaraSpells::SPELL_CHARRED_EARTH)) &&
-        bot->GetExactDist2d(nightbane) >= minBossDist)
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    if (!state || !state->nightbaneRangedPosition)
+        return false;
+
+    // Steps, so a moved position takes effect at once.
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, GetTerraceWalkPosition(*bot, *state->nightbaneRangedPosition), arrivalDist,
+            nullptr, moveX, moveY, backwards))
     {
         return false;
     }
 
-    constexpr float searchRadius = 60.0f;
-    std::vector<Position> const charredEarths = GetDynamicObjectPositions(
-        bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
-
-    constexpr float positionMinBossDist = minBossDist + 1.0f;
-    constexpr float positionMaxBossDist = 35.0f;
-    std::optional<Position> const position = FindNightbaneStackPosition(
-        GetTerraceAngle(*bot), TERRACE_ARC_START, TERRACE_ARC_END,
-        [&](Position const& candidate)
-        {
-            float const bossDist = nightbane->GetExactDist2d(candidate);
-            return bossDist >= positionMinBossDist && bossDist <= positionMaxBossDist &&
-                IsClearOfCharredEarth(candidate, charredEarths);
-        });
-
-    if (!position)
-        return false;
-
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-bool NightbaneRangedStackAndMoveFromCharredEarthAction::StackOnRangedLeader(Player* rangedLeader)
+// Melee stack on the tracker's shared position.
+bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
 {
-    if (bot->GetExactDist2d(rangedLeader) < 0.5f)
+    Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
+    if (!nightbane)
         return false;
 
-    bot->CastStop();
+    KaraInstanceState const* state = FindKaraState(nightbane->GetInstanceId());
+    if (!state || !state->nightbaneMeleePosition)
+        return false;
+
+    // Steps, so a moved position (he turns or steps back at landing) takes effect at once.
+    Position const position = GetNightbaneMeleePosition(*nightbane, *state->nightbaneMeleePosition);
+    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, GetTerraceWalkPosition(*bot, position), arrivalDist, nightbane, moveX, moveY,
+            backwards))
+    {
+        return false;
+    }
+
     return MoveTo(
-        KARA_MAP_ID, rangedLeader->GetPositionX(), rangedLeader->GetPositionY(),
-        rangedLeader->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Pets and guardians left attacking chase skeletons, or him off the terrace.
 bool NightbaneSetPetStanceAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1912,10 +1882,15 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         didSomething |= ResetIfSet(state.nightbaneFlightStackPosition);
         didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
         didSomething |= EmplaceIfUnset(state.nightbaneDpsHoldTimer, getMSTime());
+        std::vector<Position> const charredEarths = GetCharredEarths(botAI);
+        didSomething |= UpdateMeleePosition(state, *nightbane, charredEarths);
+        didSomething |= UpdateRangedPosition(state, *nightbane, charredEarths);
         return didSomething;
     }
 
     bool didSomething = ResetIfSet(state.nightbaneDpsHoldTimer);
+    didSomething |= ResetIfSet(state.nightbaneMeleePosition);
+    didSomething |= ResetIfSet(state.nightbaneRangedPosition);
 
     constexpr float atFlightPositionDist = 1.0f;
     NightbaneFlightStage stage = NightbaneFlightStage::TakeOff;
@@ -1956,9 +1931,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         return true;
     }
 
-    constexpr float searchRadius = 80.0f;
-    std::vector<Position> const charredEarths = GetDynamicObjectPositions(
-        bot, searchRadius, Id(KaraSpells::SPELL_CHARRED_EARTH));
+    std::vector<Position> const charredEarths = GetCharredEarths(botAI);
 
     float const startAngle = state.nightbaneFlightStackPosition ?
         GetTerraceAngle(*state.nightbaneFlightStackPosition) : NIGHTBANE_FLIGHT_STACK_HOME_ANGLE;
@@ -1982,5 +1955,86 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
             NIGHTBANE_GROUND_Z);
     }
 
+    return true;
+}
+
+// Each ground phase starts on the clockwise flank. A covered flank moves melee to the other flank
+// if it is clear, else to the hold, until a flank clears.
+bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
+    KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
+{
+    NightbaneMeleePosition const current =
+        state.nightbaneMeleePosition.value_or(NightbaneMeleePosition::ClockwiseFlank);
+    Position const currentPosition = GetNightbaneMeleePosition(nightbane, current);
+    if (state.nightbaneMeleePosition && current != NightbaneMeleePosition::Hold &&
+        IsClearOfCharredEarth(currentPosition, charredEarths))
+    {
+        return false;
+    }
+
+    NightbaneMeleePosition next = NightbaneMeleePosition::Hold;
+    float nextDist = std::numeric_limits<float>::max();
+    for (NightbaneMeleePosition const flank :
+         { NightbaneMeleePosition::ClockwiseFlank, NightbaneMeleePosition::CounterclockwiseFlank })
+    {
+        Position const position = GetNightbaneMeleePosition(nightbane, flank);
+        float const dist = position.GetExactDist2d(currentPosition);
+        if (dist < nextDist && IsClearOfCharredEarth(position, charredEarths))
+        {
+            next = flank;
+            nextDist = dist;
+        }
+    }
+
+    if (state.nightbaneMeleePosition == next)
+        return false;
+
+    state.nightbaneMeleePosition = next;
+    return true;
+}
+
+// Each ground phase starts at the parapet, from where one Charred Earth can be escaped across the
+// terrace. A covered position moves to the nearest clear one in the band, else forward until the
+// band clears. The position also follows him if he moves.
+bool NightbaneManageTimersAndTrackersAction::UpdateRangedPosition(
+    KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
+{
+    std::optional<Position>& position = state.nightbaneRangedPosition;
+    bool const isClear = position && IsClearOfCharredEarth(*position, charredEarths);
+    if (isClear && IsOnNightbaneRangedSide(*position, nightbane))
+    {
+        constexpr float tolerance = 0.5f;
+        float const bossDist = nightbane.GetExactDist2d(*position);
+        if (bossDist >= NIGHTBANE_RANGED_MIN_DIST - tolerance &&
+            bossDist <= NIGHTBANE_RANGED_MAX_DIST + tolerance)
+        {
+            return false;
+        }
+    }
+
+    Position const from = position ? *position : nightbane.GetPosition();
+    std::optional<Position> next;
+    if (!position)
+    {
+        next = FindNightbaneRangedPosition(
+            *bot, nightbane, from, charredEarths, NightbaneRangedTier::Parapet);
+    }
+
+    if (!next)
+    {
+        next = FindNightbaneRangedPosition(
+            *bot, nightbane, from, charredEarths, NightbaneRangedTier::Band);
+    }
+
+    if (!next && position && !isClear)
+    {
+        next = FindNightbaneRangedPosition(
+            *bot, nightbane, from, charredEarths, NightbaneRangedTier::Forward);
+    }
+
+    if (!next)
+        return false;
+
+    position = next;
     return true;
 }

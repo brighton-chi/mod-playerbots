@@ -553,6 +553,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class NightbaneMeleeShouldAvoidCharredEarthTrigger : public KarazhanEncounterTrigger
+{
+public:
+    NightbaneMeleeShouldAvoidCharredEarthTrigger(PlayerbotAI* botAI)
+        : KarazhanEncounterTrigger(
+            botAI, "nightbane melee should avoid charred earth",
+            KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class NightbaneShouldManagePetAggressionTrigger : public KarazhanEncounterTrigger
 {
 public:

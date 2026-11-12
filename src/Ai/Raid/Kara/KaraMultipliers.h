@@ -311,17 +311,6 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class NightbaneDisableAvoidAoeMultiplier : public KarazhanEncounterMultiplier
-{
-public:
-    NightbaneDisableAvoidAoeMultiplier(PlayerbotAI* botAI)
-        : KarazhanEncounterMultiplier(
-            botAI, "nightbane disable avoid aoe", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class NightbaneDisableMovementMultiplier : public KarazhanEncounterMultiplier
 {
 public:

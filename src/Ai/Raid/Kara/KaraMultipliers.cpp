@@ -663,26 +663,8 @@ float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
     return action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
-// No avoid aoe at all in the flight phase (Rain of Bones) or for the active tank or ranged in the
-// ground phase (Charred Earth).
-float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!dynamic_cast<AvoidAoeAction*>(action))
-        return 1.0f;
-
-    Unit* nightbane = GetEncounterBoss();
-    if (!nightbane)
-        return 1.0f;
-
-    if (IsNightbaneFlying(nightbane))
-        return 0.0f;
-
-    return PlayerbotAI::IsRanged(bot) || nightbane->GetVictim() == bot ? 0.0f : 1.0f;
-}
-
+// On the ground, bots on him move only by the Nightbane actions; his tank sits in Charred Earth. In
+// flight, the stack is the only movement until he leaves the flight position.
 float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) &&
@@ -691,18 +673,11 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    bool const isSetBehind = dynamic_cast<SetBehindTargetAction*>(action);
-
-    bool const isReachAction = !isSetBehind &&
-        (dynamic_cast<ReachTargetAction*>(action) ||
-         dynamic_cast<CastReachTargetSpellAction*>(action));
-
-    bool const isBlockedMovement = !isSetBehind &&
-        (dynamic_cast<CombatFormationMoveAction*>(action) ||
-         IsRepositionAction(bot, action) || dynamic_cast<FleeAction*>(action));
-
-    if (!isSetBehind && !isReachAction && !isBlockedMovement &&
-        !dynamic_cast<FollowAction*>(action))
+    // AttackAction is a MovementAction.
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<NightbaneRangedMoveFromCharredEarthAction*>(action) ||
+        dynamic_cast<NightbaneMeleeMoveFromCharredEarthAction*>(action) ||
+        dynamic_cast<NightbaneStackAwayFromRainOfBonesAction*>(action))
     {
         return 1.0f;
     }
@@ -711,16 +686,33 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
     if (!nightbane)
         return 1.0f;
 
-    if (isBlockedMovement)
+    bool const isSetBehind = dynamic_cast<SetBehindTargetAction*>(action);
+    if ((dynamic_cast<CombatFormationMoveAction*>(action) && !isSetBehind) ||
+        IsRepositionAction(bot, action) || dynamic_cast<FleeAction*>(action))
+    {
         return 0.0f;
+    }
+
+    bool const isAvoidAoe =
+        dynamic_cast<AvoidAoeAction*>(action) && botAI->GetState() != BOT_STATE_NON_COMBAT;
 
     if (!IsNightbaneFlying(nightbane))
-        return 1.0f;
+    {
+        if (nightbane->GetVictim() == bot)
+            return isAvoidAoe ? 0.0f : 1.0f;
 
-    if (isReachAction)
+        return HoldsNightbaneGroundPosition(botAI, *nightbane) ? 0.0f : 1.0f;
+    }
+
+    if (isAvoidAoe || dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 0.0f;
+    }
 
-    // Follow, and set behind on a skeleton, would pull bots off the stack. Once he leaves the
-    // flight position to land, bots freely follow their master.
-    return IsNightbaneFlightPhaseActive(nightbane) ? 0.0f : 1.0f;
+    // Once he leaves the flight position to land, bots freely follow their master.
+    if (dynamic_cast<FollowAction*>(action) || isSetBehind)
+        return IsNightbaneFlightPhaseActive(nightbane) ? 0.0f : 1.0f;
+
+    return 1.0f;
 }

@@ -10,6 +10,7 @@
 #include "EncounterHelpers.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "Map.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Random.h"
@@ -24,6 +25,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 using namespace EncounterHelpers;
@@ -1409,6 +1411,12 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
         from.GetPositionZ());
 }
 
+std::vector<Position> GetCharredEarths(PlayerbotAI* botAI)
+{
+    return botAI->GetAiObjectContext()
+        ->GetValue<std::vector<Position>>("nightbane charred earths")->Get();
+}
+
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths)
 {
     for (Position const& charredEarth : charredEarths)
@@ -1418,6 +1426,110 @@ bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const
     }
 
     return true;
+}
+
+bool IsOnNightbaneRangedSide(Position const& position, Unit const& nightbane)
+{
+    return GetTerraceAngle(position) < GetTerraceAngle(nightbane);
+}
+
+namespace
+{
+
+bool IsInNightbaneRangedSight(Player const& bot, Position const& from, Position const& to)
+{
+    float const eyeHeight = bot.GetCollisionHeight();
+    return bot.GetMap()->isInLineOfSight(
+        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + eyeHeight,
+        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + eyeHeight,
+        bot.GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
+}
+
+} // end anonymous namespace (Nightbane)
+
+std::optional<Position> FindNightbaneRangedPosition(
+    Player const& bot, Unit const& nightbane, Position const& from,
+    std::vector<Position> const& charredEarths, NightbaneRangedTier tier)
+{
+    constexpr float angleStep = 0.0436f; // 2.5 degrees
+    constexpr float maxAngleOffset = 1.0f; // Past the band on every ring
+    constexpr uint8 ringCount = 9;
+    constexpr float ringStep =
+        (TERRACE_FLOOR_OUTER_RADIUS - TERRACE_FLOOR_INNER_RADIUS) / (ringCount - 1);
+
+    float const minBossDist = tier == NightbaneRangedTier::Forward ?
+        nightbane.GetMeleeRange(&bot) : NIGHTBANE_RANGED_MIN_DIST;
+    uint8 const firstRing = tier == NightbaneRangedTier::Parapet ? ringCount - 1 : 0;
+
+    float const bossAngle = GetTerraceAngle(nightbane);
+    std::vector<std::pair<float, Position>> candidates;
+    for (uint8 i = 1; i * angleStep <= maxAngleOffset; ++i)
+    {
+        float const angle = bossAngle - i * angleStep;
+        if (angle < TERRACE_ARC_START)
+            break;
+
+        for (uint8 ring = firstRing; ring < ringCount; ++ring)
+        {
+            float const radius = TERRACE_FLOOR_INNER_RADIUS + ring * ringStep;
+            Position const candidate(
+                TERRACE_DOME_CENTER.GetPositionX() + radius * std::cos(angle),
+                TERRACE_DOME_CENTER.GetPositionY() + radius * std::sin(angle),
+                NIGHTBANE_GROUND_Z);
+            float const bossDist = nightbane.GetExactDist2d(candidate);
+            if (bossDist >= minBossDist && bossDist <= NIGHTBANE_RANGED_MAX_DIST &&
+                IsClearOfCharredEarth(candidate, charredEarths))
+            {
+                candidates.emplace_back(from.GetExactDist2d(candidate), candidate);
+            }
+        }
+    }
+
+    std::sort(
+        candidates.begin(), candidates.end(),
+        [](auto const& a, auto const& b) { return a.first < b.first; });
+
+    Position const farFlank =
+        GetNightbaneMeleePosition(nightbane, NightbaneMeleePosition::CounterclockwiseFlank);
+    for (auto const& candidate : candidates)
+    {
+        if (IsInNightbaneRangedSight(bot, candidate.second, nightbane.GetPosition()) &&
+            (tier == NightbaneRangedTier::Forward ||
+             IsInNightbaneRangedSight(bot, candidate.second, farFlank)))
+        {
+            return candidate.second;
+        }
+    }
+
+    return std::nullopt;
+}
+
+Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition position)
+{
+    // Angles from his facing: negative is clockwise.
+    float angle = NIGHTBANE_MELEE_HOLD_ANGLE;
+    float dist = NIGHTBANE_MELEE_HOLD_DIST;
+    if (position != NightbaneMeleePosition::Hold)
+    {
+        angle = position == NightbaneMeleePosition::ClockwiseFlank ?
+            -NIGHTBANE_MELEE_FLANK_ANGLE : NIGHTBANE_MELEE_FLANK_ANGLE;
+        dist = NIGHTBANE_MELEE_FLANK_DIST;
+    }
+
+    float const facing = nightbane.GetOrientation() + angle;
+    return Position(
+        nightbane.GetPositionX() + dist * std::cos(facing),
+        nightbane.GetPositionY() + dist * std::sin(facing), nightbane.GetPositionZ());
+}
+
+bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit const& nightbane)
+{
+    Player* bot = botAI->GetBot();
+    if (nightbane.GetVictim() == bot || (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)))
+        return false;
+
+    return PlayerbotAI::IsRanged(bot) ||
+        botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get() == &nightbane;
 }
 
 bool IsOutsideNightbaneTerrace(Unit* unit)
@@ -1507,7 +1619,8 @@ bool KaraResetInstance(uint32 instanceId)
         AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
         !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
         state.nightbaneFlightStage || state.nightbaneFlightStackPosition ||
-        state.nightbaneRainOfBonesCenter;
+        state.nightbaneRainOfBonesCenter || state.nightbaneMeleePosition ||
+        state.nightbaneRangedPosition;
 
     karaStates.erase(it);
     return wasSet;

@@ -477,6 +477,16 @@ bool NightbaneRangedShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
     return nightbane && !IsNightbaneFlying(nightbane);
 }
 
+bool NightbaneMeleeShouldAvoidCharredEarthTrigger::IsActiveInEncounter()
+{
+    if (!PlayerbotAI::IsMelee(bot))
+        return false;
+
+    Unit* nightbane = GetEncounterBoss();
+    return nightbane && !IsNightbaneFlying(nightbane) &&
+        HoldsNightbaneGroundPosition(botAI, *nightbane);
+}
+
 bool NightbaneShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
     if (!HasControllableMinion(bot))

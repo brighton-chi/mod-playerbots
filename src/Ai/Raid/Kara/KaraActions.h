@@ -503,16 +503,20 @@ public:
     bool Execute(Event event) override;
 };
 
-class NightbaneRangedStackAndMoveFromCharredEarthAction : public MovementAction
+class NightbaneRangedMoveFromCharredEarthAction : public MovementAction
 {
 public:
-    NightbaneRangedStackAndMoveFromCharredEarthAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "nightbane ranged stack and move from charred earth") {}
+    NightbaneRangedMoveFromCharredEarthAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "nightbane ranged move from charred earth") {}
     bool Execute(Event event) override;
+};
 
-private:
-    bool MoveRangedLeaderToSafePosition();
-    bool StackOnRangedLeader(Player* rangedLeader);
+class NightbaneMeleeMoveFromCharredEarthAction : public MovementAction
+{
+public:
+    NightbaneMeleeMoveFromCharredEarthAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "nightbane melee move from charred earth") {}
+    bool Execute(Event event) override;
 };
 
 class NightbaneSetPetStanceAction : public Action
@@ -564,6 +568,14 @@ public:
     NightbaneManageTimersAndTrackersAction(PlayerbotAI* botAI)
         : Action(botAI, "nightbane manage timers and trackers") {}
     bool Execute(Event event) override;
+
+private:
+    bool UpdateMeleePosition(
+        KaraHelpers::KaraInstanceState& state, Unit const& nightbane,
+        std::vector<Position> const& charredEarths);
+    bool UpdateRangedPosition(
+        KaraHelpers::KaraInstanceState& state, Unit const& nightbane,
+        std::vector<Position> const& charredEarths);
 };
 
 #endif

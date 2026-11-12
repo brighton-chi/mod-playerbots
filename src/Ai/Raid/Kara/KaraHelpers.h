@@ -633,7 +633,9 @@ inline constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 inline constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 inline constexpr uint32 NIGHTBANE_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
 inline constexpr float CHARRED_EARTH_REACH = 11.5f; // 10y patch + 1.5y player reach
-inline constexpr float CHARRED_EARTH_CLEARANCE = 1.5f;
+inline constexpr float CHARRED_EARTH_CLEARANCE = 0.5f; // A bot 0.5y off its position stays out
+inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
+inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
 // Rain of Bones ticks land up to 8y from its center and hit 6y around that, with no player reach.
 inline constexpr float RAIN_OF_BONES_REACH = 14.0f;
 inline constexpr float RAIN_OF_BONES_CLEARANCE = 1.0f;
@@ -648,6 +650,9 @@ inline constexpr float TERRACE_OUTER_RADIUS = 51.0f;
 inline constexpr float TERRACE_ARC_RADIUS = 47.856f;
 inline constexpr float TERRACE_ARC_START = 0.2418f;
 inline constexpr float TERRACE_ARC_END = 4.9241f;
+// The navmesh at every terrace angle
+inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f;
+inline constexpr float TERRACE_FLOOR_OUTER_RADIUS = 49.4f;
 // All floor, and 10.5y from the outer wall, so skeletons appearing up to 10y from a Rain of Bones
 // on the stack can't reach it.
 inline constexpr float NIGHTBANE_STACK_RADIUS = 39.0f;
@@ -655,6 +660,18 @@ inline constexpr float NIGHTBANE_STACK_RADIUS = 39.0f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MIN_ANGLE = 1.2566f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MAX_ANGLE = 3.0020f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_HOME_ANGLE = 2.0944f;
+// Melee positions from his facing, out of Smoldering Breath, Cleave and Tail Sweep. A Charred Earth
+// on the tank misses both flanks wherever it stands (3.9-10y in front of him). The hold, out of
+// melee range on his counterclockwise side, is for when both flanks are covered.
+inline constexpr float NIGHTBANE_MELEE_FLANK_ANGLE = 1.8850f; // 108 degrees
+inline constexpr float NIGHTBANE_MELEE_FLANK_DIST = 10.5f;
+inline constexpr float NIGHTBANE_MELEE_HOLD_ANGLE = 1.7453f; // 100 degrees
+inline constexpr float NIGHTBANE_MELEE_HOLD_DIST = 23.0f;
+// A Charred Earth on ranged misses melee on the flank, and heals (40y plus both players' reach)
+// reach the far flank.
+inline constexpr float NIGHTBANE_RANGED_MIN_DIST =
+    NIGHTBANE_MELEE_FLANK_DIST + CHARRED_EARTH_REACH + CHARRED_EARTH_CLEARANCE;
+inline constexpr float NIGHTBANE_RANGED_MAX_DIST = 43.0f - NIGHTBANE_MELEE_FLANK_DIST;
 
 inline Position const NIGHTBANE_FLIGHT_POSITION = { -11160.125f, -1870.683f, 97.739f };
 inline Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f };
@@ -691,7 +708,30 @@ std::optional<Position> FindNightbaneStackPosition(
 
     return std::nullopt;
 }
+std::vector<Position> GetCharredEarths(PlayerbotAI* botAI);
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
+enum class NightbaneRangedTier : uint8
+{
+    Parapet, // Band positions at the parapet, where each ground phase starts
+    Band,
+    Forward, // From his melee range, only when the band has no clear position
+};
+// Ranged keep to his clockwise side.
+bool IsOnNightbaneRangedSide(Position const& position, Unit const& nightbane);
+// The position nearest from on his clockwise side, clear of Charred Earth, in sight of him and,
+// above Forward, of the far flank. The bot's eyes stand in for every ranged bot's.
+std::optional<Position> FindNightbaneRangedPosition(
+    Player const& bot, Unit const& nightbane, Position const& from,
+    std::vector<Position> const& charredEarths, NightbaneRangedTier tier);
+enum class NightbaneMeleePosition : uint8
+{
+    ClockwiseFlank, // Where each ground phase starts
+    CounterclockwiseFlank,
+    Hold,
+};
+Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition position);
+// Every bot but his victim and the main tank; a melee bot not on him moves as usual.
+bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit const& nightbane);
 // True for a unit off the ring (the terrace is only a plain ring within the arc) or below it.
 bool IsOutsideNightbaneTerrace(Unit* unit);
 bool IsNightbaneFlying(Unit* nightbane);
@@ -716,6 +756,8 @@ struct KaraInstanceState
     std::optional<NightbaneFlightStage> nightbaneFlightStage;
     std::optional<Position> nightbaneFlightStackPosition;
     std::optional<Position> nightbaneRainOfBonesCenter;
+    std::optional<NightbaneMeleePosition> nightbaneMeleePosition;
+    std::optional<Position> nightbaneRangedPosition;
 };
 
 KaraInstanceState& KaraState(uint32 instanceId);

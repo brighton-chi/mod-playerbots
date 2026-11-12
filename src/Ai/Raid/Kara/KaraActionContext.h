@@ -163,8 +163,11 @@ public:
         creators["nightbane tank position boss"] =
             &RaidKarazhanActionContext::nightbane_tank_position_boss;
 
-        creators["nightbane ranged stack and move from charred earth"] =
-            &RaidKarazhanActionContext::nightbane_ranged_stack_and_move_from_charred_earth;
+        creators["nightbane ranged move from charred earth"] =
+            &RaidKarazhanActionContext::nightbane_ranged_move_from_charred_earth;
+
+        creators["nightbane melee move from charred earth"] =
+            &RaidKarazhanActionContext::nightbane_melee_move_from_charred_earth;
 
         creators["nightbane set pet stance"] = &RaidKarazhanActionContext::nightbane_set_pet_stance;
 
@@ -391,9 +394,13 @@ private:
     {
         return new NightbaneTankPositionBossAction(botAI);
     }
-    static Action* nightbane_ranged_stack_and_move_from_charred_earth(PlayerbotAI* botAI)
+    static Action* nightbane_ranged_move_from_charred_earth(PlayerbotAI* botAI)
     {
-        return new NightbaneRangedStackAndMoveFromCharredEarthAction(botAI);
+        return new NightbaneRangedMoveFromCharredEarthAction(botAI);
+    }
+    static Action* nightbane_melee_move_from_charred_earth(PlayerbotAI* botAI)
+    {
+        return new NightbaneMeleeMoveFromCharredEarthAction(botAI);
     }
     static Action* nightbane_set_pet_stance(PlayerbotAI* botAI)
     {

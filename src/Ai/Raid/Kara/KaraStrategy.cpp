@@ -156,8 +156,10 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane tank position boss", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("nightbane ranged should avoid charred earth",
-        { NextAction(
-            "nightbane ranged stack and move from charred earth", ACTION_EMERGENCY + 1) }));
+        { NextAction("nightbane ranged move from charred earth", ACTION_EMERGENCY + 1) }));
+
+    triggers.push_back(new TriggerNode("nightbane melee should avoid charred earth",
+        { NextAction("nightbane melee move from charred earth", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("nightbane should manage pet aggression",
         { NextAction("nightbane set pet stance", ACTION_RAID + 1) }));
@@ -200,7 +202,6 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier(botAI));
     multipliers.push_back(new NightbaneDelaySummonsAndPetAttacksMultiplier(botAI));
     multipliers.push_back(new NightbaneHoldDpsMultiplier(botAI));
-    multipliers.push_back(new NightbaneDisableAvoidAoeMultiplier(botAI));
     multipliers.push_back(new NightbaneDisableMovementMultiplier(botAI));
 }
 
