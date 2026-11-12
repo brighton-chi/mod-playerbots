@@ -503,19 +503,29 @@ float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
 float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<MovementAction*>(action))
+    if (!dynamic_cast<AvoidAoeAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<CombatFormationMoveAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* malchezaar = GetEncounterBoss();
+    if (!malchezaar)
         return 1.0f;
 
-    bool const isReactiveMovement =
-        dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action);
+    if (!dynamic_cast<SetBehindTargetAction*>(action))
+        return 0.0f;
 
-    return isReactiveMovement ? 0.0f : 1.0f;
+    // Set behind waits while fire reaches his melee ring, until the tank walks him clear.
+    return IsClearOfInfernals(*malchezaar, GetLandedInfernals(botAI), MALCHEZAAR_RING_CLEARANCE) ?
+        1.0f : 0.0f;
 }
 
 float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
+    // The aura ends before his health restore runs: in a raid he updates every third world tick or
+    // so, and players every tick. Until then the bot is still at 1 health.
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)) && bot->GetHealth() > 1)
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action) ||
@@ -531,34 +541,35 @@ float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(A
         return 0.0f;
     }
 
-    // Disable some cooldowns that are used upon low/critical health.
-    bool isDefensive = false;
+    // Hold cooldowns used at low or critical health, and Blink Back and Disengage, which move.
+    bool isHeld = false;
     switch (bot->getClass())
     {
         case CLASS_MAGE:
         {
-            isDefensive = dynamic_cast<CastIceBlockAction*>(action) ||
-                dynamic_cast<CastManaShieldAction*>(action);
+            isHeld = dynamic_cast<CastIceBlockAction*>(action) ||
+                dynamic_cast<CastManaShieldAction*>(action) ||
+                dynamic_cast<CastBlinkBackAction*>(action);
             break;
         }
         case CLASS_PALADIN:
         {
-            isDefensive = dynamic_cast<CastDivineShieldAction*>(action) ||
+            isHeld = dynamic_cast<CastDivineShieldAction*>(action) ||
                 dynamic_cast<CastLayOnHandsAction*>(action);
             break;
         }
         case CLASS_ROGUE:
         {
-            isDefensive = dynamic_cast<CastCloakOfShadowsAction*>(action) ||
+            isHeld = dynamic_cast<CastCloakOfShadowsAction*>(action) ||
                 dynamic_cast<CastEvasionAction*>(action);
             break;
         }
         case CLASS_SHAMAN:
-            isDefensive = dynamic_cast<CastShamanisticRageAction*>(action);
+            isHeld = dynamic_cast<CastShamanisticRageAction*>(action);
             break;
         case CLASS_PRIEST:
         {
-            isDefensive = dynamic_cast<CastBindingHealAction*>(action) ||
+            isHeld = dynamic_cast<CastBindingHealAction*>(action) ||
                 dynamic_cast<CastDesperatePrayerAction*>(action) ||
                 dynamic_cast<CastPainSuppressionAction*>(action) ||
                 dynamic_cast<CastDispersionAction*>(action);
@@ -566,20 +577,23 @@ float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(A
         }
         case CLASS_WARRIOR:
         {
-            isDefensive = dynamic_cast<CastEnragedRegenerationAction*>(action) ||
+            isHeld = dynamic_cast<CastEnragedRegenerationAction*>(action) ||
                 dynamic_cast<CastLastStandAction*>(action) ||
                 dynamic_cast<CastShieldWallAction*>(action);
             break;
         }
         case CLASS_DRUID:
-            isDefensive = dynamic_cast<CastSurvivalInstinctsAction*>(action);
+            isHeld = dynamic_cast<CastSurvivalInstinctsAction*>(action);
             break;
         case CLASS_HUNTER:
-            isDefensive = dynamic_cast<CastDeterrenceAction*>(action);
+        {
+            isHeld = dynamic_cast<CastDeterrenceAction*>(action) ||
+                dynamic_cast<CastDisengageAction*>(action);
             break;
+        }
         case CLASS_DEATH_KNIGHT:
         {
-            isDefensive = dynamic_cast<CastIceboundFortitudeAction*>(action) ||
+            isHeld = dynamic_cast<CastIceboundFortitudeAction*>(action) ||
                 dynamic_cast<CastRuneTapAction*>(action) ||
                 dynamic_cast<CastVampiricBloodAction*>(action) ||
                 dynamic_cast<CastDeathStrikeAction*>(action) ||
@@ -590,7 +604,7 @@ float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(A
             break;
     }
 
-    return isDefensive || dynamic_cast<UseItemAction*>(action) ? 0.0f : 1.0f;
+    return isHeld || dynamic_cast<UseItemAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Nightbane
@@ -664,16 +678,17 @@ float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
 }
 
 // On the ground, bots on him move only by the Nightbane actions; his tank sits in Charred Earth. In
-// flight, the stack is the only movement until he leaves the flight position.
+// flight, the stack is the only movement until he leaves the flight position. Avoid AoE only ever
+// reacts to Charred Earth here, which the Nightbane actions handle.
 float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
+    bool const isReposition = IsRepositionAction(bot, action);
     if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) && !IsRepositionAction(bot, action))
+        !dynamic_cast<CastReachTargetSpellAction*>(action) && !isReposition)
     {
         return 1.0f;
     }
 
-    // AttackAction is a MovementAction.
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<NightbaneRangedMoveFromCharredEarthAction*>(action) ||
         dynamic_cast<NightbaneMeleeMoveFromCharredEarthAction*>(action) ||
@@ -688,23 +703,15 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
 
     bool const isSetBehind = dynamic_cast<SetBehindTargetAction*>(action);
     if ((dynamic_cast<CombatFormationMoveAction*>(action) && !isSetBehind) ||
-        IsRepositionAction(bot, action) || dynamic_cast<FleeAction*>(action))
+        isReposition || dynamic_cast<FleeAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
     {
         return 0.0f;
     }
 
-    bool const isAvoidAoe =
-        dynamic_cast<AvoidAoeAction*>(action) && botAI->GetState() != BOT_STATE_NON_COMBAT;
-
     if (!IsNightbaneFlying(nightbane))
-    {
-        if (nightbane->GetVictim() == bot)
-            return isAvoidAoe ? 0.0f : 1.0f;
-
         return HoldsNightbaneGroundPosition(botAI, *nightbane) ? 0.0f : 1.0f;
-    }
 
-    if (isAvoidAoe || dynamic_cast<ReachTargetAction*>(action) ||
+    if (dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 0.0f;

@@ -1535,11 +1535,13 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     if (!enfeeble)
         return false;
 
+    // Once the Nova has landed, a position held for it is dropped and only fire counts.
+    bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
     if (_destination &&
-        (_enfeebleApplyTime != enfeeble->GetApplyTime() ||
+        (!HasDestinationFor(enfeeble->GetApplyTime(), canNovaHit) ||
          !IsClearOfInfernals(*_destination, infernals, HELLFIRE_CLEARANCE) ||
-         malchezaar->GetExactDist2d(*_destination) < SHADOW_NOVA_MOVE_DISTANCE ||
+         (canNovaHit && malchezaar->GetExactDist2d(*_destination) < SHADOW_NOVA_MOVE_DISTANCE) ||
          !IsLineClearOfInfernals(bot->GetPosition(), *_destination, infernals)))
     {
         _destination.reset();
@@ -1553,13 +1555,15 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
             [&](Position const& candidate)
             {
                 return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
-                    malchezaar->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE;
+                    (!canNovaHit ||
+                     malchezaar->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
             });
 
         if (!_destination)
             return false;
 
         _enfeebleApplyTime = enfeeble->GetApplyTime();
+        _forShadowNova = canNovaHit;
 
         // A fire or Nova move cut short by Enfeeble would otherwise resume once the aura is gone.
         Action* hazardAction = context->GetAction("prince malchezaar move clear of hazards");

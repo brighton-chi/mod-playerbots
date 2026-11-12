@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <vector>
 
+class Aura;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -75,6 +76,7 @@ enum class KaraSpells : uint32
 
     // Prince Malchezaar
     SPELL_ENFEEBLE                = 30843,
+    SPELL_SHADOW_NOVA             = 30852,
 
     // Nightbane
     SPELL_CHARRED_EARTH           = 30129,
@@ -539,6 +541,7 @@ inline constexpr float HELLFIRE_CLEARANCE = HELLFIRE_RADIUS + 1.0f;
 inline constexpr float SHADOW_NOVA_RADIUS = 30.0f;
 inline constexpr float SHADOW_NOVA_MOVE_DISTANCE = SHADOW_NOVA_RADIUS + 1.0f;
 inline constexpr float SHADOW_NOVA_CLEARANCE = SHADOW_NOVA_RADIUS + 2.0f;
+inline constexpr int32 SHADOW_NOVA_CAST_TIME_MS = 2000;
 // His melee range for a player: his reach 4 + 1.5 + 4/3.
 inline constexpr float MALCHEZAAR_MELEE_RANGE = 6.83f;
 // With him this clear of a landed infernal, all of his melee ring is clear of it.
@@ -552,6 +555,8 @@ inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr uint32 LANDED_INFERNALS_CACHE_INTERVAL_MS = 200;
 
+// He's casting Shadow Nova, or enough of Enfeeble is left for a cast to land before it ends.
+bool CanShadowNovaHitEnfeebled(Unit* malchezaar, Aura const& enfeeble);
 std::vector<Position> FindLandedInfernals(Player* bot);
 std::vector<Position> GetLandedInfernals(PlayerbotAI* botAI);
 bool IsClearOfInfernals(

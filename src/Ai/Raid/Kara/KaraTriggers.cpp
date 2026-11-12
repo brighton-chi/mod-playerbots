@@ -409,7 +409,9 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
     if (!malchezaar)
         return false;
 
-    if (bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE ||
+    // After the Nova lands, only fire is left to avoid until his restore.
+    bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
+    if ((canNovaHit && bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE) ||
         !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE))
     {
         return true;
@@ -418,7 +420,7 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
     Action* action = context->GetAction("prince malchezaar enfeebled bot run to safety");
     return action &&
         static_cast<PrinceMalchezaarEnfeebledBotRunToSafetyAction*>(action)->HasDestinationFor(
-            enfeeble->GetApplyTime());
+            enfeeble->GetApplyTime(), canNovaHit);
 }
 
 bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()

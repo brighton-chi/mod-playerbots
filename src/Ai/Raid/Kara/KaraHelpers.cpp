@@ -1197,6 +1197,12 @@ Position GetReachEndPosition(Unit const& bot, Unit const& target, float range)
 
 // Prince Malchezaar
 
+bool CanShadowNovaHitEnfeebled(Unit* malchezaar, Aura const& enfeeble)
+{
+    return enfeeble.GetDuration() >= SHADOW_NOVA_CAST_TIME_MS ||
+        malchezaar->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_SHADOW_NOVA));
+}
+
 std::vector<Position> FindLandedInfernals(Player* bot)
 {
     std::vector<Position> infernals;

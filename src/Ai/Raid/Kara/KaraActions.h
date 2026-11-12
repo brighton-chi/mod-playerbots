@@ -437,21 +437,24 @@ public:
     PrinceMalchezaarEnfeebledBotRunToSafetyAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "prince malchezaar enfeebled bot run to safety") {}
     bool Execute(Event event) override;
-    bool HasDestinationFor(time_t enfeebleApplyTime) const
+    bool HasDestinationFor(time_t enfeebleApplyTime, bool forShadowNova) const
     {
-        return _destination.has_value() && _enfeebleApplyTime == enfeebleApplyTime;
+        return _destination.has_value() && _enfeebleApplyTime == enfeebleApplyTime &&
+            _forShadowNova == forShadowNova;
     }
     bool ResetDestination()
     {
         bool const wasSet = _destination.has_value();
         _destination.reset();
         _enfeebleApplyTime = 0;
+        _forShadowNova = false;
         return wasSet;
     }
 
 private:
     std::optional<Position> _destination;
     time_t _enfeebleApplyTime = 0;
+    bool _forShadowNova = false;
 };
 
 class PrinceMalchezaarMoveClearOfHazardsAction : public MovementAction
