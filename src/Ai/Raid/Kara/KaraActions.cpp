@@ -1882,24 +1882,26 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (!IsNightbaneFlying(nightbane))
     {
-        bool didSomething = ResetIfSet(state.nightbaneFlightStage);
-        didSomething |= ResetIfSet(state.nightbaneFlightStackPosition);
-        didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
-        didSomething |= EmplaceIfUnset(state.nightbaneDpsHoldTimer, getMSTime());
+        bool updated = ResetIfSet(state.nightbaneFlightStage);
+        updated |= ResetIfSet(state.nightbaneFlightStackPosition);
+        updated |= ResetIfSet(state.nightbaneRainOfBonesCenter);
+        updated |= EmplaceIfUnset(state.nightbaneDpsHoldTimer, getMSTime());
         std::vector<Position> const charredEarths = GetCharredEarths(botAI);
-        didSomething |= UpdateMeleePosition(state, *nightbane, charredEarths);
-        didSomething |= UpdateRangedPosition(state, *nightbane, charredEarths);
-        return didSomething;
+        updated |= UpdateMeleePosition(state, *nightbane, charredEarths);
+        updated |= UpdateRangedPosition(state, *nightbane, charredEarths);
+        return updated;
     }
 
-    bool didSomething = ResetIfSet(state.nightbaneDpsHoldTimer);
-    didSomething |= ResetIfSet(state.nightbaneMeleePosition);
-    didSomething |= ResetIfSet(state.nightbaneRangedPosition);
+    bool updated = ResetIfSet(state.nightbaneDpsHoldTimer);
+    updated |= ResetIfSet(state.nightbaneMeleePosition);
+    updated |= ResetIfSet(state.nightbaneRangedPosition);
 
     constexpr float atFlightPositionDist = 1.0f;
     NightbaneFlightStage stage = NightbaneFlightStage::TakeOff;
     if (nightbane->GetExactDist(NIGHTBANE_FLIGHT_POSITION) < atFlightPositionDist)
+    {
         stage = NightbaneFlightStage::Hover;
+    }
     else if (state.nightbaneFlightStage &&
         *state.nightbaneFlightStage != NightbaneFlightStage::TakeOff)
     {
@@ -1909,21 +1911,21 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (state.nightbaneFlightStage != stage)
     {
         state.nightbaneFlightStage = stage;
-        didSomething = true;
+        updated = true;
     }
 
     if (stage == NightbaneFlightStage::Landing)
     {
-        didSomething |= ResetIfSet(state.nightbaneFlightStackPosition);
-        didSomething |= ResetIfSet(state.nightbaneRainOfBonesCenter);
-        return didSomething;
+        updated |= ResetIfSet(state.nightbaneFlightStackPosition);
+        updated |= ResetIfSet(state.nightbaneRainOfBonesCenter);
+        return updated;
     }
 
     Position const* rainCenter = GetRainOfBonesCenter(nightbane);
     bool const isNewRain = rainCenter && (!state.nightbaneRainOfBonesCenter ||
         state.nightbaneRainOfBonesCenter->GetExactDist2d(*rainCenter) > 0.1f);
     if (state.nightbaneFlightStackPosition && !isNewRain)
-        return didSomething;
+        return updated;
 
     if (isNewRain)
         state.nightbaneRainOfBonesCenter = *rainCenter;
@@ -1948,7 +1950,9 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         });
 
     if (position)
+    {
         state.nightbaneFlightStackPosition = position;
+    }
     else if (!state.nightbaneFlightStackPosition)
     {
         state.nightbaneFlightStackPosition = Position(
