@@ -62,6 +62,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+// For Attumen, Maiden of Virtue, and The Curator.
+class KarazhanDisableCombatFormationMoveMultiplier : public KarazhanEncounterMultiplier
+{
+public:
+    KarazhanDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI, std::string const name, KaraHelpers::KaraBosses boss)
+        : KarazhanEncounterMultiplier(botAI, name, boss) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Trash
 
 class ManaWarpSaveStunsMultiplier : public Multiplier
@@ -72,18 +84,6 @@ public:
 };
 
 // Attumen the Huntsman
-
-class AttumenTheHuntsmanDisableCombatFormationMoveMultiplier : public KarazhanEncounterMultiplier
-{
-public:
-    AttumenTheHuntsmanDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : KarazhanEncounterMultiplier(
-            botAI, "attumen the huntsman disable combat formation move",
-            KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
 
 class AttumenTheHuntsmanDisableAutoTargetingMultiplier : public KarazhanEncounterMultiplier
 {
@@ -121,18 +121,6 @@ protected:
 
 // Maiden of Virtue
 
-class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public KarazhanEncounterMultiplier
-{
-public:
-    MaidenOfVirtueDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : KarazhanEncounterMultiplier(
-            botAI, "maiden of virtue disable combat formation move",
-            KaraHelpers::KaraBosses::DATA_MAIDEN) {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
 class MaidenOfVirtueKeepGroundingTotemMultiplier : public KarazhanEncounterMultiplier
 {
 public:
@@ -166,18 +154,6 @@ public:
     TheCuratorDisableTankAssistMultiplier(PlayerbotAI* botAI)
         : KarazhanEncounterMultiplier(
             botAI, "the curator disable tank assist", KaraHelpers::KaraBosses::DATA_CURATOR) {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class TheCuratorDisableCombatFormationMoveMultiplier : public KarazhanEncounterMultiplier
-{
-public:
-    TheCuratorDisableCombatFormationMoveMultiplier(PlayerbotAI* botAI)
-        : KarazhanEncounterMultiplier(
-            botAI, "the curator disable combat formation move",
-            KaraHelpers::KaraBosses::DATA_CURATOR) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

@@ -161,6 +161,14 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     return 1.0f;
 }
 
+float KarazhanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
+}
+
 // Trash
 
 // Some stun abilities are used in standard rotations. Every stunner should save them for the mana
@@ -211,15 +219,6 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 
 // Attumen the Huntsman
 
-float AttumenTheHuntsmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!dynamic_cast<CombatFormationMoveAction*>(action))
-        return 1.0f;
-
-    // Blocked for phase 2 in AttumenTheHuntsmanStayStackedMultiplier.
-    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
-}
-
 float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     // Include Blade Flurry because it's also used as a pure DPS cooldown, not just for AoE, so the
@@ -267,14 +266,6 @@ float AttumenTheHuntsmanHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
 // Maiden of Virtue
 
-float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!dynamic_cast<CombatFormationMoveAction*>(action))
-        return 1.0f;
-
-    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
-}
-
 float MaidenOfVirtueKeepGroundingTotemMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -307,14 +298,6 @@ float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* act
 float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
     return dynamic_cast<TankAssistAction*>(action) ? 0.0f : 1.0f;
-}
-
-float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
-{
-    if (!dynamic_cast<CombatFormationMoveAction*>(action))
-        return 1.0f;
-
-    return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
 }
 
 // Terestian Illhoof

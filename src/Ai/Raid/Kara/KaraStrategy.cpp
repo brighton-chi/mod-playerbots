@@ -183,15 +183,21 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new KarazhanKeepTremorTotemMultiplier(botAI));
     multipliers.push_back(new KarazhanDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new ManaWarpSaveStunsMultiplier(botAI));
-    multipliers.push_back(new AttumenTheHuntsmanDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new KarazhanDisableCombatFormationMoveMultiplier(
+        botAI, "attumen the huntsman disable combat formation move",
+        KaraHelpers::KaraBosses::DATA_ATTUMEN));
     multipliers.push_back(new AttumenTheHuntsmanDisableAutoTargetingMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanHoldDpsMultiplier(botAI));
-    multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new KarazhanDisableCombatFormationMoveMultiplier(
+        botAI, "maiden of virtue disable combat formation move",
+        KaraHelpers::KaraBosses::DATA_MAIDEN));
     multipliers.push_back(new MaidenOfVirtueKeepGroundingTotemMultiplier(botAI));
     multipliers.push_back(new BigBadWolfRedHoodHunterStayDownMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
-    multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new KarazhanDisableCombatFormationMoveMultiplier(
+        botAI, "the curator disable combat formation move",
+        KaraHelpers::KaraBosses::DATA_CURATOR));
     multipliers.push_back(new TerestianIllhoofDisableDotsOnFiendishImpsMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranArcaneExplosionDisableMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranDisableReactiveMovementMultiplier(botAI));
