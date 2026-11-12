@@ -9,7 +9,6 @@
 #include "KaraHelpers.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "Random.h"
 #include "RtiTargetValue.h"
 #include "Spell.h"
 #include "ThreatHelpers.h"
@@ -120,13 +119,9 @@ bool KarazhanSetTremorTotemAction::Execute(Event /*event*/)
 
 // Trash
 
-ManaWarpCastStunSpellAction::ManaWarpCastStunSpellAction(PlayerbotAI* botAI)
-    : Action(botAI, "mana warp cast stun spell"),
-      _reactionMs(urand(WARP_BREACH_MIN_REACTION_MS, WARP_BREACH_MAX_REACTION_MS)) {}
-
 bool ManaWarpCastStunSpellAction::Execute(Event /*event*/)
 {
-    Unit* warp = GetManaWarpToStun(botAI, _reactionMs);
+    Unit* warp = GetManaWarpToStun(botAI);
     if (!warp)
         return false;
 
@@ -170,11 +165,22 @@ bool ManaWarpCastStunSpellAction::Execute(Event /*event*/)
     if (stunned)
         return true;
 
-    return bot->getRace() == RACE_TAUREN && bot->GetExactDist(warp) <= WAR_STOMP_RADIUS &&
-        botAI->CanCastSpell("war stomp", bot) && botAI->CastSpell("war stomp", bot);
+    if (bot->getRace() != RACE_TAUREN || bot->GetExactDist(warp) > WAR_STOMP_RADIUS)
+        return false;
+
+    // Too late if Warp Breach would finish before War Stomp lands.
+    Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
+    if (breach && breach->GetCastTimeRemaining() <= static_cast<int32>(WAR_STOMP_CAST_MS))
+        return false;
+
+    if (!botAI->CanCastSpell("war stomp", bot) || !botAI->CastSpell("war stomp", bot))
+        return false;
+
+    ClaimManaWarpForWarStomp(warp);
+    return true;
 }
 
-// Standing by casts nothing, so the stun is off the global cooldown when the cast bar comes.
+// Standing by casts nothing, so the stun is off the global cooldown when the warp is due.
 bool ManaWarpStandByToStunAction::Execute(Event /*event*/)
 {
     Unit* warp = GetManaWarpToStunNext(botAI);

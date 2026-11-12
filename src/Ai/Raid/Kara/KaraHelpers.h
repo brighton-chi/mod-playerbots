@@ -174,13 +174,16 @@ bool IsKarazhanFearCasterActive(Player* bot);
 
 // Trash
 
-// A stun stops Warp Breach for good if it lands during the 1s cast; interrupts do nothing.
-// Each stunner waits its own delay after the cast starts, so the first stun ends that cast and the
-// others go to a warp still casting.
-inline constexpr uint32 WARP_BREACH_MIN_REACTION_MS = 200;
-inline constexpr uint32 WARP_BREACH_MAX_REACTION_MS = 300;
+// Warp Breach starts at 10% HP. A stun that is on then and lasts past the cast's first retry
+// (1.2s later) stops it for good, and so does a stun during its 1s cast; interrupts do nothing.
+// So warps are stunned from 15%, and on the cast bar if one gets through.
+inline constexpr float MANA_WARP_WARP_BREACH_HEALTH_PCT = 10.0f;
+inline constexpr float MANA_WARP_STUN_HEALTH_PCT = 15.0f;
 // From here, a stunner on the warp casts nothing else, keeping its global cooldown free.
-inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 15.0f;
+inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 25.0f;
+// War Stomp has a 0.5s cast; other stunners leave its warp alone until it lands.
+inline constexpr uint32 WAR_STOMP_CAST_MS = 500;
+inline constexpr uint32 WAR_STOMP_CLAIM_MS = WAR_STOMP_CAST_MS + 200;
 // Stun spell reaches, center to center.
 inline constexpr float MELEE_STUN_REACH = 5.0f; // Kidney Shot, Bash, Maim, Concussion Blow
 inline constexpr float HAMMER_OF_JUSTICE_REACH = 10.0f;
@@ -195,7 +198,10 @@ inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
 bool IsNearManaWarpPacks(Player* bot);
 float GetManaWarpStunReach(Player* bot);
 // Rogues and cat druids stun only their target, which holds their combo points.
-Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs);
+// Instant stuns land at once, so a stunned warp, or one no longer casting, is skipped by the next
+// bot; only War Stomp needs a claim.
+Unit* GetManaWarpToStun(PlayerbotAI* botAI);
+void ClaimManaWarpForWarStomp(Unit* warp);
 // Tanks and healers stun without standing by.
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI);
 

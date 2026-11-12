@@ -36,7 +36,7 @@ bool KarazhanEnemiesCastFearTrigger::IsActive()
 
 bool ManaWarpIncomingWarpBreachTrigger::IsActive()
 {
-    return GetManaWarpToStun(botAI, WARP_BREACH_MIN_REACTION_MS);
+    return GetManaWarpToStun(botAI);
 }
 
 bool ManaWarpTargetAtLowHealthTrigger::IsActive()

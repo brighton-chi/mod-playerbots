@@ -38,6 +38,9 @@ namespace
 
 std::mutex karaStateMutex;
 std::unordered_map<uint32, KaraInstanceState> karaStates;
+// Per instance: Mana Warp -> War Stomp claim expiry. Kept out of KaraInstanceState, which the reset
+// erases during trash; claims expire on their own.
+std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint32>> manaWarpWarStompClaims;
 
 float GetDistanceToSegment2d(Position const& point, Position const& start, Position const& end)
 {
@@ -127,20 +130,42 @@ bool NeedsComboPointsForManaWarpStun(Player* bot)
         (bot->getClass() == CLASS_DRUID && bot->GetShapeshiftForm() == FORM_CAT);
 }
 
-bool IsManaWarpCastingWarpBreach(Unit* warp, uint32 reactionMs)
+bool IsManaWarpClaimedForWarStomp(Unit* warp)
 {
-    if (!warp)
+    std::lock_guard lock(karaStateMutex);
+    auto const instanceIt = manaWarpWarStompClaims.find(warp->GetInstanceId());
+    if (instanceIt == manaWarpWarStompClaims.end())
         return false;
 
-    Spell* breach = warp->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH));
-    return breach && breach->getState() == SPELL_STATE_PREPARING &&
-        breach->GetCastTime() - breach->GetCastTimeRemaining() >= static_cast<int32>(reactionMs);
+    auto const claimIt = instanceIt->second.find(warp->GetGUID());
+    if (claimIt == instanceIt->second.end())
+        return false;
+
+    if (claimIt->second > getMSTime())
+        return true;
+
+    instanceIt->second.erase(claimIt);
+    if (instanceIt->second.empty())
+        manaWarpWarStompClaims.erase(instanceIt);
+
+    return false;
 }
 
-bool IsManaWarpToStun(Player* bot, Unit* unit, float reach, uint32 reactionMs)
+// Above 10%, from 15%; below it, only on the cast bar: a warp there that isn't casting has either
+// cast Warp Breach already or will retry it, and the retry's cast bar is caught then.
+bool IsManaWarpToStun(Player* bot, Unit* unit, float reach)
 {
-    return unit && unit->GetEntry() == Id(KaraNpcs::NPC_MANA_WARP) &&
-        bot->GetExactDist(unit) <= reach && IsManaWarpCastingWarpBreach(unit, reactionMs);
+    if (!unit || unit->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) || !unit->IsAlive() ||
+        bot->GetExactDist(unit) > reach || unit->HasUnitState(UNIT_STATE_STUNNED))
+    {
+        return false;
+    }
+
+    float const healthPct = unit->GetHealthPct();
+    bool const isDue = unit->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_WARP_BREACH)) ||
+        (healthPct > MANA_WARP_WARP_BREACH_HEALTH_PCT && healthPct <= MANA_WARP_STUN_HEALTH_PCT);
+
+    return isDue && !IsManaWarpClaimedForWarStomp(unit);
 }
 
 } // end anonymous namespace (Trash)
@@ -184,8 +209,8 @@ float GetManaWarpStunReach(Player* bot)
     return reach;
 }
 
-// The current target first, then any warp in reach that is casting.
-Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
+// The current target first, then any warp in reach that is due.
+Unit* GetManaWarpToStun(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     float const reach = GetManaWarpStunReach(bot);
@@ -195,7 +220,7 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* target = context->GetValue<Unit*>("current target")->Get();
     bool const needsComboPoints = NeedsComboPointsForManaWarpStun(bot);
-    if (IsManaWarpToStun(bot, target, reach, reactionMs) &&
+    if (IsManaWarpToStun(bot, target, reach) &&
         (!needsComboPoints || bot->GetComboPoints(target)))
     {
         return target;
@@ -207,11 +232,18 @@ Unit* GetManaWarpToStun(PlayerbotAI* botAI, uint32 reactionMs)
     for (auto const& attackers : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(attackers);
-        if (IsManaWarpToStun(bot, attacker, reach, reactionMs))
+        if (IsManaWarpToStun(bot, attacker, reach))
             return attacker;
     }
 
     return nullptr;
+}
+
+void ClaimManaWarpForWarStomp(Unit* warp)
+{
+    std::lock_guard lock(karaStateMutex);
+    manaWarpWarStompClaims[warp->GetInstanceId()][warp->GetGUID()] =
+        getMSTime() + WAR_STOMP_CLAIM_MS;
 }
 
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
@@ -225,7 +257,8 @@ Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
 
     Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     if (!target || target->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) || !target->IsAlive() ||
-        target->GetHealthPct() > MANA_WARP_STAND_BY_HEALTH_PCT)
+        target->GetHealthPct() > MANA_WARP_STAND_BY_HEALTH_PCT ||
+        target->HasUnitState(UNIT_STATE_STUNNED))
     {
         return nullptr;
     }

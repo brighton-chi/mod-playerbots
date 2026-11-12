@@ -38,11 +38,9 @@ public:
 class ManaWarpCastStunSpellAction : public Action
 {
 public:
-    ManaWarpCastStunSpellAction(PlayerbotAI* botAI);
+    ManaWarpCastStunSpellAction(PlayerbotAI* botAI)
+        : Action(botAI, "mana warp cast stun spell") {}
     bool Execute(Event event) override;
-
-private:
-    uint32 const _reactionMs; // drawn once per bot
 };
 
 class ManaWarpStandByToStunAction : public MovementAction
