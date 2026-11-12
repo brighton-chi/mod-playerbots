@@ -663,6 +663,8 @@ float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
     return action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
+// No avoid aoe at all in the flight phase (Rain of Bones) or for the active tank or ranged in the
+// ground phase (Charred Earth).
 float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
@@ -672,10 +674,13 @@ float NightbaneDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* nightbane = GetEncounterBoss();
-    if (!nightbane || IsNightbaneFlying(nightbane))
+    if (!nightbane)
         return 1.0f;
 
-    return PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
+    if (IsNightbaneFlying(nightbane))
+        return 0.0f;
+
+    return PlayerbotAI::IsRanged(bot) || nightbane->GetVictim() == bot ? 0.0f : 1.0f;
 }
 
 float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
