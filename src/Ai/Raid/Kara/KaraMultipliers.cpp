@@ -72,9 +72,6 @@ float KarazhanKeepTremorTotemMultiplier::GetValue(Action* action)
 
 float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -214,9 +211,6 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 
 float AttumenTheHuntsmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
@@ -229,9 +223,6 @@ float AttumenTheHuntsmanDisableCombatFormationMoveMultiplier::GetValueInEncounte
 
 float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     // Include Blade Flurry because it's also used as a pure DPS cooldown, not just for AoE, so the
     // target exclusion doesn't cover it entirely. Save it for phase 2.
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
@@ -247,9 +238,6 @@ float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Acti
 
 float AttumenTheHuntsmanStayStackedMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<AttumenTheHuntsmanStackBehindAction*>(action))
     {
@@ -282,9 +270,6 @@ float AttumenTheHuntsmanHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
 float MaidenOfVirtueDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
@@ -330,9 +315,6 @@ float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* act
 
 float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 
@@ -341,9 +323,6 @@ float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 
 float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
@@ -357,9 +336,6 @@ float TheCuratorDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action
 
 float TerestianIllhoofDisableDotsOnFiendishImpsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     // Also the on-attacker DoTs, which pick their own target.
     if (!dynamic_cast<CastDebuffSpellAction*>(action))
         return 1.0f;
@@ -372,9 +348,6 @@ float TerestianIllhoofDisableDotsOnFiendishImpsMultiplier::GetValueInEncounter(A
 
 float ShadeOfAranArcaneExplosionDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
         !IsKillingSpree(bot, action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
