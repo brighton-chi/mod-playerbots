@@ -462,6 +462,10 @@ inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
 // 10s, non-tanks hold DPS unless a tank is the victim. After beams spawn, nobody holds DPS.
 inline constexpr uint32 NETHERSPITE_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
+// Beams tick from 10 to 59 s; the 60 s tick loses to the banish switch. From 56 s, a blocker due to
+// swap holds to the end: two blockers end it on 26 stacks at most. A second early, as the tracker's
+// phase timer starts on its first tick of the phase.
+inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 56 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
 // The next blocker needs a moment, and a cast it can't stop, to get on the beam.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
@@ -473,6 +477,8 @@ inline constexpr float NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE = 34.0f;
 inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
 inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
 inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
+// Out of a void zone at the waiter's feet, which needs 3 yd.
+inline constexpr float NETHERSPITE_NEXT_SHIFT_RANGE = 4.0f;
 inline constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
 inline constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
 inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
@@ -503,6 +509,10 @@ NetherspiteBeamOffset GetNetherspiteBeamOffset(
 bool IsOnNetherspiteBeam(Unit* netherspite, Position const& portal, Unit* unit);
 Position GetPositionOnNetherspiteBeam(
     Unit const& netherspite, Position const& portal, float distance);
+// 3 yd off every beam, along its whole length to his center, past where the script counts a player:
+// a bot shouldn't rely on that cutoff.
+bool IsClearOfNetherspiteBeams(
+    Unit const& netherspite, KaraInstanceState const& state, float x, float y);
 bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance);
 // Within the clearance of a void zone on the way. A bot already in one can leave it any way, and a
 // bot inside the clearance can pass it but not enter it.
@@ -753,7 +763,7 @@ Position const* GetRainOfBonesCenter(Unit* nightbane);
 struct KaraInstanceState
 {
     std::optional<uint32> attumenDpsHoldTimer;
-    std::optional<uint32> netherspiteDpsHoldTimer;
+    std::optional<uint32> netherspitePortalPhaseTimer;
     std::array<NetherspiteBeamState, NETHERSPITE_BEAMS.size()> netherspiteBeams;
     std::vector<Position> netherspiteVoidZones;
     std::vector<NetherspiteBanishSlot> netherspiteBanishSlots;

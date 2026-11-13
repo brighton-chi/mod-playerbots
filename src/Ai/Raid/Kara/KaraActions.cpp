@@ -1082,13 +1082,13 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     if (IsBanishPhase(netherspite))
     {
-        ResetIfSet(state.netherspiteDpsHoldTimer);
+        ResetIfSet(state.netherspitePortalPhaseTimer);
         state.netherspiteBeams = {};
         UpdateBanishSlots(netherspite, state);
         return false;
     }
 
-    EmplaceIfUnset(state.netherspiteDpsHoldTimer, getMSTime());
+    EmplaceIfUnset(state.netherspitePortalPhaseTimer, getMSTime());
     state.netherspiteBanishSlots.clear();
 
     constexpr float searchRadius = 150.0f;
@@ -1197,9 +1197,10 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
     return candidates;
 }
 
+// The shifted band holds positions moved along the line out of a void zone; hunters only move out.
 bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
     Unit* netherspite, Position const& portal, KaraInstanceState const& state, float side,
-    Position const& position, float low)
+    Position const& position, float low, bool isHunter)
 {
     NetherspiteBeamOffset const offset = GetNetherspiteBeamOffset(
         *netherspite, portal, position.GetPositionX(), position.GetPositionY());
@@ -1211,14 +1212,18 @@ bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
         return false;
     }
 
-    if (offset.along < low - NETHERSPITE_BEAM_POSITION_TOLERANCE ||
-        offset.along > low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    float const lowShift = isHunter ? 0.0f : NETHERSPITE_NEXT_SHIFT_RANGE;
+    if (offset.along < low - lowShift - NETHERSPITE_BEAM_POSITION_TOLERANCE ||
+        offset.along > low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_NEXT_SHIFT_RANGE +
+            NETHERSPITE_BEAM_POSITION_TOLERANCE)
     {
         return false;
     }
 
     return IsClearOfVoidZones(
-            state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_CLEARANCE);
+            state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_CLEARANCE) &&
+        IsClearOfNetherspiteBeams(
+            *netherspite, state, position.GetPositionX(), position.GetPositionY());
 }
 
 // Off the line on the side facing the other beam, so a move out of a void zone can't cross it.
@@ -1234,24 +1239,65 @@ std::optional<Position> NetherspiteManageTimersAndTrackersAction::FindNextPositi
         float const along = low + frand(0.0f, NETHERSPITE_NEXT_ALONG_RANGE);
         float const off =
             side * frand(NETHERSPITE_NEXT_MIN_OFF_LINE, NETHERSPITE_NEXT_MAX_OFF_LINE);
-        float x = netherspite->GetPositionX() + dirX * along - dirY * off;
-        float y = netherspite->GetPositionY() + dirY * along + dirX * off;
-        if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE))
-            continue;
-
-        float z = netherspite->GetPositionZ();
-        float const wantedX = x;
-        float const wantedY = y;
-        if (bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, netherspite->GetPositionX(), netherspite->GetPositionY(),
-                netherspite->GetPositionZ(), x, y, z, false) &&
-            std::abs(x - wantedX) < 1.0f && std::abs(y - wantedY) < 1.0f)
+        float const x = netherspite->GetPositionX() + dirX * along - dirY * off;
+        float const y = netherspite->GetPositionY() + dirY * along + dirX * off;
+        if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) ||
+            !IsClearOfNetherspiteBeams(*netherspite, state, x, y))
         {
-            return Position(x, y, z);
+            continue;
+        }
+
+        if (std::optional<Position> const position = GetFloorPosition(netherspite, x, y))
+            return position;
+    }
+
+    return std::nullopt;
+}
+
+// A void zone lands at the waiter's feet and can cover the whole band. The waiter moves along the
+// line at the same distance off it, nearest first, closer to him first so melee stay in range.
+std::optional<Position> NetherspiteManageTimersAndTrackersAction::ShiftNextPositionAlongLine(
+    Unit* netherspite, Position const& portal, KaraInstanceState const& state, float side,
+    Position const& position, float low, bool isHunter)
+{
+    float const length = netherspite->GetExactDist2d(portal);
+    float const dirX = (portal.GetPositionX() - netherspite->GetPositionX()) / length;
+    float const dirY = (portal.GetPositionY() - netherspite->GetPositionY()) / length;
+    constexpr float shiftStep = 0.5f;
+    for (float shift = shiftStep; shift <= NETHERSPITE_NEXT_SHIFT_RANGE; shift += shiftStep)
+    {
+        for (float const direction : { -1.0f, 1.0f })
+        {
+            float const x = position.GetPositionX() + dirX * shift * direction;
+            float const y = position.GetPositionY() + dirY * shift * direction;
+            Position const shifted(x, y, position.GetPositionZ());
+            if (!IsNextPositionGood(netherspite, portal, state, side, shifted, low, isHunter))
+                continue;
+
+            if (std::optional<Position> const floor = GetFloorPosition(netherspite, x, y))
+                return floor;
         }
     }
 
     return std::nullopt;
+}
+
+// False if the floor stops the way out from him short of the position.
+std::optional<Position> NetherspiteManageTimersAndTrackersAction::GetFloorPosition(
+    Unit* netherspite, float x, float y)
+{
+    float clippedX = x;
+    float clippedY = y;
+    float z = netherspite->GetPositionZ();
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, netherspite->GetPositionX(), netherspite->GetPositionY(),
+            netherspite->GetPositionZ(), clippedX, clippedY, z, false) ||
+        std::abs(clippedX - x) >= 1.0f || std::abs(clippedY - y) >= 1.0f)
+    {
+        return std::nullopt;
+    }
+
+    return Position(clippedX, clippedY, z);
 }
 
 void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
@@ -1284,8 +1330,11 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
         }
     }
 
+    // Near the end of beams, the blocker holds to the end rather than swap for a tick or two.
+    bool const isPhaseEnding = state.netherspitePortalPhaseTimer &&
+        getMSTimeDiff(*state.netherspitePortalPhaseTimer, getMSTime()) >= NETHERSPITE_LAST_SWAP_MS;
     Player* newBlocker = blocker;
-    bool const isDueToStepOn = blocker && next &&
+    bool const isDueToStepOn = !isPhaseEnding && blocker && next &&
         HasNetherspiteBeamStackLimit(blocker, data.beam) &&
         GetNetherspiteBeamStacks(blocker, data) >= NETHERSPITE_NEXT_STEPS_ON_AT_STACKS;
     if (!isBlockerEligible && !isBlockerAtLimit)
@@ -1297,7 +1346,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     {
         newBlocker = next;
     }
-    else if (isBlockerAtLimit && !next)
+    else if (isBlockerAtLimit && !next && !isPhaseEnding)
     {
         newBlocker = nullptr;
     }
@@ -1339,7 +1388,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
         return;
 
     taken.push_back(nextGuid);
-    if (blocker && HasNetherspiteBeamStackLimit(blocker, data.beam) &&
+    if (!isPhaseEnding && blocker && HasNetherspiteBeamStackLimit(blocker, data.beam) &&
         GetNetherspiteBeamStacks(blocker, data) >= NETHERSPITE_NEXT_STEPS_ON_AT_STACKS)
     {
         beamState.nextPosition = GetPositionOnNetherspiteBeam(
@@ -1349,14 +1398,22 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     }
 
     float const side = GetNetherspiteInnerSide(*netherspite, state, data.beam);
-    float const low = next->getClass() == CLASS_HUNTER ?
-        NETHERSPITE_HUNTER_BLOCKER_DISTANCE : NETHERSPITE_BLOCKER_MIN_DISTANCE;
+    bool const isHunter = next->getClass() == CLASS_HUNTER;
+    float const low =
+        isHunter ? NETHERSPITE_HUNTER_BLOCKER_DISTANCE : NETHERSPITE_BLOCKER_MIN_DISTANCE;
     if (isNextNew || !IsNextPositionGood(
-            netherspite, *beamState.portal, state, side, beamState.nextPosition, low))
+            netherspite, *beamState.portal, state, side, beamState.nextPosition, low, isHunter))
     {
         // If there's nowhere for it yet, it stays where it is.
-        std::optional<Position> const position =
-            FindNextPosition(netherspite, *beamState.portal, state, side, low);
+        std::optional<Position> position;
+        if (!isNextNew)
+        {
+            position = ShiftNextPositionAlongLine(
+                netherspite, *beamState.portal, state, side, beamState.nextPosition, low,
+                isHunter);
+        }
+        if (!position)
+            position = FindNextPosition(netherspite, *beamState.portal, state, side, low);
         if (position)
             beamState.nextPosition = *position;
         else if (isNextNew)

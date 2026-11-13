@@ -687,26 +687,6 @@ NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
     return { 18.0f, 25.0f };
 }
 
-// Up to his center, past where the script counts a player: a bot shouldn't rely on that cutoff.
-bool IsClearOfBeams(Unit const& netherspite, KaraInstanceState const& state, float x, float y)
-{
-    for (NetherspiteBeamState const& beam : state.netherspiteBeams)
-    {
-        if (!beam.portal)
-            continue;
-
-        NetherspiteBeamOffset const offset =
-            GetNetherspiteBeamOffset(netherspite, *beam.portal, x, y);
-        if (offset.along > 0.0f && offset.along < netherspite.GetExactDist2d(*beam.portal) &&
-            std::abs(offset.off) < NETHERSPITE_BEAM_CLEARANCE)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool CrossesBeam(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -735,8 +715,8 @@ bool CrossesBeam(
 bool CrossesBeamAfterStart(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
-    uint32 const elapsed = state.netherspiteDpsHoldTimer ?
-        getMSTimeDiff(*state.netherspiteDpsHoldTimer, getMSTime()) : NETHERSPITE_BEAMS_START_MS;
+    uint32 const elapsed = state.netherspitePortalPhaseTimer ?
+        getMSTimeDiff(*state.netherspitePortalPhaseTimer, getMSTime()) : NETHERSPITE_BEAMS_START_MS;
     float const travelMs = bot->GetExactDist2d(x, y) / NETHERSPITE_BOT_SPEED * IN_MILLISECONDS;
     if (elapsed + travelMs < NETHERSPITE_BEAMS_START_MS)
         return false;
@@ -811,10 +791,10 @@ bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite)
     }
 
     KaraInstanceState const* state = FindKaraState(netherspite->GetInstanceId());
-    if (!state || !state->netherspiteDpsHoldTimer)
+    if (!state || !state->netherspitePortalPhaseTimer)
         return true;
 
-    uint32 const elapsed = getMSTimeDiff(*state->netherspiteDpsHoldTimer, getMSTime());
+    uint32 const elapsed = getMSTimeDiff(*state->netherspitePortalPhaseTimer, getMSTime());
     if (elapsed < NETHERSPITE_DPS_HOLD_MS)
         return true;
     if (elapsed >= NETHERSPITE_BEAMS_START_MS)
@@ -983,6 +963,26 @@ Position GetPositionOnNetherspiteBeam(
         netherspite.GetPositionZ());
 }
 
+bool IsClearOfNetherspiteBeams(
+    Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+{
+    for (NetherspiteBeamState const& beam : state.netherspiteBeams)
+    {
+        if (!beam.portal)
+            continue;
+
+        NetherspiteBeamOffset const offset =
+            GetNetherspiteBeamOffset(netherspite, *beam.portal, x, y);
+        if (offset.along > 0.0f && offset.along < netherspite.GetExactDist2d(*beam.portal) &&
+            std::abs(offset.off) < NETHERSPITE_BEAM_CLEARANCE)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance)
 {
     return std::none_of(
@@ -1041,7 +1041,7 @@ bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
     if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) ||
-        !IsClearOfBeams(netherspite, state, x, y))
+        !IsClearOfNetherspiteBeams(netherspite, state, x, y))
     {
         return false;
     }
@@ -1110,7 +1110,8 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
 
     // A bot that can't get to the area without crossing a beam stays put unless it's in danger.
     if (IsClearOfVoidZones(state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_CLEARANCE) &&
-        IsClearOfBeams(*netherspite, state, bot->GetPositionX(), bot->GetPositionY()))
+        IsClearOfNetherspiteBeams(
+            *netherspite, state, bot->GetPositionX(), bot->GetPositionY()))
     {
         return std::nullopt;
     }
@@ -1128,7 +1129,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
             float const y = bot->GetPositionY() + std::sin(angle) * distance;
 
             if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
-                IsClearOfBeams(*netherspite, state, x, y) &&
+                IsClearOfNetherspiteBeams(*netherspite, state, x, y) &&
                 !CrossesVoidZone(state, bot->GetPosition(), Position(x, y)) &&
                 !CrossesBeamAfterStart(bot, *netherspite, state, x, y) &&
                 GetFloorAt(bot, x, y, z))
@@ -1169,7 +1170,7 @@ std::optional<Position> GetStepAroundVoidZones(
             float z = bot->GetPositionZ();
 
             if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
-                IsClearOfBeams(*netherspite, state, x, y) &&
+                IsClearOfNetherspiteBeams(*netherspite, state, x, y) &&
                 !CrossesVoidZone(state, from, Position(x, y)) &&
                 !CrossesBeamAfterStart(bot, *netherspite, state, x, y) &&
                 GetFloorAt(bot, x, y, z))
@@ -1621,7 +1622,7 @@ bool KaraResetInstance(uint32 instanceId)
         return false;
 
     KaraInstanceState const& state = it->second;
-    bool const wasSet = state.attumenDpsHoldTimer || state.netherspiteDpsHoldTimer ||
+    bool const wasSet = state.attumenDpsHoldTimer || state.netherspitePortalPhaseTimer ||
         AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
         !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
         state.nightbaneFlightStage || state.nightbaneFlightStackPosition ||

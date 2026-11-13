@@ -415,10 +415,14 @@ private:
         std::vector<ObjectGuid> const& taken);
     bool IsNextPositionGood(
         Unit* netherspite, Position const& portal, KaraHelpers::KaraInstanceState const& state,
-        float side, Position const& position, float low);
+        float side, Position const& position, float low, bool isHunter);
     std::optional<Position> FindNextPosition(
         Unit* netherspite, Position const& portal, KaraHelpers::KaraInstanceState const& state,
         float side, float low);
+    std::optional<Position> ShiftNextPositionAlongLine(
+        Unit* netherspite, Position const& portal, KaraHelpers::KaraInstanceState const& state,
+        float side, Position const& position, float low, bool isHunter);
+    std::optional<Position> GetFloorPosition(Unit* netherspite, float x, float y);
     void UpdateBeamBlockers(
         Unit* netherspite, KaraHelpers::KaraInstanceState& state,
         KaraHelpers::NetherspiteBeamData const& data, std::vector<ObjectGuid>& taken);
