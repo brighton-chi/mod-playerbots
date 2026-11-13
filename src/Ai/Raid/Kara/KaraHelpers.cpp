@@ -1262,6 +1262,49 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
         MALCHEZAAR_ARRIVAL_DISTANCE;
 }
 
+std::optional<Position> FindMalchezaarPosition(
+    Player* bot, Position const& origin, std::vector<Position> const& infernals,
+    float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource)
+{
+    constexpr float ringStep = 2.0f;
+    constexpr uint8 angleCount = 32;
+    constexpr uint8 maxWalkChecks = 64;
+
+    int const ringCount = static_cast<int>(maxDistance / ringStep);
+    uint8 walkChecks = 0;
+    for (bool const clearLine : { true, false })
+    {
+        if (!clearLine && !mayCross)
+            break;
+
+        for (int ring = 1; ring <= ringCount; ++ring)
+        {
+            float const distance = ring * ringStep;
+            for (uint8 i = 0; i < angleCount; ++i)
+            {
+                float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
+                Position const candidate(
+                    origin.GetPositionX() + distance * std::cos(angle),
+                    origin.GetPositionY() + distance * std::sin(angle), origin.GetPositionZ());
+
+                bool const isGood = IsClearOfInfernals(candidate, infernals, infernalClearance) &&
+                    (!novaSource || novaSource->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
+                if (!isGood || (clearLine && !IsLineClearOfInfernals(origin, candidate, infernals)))
+                    continue;
+
+                if (walkChecks >= maxWalkChecks)
+                    return std::nullopt;
+
+                ++walkChecks;
+                if (CanWalkStraightTo(bot, candidate))
+                    return candidate;
+            }
+        }
+    }
+
+    return std::nullopt;
+}
+
 namespace
 {
 
@@ -1341,12 +1384,8 @@ std::optional<Position> FindMalchezaarClearPosition(
     bool const isRanged = PlayerbotAI::IsRanged(bot);
     constexpr float searchDistance = 60.0f;
     return FindMalchezaarPosition(
-        bot, bot->GetPosition(), infernals, searchDistance, true, [&](Position const& candidate)
-        {
-            return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
-                (!isRanged || !malchezaar ||
-                 malchezaar->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
-        });
+        bot, bot->GetPosition(), infernals, searchDistance, true, HELLFIRE_CLEARANCE,
+        isRanged ? malchezaar : nullptr);
 }
 
 bool IsClearOfMalchezaarHazards(
@@ -1372,11 +1411,8 @@ std::optional<Position> FindMalchezaarTankPosition(
     for (float const candidateClearance : clearances)
     {
         std::optional<Position> const position = FindMalchezaarPosition(
-            bot, bot->GetPosition(), infernals, searchDistance, true,
-            [&](Position const& candidate)
-            {
-                return IsClearOfInfernals(candidate, infernals, candidateClearance);
-            });
+            bot, bot->GetPosition(), infernals, searchDistance, true, candidateClearance,
+            nullptr);
 
         if (position)
         {
@@ -1416,6 +1452,35 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
         TERRACE_DOME_CENTER.GetPositionX() + radius * std::cos(angle),
         TERRACE_DOME_CENTER.GetPositionY() + radius * std::sin(angle),
         from.GetPositionZ());
+}
+
+std::optional<Position> FindNightbaneStackPosition(
+    float startAngle, float minAngle, float maxAngle, std::vector<Position> const& charredEarths,
+    Position const* rainCenter, float rainClearDist)
+{
+    constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7y
+
+    for (uint8 i = 0; i * angleStep <= maxAngle - minAngle; ++i)
+    {
+        for (float const direction : { -1.0f, 1.0f })
+        {
+            float const angle = startAngle + direction * i * angleStep;
+            if (angle < minAngle || angle > maxAngle)
+                continue;
+
+            Position const position(
+                TERRACE_DOME_CENTER.GetPositionX() + NIGHTBANE_STACK_RADIUS * std::cos(angle),
+                TERRACE_DOME_CENTER.GetPositionY() + NIGHTBANE_STACK_RADIUS * std::sin(angle),
+                NIGHTBANE_GROUND_Z);
+            if (IsClearOfCharredEarth(position, charredEarths) &&
+                (!rainCenter || position.GetExactDist2d(*rainCenter) >= rainClearDist))
+            {
+                return position;
+            }
+        }
+    }
+
+    return std::nullopt;
 }
 
 std::vector<Position> GetCharredEarths(PlayerbotAI* botAI)

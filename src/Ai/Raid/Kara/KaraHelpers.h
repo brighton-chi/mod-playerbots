@@ -575,52 +575,12 @@ bool IsClearOfInfernals(
 bool IsLineClearOfInfernals(
     Position const& from, Position const& to, std::vector<Position> const& infernals);
 bool CanWalkStraightTo(Player* bot, Position const& destination);
-// The nearest position on rings around origin that passes isGood and can be walked to in a straight
-// line. A line clear of landed infernals comes first; with mayCross, any line after that.
-template <typename IsGood>
+// The nearest position on rings around origin that is infernalClearance clear of landed infernals,
+// SHADOW_NOVA_CLEARANCE from novaSource if there is one, and can be walked to in a straight line.
+// A line clear of landed infernals comes first; with mayCross, any line after that.
 std::optional<Position> FindMalchezaarPosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
-    float maxDistance, bool mayCross, IsGood const& isGood)
-{
-    constexpr float ringStep = 2.0f;
-    constexpr uint8 angleCount = 32;
-    constexpr uint8 maxWalkChecks = 64;
-
-    int const ringCount = static_cast<int>(maxDistance / ringStep);
-    uint8 walkChecks = 0;
-    for (bool const clearLine : { true, false })
-    {
-        if (!clearLine && !mayCross)
-            break;
-
-        for (int ring = 1; ring <= ringCount; ++ring)
-        {
-            float const distance = ring * ringStep;
-            for (uint8 i = 0; i < angleCount; ++i)
-            {
-                float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
-                Position const candidate(
-                    origin.GetPositionX() + distance * std::cos(angle),
-                    origin.GetPositionY() + distance * std::sin(angle), origin.GetPositionZ());
-
-                if (!isGood(candidate) ||
-                    (clearLine && !IsLineClearOfInfernals(origin, candidate, infernals)))
-                {
-                    continue;
-                }
-
-                if (walkChecks >= maxWalkChecks)
-                    return std::nullopt;
-
-                ++walkChecks;
-                if (CanWalkStraightTo(bot, candidate))
-                    return candidate;
-            }
-        }
-    }
-
-    return std::nullopt;
-}
+    float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource);
 // The nearest clear position in range of the bot's target: for a ranged bot on a ring just out of
 // Shadow Nova, for melee on the target's melee ring. Failing that, or with him not found (a rezzed
 // bot isn't on his threat list yet), the nearest clear position anywhere.
@@ -697,32 +657,11 @@ float GetTerraceAngle(Position const& position);
 // ring toward it.
 Position GetTerraceWalkPosition(Position const& from, Position const& destination);
 // Searches the stack circle in both directions from startAngle, away from his landing position
-// first, and returns the nearest position within the limits for which isClear is true.
-template <typename IsClear>
+// first, and returns the nearest position within the limits that is clear of Charred Earth and,
+// with a rain center, rainClearDist from it.
 std::optional<Position> FindNightbaneStackPosition(
-    float startAngle, float minAngle, float maxAngle, IsClear const& isClear)
-{
-    constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7y
-
-    for (uint8 i = 0; i * angleStep <= maxAngle - minAngle; ++i)
-    {
-        for (float const direction : { -1.0f, 1.0f })
-        {
-            float const angle = startAngle + direction * i * angleStep;
-            if (angle < minAngle || angle > maxAngle)
-                continue;
-
-            Position const position(
-                TERRACE_DOME_CENTER.GetPositionX() + NIGHTBANE_STACK_RADIUS * std::cos(angle),
-                TERRACE_DOME_CENTER.GetPositionY() + NIGHTBANE_STACK_RADIUS * std::sin(angle),
-                NIGHTBANE_GROUND_Z);
-            if (isClear(position))
-                return position;
-        }
-    }
-
-    return std::nullopt;
-}
+    float startAngle, float minAngle, float maxAngle, std::vector<Position> const& charredEarths,
+    Position const* rainCenter, float rainClearDist);
 std::vector<Position> GetCharredEarths(PlayerbotAI* botAI);
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
 enum class NightbaneRangedTier : uint8

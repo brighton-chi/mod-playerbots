@@ -1613,13 +1613,8 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     {
         constexpr float searchDistance = 52.0f;
         _destination = FindMalchezaarPosition(
-            bot, bot->GetPosition(), infernals, searchDistance, false,
-            [&](Position const& candidate)
-            {
-                return IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
-                    (!canNovaHit ||
-                     malchezaar->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
-            });
+            bot, bot->GetPosition(), infernals, searchDistance, false, HELLFIRE_CLEARANCE,
+            canNovaHit ? malchezaar : nullptr);
 
         if (!_destination)
             return false;
@@ -2005,11 +2000,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         GetTerraceAngle(*state.nightbaneFlightStackPosition) : NIGHTBANE_FLIGHT_STACK_HOME_ANGLE;
     std::optional<Position> const position = FindNightbaneStackPosition(
         startAngle, NIGHTBANE_FLIGHT_STACK_MIN_ANGLE, NIGHTBANE_FLIGHT_STACK_MAX_ANGLE,
-        [&](Position const& candidate)
-        {
-            return IsClearOfCharredEarth(candidate, charredEarths) &&
-                (!rainCenter || candidate.GetExactDist2d(*rainCenter) >= rainClearDist);
-        });
+        charredEarths, rainCenter, rainClearDist);
 
     if (position)
     {
