@@ -421,8 +421,8 @@ struct NetherspiteBanishSlot
     Position position;
 };
 
-// In the order the tracker picks: an empty green beam heals him 4000 a second per stack, so green
-// picks before blue.
+// The tracker assigns blockers in this order. An unblocked green beam heals Netherspite 4000 a
+// second per stack, so green gets its blocker before blue.
 inline constexpr std::array NETHERSPITE_BEAMS = {
     NetherspiteBeamData{
         NetherspiteBeam::Red, KaraNpcs::NPC_RED_PORTAL, KaraSpells::SPELL_RED_BEAM_DEBUFF,
@@ -438,33 +438,36 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
     },
 };
 
-// The script takes a player within 1.5 yd of the line only if their 2D distance to the portal, less
-// both reaches, beats Netherspite's. His reach is 18, so that starts 18 - 1.5 yd from his center.
+// The script gives a beam to a player within 1.5 yd of the line only if they are closer to the
+// portal than Netherspite, with both combat reaches taken off. His reach is 18 yd and a player's
+// 1.5, so blocking starts 16.5 yd from his center.
 inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
-// Consumption is NPC AoE on target 15: exact distance, no reach.
+// A void zone hits players within 2 yd of its center, with no combat reach added.
 inline constexpr float VOID_ZONE_RADIUS = 2.0f;
 inline constexpr float VOID_ZONE_CLEARANCE = VOID_ZONE_RADIUS + 1.0f;
 inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = VOID_ZONE_RADIUS + 0.5f;
 inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = VOID_ZONE_CLEARANCE + 0.5f;
-// From one step, the way to the next 3.5 yd position can cut inside the same zone's clearance.
+// Tried when neither side of the void zone is clear at the normal step-around distance.
 inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROUND_DISTANCE + 2.0f;
 inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
 inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
     static_cast<float>(M_PI) * 6.0f / 180.0f;
-// Netherbreath throws a bot about 25 yd out along its bearing, past the healers' range.
+// A bot more than this far outside its banish slot moves back in. Netherbreath knocks a bot about
+// 25 yd out along its bearing, past the healers' range.
 inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
 // Beams start 10s into a portal phase. Between 0 and 5s, all non-tanks hold DPS. Between 5s and
 // 10s, non-tanks hold DPS unless a tank is the victim. After beams spawn, nobody holds DPS.
 inline constexpr uint32 NETHERSPITE_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
-// Beams tick from 10 to 59 s; the 60 s tick loses to the banish switch. From 56 s, a blocker due to
-// swap holds to the end: two blockers end it on 26 stacks at most. A second early, as the tracker's
-// phase timer starts on its first tick of the phase.
+// Beams tick every second from 10 to 59 s (the banish switch wins at 60 s). From here, a blocker
+// due to swap stays on to the end, so a phase's second blocker ends on 26 stacks at most. It is a
+// second early because the tracker's phase timer can start up to a second late.
 inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 56 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
-// The next blocker needs a moment, and a cast it can't stop, to get on the beam.
+// The next blocker steps on a stack early: it needs a moment to get there and may first have to
+// finish a cast.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
 inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
@@ -474,7 +477,8 @@ inline constexpr float NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE = 34.0f;
 inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
 inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
 inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
-// Out of a void zone at the waiter's feet, which needs 3 yd.
+// How far the next blocker's waiting position can move along the line to get clear of a void zone
+// at its feet, which needs 3 yd.
 inline constexpr float NETHERSPITE_NEXT_SHIFT_RANGE = 4.0f;
 inline constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
 inline constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
@@ -482,16 +486,11 @@ inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
 inline constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
 
 bool IsBanishPhase(Unit* netherspite);
-// Cat Form turns a druid's power to energy, so a druid goes by its strategies: cat and bear are not
-// mana users, balance and resto are.
 bool IsManaUser(Player* player);
-// Holds for 5 s from each portal phase, then until a tank is his victim. At 10 s the red beam's
-// threat settles it. The threat reset leaves him on the first player to make any threat.
 bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite);
 bool HasNetherspiteBeamStackLimit(Player* player, NetherspiteBeam beam);
 uint8 GetNetherspiteBeamStacks(Player* player, NetherspiteBeamData const& data);
 bool AreNetherspitePortalsKnown(KaraInstanceState const& state);
-// Includes the red blocker.
 bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid);
 Position const* FindNetherspiteBlockerPosition(KaraInstanceState const& state, ObjectGuid guid);
 Position const* FindNetherspiteNextPosition(KaraInstanceState const& state, ObjectGuid guid);
@@ -500,44 +499,28 @@ NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
 float GetNetherspiteBanishRadius(Player* player);
 void YellNetherspiteBeamText(Player* player, std::string const& key, std::string const& text);
 void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteBeam beam);
-// Along the line from his center, and to the side, positive counterclockwise.
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
     Unit const& netherspite, Position const& portal, float x, float y);
 bool IsOnNetherspiteBeam(Unit* netherspite, Position const& portal, Unit* unit);
 Position GetPositionOnNetherspiteBeam(
     Unit const& netherspite, Position const& portal, float distance);
-// 3 yd off every beam, along its whole length to his center, past where the script counts a player:
-// a bot shouldn't rely on that cutoff.
 bool IsClearOfNetherspiteBeams(
     Unit const& netherspite, KaraInstanceState const& state, float x, float y);
 bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance);
-// Within the clearance of a void zone on the way. A bot already in one can leave it any way, and a
-// bot inside the clearance can pass it but not enter it.
 bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to);
-// The blocker's position on the line: the clear point nearest where it wants to stand.
 float FindNetherspiteBeamPositionDistance(
     Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
     Player* blocker);
-// The side of the green or blue beam that faces the other one, away from red: +1 counterclockwise.
 float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam);
-// A tank just stays off the beams and out of void zones. Everyone else stands between green and
-// blue, on the side without red, at attack range. Healers keep the red tank in range.
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y);
-// In the area, and the way there crosses no void zone, and no beam that will be up by the time the
-// bot arrives.
 bool CanMoveBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, float x, float y);
-// A random position in the area, then the nearest safe position if there is none. Neither crosses a
-// void zone, or a beam that will be up by the time the bot arrives.
 std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state);
-// The destination, or a step around the first void zone on the way there. None if neither side of
-// that zone is clear.
 std::optional<Position> GetStepAroundVoidZones(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, Position const& destination);
-// Where a reach toward the target stops: range plus both reaches from it, as ReachCombatTo has it.
 Position GetReachEndPosition(Unit const& bot, Unit const& target, float range);
 
 // Prince Malchezaar

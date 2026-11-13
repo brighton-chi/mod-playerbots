@@ -646,7 +646,7 @@ float GetBeamAngle(
     return netherspite.GetAngle(portal.GetPositionX(), portal.GetPositionY());
 }
 
-// The bearings between green and blue that don't include red.
+// The arc between the green and blue beams on the side without red.
 NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState const& state)
 {
     float const red = GetBeamAngle(netherspite, state, NetherspiteBeam::Red);
@@ -660,9 +660,10 @@ NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState cons
     return { green, greenToBlue };
 }
 
-// At most 60 degrees from the bot's own line, so a wedge under 180 degrees: a straight move inside
-// it can't cross a beam. Healers take the middle of the side instead, which keeps the tank in
-// range. One that becomes the next blocker has about 25 s to get to its beam.
+// Within 60 degrees of the beam the bot would block (blue for mana users, green otherwise), on the
+// side without red. The wedge is under 180 degrees, so a straight move inside it can't cross a
+// beam. Healers take the middle of the side instead, to keep the tank in range; a healer picked to
+// block green has about 25 s to get there.
 NetherspiteArc GetNetherspiteStandingArc(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state)
 {
@@ -732,7 +733,7 @@ bool CrossesBeamAfterStart(
     return CrossesBeam(bot, netherspite, state, x, y);
 }
 
-// The nearest to the bot, so a step goes around that one first.
+// The void zone on the way that is nearest the bot, so a step goes around that one first.
 Position const* FindFirstVoidZoneOnPath(
     KaraInstanceState const& state, Position const& from, Position const& to)
 {
@@ -756,7 +757,7 @@ Position const* FindFirstVoidZoneOnPath(
     return first;
 }
 
-// False if the floor stops the way there short of it.
+// False if the floor ends 1 yd or more short of the point, on a straight line from the bot.
 bool GetFloorAt(Player* bot, float x, float y, float& outZ)
 {
     float clippedX = x;
@@ -779,6 +780,8 @@ bool IsBanishPhase(Unit* netherspite)
     return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED));
 }
 
+// Cat Form turns a druid's power to energy, so a druid goes by its strategies: cat and bear are not
+// mana users, balance and resto are.
 bool IsManaUser(Player* player)
 {
     if (player->getClass() == CLASS_DRUID)
@@ -787,6 +790,8 @@ bool IsManaUser(Player* player)
     return player->getPowerType() == POWER_MANA;
 }
 
+// The threat reset at each portal phase leaves Netherspite on the first player to make threat, so
+// non-tanks wait for a tank to take him. At 10 s the red beam's threat settles it.
 bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite)
 {
     if (!netherspite)
@@ -834,6 +839,7 @@ bool AreNetherspitePortalsKnown(KaraInstanceState const& state)
         [](NetherspiteBeamState const& beam) { return beam.portal.has_value(); });
 }
 
+// Includes the red blocker.
 bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid)
 {
     return std::any_of(
@@ -933,6 +939,8 @@ void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteB
     }
 }
 
+// How far the point is along the line from Netherspite's center toward the portal, and how far off
+// it to the side, positive counterclockwise.
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
     Unit const& netherspite, Position const& portal, float x, float y)
 {
@@ -971,6 +979,8 @@ Position GetPositionOnNetherspiteBeam(
         netherspite.GetPositionZ());
 }
 
+// At least 3 yd off every beam along its whole length, including the part within 16.5 yd of
+// Netherspite where the script doesn't give a player the beam. Bots don't rely on that cutoff.
 bool IsClearOfNetherspiteBeams(
     Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -998,11 +1008,15 @@ bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float 
         [x, y, clearance](Position const& zone) { return zone.GetExactDist2d(x, y) < clearance; });
 }
 
+// True if the straight line passes within 3 yd of a void zone. A bot already in a zone can leave
+// it any way, and a bot already within 3 yd of one only has to stay out of it.
 bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to)
 {
     return FindFirstVoidZoneOnPath(state, from, to) != nullptr;
 }
 
+// How far from Netherspite's center the blocker stands on the line: the point nearest 18 yd
+// (hunters 25) that is clear of void zones, or 18 (25) if there is none.
 float FindNetherspiteBeamPositionDistance(
     Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
     Player* blocker)
@@ -1036,6 +1050,7 @@ float FindNetherspiteBeamPositionDistance(
     return best;
 }
 
+// The side of the green or blue beam that faces the other one, away from red: +1 counterclockwise.
 float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
 {
@@ -1045,6 +1060,9 @@ float GetNetherspiteInnerSide(
     return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
 }
 
+// Tanks only stay off the beams and out of void zones. Everyone else stands between green and blue
+// on the side without red, at attack range: melee behind Netherspite, and healers within range of
+// the red tank.
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1077,12 +1095,14 @@ bool IsBetweenNetherspiteBeams(
     if (bot->getClass() == CLASS_HUNTER || !PlayerbotAI::IsMelee(bot))
         return true;
 
-    // He faces the red blocker, and set behind is off.
+    // Netherspite faces the red tank, so this is behind him. Set behind is off here.
     float const fromRed = Position::NormalizeOrientation(
         angle - GetBeamAngle(netherspite, state, NetherspiteBeam::Red));
     return fromRed > M_PI / 2.0f && fromRed < 3.0f * M_PI / 2.0f;
 }
 
+// In the area, and the straight way there crosses no void zone and no beam that will be up by the
+// time the bot arrives.
 bool CanMoveBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1091,6 +1111,9 @@ bool CanMoveBetweenNetherspiteBeams(
         !CrossesBeamAfterStart(bot, *netherspite, state, x, y);
 }
 
+// A random position in the area (not for tanks). Failing that, a bot in a void zone or on a beam,
+// or within 3 yd of either, gets the nearest position clear of both; any other bot stays where it
+// is. The way there crosses no void zone, and no beam that will be up by the time the bot arrives.
 std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state)
 {
@@ -1116,7 +1139,6 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
         }
     }
 
-    // A bot that can't get to the area without crossing a beam stays put unless it's in danger.
     if (IsClearOfVoidZones(state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_CLEARANCE) &&
         IsClearOfNetherspiteBeams(
             *netherspite, state, bot->GetPositionX(), bot->GetPositionY()))
@@ -1124,7 +1146,6 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
         return std::nullopt;
     }
 
-    // Nearest first, so a bot only steps clear of what it's standing in.
     constexpr float maxDistance = 20.0f;
     constexpr float distanceStep = 0.5f;
     constexpr uint8 numAngles = 24;
@@ -1150,6 +1171,8 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
     return std::nullopt;
 }
 
+// The destination, or a point beside the first void zone on the way there, 3.5 yd from its center
+// (5.5 if neither side is clear at 3.5). None if neither side is clear at either distance.
 std::optional<Position> GetStepAroundVoidZones(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, Position const& destination)
 {
@@ -1191,6 +1214,8 @@ std::optional<Position> GetStepAroundVoidZones(
     return std::nullopt;
 }
 
+// Where a standard reach toward the target stops: range plus both combat reaches from the target,
+// as ReachCombatTo has it.
 Position GetReachEndPosition(Unit const& bot, Unit const& target, float range)
 {
     float const distance = bot.GetExactDist2d(target);

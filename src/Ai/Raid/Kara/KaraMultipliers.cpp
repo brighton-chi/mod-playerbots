@@ -378,9 +378,10 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
 
 // Netherspite
 
-// The beam area and the banish slots are where every bot stands, so nothing else moves them. Bots
-// on a beam or waiting for one don't reach either, except that a red blocker can follow him. Nobody
-// else reaches or charges through a void zone.
+// The beam area and the banish slots decide where bots stand, so formation moves, avoid AoE, flee,
+// follow, Killing Spree, Disengage, and Blink are off for everyone. Blockers and the bots waiting
+// to block don't reach at all, except the red tank. Nobody else reaches or charges through a void
+// zone.
 float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isReactiveMovement =
