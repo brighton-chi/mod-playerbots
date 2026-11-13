@@ -211,7 +211,9 @@ float GetManaWarpStunReach(Player* bot)
     return reach;
 }
 
-// The current target first, then any warp in reach that is due.
+// Picks a Mana Warp for this bot to stun: its current target, else any other warp in reach. A warp
+// qualifies at 10-15% health or while casting Warp Breach, unless it is stunned or a War Stomp on
+// it is still casting. Rogues and cat druids stun only their current target, with combo points.
 Unit* GetManaWarpToStun(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -265,17 +267,20 @@ Unit* GetManaWarpToStunNext(PlayerbotAI* botAI)
         return nullptr;
     }
 
-    // A rogue or cat druid with no combo points on the mana warp keeps building them.
     return !NeedsComboPointsForManaWarpStun(bot) || bot->GetComboPoints(target) ? target : nullptr;
 }
 
 // Attumen the Huntsman
 
+// Midnight remains present but turns invisible when mounted Attumen is summoned. She stays on
+// threat lists, and thus FindThreatTarget for Midnight will capture the entire encounter.
 bool IsAttumenMounted(Unit* midnight)
 {
     return midnight && !midnight->IsVisible();
 }
 
+// Both Attumens share a name, so the lookup can find either. This returns null unless it finds the
+// mounted one, which can fail for up to 1s after mounting, until the unmounted one despawns.
 Unit* GetMountedAttumen(Player* bot)
 {
     Unit* attumen = GetKaraBoss(bot, KaraBosses::DATA_ATTUMEN);
@@ -409,6 +414,9 @@ uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction)
     return static_cast<uint8>((index + direction + count) % count);
 }
 
+// BBW runs straight at the bot, cutting inside any route, so a poor start runs into him. This
+// forecasts the chase for every point and direction and returns the one that keeps BBW furthest
+// away from the bot at his closest approach.
 BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds)
 {
     constexpr float forecastStepSeconds = 0.1f;
@@ -455,8 +463,8 @@ Player* GetBigBadWolfRedHood(Unit* wolf)
     return target;
 }
 
-// Since only bots get the +70% rocket boots buff, humans will get hit without some other ability
-// to use (e.g., Sprint). Thus, Hand of Protection is saved for human Hoods.
+// Human non-tank Hoods only, near the end of Hood or below half health. Bots get the +70% rocket
+// boots buff, and tanks have enough HP to survive, provided they are quickly healed.
 Player* GetBigBadWolfTargetToProtect(Unit* wolf)
 {
     if (!wolf)
@@ -487,6 +495,7 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf)
 
 // Terestian Illhoof
 
+// Prerequisite to searching for Demon Chains, which exist only while a group member is sacrificed.
 bool IsTerestianSacrificeActive(Player* bot)
 {
     Group* group = bot->GetGroup();

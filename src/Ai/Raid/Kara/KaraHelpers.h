@@ -176,12 +176,13 @@ bool IsKarazhanFearCasterActive(Player* bot);
 
 // Trash
 
-// Warp Breach starts at 10% HP. A stun that is on then and lasts past the cast's first retry
-// (1.2s later) stops it for good, and so does a stun during its 1s cast; interrupts do nothing.
-// So warps are stunned from 15%, and on the cast bar if one gets through.
+// A Mana Warp casts Warp Breach at 10% HP. A stun that is on then and lasts past the cast's first
+// retry (1.2s later) stops it for good, and so does a stun during its 1s cast. Interrupts do
+// nothing. So warps are stunned from 15%, and during the cast if that stun misses or ends too soon.
 inline constexpr float MANA_WARP_WARP_BREACH_HEALTH_PCT = 10.0f;
 inline constexpr float MANA_WARP_STUN_HEALTH_PCT = 15.0f;
-// From here, a stunner on the warp casts nothing else, keeping its global cooldown free.
+// At or below this, a DPS bot with a stun casts nothing else while targeting a Mana Warp, so its
+// global cooldown is free at 15%. Rogues and cat druids first build combo points.
 inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 25.0f;
 // War Stomp has a 0.5s cast; other stunners leave its warp alone until it lands.
 inline constexpr uint32 WAR_STOMP_CAST_MS = 500;
@@ -199,12 +200,8 @@ inline Position const MANA_WARP_PACKS_CENTER = { -11326.0f, -1781.0f, 179.8f };
 
 bool IsNearManaWarpPacks(Player* bot);
 float GetManaWarpStunReach(Player* bot);
-// Rogues and cat druids stun only their target, which holds their combo points.
-// Instant stuns land at once, so a stunned warp, or one no longer casting, is skipped by the next
-// bot; only War Stomp needs a claim.
 Unit* GetManaWarpToStun(PlayerbotAI* botAI);
 void ClaimManaWarpForWarStomp(Unit* warp);
-// Tanks and healers stun without standing by.
 Unit* GetManaWarpToStunNext(PlayerbotAI* botAI);
 
 // Attumen the Huntsman
@@ -224,30 +221,28 @@ inline constexpr float ATTUMEN_HUNTER_STACK_DISTANCE = 8.5f;
 inline constexpr float ATTUMEN_STACK_TOLERANCE = 0.3f;
 inline Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
 
-// Midnight remains present but turns invisible when mounted Attumen is summoned. She stays on
-// threat lists, and thus FindThreatTarget for Midnight will capture the entire encounter.
 bool IsAttumenMounted(Unit* midnight);
-// Both Attumens share a name. For up to 1s after mounting, both are present, and this returns null.
 Unit* GetMountedAttumen(Player* bot);
 std::optional<Position> GetAttumenStackPosition(Player* bot, Unit* attumen);
 bool IsAttumenDpsHeld(Player* bot);
 
 // Moroes
 
-// Guests can't leave his room. Moroes evades if one does.
+// Guests can't leave Moroes's room. He evades if one does.
 inline constexpr float MOROES_GUEST_SEARCH_RADIUS = 100.0f;
 
 // Maiden of Virtue
 
-// For both her distance to her position and the tank's distance to its destination. These are
+// For both Maiden's distance to her position and the tank's distance to its destination. These are
 // checked at different steps and don't have to be identical, but they are for simplicity.
 inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 2.0f;
-// She stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
+// Maiden stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
-// Holy Ground hits a player within 12 yd of her center and breaks Repentance.
+// Holy Ground hits a player within 12 yd of Maiden's center and breaks Repentance.
 inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
-inline constexpr float MAIDEN_REPENTANCE_BREAK_CLEARANCE = 1.0f;
-// Her spawn point; the ranged positions are a ring around it.
+inline constexpr float MAIDEN_REPENTANCE_BREAK_DISTANCE = HOLY_GROUND_RADIUS - 1.0f;
+
+// Maiden's spawn point. The ranged positions are a ring around it.
 inline Position const MAIDEN_OF_VIRTUE_POSITION = { -10945.881f, -2103.782f, 92.712f };
 inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10959.242f, -2119.617f, 92.180f }, // SE (opposite entrance)
@@ -260,7 +255,6 @@ inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10933.089f, -2088.502f, 92.180f }, // NW (entrance)
 };
 
-// Repentance stuns every healer at once; the tank takes her to the nearest one.
 Player* GetNearestRepentantHealer(Player* bot, Unit* maiden);
 
 // The Big Bad Wolf
@@ -280,13 +274,13 @@ inline constexpr float HAND_OF_PROTECTION_RANGE = 30.0f;
 inline constexpr float POWER_WORD_SHIELD_RANGE = 40.0f;
 inline constexpr float INTERVENE_MIN_RANGE = 8.0f;
 inline constexpr float INTERVENE_MAX_RANGE = 25.0f;
-// Hand of Protection (rank 3) lasts 10 s, so it waits for the end of Hood or a target in trouble:
-// one hit does 6.8-9.6k with Hood's armour at 0.
+// Hand of Protection (rank 3) lasts 10s, so it waits for the end of Hood or a target in trouble.
+// One hit does 6.8-9.6k damage (Hood reduces armor to 0).
 inline constexpr int32 HAND_OF_PROTECTION_DURATION_MS = 10 * IN_MILLISECONDS;
 inline constexpr float BIG_BAD_WOLF_PROTECT_HEALTH_PCT = 50.0f;
-// He stays at the stage edge between Hoods; from mid-stage he would catch any run.
+// The front-left corner of the stage, to allow a better starting position for the run.
 inline Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };
-// Round the stage edge, on the stage's own axes, clear of the trees and the backdrop.
+// Points near the stage edge, all the way around, clear of trees and in front of the backdrop.
 inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
     Position{ -10873.346f, -1767.691f, 90.477f },
     Position{ -10873.569f, -1760.625f, 90.477f },
@@ -306,26 +300,20 @@ inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
 
 bool IsLittleRedRidingHood(Player* bot);
 uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction);
-// He runs straight at the bot, cutting inside any route, so a poor start runs into him. This
-// forecasts the chase for every point and direction, and returns the one that keeps him furthest
-// away at his closest.
 BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds);
-// His victim, if it is on Hood and his swings can still hurt it.
 Player* GetBigBadWolfRedHood(Unit* wolf);
-// A human Hood target that isn't a tank, within his melee range, near the end of Hood or below
-// half health. Bots have the speed cheat.
 Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 
 // Romulo and Julianne
 
-// Once one is down, the other must die within 10 s. The skull moves to the one with higher health
-// only once it is this far ahead.
+// Once one boss is down, the other must die within 10s, or both revive. When one gets more than
+// this much health below the other, the skull target is swapped to the higher health boss.
 inline constexpr uint32 ROMULO_AND_JULIANNE_HEALTH_GAP = 25000;
 
 // Wizard of Oz
 
 inline constexpr float SCORCH_RANGE = 30.0f;
-// A mage out of range walks to this far inside it; Strawman moves fast.
+// A mage out of Scorch range moves to this far inside it to cast.
 inline constexpr float SCORCH_APPROACH_MARGIN = 2.0f;
 inline std::array const OZ_TARGETS = {
     "dorothee",
@@ -337,13 +325,14 @@ inline std::array const OZ_TARGETS = {
 
 // The Curator
 
-// Arcing Sear jumps 13 yd center to center between players, so this spread only cuts its jumps.
+// Arcing Sear jumps 13 yd center-to-center between players. Requiring that great of a spread is
+// impractical, so we enforce a smaller spread to at least reduce the jumps.
 inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
+// Toward the far end of the Menagerie, near the Library entrance, in the middle of the corridor.
 inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Terestian Illhoof
 
-// Demon Chains exist only while a group member is sacrificed.
 bool IsTerestianSacrificeActive(Player* bot);
 
 // Shade of Aran

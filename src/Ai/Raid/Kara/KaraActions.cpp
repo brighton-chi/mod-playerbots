@@ -428,7 +428,7 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
     if (!healer)
         return false;
 
-    if (maiden->GetExactDist2d(healer) <= HOLY_GROUND_RADIUS - MAIDEN_REPENTANCE_BREAK_CLEARANCE)
+    if (maiden->GetExactDist2d(healer) <= MAIDEN_REPENTANCE_BREAK_DISTANCE)
         return false;
 
     constexpr float arrivalDist = 2.0f;
