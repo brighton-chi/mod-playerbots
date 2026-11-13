@@ -221,6 +221,9 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 
 float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     // Include Blade Flurry because it's also used as a pure DPS cooldown, not just for AoE, so the
     // target exclusion doesn't cover it entirely. Save it for phase 2.
     if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
@@ -297,6 +300,9 @@ float BigBadWolfRedHoodHunterStayDownMultiplier::GetValueInEncounter(Action* act
 
 float TheCuratorDisableTankAssistMultiplier::GetValueInEncounter(Action* action)
 {
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
     return dynamic_cast<TankAssistAction*>(action) ? 0.0f : 1.0f;
 }
 
