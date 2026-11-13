@@ -932,8 +932,13 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         y += (beam.portal->GetPositionX() - netherspite->GetPositionX()) / length * sideDistance;
     }
 
-    if (bot->GetExactDist2d(x, y) <= NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    // The position moves with him. If the tank moves while he chases it, he aims at the tank and
+    // the tank aims 18 yd ahead of him, and they run to the portal. Let him come, then step out.
+    if (netherspite->isMoving() ||
+        bot->GetExactDist2d(x, y) <= NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    {
         return false;
+    }
 
     return MoveTo(
         KARA_MAP_ID, x, y, bot->GetPositionZ(), false, false, false, false,
@@ -1200,14 +1205,14 @@ bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
         *netherspite, portal, position.GetPositionX(), position.GetPositionY());
     float const off = offset.off * side;
 
-    if (off >= NETHERSPITE_NEXT_MIN_OFF_LINE - NETHERSPITE_BEAM_POSITION_TOLERANCE ||
-        off <= NETHERSPITE_NEXT_MAX_OFF_LINE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    if (off < NETHERSPITE_NEXT_MIN_OFF_LINE - NETHERSPITE_BEAM_POSITION_TOLERANCE ||
+        off > NETHERSPITE_NEXT_MAX_OFF_LINE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
     {
         return false;
     }
 
-    if (offset.along >= low - NETHERSPITE_BEAM_POSITION_TOLERANCE &&
-        offset.along <= low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
+    if (offset.along < low - NETHERSPITE_BEAM_POSITION_TOLERANCE ||
+        offset.along > low + NETHERSPITE_NEXT_ALONG_RANGE + NETHERSPITE_BEAM_POSITION_TOLERANCE)
     {
         return false;
     }
