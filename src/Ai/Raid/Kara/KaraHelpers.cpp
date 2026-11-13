@@ -1382,9 +1382,8 @@ std::optional<Position> FindMalchezaarClearPosition(
 
     Player* bot = botAI->GetBot();
     bool const isRanged = PlayerbotAI::IsRanged(bot);
-    constexpr float searchDistance = 60.0f;
     return FindMalchezaarPosition(
-        bot, bot->GetPosition(), infernals, searchDistance, true, HELLFIRE_CLEARANCE,
+        bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true, HELLFIRE_CLEARANCE,
         isRanged ? malchezaar : nullptr);
 }
 
@@ -1400,7 +1399,6 @@ bool IsClearOfMalchezaarHazards(
 std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance)
 {
-    constexpr float searchDistance = 60.0f;
     constexpr float clearances[] =
     {
         MALCHEZAAR_RING_CLEARANCE + MALCHEZAAR_TRAIL_DISTANCE,
@@ -1411,8 +1409,8 @@ std::optional<Position> FindMalchezaarTankPosition(
     for (float const candidateClearance : clearances)
     {
         std::optional<Position> const position = FindMalchezaarPosition(
-            bot, bot->GetPosition(), infernals, searchDistance, true, candidateClearance,
-            nullptr);
+            bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true,
+            candidateClearance, nullptr);
 
         if (position)
         {
@@ -1426,6 +1424,20 @@ std::optional<Position> FindMalchezaarTankPosition(
 
 // Nightbane
 
+namespace
+{
+
+bool IsInNightbaneRangedSight(Player const& bot, Position const& from, Position const& to)
+{
+    float const eyeHeight = bot.GetCollisionHeight();
+    return bot.GetMap()->isInLineOfSight(
+        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + eyeHeight,
+        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + eyeHeight,
+        bot.GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
+}
+
+} // end anonymous namespace (Nightbane)
+
 float GetTerraceAngle(Position const& position)
 {
     float const angle = std::atan2(
@@ -1435,6 +1447,8 @@ float GetTerraceAngle(Position const& position)
     return angle < TERRACE_ARC_START ? angle + 2.0f * static_cast<float>(M_PI) : angle;
 }
 
+// The destination, unless the straight line to it would pass through the dome, in which case this
+// is a step on an arc that moves to the destination.
 Position GetTerraceWalkPosition(Position const& from, Position const& destination)
 {
     if (GetDistanceToSegment2d(TERRACE_DOME_CENTER, from, destination) >= TERRACE_INNER_RADIUS)
@@ -1442,7 +1456,7 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
 
     constexpr float stepDist = 3.5f;
     float const radius =
-        std::max(from.GetExactDist2d(TERRACE_DOME_CENTER), NIGHTBANE_STACK_RADIUS);
+        std::max(from.GetExactDist2d(TERRACE_DOME_CENTER), TERRACE_INNER_LANE_DIST);
     float const fromAngle = GetTerraceAngle(from);
     float const angleLeft = GetTerraceAngle(destination) - fromAngle;
     float const angle =
@@ -1454,26 +1468,33 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
         from.GetPositionZ());
 }
 
+// Searches the terrace's inner lane outward from startAngle in 2.5 degree steps, alternating sides,
+// clockwise first. Returns the nearest flight stack position clear of Charred Earth and outside
+// any Rain of Bones.
 std::optional<Position> FindNightbaneStackPosition(
-    float startAngle, float minAngle, float maxAngle, std::vector<Position> const& charredEarths,
-    Position const* rainCenter, float rainClearDist)
+    float startAngle, std::vector<Position> const& charredEarths, Position const* rainCenter)
 {
-    constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7y
+    constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7 yd
 
-    for (uint8 i = 0; i * angleStep <= maxAngle - minAngle; ++i)
+    for (uint8 i = 0;
+         i * angleStep <= NIGHTBANE_FLIGHT_STACK_MAX_ANGLE - NIGHTBANE_FLIGHT_STACK_MIN_ANGLE; ++i)
     {
         for (float const direction : { -1.0f, 1.0f })
         {
             float const angle = startAngle + direction * i * angleStep;
-            if (angle < minAngle || angle > maxAngle)
+            if (angle < NIGHTBANE_FLIGHT_STACK_MIN_ANGLE ||
+                angle > NIGHTBANE_FLIGHT_STACK_MAX_ANGLE)
+            {
                 continue;
+            }
 
             Position const position(
-                TERRACE_DOME_CENTER.GetPositionX() + NIGHTBANE_STACK_RADIUS * std::cos(angle),
-                TERRACE_DOME_CENTER.GetPositionY() + NIGHTBANE_STACK_RADIUS * std::sin(angle),
+                TERRACE_DOME_CENTER.GetPositionX() + TERRACE_INNER_LANE_DIST * std::cos(angle),
+                TERRACE_DOME_CENTER.GetPositionY() + TERRACE_INNER_LANE_DIST * std::sin(angle),
                 NIGHTBANE_GROUND_Z);
             if (IsClearOfCharredEarth(position, charredEarths) &&
-                (!rainCenter || position.GetExactDist2d(*rainCenter) >= rainClearDist))
+                (!rainCenter ||
+                 position.GetExactDist2d(*rainCenter) >= RAIN_OF_BONES_SAFE_DISTANCE))
             {
                 return position;
             }
@@ -1493,7 +1514,7 @@ bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const
 {
     for (Position const& charredEarth : charredEarths)
     {
-        if (charredEarth.GetExactDist2d(position) < CHARRED_EARTH_REACH + CHARRED_EARTH_CLEARANCE)
+        if (charredEarth.GetExactDist2d(position) < CHARRED_EARTH_SAFE_DISTANCE)
             return false;
     }
 
@@ -1505,26 +1526,12 @@ bool IsOnNightbaneRangedSide(Position const& position, Unit const& nightbane)
     return GetTerraceAngle(position) < GetTerraceAngle(nightbane);
 }
 
-namespace
-{
-
-bool IsInNightbaneRangedSight(Player const& bot, Position const& from, Position const& to)
-{
-    float const eyeHeight = bot.GetCollisionHeight();
-    return bot.GetMap()->isInLineOfSight(
-        from.GetPositionX(), from.GetPositionY(), from.GetPositionZ() + eyeHeight,
-        to.GetPositionX(), to.GetPositionY(), to.GetPositionZ() + eyeHeight,
-        bot.GetPhaseMask(), LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
-}
-
-} // end anonymous namespace (Nightbane)
-
 std::optional<Position> FindNightbaneRangedPosition(
     Player const& bot, Unit const& nightbane, Position const& from,
     std::vector<Position> const& charredEarths, NightbaneRangedTier tier)
 {
     constexpr float angleStep = 0.0436f; // 2.5 degrees
-    constexpr float maxAngleOffset = 1.0f; // Past the band on every ring
+    constexpr float maxAngleOffset = 1.0f; // 57 degrees, beyond the ranged band on every ring
     constexpr uint8 ringCount = 9;
     constexpr float ringStep =
         (TERRACE_FLOOR_OUTER_RADIUS - TERRACE_FLOOR_INNER_RADIUS) / (ringCount - 1);
@@ -1578,7 +1585,7 @@ std::optional<Position> FindNightbaneRangedPosition(
 
 Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition position)
 {
-    // Angles from his facing: negative is clockwise.
+    // Angles from Nightbane's facing. Negative is clockwise.
     float angle = NIGHTBANE_MELEE_HOLD_ANGLE;
     float dist = NIGHTBANE_MELEE_HOLD_DIST;
     if (position != NightbaneMeleePosition::Hold)
@@ -1649,6 +1656,8 @@ bool IsNightbaneDpsHeld(Player* bot, Unit* nightbane)
     return !PlayerbotAI::IsMainTank(bot);
 }
 
+// Where the current Rain of Bones channel is aimed, read after RAIN_OF_BONES_REACTION_MS has passed
+// (or bots unrealistically react before the visual lands). Rain of Bones doesn't follow its target.
 Position const* GetRainOfBonesCenter(Unit* nightbane)
 {
     if (!nightbane)

@@ -1738,10 +1738,10 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
 
 // Nightbane
 
-// The tank backs up to the parapet, moving between it and Nightbane. This mirrors the retail
-// strategy of keeping Nightbane perpendicular to the walkway, which largely keeps his Smoldering
-// Breach and Tail Sweep off the playing field and allows melee to attack his rear flanks safely.
-// The tank does not move out of Charred Earth so that this positioning can be maintained.
+// The tank backs up to the parapet until it stands between Nightbane and the parapet. This mirrors
+// the retail strategy of keeping Nightbane perpendicular to the walkway, which largely keeps his
+// breach, cleave, and tail sweep off the playing field and allows melee to attack his flanks
+// safely. The tank does not move out of Charred Earth so this positioning can be maintained.
 bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1828,6 +1828,8 @@ bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
+// During any DPS hold period, pets are set passive. This includes the entire flight phase because
+// pets tend to go out-of-bounds off the terrace to chase Nightbane or skeletons.
 bool NightbaneSetPetStanceAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1867,7 +1869,7 @@ bool NightbaneSelectTargetForHoldAction::Execute(Event /*event*/)
 }
 
 // Everybody stacks on one position, clear of Charred Earth. The stack moves away when Rain of Bones
-// starts. All reach target actions are held so skeletons come to the stack.
+// lands on it. All reach target actions are held so skeletons come to the stack.
 bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1959,9 +1961,8 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (isNewRain)
         state.nightbaneRainOfBonesCenter = *rainCenter;
 
-    float const rainClearDist = RAIN_OF_BONES_REACH + RAIN_OF_BONES_CLEARANCE;
-    if (state.nightbaneFlightStackPosition &&
-        state.nightbaneFlightStackPosition->GetExactDist2d(*rainCenter) >= rainClearDist)
+    if (state.nightbaneFlightStackPosition && state.nightbaneFlightStackPosition->GetExactDist2d(
+            *rainCenter) >= RAIN_OF_BONES_SAFE_DISTANCE)
     {
         return true;
     }
@@ -1970,9 +1971,8 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 
     float const startAngle = state.nightbaneFlightStackPosition ?
         GetTerraceAngle(*state.nightbaneFlightStackPosition) : NIGHTBANE_FLIGHT_STACK_HOME_ANGLE;
-    std::optional<Position> const position = FindNightbaneStackPosition(
-        startAngle, NIGHTBANE_FLIGHT_STACK_MIN_ANGLE, NIGHTBANE_FLIGHT_STACK_MAX_ANGLE,
-        charredEarths, rainCenter, rainClearDist);
+    std::optional<Position> const position =
+        FindNightbaneStackPosition(startAngle, charredEarths, rainCenter);
 
     if (position)
     {
@@ -1982,18 +1982,18 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     {
         state.nightbaneFlightStackPosition = Position(
             TERRACE_DOME_CENTER.GetPositionX() +
-                NIGHTBANE_STACK_RADIUS * std::cos(NIGHTBANE_FLIGHT_STACK_HOME_ANGLE),
+                TERRACE_INNER_LANE_DIST * std::cos(NIGHTBANE_FLIGHT_STACK_HOME_ANGLE),
             TERRACE_DOME_CENTER.GetPositionY() +
-                NIGHTBANE_STACK_RADIUS * std::sin(NIGHTBANE_FLIGHT_STACK_HOME_ANGLE),
+                TERRACE_INNER_LANE_DIST * std::sin(NIGHTBANE_FLIGHT_STACK_HOME_ANGLE),
             NIGHTBANE_GROUND_Z);
     }
 
     return true;
 }
 
-// Melee start each ground phase on Nightbane's clockwise flank (the right flank if he is properly
-// positioned by the tank). If Charred Earth appears under melee, they move to the other flank. If
-// both flanks are covered, melee waits out of range until it is safe to attack again.
+// Melee start each ground phase on Nightbane's right flank. If Charred Earth appears under melee,
+// they move to the other flank. If both flanks are covered, melee steps out of range and waits
+// until it is safe to attack again.
 bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
     KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
 {

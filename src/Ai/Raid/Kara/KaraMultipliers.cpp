@@ -541,9 +541,7 @@ float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(A
 
 // Nightbane
 
-// In flight, pets would leave the terrace after skeletons or him. Summons wait out the hold, since
-// it sets them passive (see the pet action). The Fire Elemental Totem's elemental can't be called
-// back, so it waits for the last ground phase.
+// A unique multiplier to manage pet issues with Nightbane (see NightbaneSetPetStanceAction).
 float NightbaneDelaySummonsAndPetAttacksMultiplier::GetValueInEncounter(Action* action)
 {
     bool isFireElementalTotem = false;
@@ -583,13 +581,12 @@ float NightbaneDelaySummonsAndPetAttacksMultiplier::GetValueInEncounter(Action* 
     if (IsNightbaneDpsHeld(bot, nightbane))
         return 0.0f;
 
+    // The Fire Elemental is the only summon that cannot be called back to the summoner, so it is
+    // held until the final ground phase.
     return (!isFireElementalTotem ||
         nightbane->GetHealthPct() <= NIGHTBANE_FINAL_PHASE_HEALTH_PCT) ? 1.0f : 0.0f;
 }
 
-// In flight, a unit hold on Nightbane, with drop target zeroed until he leaves the flight position
-// so bots stay in their combat engine fighting skeletons and healing. After each landing, the main
-// tank has 8 seconds to get aggro.
 float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);

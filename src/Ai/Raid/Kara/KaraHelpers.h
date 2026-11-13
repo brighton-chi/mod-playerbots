@@ -561,6 +561,7 @@ inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
 // The model the infernal has until Infernal Rain lands on it.
 inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
+inline constexpr float MALCHEZAAR_SEARCH_DISTANCE = 60.0f;
 // The movers' arrival distance, and how far short of a spot a straight walk may stop.
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr uint32 LANDED_INFERNALS_CACHE_INTERVAL_MS = 200;
@@ -600,100 +601,91 @@ std::optional<Position> FindMalchezaarTankPosition(
 enum class NightbaneFlightStage : uint8
 {
     TakeOff,
-    Hover,   // At the flight position, where every air-phase spell is cast
-    Landing, // From leaving the flight position, unless he comes back for another air phase
+    Hover,   // At the flight position, from which Nightbane casts flight phase spells
+    Landing,
+};
+enum class NightbaneRangedTier : uint8
+{
+    Parapet,
+    Band,
+    Forward,
+};
+enum class NightbaneMeleePosition : uint8
+{
+    ClockwiseFlank,
+    CounterclockwiseFlank,
+    Hold,
 };
 
+// A Z-position is used for flight instead of a flag due to past experience. At one point, AC broke
+// unit flags, resulting in Nightbane no longer being marked as flying during the flight phase.
 inline constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 inline constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 inline constexpr uint32 NIGHTBANE_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
-inline constexpr float CHARRED_EARTH_REACH = 11.5f; // 10y patch + 1.5y player reach
-inline constexpr float CHARRED_EARTH_CLEARANCE = 0.5f; // A bot 0.5y off its position stays out
+inline constexpr float CHARRED_EARTH_HAZARD_RADIUS = 11.5f; // 10 yd patch + 1.5 yd player reach
+inline constexpr float CHARRED_EARTH_SAFE_DISTANCE = CHARRED_EARTH_HAZARD_RADIUS + 0.5f;
 inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
-// Rain of Bones ticks land up to 8y from its center and hit 6y around that, with no player reach.
-inline constexpr float RAIN_OF_BONES_REACH = 14.0f;
-inline constexpr float RAIN_OF_BONES_CLEARANCE = 1.0f;
+// Each Rain of Bones tick hits everyone within 6 yd of a random point up to 8 yd from its center
+// (no combat reach added), so the rain reaches 14 yd.
+inline constexpr float RAIN_OF_BONES_HAZARD_RADIUS = 14.0f;
+inline constexpr float RAIN_OF_BONES_SAFE_DISTANCE = RAIN_OF_BONES_HAZARD_RADIUS + 1.0f;
 inline constexpr int32 RAIN_OF_BONES_REACTION_MS = 1000;
-// Below this on the ground, he has landed for the last time: crossing 25% sends him up at once.
+// Nightbane's final flight phase starts when his HP drops below 25%. In AC, he is out of LoS in
+// flight, so his HP is similar at landing for the final (ground) phase. Using 20% covers variance.
 inline constexpr float NIGHTBANE_FINAL_PHASE_HEALTH_PCT = 20.0f;
-// The terrace is a ring around the dome. Terrace angles are measured around the dome in world
-// coordinates, running from the west end through the south side to the east end.
-inline constexpr float TERRACE_INNER_RADIUS = 36.0f; // the dome's wall is at 33.5-35.8y
+// The terrace is a ring around the dome. Terrace angles are measured around the dome, running
+// counterclockwise from the northwest end to the northeast end.
+inline constexpr float TERRACE_INNER_RADIUS = 36.0f; // the dome's wall is at 33.5-35.8 yd
 inline constexpr float TERRACE_OUTER_RADIUS = 51.0f;
 inline constexpr float TERRACE_ARC_RADIUS = 47.856f;
 inline constexpr float TERRACE_ARC_START = 0.2418f;
 inline constexpr float TERRACE_ARC_END = 4.9241f;
-// The navmesh at every terrace angle
+// The floor runs from 35.8 to 49.4 yd from the dome center at every terrace angle (navmesh).
 inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f;
 inline constexpr float TERRACE_FLOOR_OUTER_RADIUS = 49.4f;
-// All floor, and 10.5y from the outer wall, so skeletons appearing up to 10y from a Rain of Bones
-// on the stack can't reach it.
-inline constexpr float NIGHTBANE_STACK_RADIUS = 39.0f;
-// Within 50y of the flight position. Fireball Barrage hits players more than 52y from his center.
+// A lane around the dome, on the floor at every angle. The flight stack sits on it, and steps
+// around the terrace stay on it or further out. It is 10.5 yd in from the parapet, so skeletons
+// appearing up to 10 yd from a Rain of Bones on the stack stay on the terrace.
+inline constexpr float TERRACE_INNER_LANE_DIST = 39.0f;
+// In flight, Nightbane casts Fireball Barrage at players more than 52 yd from his center (40 yd
+// plus both combat reaches), so the flight stack stays within 50 yd of his flight position.
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MIN_ANGLE = 1.2566f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MAX_ANGLE = 3.0020f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_HOME_ANGLE = 2.0944f;
-// Melee positions from his facing, out of Smoldering Breath, Cleave and Tail Sweep. A Charred Earth
-// on the tank misses both flanks wherever it stands (3.9-10y in front of him). The hold, out of
-// melee range on his counterclockwise side, is for when both flanks are covered.
+// Melee stand on one of Nightbane's flanks, at an angle from his facing, out of Smoldering Breath,
+// Cleave, and Tail Sweep. A Charred Earth on the tank, who stands 3.9-10 yd in front of him, misses
+// both flanks. When other patches cover both flanks, melee wait at the hold, outside his melee
+// range on his counterclockwise side.
 inline constexpr float NIGHTBANE_MELEE_FLANK_ANGLE = 1.8850f; // 108 degrees
 inline constexpr float NIGHTBANE_MELEE_FLANK_DIST = 10.5f;
 inline constexpr float NIGHTBANE_MELEE_HOLD_ANGLE = 1.7453f; // 100 degrees
 inline constexpr float NIGHTBANE_MELEE_HOLD_DIST = 23.0f;
-// A Charred Earth on ranged misses melee on the flank, and heals (40y plus both players' reach)
-// reach the far flank.
+// Ranged distances are calculated to keep melee safe from a Charred Earth that lands on ranged
+// positions, while allowing heals (43 yd range) to reach melee on Nightbane's far flank.
 inline constexpr float NIGHTBANE_RANGED_MIN_DIST =
-    NIGHTBANE_MELEE_FLANK_DIST + CHARRED_EARTH_REACH + CHARRED_EARTH_CLEARANCE;
+    NIGHTBANE_MELEE_FLANK_DIST + CHARRED_EARTH_SAFE_DISTANCE;
 inline constexpr float NIGHTBANE_RANGED_MAX_DIST = 43.0f - NIGHTBANE_MELEE_FLANK_DIST;
 
 inline Position const NIGHTBANE_FLIGHT_POSITION = { -11160.125f, -1870.683f, 97.739f };
-inline Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f };
+inline Position const TERRACE_DOME_CENTER =       { -11126.015f, -1925.271f, 91.473f };
 
-// Normalized to the range starting at TERRACE_ARC_START.
 float GetTerraceAngle(Position const& position);
-// The destination, unless the straight line to it cuts through the dome; then a step round the
-// ring toward it.
 Position GetTerraceWalkPosition(Position const& from, Position const& destination);
-// Searches the stack circle in both directions from startAngle, away from his landing position
-// first, and returns the nearest position within the limits that is clear of Charred Earth and,
-// with a rain center, rainClearDist from it.
 std::optional<Position> FindNightbaneStackPosition(
-    float startAngle, float minAngle, float maxAngle, std::vector<Position> const& charredEarths,
-    Position const* rainCenter, float rainClearDist);
+    float startAngle, std::vector<Position> const& charredEarths, Position const* rainCenter);
 std::vector<Position> GetCharredEarths(PlayerbotAI* botAI);
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
-enum class NightbaneRangedTier : uint8
-{
-    Parapet, // Band positions at the parapet, where each ground phase starts
-    Band,
-    Forward, // From his melee range, only when the band has no clear position
-};
-// Ranged keep to his clockwise side.
 bool IsOnNightbaneRangedSide(Position const& position, Unit const& nightbane);
-// The position nearest from on his clockwise side, clear of Charred Earth, in sight of him and,
-// above Forward, of the far flank. The bot's eyes stand in for every ranged bot's.
 std::optional<Position> FindNightbaneRangedPosition(
     Player const& bot, Unit const& nightbane, Position const& from,
     std::vector<Position> const& charredEarths, NightbaneRangedTier tier);
-enum class NightbaneMeleePosition : uint8
-{
-    ClockwiseFlank, // Where each ground phase starts
-    CounterclockwiseFlank,
-    Hold,
-};
 Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition position);
-// Every bot but his victim and the main tank; a melee bot not on him moves as usual.
 bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit const& nightbane);
-// True for a unit off the ring (the terrace is only a plain ring within the arc) or below it.
 bool IsOutsideNightbaneTerrace(Unit* unit);
 bool IsNightbaneFlying(Unit* nightbane);
-// True in flight until he leaves the flight position. The landing that follows has no air-phase
-// spells, and bots are free to follow their master then.
 bool IsNightbaneFlightPhaseActive(Unit* nightbane);
-// In flight, and for all but the main tank until 8s after he is on the ground.
 bool IsNightbaneDpsHeld(Player* bot, Unit* nightbane);
-// Where the current Rain of Bones channel is aimed, or nullptr. A rain doesn't follow its target.
 Position const* GetRainOfBonesCenter(Unit* nightbane);
 
 // Shared encounter state
