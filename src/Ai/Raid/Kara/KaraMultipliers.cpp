@@ -448,14 +448,17 @@ float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Act
     if (!malchezaar)
         return 1.0f;
 
-    return IsClearOfInfernals(*malchezaar, GetLandedInfernals(botAI), MALCHEZAAR_RING_CLEARANCE) ?
+    return IsClearOfInfernals(*malchezaar, GetLandedInfernals(botAI), MALCHEZAAR_MELEE_CLEARANCE) ?
         1.0f : 0.0f;
 }
 
 float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(Action* action)
 {
-    // The aura ends before his health restore runs: in a raid he updates every third world tick or
-    // so, and players every tick. Until then the bot is still at 1 health.
+    // Enfeeble's aura ends before Malchezaar's boss AI restores the player's health. Players update
+    // every world tick, but dungeon creatures only about every third tick, and after players within
+    // the same tick. So a bot can drop Enfeeble but still have 1 HP, and an aura check alone would
+    // end the hold too early. Of course, this has the side effect of enforcing the hold in the
+    // unlikely event that a bot legitimately has 1 HP.
     if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)) && bot->GetHealth() > 1)
         return 1.0f;
 
@@ -465,19 +468,21 @@ float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(A
         return 1.0f;
     }
 
-    // Disable movement other than escaping Shadow Nova range
-    if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastReachTargetSpellAction*>(action))
+    // Disable movement other than escaping Shadow Nova range.
+    if (dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action) || IsRepositionAction(bot, action))
+    {
         return 0.0f;
+    }
 
-    // Hold cooldowns used at low or critical health, and Blink Back and Disengage, which move.
+    // Hold cooldowns used at low or critical health.
     bool isHeld = false;
     switch (bot->getClass())
     {
         case CLASS_MAGE:
         {
             isHeld = dynamic_cast<CastIceBlockAction*>(action) ||
-                dynamic_cast<CastManaShieldAction*>(action) ||
-                dynamic_cast<CastBlinkBackAction*>(action);
+                dynamic_cast<CastManaShieldAction*>(action);
             break;
         }
         case CLASS_PALADIN:
@@ -519,8 +524,7 @@ float PrinceMalchezaarEnfeebledBotFocusOnEscapeMultiplier::GetValueInEncounter(A
         }
         case CLASS_HUNTER:
         {
-            isHeld = dynamic_cast<CastDeterrenceAction*>(action) ||
-                dynamic_cast<CastDisengageAction*>(action);
+            isHeld = dynamic_cast<CastDeterrenceAction*>(action);
             break;
         }
         case CLASS_DEATH_KNIGHT:
@@ -606,9 +610,8 @@ float NightbaneHoldDpsMultiplier::GetValueInEncounter(Action* action)
     return action->GetTarget() == nightbane ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
-// On the ground, bots on him move only by the Nightbane actions; his tank sits in Charred Earth. In
-// flight, the stack is the only movement until he leaves the flight position. Avoid AoE only ever
-// reacts to Charred Earth here, which the Nightbane actions handle.
+// Movement is highly controlled on Nightbane. The most important note is that during the ground
+// phase, melee targeting Nightbane (other than the tank) and ranged move only via raid actions.
 float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isReposition = IsRepositionAction(bot, action);
@@ -641,7 +644,6 @@ float NightbaneDisableMovementMultiplier::GetValueInEncounter(Action* action)
     if (isReachTargetSpell || dynamic_cast<ReachTargetAction*>(action))
         return 0.0f;
 
-    // Once Nightbane leaves the flight position to land, bots freely follow their master.
     if (isSetBehind || dynamic_cast<FollowAction*>(action))
         return IsNightbaneFlightPhaseActive(nightbane) ? 0.0f : 1.0f;
 

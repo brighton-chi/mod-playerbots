@@ -337,36 +337,44 @@ bool IsTerestianSacrificeActive(Player* bot);
 
 // Shade of Aran
 
-// Hits within 21 yd of his center, no reach added.
+// No reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
-inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
+inline constexpr float ARAN_ARCANE_EXPLOSION_SAFE_DISTANCE =
+    ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
 // The pull lands everyone on his spot, so each bot takes its own way out.
 inline constexpr float ARAN_PULLED_ONTO_BOSS_DISTANCE = 1.0f;
 inline constexpr uint32 ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS = 16;
-// Hits within 9 yd of his center, no reach added.
+// No reach added.
 inline constexpr float ARAN_COUNTERSPELL_HAZARD_RADIUS = 9.0f;
-// Ranged stand here, center to center: outside Counterspell, and inside most Blizzard patches.
+// Ranged distance from Aran, center to center, outside Counterspell and inside most Blizzards.
 inline constexpr float ARAN_RANGED_MIN_DISTANCE = ARAN_COUNTERSPELL_HAZARD_RADIUS + 1.0f;
 inline constexpr float ARAN_RANGED_MAX_DISTANCE = 13.0f;
 inline constexpr float ARAN_RANGED_BAND_TOLERANCE = 0.5f;
 inline constexpr uint32 ARAN_ELEMENTALS_CACHE_INTERVAL_MS = 1000;
-// A patch reaches 13 yd plus the player's reach.
-inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 13.0f;
+// 13 yd + player reach.
+inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 14.5f;
+inline constexpr float ARAN_BLIZZARD_SAFE_DISTANCE = ARAN_BLIZZARD_HAZARD_RADIUS + 0.5f;
 inline constexpr float ARAN_ROOM_SEARCH_RADIUS = 60.0f;
-// Ranged run here from a patch, measured from the room center. The train goes clockwise and stops
-// short of a full lap, so it doesn't come back to ground behind its oldest patch.
+// Ranged run here from a patch, measured from the room center. A single Blizzard is actually a
+// "train" of connected patches that are added onto the train's head and move clockwise. Blizzard
+// stop short of a full lap, so behind its oldest patch is always safe.
 inline constexpr float ARAN_BLIZZARD_ESCAPE_DISTANCE = ARAN_RANGED_MIN_DISTANCE + 0.5f;
 inline constexpr float ARAN_BLIZZARD_ESCAPE_ANGLE = static_cast<float>(M_PI) * 40.0f / 180.0f;
-// A ring reaches 3 yd plus the player's reach. Leaving it explodes, and so does crossing it.
-inline constexpr float ARAN_FLAME_WREATH_RING_HAZARD_RADIUS = 3.0f;
-inline constexpr float ARAN_FLAME_WREATH_REACH_CLEARANCE = 5.0f;
+// 3 yd + player reach. Crossing the ring blows the raid up, and the unfortunate idiot who did it
+// is also subjected to a vertical knockback so everybody knows who is at fault.
+inline constexpr float ARAN_FLAME_WREATH_RING_HAZARD_RADIUS = 4.5f;
+// How close a move can pass by a Flame Wreath ring and be permitted. Intentionally a big buffer.
+inline constexpr float ARAN_FLAME_WREATH_REACH_CLEARANCE =
+    ARAN_FLAME_WREATH_RING_HAZARD_RADIUS + 5.0f;
 // Targets are picked when the cast ends, so everyone has to be standing still by then.
 inline constexpr int32 ARAN_FLAME_WREATH_STOP_LEAD_MS = 1500;
-inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20000;
+inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20 * IN_MILLISECONDS;
 // No one moves this soon after the rings land, which also outlasts the ring value's cache.
 inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
 inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
-// He blinks here before each super spell. Blizzard patches land in a ring around it.
+
+// Aran blinks here before each super spell. Blizzard patches circle around it, so this is used to
+// calculate the Blizzard escape position.
 inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
 
 bool IsAranCastingArcaneExplosion(Unit* aran);
@@ -534,54 +542,42 @@ Position GetReachEndPosition(Unit const& bot, Unit const& target, float range);
 
 // Prince Malchezaar
 
-// Hellfire and Shadow Nova are NPC AoE on target 16 and 15: exact distance, no reach.
-inline constexpr float HELLFIRE_RADIUS = 20.0f;
-inline constexpr float HELLFIRE_CLEARANCE = HELLFIRE_RADIUS + 1.0f;
-inline constexpr float SHADOW_NOVA_RADIUS = 30.0f;
-inline constexpr float SHADOW_NOVA_MOVE_DISTANCE = SHADOW_NOVA_RADIUS + 1.0f;
-inline constexpr float SHADOW_NOVA_CLEARANCE = SHADOW_NOVA_RADIUS + 2.0f;
-inline constexpr int32 SHADOW_NOVA_CAST_TIME_MS = 2000;
-// His melee range for a player: his reach 4 + 1.5 + 4/3.
+// Hellfire and Shadow Nova do not add player reach.
+inline constexpr float HELLFIRE_HAZARD_RADIUS = 20.0f;
+inline constexpr float HELLFIRE_SAFE_DISTANCE = HELLFIRE_HAZARD_RADIUS + 1.0f;
+inline constexpr float SHADOW_NOVA_HAZARD_RADIUS = 30.0f;
+inline constexpr float SHADOW_NOVA_SAFE_DISTANCE = SHADOW_NOVA_HAZARD_RADIUS + 1.0f;
+inline constexpr int32 SHADOW_NOVA_CAST_TIME_MS = 2 * IN_MILLISECONDS;
+// Malchezaar's melee range for a player: 4 yd (his reach) + 1.5 yd + 4/3 yd.
 inline constexpr float MALCHEZAAR_MELEE_RANGE = 6.83f;
-// With him this clear of a landed infernal, all of his melee ring is clear of it.
-inline constexpr float MALCHEZAAR_RING_CLEARANCE = HELLFIRE_CLEARANCE + MALCHEZAAR_MELEE_RANGE;
-// He ends about this far behind a tank walking him away.
+// Malchezaar being this far from an active Infernal means it is safe to stand in melee range.
+inline constexpr float MALCHEZAAR_MELEE_CLEARANCE = HELLFIRE_SAFE_DISTANCE + MALCHEZAAR_MELEE_RANGE;
+// Malchezaar ends about this far behind a tank moving him.
 inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
-// The model the infernal has until Infernal Rain lands on it.
+// The model an Infernal has until Infernal Rain lands on it.
 inline constexpr uint32 INFERNAL_MODEL_INVISIBLE = 11686;
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float MALCHEZAAR_SEARCH_DISTANCE = 60.0f;
-// The movers' arrival distance, and how far short of a spot a straight walk may stop.
+// A smaller arrival distance than is typical, due to the small safety margins used for hazards for
+// this fight, which requires usage of an ever-shrinking safe playable space.
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr uint32 LANDED_INFERNALS_CACHE_INTERVAL_MS = 200;
 
-// He's casting Shadow Nova, or enough of Enfeeble is left for a cast to land before it ends.
 bool CanShadowNovaHitEnfeebled(Unit* malchezaar, Aura const& enfeeble);
 std::vector<Position> FindLandedInfernals(Player* bot);
 std::vector<Position> GetLandedInfernals(PlayerbotAI* botAI);
 bool IsClearOfInfernals(
     Position const& position, std::vector<Position> const& infernals, float clearance);
-// An infernal the line starts inside doesn't count, since the bot is walking out of it.
 bool IsLineClearOfInfernals(
     Position const& from, Position const& to, std::vector<Position> const& infernals);
-bool CanWalkStraightTo(Player* bot, Position const& destination);
-// The nearest position on rings around origin that is infernalClearance clear of landed infernals,
-// SHADOW_NOVA_CLEARANCE from novaSource if there is one, and can be walked to in a straight line.
-// A line clear of landed infernals comes first; with mayCross, any line after that.
 std::optional<Position> FindMalchezaarPosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
     float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource);
-// The nearest clear position in range of the bot's target: for a ranged bot on a ring just out of
-// Shadow Nova, for melee on the target's melee ring. Failing that, or with him not found (a rezzed
-// bot isn't on his threat list yet), the nearest clear position anywhere.
 std::optional<Position> FindMalchezaarClearPosition(
     PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals);
-// Without him, only the infernals are tested.
 bool IsClearOfMalchezaarHazards(
     Player* bot, Unit const* malchezaar, std::vector<Position> const& infernals,
     Position const& position);
-// Sets clearance to what the position is clear by: enough for his melee ring and his trail if it
-// can, then less.
 std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance);
 

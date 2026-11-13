@@ -553,7 +553,7 @@ bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
     if (botAI->GetBot()->HasAura(Id(KaraSpells::SPELL_FLAME_WREATH_AURA)))
         return true;
 
-    // A resurrected bot can't find him until zone combat refreshes, but it can see the rings.
+    // A resurrected bot can't find Aran until zone combat refreshes, but it can see the rings.
     if (!aran)
     {
         return !botAI->GetAiObjectContext()
@@ -564,7 +564,7 @@ bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran)
         aran->GetDynObject(Id(KaraSpells::SPELL_FLAME_WREATH_AURA));
 }
 
-// The only movement allowed around Flame Wreath is a stuck bot moving to its target, provided that
+// The only movement allowed during Flame Wreath is a stuck bot moving to its target, and only if
 // the movement does not come close to crossing any ring.
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
 {
@@ -592,17 +592,16 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
     if (rings.empty())
         return false;
 
-    float const clearance = ARAN_FLAME_WREATH_RING_HAZARD_RADIUS + bot->GetCombatReach() +
-        ARAN_FLAME_WREATH_REACH_CLEARANCE;
     for (Position const& position : rings)
     {
-        if (GetDistanceToSegment2d(position, *bot, *target) <= clearance)
+        if (GetDistanceToSegment2d(position, *bot, *target) <= ARAN_FLAME_WREATH_REACH_CLEARANCE)
             return false;
     }
 
     return true;
 }
 
+// There is no raid action to banish the Elementals. This condition exists in case a player does it.
 GuidVector FindUnbanishedConjuredElementals(Player* bot)
 {
     std::list<Creature*> elementals;
@@ -1207,6 +1206,8 @@ Position GetReachEndPosition(Unit const& bot, Unit const& target, float range)
 
 // Prince Malchezaar
 
+// Enfeeble lasts a little bit longer than the next Shadow Nova cast, and there is only one cast
+// per Enfeeble.
 bool CanShadowNovaHitEnfeebled(Unit* malchezaar, Aura const& enfeeble)
 {
     return enfeeble.GetDuration() >= SHADOW_NOVA_CAST_TIME_MS ||
@@ -1249,10 +1250,13 @@ bool IsLineClearOfInfernals(
 {
     return std::none_of(infernals.begin(), infernals.end(), [&](Position const& infernal)
     {
-        return infernal.GetExactDist2d(from) >= HELLFIRE_RADIUS &&
-            GetDistanceToSegment2d(infernal, from, to) < HELLFIRE_RADIUS;
+        return infernal.GetExactDist2d(from) >= HELLFIRE_HAZARD_RADIUS &&
+            GetDistanceToSegment2d(infernal, from, to) < HELLFIRE_HAZARD_RADIUS;
     });
 }
+
+namespace
+{
 
 bool CanWalkStraightTo(Player* bot, Position const& destination)
 {
@@ -1265,12 +1269,78 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
         return false;
 
-    // An incomplete path can cut the point short without counting as a collision. A point the walk
+    // An incomplete path can cut the point short without counting as a collision. A point the move
     // stops further short of than the movers' arrival distance is rejected, not clamped.
     return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
         MALCHEZAAR_ARRIVAL_DISTANCE;
 }
 
+// The nearest position clear of Hellfire from which the bot can keep fighting or healing. Ranged:
+// just out of Shadow Nova range from Malchezaar (and in standard spell range of the target). Melee:
+// just inside melee range of him. Prioritize a safe path along a straight line, but accept any
+// straight line if no safe path is available.
+std::optional<Position> FindPositionInRangeOfTarget(
+    PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
+{
+    Player* bot = botAI->GetBot();
+    bool const isRanged = PlayerbotAI::IsRanged(bot);
+    bool const isHealer = PlayerbotAI::IsHeal(bot);
+    Unit const* target = botAI->GetAiObjectContext()
+        ->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
+    if (!target)
+        target = &malchezaar;
+
+    constexpr float rangeInset = 1.0f;
+    float const reach = (isRanged ?
+        botAI->GetRange(isHealer ? "heal" : "spell") + bot->GetCombatReach() +
+            target->GetCombatReach() :
+        bot->GetMeleeRange(target)) - rangeInset;
+
+    Unit const* anchor = isRanged ? &malchezaar : target;
+    float const anchorDist = isRanged ? SHADOW_NOVA_SAFE_DISTANCE : reach;
+    Position const origin = bot->GetPosition();
+
+    constexpr uint8 angleCount = 72;
+    std::vector<std::pair<float, Position>> candidates;
+    for (uint8 i = 0; i < angleCount; ++i)
+    {
+        float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
+        Position const candidate(
+            anchor->GetPositionX() + anchorDist * std::cos(angle),
+            anchor->GetPositionY() + anchorDist * std::sin(angle), origin.GetPositionZ());
+
+        if (IsClearOfInfernals(candidate, infernals, HELLFIRE_SAFE_DISTANCE) &&
+            (target == anchor || target->GetExactDist2d(candidate) <= reach))
+        {
+            candidates.emplace_back(origin.GetExactDist2d(candidate), candidate);
+        }
+    }
+
+    std::stable_sort(candidates.begin(), candidates.end(), [](auto const& a, auto const& b)
+    {
+        return a.first < b.first;
+    });
+
+    for (bool const clearLine : { true, false })
+    {
+        for (auto const& [distance, candidate] : candidates)
+        {
+            if ((!clearLine || IsLineClearOfInfernals(origin, candidate, infernals)) &&
+                CanWalkStraightTo(bot, candidate))
+            {
+                return candidate;
+            }
+        }
+    }
+
+    return std::nullopt;
+}
+
+} // end anonymous namespace (Prince Malchezaar)
+
+// The nearest position on rings around origin that is infernalClearance clear of landed infernals,
+// SHADOW_NOVA_SAFE_DISTANCE from novaSource if there is one, and can be walked to in a straight
+// line. A line clear of landed infernals comes first; with mayCross, any line after that.
 std::optional<Position> FindMalchezaarPosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
     float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource)
@@ -1297,7 +1367,9 @@ std::optional<Position> FindMalchezaarPosition(
                     origin.GetPositionY() + distance * std::sin(angle), origin.GetPositionZ());
 
                 bool const isGood = IsClearOfInfernals(candidate, infernals, infernalClearance) &&
-                    (!novaSource || novaSource->GetExactDist2d(candidate) >= SHADOW_NOVA_CLEARANCE);
+                    (!novaSource ||
+                     novaSource->GetExactDist2d(candidate) >= SHADOW_NOVA_SAFE_DISTANCE);
+
                 if (!isGood || (clearLine && !IsLineClearOfInfernals(origin, candidate, infernals)))
                     continue;
 
@@ -1314,77 +1386,16 @@ std::optional<Position> FindMalchezaarPosition(
     return std::nullopt;
 }
 
-namespace
-{
-
-std::optional<Position> FindMalchezaarRingPosition(
-    PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
-{
-    Player* bot = botAI->GetBot();
-    bool const isRanged = PlayerbotAI::IsRanged(bot);
-    bool const isHealer = PlayerbotAI::IsHeal(bot);
-    Unit const* target = botAI->GetAiObjectContext()
-        ->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
-    if (!target)
-        target = &malchezaar;
-
-    constexpr float rangeInset = 1.0f;
-    float const reach = (isRanged ?
-        botAI->GetRange(isHealer ? "heal" : "spell") + bot->GetCombatReach() +
-            target->GetCombatReach() :
-        bot->GetMeleeRange(target)) - rangeInset;
-
-    // Ranged go to a ring just out of Shadow Nova and melee to his melee ring, so the nearest point
-    // is straight out, or straight in, from where the bot stands.
-    Unit const* center = isRanged ? &malchezaar : target;
-    float const ringRadius = isRanged ? SHADOW_NOVA_CLEARANCE : reach;
-    Position const origin = bot->GetPosition();
-
-    constexpr uint8 angleCount = 72;
-    std::vector<std::pair<float, Position>> candidates;
-    for (uint8 i = 0; i < angleCount; ++i)
-    {
-        float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
-        Position const candidate(
-            center->GetPositionX() + ringRadius * std::cos(angle),
-            center->GetPositionY() + ringRadius * std::sin(angle), origin.GetPositionZ());
-
-        if (IsClearOfInfernals(candidate, infernals, HELLFIRE_CLEARANCE) &&
-            (target == center || target->GetExactDist2d(candidate) <= reach))
-        {
-            candidates.emplace_back(origin.GetExactDist2d(candidate), candidate);
-        }
-    }
-
-    std::stable_sort(candidates.begin(), candidates.end(), [](auto const& a, auto const& b)
-    {
-        return a.first < b.first;
-    });
-
-    for (bool const clearLine : { true, false })
-    {
-        for (auto const& [distance, candidate] : candidates)
-        {
-            if ((!clearLine || IsLineClearOfInfernals(origin, candidate, infernals)) &&
-                CanWalkStraightTo(bot, candidate))
-            {
-                return candidate;
-            }
-        }
-    }
-
-    return std::nullopt;
-}
-
-}
-
+// A position clear of Hellfire and, for ranged, out of Shadow Nova. Prioritize the nearest position
+// from which the bot can keep fighting or healing. Failing that, accept the nearest within 60 yd of
+// the bot.
 std::optional<Position> FindMalchezaarClearPosition(
     PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals)
 {
     if (malchezaar)
     {
         std::optional<Position> const position =
-            FindMalchezaarRingPosition(botAI, *malchezaar, infernals);
+            FindPositionInRangeOfTarget(botAI, *malchezaar, infernals);
         if (position)
             return position;
     }
@@ -1392,27 +1403,31 @@ std::optional<Position> FindMalchezaarClearPosition(
     Player* bot = botAI->GetBot();
     bool const isRanged = PlayerbotAI::IsRanged(bot);
     return FindMalchezaarPosition(
-        bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true, HELLFIRE_CLEARANCE,
-        isRanged ? malchezaar : nullptr);
+        bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true,
+        HELLFIRE_SAFE_DISTANCE, isRanged ? malchezaar : nullptr);
 }
 
 bool IsClearOfMalchezaarHazards(
     Player* bot, Unit const* malchezaar, std::vector<Position> const& infernals,
     Position const& position)
 {
-    return IsClearOfInfernals(position, infernals, HELLFIRE_CLEARANCE) &&
+    return IsClearOfInfernals(position, infernals, HELLFIRE_SAFE_DISTANCE) &&
         (!malchezaar || !PlayerbotAI::IsRanged(bot) ||
-         malchezaar->GetExactDist2d(position) >= SHADOW_NOVA_MOVE_DISTANCE);
+         malchezaar->GetExactDist2d(position) >= SHADOW_NOVA_SAFE_DISTANCE);
 }
 
+// Where the tank should take Malchezaar, within 60 yd: (a) clear of Infernals by enough that, with
+// him trailing behind, nobody in his melee range is in Hellfire; (b) failing that, enough for
+// his melee range alone; and (c) failing that, enough for the tank. Sets clearance to the distance
+// the position met, so the position can later be rechecked against new Infernals.
 std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance)
 {
     constexpr float clearances[] =
     {
-        MALCHEZAAR_RING_CLEARANCE + MALCHEZAAR_TRAIL_DISTANCE,
-        MALCHEZAAR_RING_CLEARANCE,
-        HELLFIRE_CLEARANCE + 1.0f,
+        MALCHEZAAR_MELEE_CLEARANCE + MALCHEZAAR_TRAIL_DISTANCE,
+        MALCHEZAAR_MELEE_CLEARANCE,
+        HELLFIRE_SAFE_DISTANCE + 1.0f,
     };
 
     for (float const candidateClearance : clearances)

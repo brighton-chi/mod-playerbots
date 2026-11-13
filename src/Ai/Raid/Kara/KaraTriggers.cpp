@@ -409,10 +409,9 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
     if (!malchezaar)
         return false;
 
-    // After the Nova lands, only fire is left to avoid until his restore.
     bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
-    if ((canNovaHit && bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE) ||
-        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE))
+    if ((canNovaHit && bot->GetExactDist(malchezaar) < SHADOW_NOVA_SAFE_DISTANCE) ||
+        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_SAFE_DISTANCE))
     {
         return true;
     }
@@ -432,9 +431,9 @@ bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
     if (malchezaar && malchezaar->GetVictim() == bot && PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_CLEARANCE) ||
+    if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_SAFE_DISTANCE) ||
         (malchezaar && PlayerbotAI::IsRanged(bot) &&
-         bot->GetExactDist(malchezaar) < SHADOW_NOVA_MOVE_DISTANCE))
+         bot->GetExactDist(malchezaar) < SHADOW_NOVA_SAFE_DISTANCE))
     {
         return true;
     }
