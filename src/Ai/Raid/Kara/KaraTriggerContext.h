@@ -167,8 +167,8 @@ public:
         creators["nightbane should hold dps"] =
             &RaidKarazhanTriggerContext::nightbane_should_hold_dps;
 
-        creators["nightbane should avoid rain of bones"] =
-            &RaidKarazhanTriggerContext::nightbane_should_avoid_rain_of_bones;
+        creators["nightbane in flight phase"] =
+            &RaidKarazhanTriggerContext::nightbane_in_flight_phase;
 
         creators["nightbane in landing phase"] =
             &RaidKarazhanTriggerContext::nightbane_in_landing_phase;
@@ -389,9 +389,9 @@ private:
     {
         return new NightbaneShouldHoldDpsTrigger(botAI);
     }
-    static Trigger* nightbane_should_avoid_rain_of_bones(PlayerbotAI* botAI)
+    static Trigger* nightbane_in_flight_phase(PlayerbotAI* botAI)
     {
-        return new NightbaneShouldAvoidRainOfBonesTrigger(botAI);
+        return new NightbaneInFlightPhaseTrigger(botAI);
     }
     static Trigger* nightbane_in_landing_phase(PlayerbotAI* botAI)
     {

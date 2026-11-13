@@ -509,8 +509,7 @@ class PrinceMalchezaarNearHazardTrigger : public KarazhanEncounterTrigger
 public:
     PrinceMalchezaarNearHazardTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "prince malchezaar near hazard",
-            KaraHelpers::KaraBosses::DATA_MALCHEZAAR) {}
+            botAI, "prince malchezaar near hazard", KaraHelpers::KaraBosses::DATA_MALCHEZAAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -588,13 +587,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class NightbaneShouldAvoidRainOfBonesTrigger : public KarazhanEncounterTrigger
+class NightbaneInFlightPhaseTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NightbaneShouldAvoidRainOfBonesTrigger(PlayerbotAI* botAI)
+    NightbaneInFlightPhaseTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "nightbane should avoid rain of bones",
-            KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
+            botAI, "nightbane in flight phase", KaraHelpers::KaraBosses::DATA_NIGHTBANE) {}
 
 protected:
     bool IsActiveInEncounter() override;

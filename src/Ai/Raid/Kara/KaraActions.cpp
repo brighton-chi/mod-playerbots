@@ -334,8 +334,8 @@ bool AttumenTheHuntsmanSelectTargetForHoldAction::isUseful()
     return botAI->GetState() == BOT_STATE_NON_COMBAT;
 }
 
-// Midnight turning invisible makes her an invalid target, so every bot on her would drop to its
-// non-combat engine at the merge.
+// This keeps bots in combat during the brief period when Midnight turns invisible and becomes
+// invalid but mounted Attumen has not yet engaged.
 bool AttumenTheHuntsmanSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     return SelectTarget(
@@ -813,7 +813,7 @@ bool ShadeOfAranMoveBehindBlizzardAction::Execute(Event /*event*/)
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up.
-bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
+bool ShadeOfAranStopMovingAction::Execute(Event /*event*/)
 {
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
     if (!bot->isMoving())
@@ -1041,8 +1041,7 @@ bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
 
 bool NetherspiteStopAttackingAction::Execute(Event /*event*/)
 {
-    Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
-    return netherspite && StopAttackingTarget(bot, netherspite);
+    return StopAttackingAndChanneling(bot);
 }
 
 bool NetherspiteSelectTargetForHoldAction::isUseful()
@@ -1739,9 +1738,10 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
 
 // Nightbane
 
-// On the arc, he stands about 10y inside the tank and faces the parapet with the dome wall close
-// behind him, so Smoldering Breath and Tail Sweep have little of the terrace to hit. Nothing else
-// may move him: the tank sits in Charred Earth rather than turn him toward the raid.
+// The tank backs up to the parapet, moving between it and Nightbane. This mirrors the retail
+// strategy of keeping Nightbane perpendicular to the walkway, which largely keeps his Smoldering
+// Breach and Tail Sweep off the playing field and allows melee to attack his rear flanks safely.
+// The tank does not move out of Charred Earth so that this positioning can be maintained.
 bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1773,7 +1773,6 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Ranged stack on the tracker's shared position.
 bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1784,7 +1783,6 @@ bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
     if (!state || !state->nightbaneRangedPosition)
         return false;
 
-    // Steps, so a moved position takes effect at once.
     constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
@@ -1802,7 +1800,6 @@ bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Melee stack on the tracker's shared position.
 bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1813,7 +1810,6 @@ bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
     if (!state || !state->nightbaneMeleePosition)
         return false;
 
-    // Steps, so a moved position (he turns or steps back at landing) takes effect at once.
     Position const position = GetNightbaneMeleePosition(*nightbane, *state->nightbaneMeleePosition);
     constexpr float arrivalDist = 0.5f;
     float moveX;
@@ -1826,6 +1822,7 @@ bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
         return false;
     }
 
+    bot->CastStop();
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
         MovementPriority::MOVEMENT_FORCED, true, backwards);
@@ -1845,38 +1842,13 @@ bool NightbaneSetPetStanceAction::ResetPetStance()
     return restored;
 }
 
-// The hold doesn't block a ground AoE on skeletons, and off the terrace he is out of its reach, so
-// a ground channel is stopped only if its area reaches him.
 bool NightbaneStopAttackingAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-    if (!nightbane)
+    if (!nightbane || IsNightbaneFlying(nightbane))
         return false;
 
-    Spell const* channel = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-    if (!channel || !channel->m_targets.GetUnitTargetGUID().IsEmpty() ||
-        !channel->m_targets.HasDst() ||
-        channel->m_targets.GetDstPos()->GetExactDist(nightbane) <=
-            PLAYER_GROUND_AOE_RADIUS + nightbane->GetCombatReach())
-    {
-        return StopAttackingTarget(bot, nightbane);
-    }
-
-    bool isStopped = false;
-    if (bot->GetVictim() == nightbane)
-    {
-        bot->AttackStop();
-        isStopped = true;
-    }
-
-    Spell const* shot = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL);
-    if (shot && shot->m_targets.GetUnitTargetGUID() == nightbane->GetGUID())
-    {
-        bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
-        isStopped = true;
-    }
-
-    return isStopped;
+    return StopAttackingTarget(bot, nightbane);
 }
 
 bool NightbaneSelectTargetForHoldAction::isUseful()
@@ -1894,8 +1866,8 @@ bool NightbaneSelectTargetForHoldAction::Execute(Event /*event*/)
         botAI, AI_VALUE(Unit*, PlayerbotAI::IsTank(bot) ? "tank target" : "dps target"));
 }
 
-// The shared position is out of Rain of Bones and clear of Charred Earth (see the manage action).
-// Stacked, the skeletons come to everyone, with reach off. Fireball Barrage needs only range.
+// Everybody stacks on one position, clear of Charred Earth. The stack moves away when Rain of Bones
+// starts. All reach target actions are held so skeletons come to the stack.
 bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1921,8 +1893,8 @@ bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// He casts nothing during the landing, so bots drop to their non-combat engine, where stock follow
-// lets the master reposition them. The target exclusion keeps him from being picked again.
+// Nightbane does not attack or cast as he goes to land. Allow bots to drop into their non-combat
+// engines so the player has flexibility to reposition the raid before he lands.
 bool NightbaneLeaveCombatForLandingAction::Execute(Event /*event*/)
 {
     StandDown(botAI);
@@ -2019,8 +1991,9 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     return true;
 }
 
-// Each ground phase starts on the clockwise flank. A covered flank moves melee to the other flank
-// if it is clear, else to the hold, until a flank clears.
+// Melee start each ground phase on Nightbane's clockwise flank (the right flank if he is properly
+// positioned by the tank). If Charred Earth appears under melee, they move to the other flank. If
+// both flanks are covered, melee waits out of range until it is safe to attack again.
 bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
     KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
 {
@@ -2054,9 +2027,10 @@ bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
     return true;
 }
 
-// Each ground phase starts at the parapet, from where one Charred Earth can be escaped across the
-// terrace. A covered position moves to the nearest clear one in the band, else forward until the
-// band clears. The position also follows him if he moves.
+// Ranged start each ground phase clockwise from Nightbane (his right side if he is properly
+// positioned by the tank), up against the parapet. This generally leaves enough room for ranged to
+// move laterally toward the dome to escape the first Charred Earth while keeping LoS. If there are
+// no safe positions at range that are within LoS, ranged will step forward.
 bool NightbaneManageTimersAndTrackersAction::UpdateRangedPosition(
     KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
 {

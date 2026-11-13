@@ -112,8 +112,8 @@ public:
         creators["shade of aran move behind blizzard"] =
             &RaidKarazhanActionContext::shade_of_aran_move_behind_blizzard;
 
-        creators["shade of aran stop moving during flame wreath"] =
-            &RaidKarazhanActionContext::shade_of_aran_stop_moving_during_flame_wreath;
+        creators["shade of aran stop moving"] =
+            &RaidKarazhanActionContext::shade_of_aran_stop_moving;
 
         creators["shade of aran mark elemental"] =
             &RaidKarazhanActionContext::shade_of_aran_mark_elemental;
@@ -324,9 +324,9 @@ private:
     {
         return new ShadeOfAranMoveBehindBlizzardAction(botAI);
     }
-    static Action* shade_of_aran_stop_moving_during_flame_wreath(PlayerbotAI* botAI)
+    static Action* shade_of_aran_stop_moving(PlayerbotAI* botAI)
     {
-        return new ShadeOfAranStopMovingDuringFlameWreathAction(botAI);
+        return new ShadeOfAranStopMovingAction(botAI);
     }
     static Action* shade_of_aran_mark_elemental(PlayerbotAI* botAI)
     {

@@ -361,7 +361,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
     }
 
     if (dynamic_cast<AttackAction*>(action) ||
-        dynamic_cast<ShadeOfAranStopMovingDuringFlameWreathAction*>(action))
+        dynamic_cast<ShadeOfAranStopMovingAction*>(action))
     {
         return 1.0f;
     }
@@ -428,7 +428,7 @@ float NetherspiteHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (!netherspite || !IsNetherspiteDpsHeld(bot, netherspite))
         return 1.0f;
 
-    return action->GetTarget() == netherspite ? GetDpsHoldValue(bot, action) : 1.0f;
+    return GetDpsHoldValue(bot, action);
 }
 
 // Prince Malchezaar
@@ -448,7 +448,6 @@ float PrinceMalchezaarDisableReactiveMovementMultiplier::GetValueInEncounter(Act
     if (!malchezaar)
         return 1.0f;
 
-    // Set behind waits while fire reaches his melee ring, until the tank walks him clear.
     return IsClearOfInfernals(*malchezaar, GetLandedInfernals(botAI), MALCHEZAAR_RING_CLEARANCE) ?
         1.0f : 0.0f;
 }

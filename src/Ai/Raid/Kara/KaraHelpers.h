@@ -614,8 +614,7 @@ inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
 // Rain of Bones ticks land up to 8y from its center and hit 6y around that, with no player reach.
 inline constexpr float RAIN_OF_BONES_REACH = 14.0f;
 inline constexpr float RAIN_OF_BONES_CLEARANCE = 1.0f;
-// Blizzard, Hurricane, Rain of Fire and Volley
-inline constexpr float PLAYER_GROUND_AOE_RADIUS = 8.0f;
+inline constexpr int32 RAIN_OF_BONES_REACTION_MS = 1000;
 // Below this on the ground, he has landed for the last time: crossing 25% sends him up at once.
 inline constexpr float NIGHTBANE_FINAL_PHASE_HEALTH_PCT = 20.0f;
 // The terrace is a ring around the dome. Terrace angles are measured around the dome in world

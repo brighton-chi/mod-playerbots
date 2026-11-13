@@ -38,8 +38,7 @@ public:
 class ManaWarpCastStunSpellAction : public Action
 {
 public:
-    ManaWarpCastStunSpellAction(PlayerbotAI* botAI)
-        : Action(botAI, "mana warp cast stun spell") {}
+    ManaWarpCastStunSpellAction(PlayerbotAI* botAI) : Action(botAI, "mana warp cast stun spell") {}
     bool Execute(Event event) override;
 };
 
@@ -284,11 +283,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class ShadeOfAranStopMovingDuringFlameWreathAction : public MovementAction
+class ShadeOfAranStopMovingAction : public MovementAction
 {
 public:
-    ShadeOfAranStopMovingDuringFlameWreathAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "shade of aran stop moving during flame wreath") {}
+    ShadeOfAranStopMovingAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "shade of aran stop moving") {}
     bool Execute(Event event) override;
 };
 

@@ -504,7 +504,7 @@ bool NightbaneShouldHoldDpsTrigger::IsActiveInEncounter()
     return nightbane && IsNightbaneDpsHeld(bot, nightbane);
 }
 
-bool NightbaneShouldAvoidRainOfBonesTrigger::IsActiveInEncounter()
+bool NightbaneInFlightPhaseTrigger::IsActiveInEncounter()
 {
     Unit* nightbane = GetEncounterBoss();
     if (!nightbane || !IsNightbaneFlying(nightbane))

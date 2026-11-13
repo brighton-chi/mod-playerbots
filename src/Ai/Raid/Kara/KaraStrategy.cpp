@@ -107,7 +107,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("shade of aran move behind blizzard", ACTION_EMERGENCY + 5) }));
 
     triggers.push_back(new TriggerNode("shade of aran flame wreath active",
-        { NextAction("shade of aran stop moving during flame wreath", ACTION_EMERGENCY + 7) }));
+        { NextAction("shade of aran stop moving", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("shade of aran should prioritize elementals",
         { NextAction("shade of aran mark elemental", ACTION_RAID) }));
@@ -168,7 +168,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("nightbane stop attacking", ACTION_RAID + 3),
           NextAction("nightbane select target for hold", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("nightbane should avoid rain of bones",
+    triggers.push_back(new TriggerNode("nightbane in flight phase",
         { NextAction("nightbane stack away from rain of bones", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("nightbane in landing phase",

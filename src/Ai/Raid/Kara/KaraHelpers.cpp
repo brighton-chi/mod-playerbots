@@ -1654,9 +1654,10 @@ Position const* GetRainOfBonesCenter(Unit* nightbane)
     if (!nightbane)
         return nullptr;
 
-    Spell const* channel = nightbane->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+    Spell* channel = nightbane->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     if (!channel || channel->m_spellInfo->Id != Id(KaraSpells::SPELL_RAIN_OF_BONES) ||
-        !channel->m_targets.HasDst())
+        channel->m_spellInfo->GetDuration() - channel->GetCastTimeRemaining() <
+            RAIN_OF_BONES_REACTION_MS)
     {
         return nullptr;
     }
