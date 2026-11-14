@@ -125,14 +125,14 @@ public:
         creators["netherspite block red beam"] =
             &RaidKarazhanActionContext::netherspite_block_red_beam;
 
-        creators["netherspite block green or blue beam"] =
-            &RaidKarazhanActionContext::netherspite_block_green_or_blue_beam;
+        creators["netherspite block blue or green beam"] =
+            &RaidKarazhanActionContext::netherspite_block_blue_or_green_beam;
 
         creators["netherspite wait to block beam"] =
             &RaidKarazhanActionContext::netherspite_wait_to_block_beam;
 
-        creators["netherspite move between beams"] =
-            &RaidKarazhanActionContext::netherspite_move_between_beams;
+        creators["netherspite move between blue and green beams"] =
+            &RaidKarazhanActionContext::netherspite_move_between_blue_and_green_beams;
 
         creators["netherspite move to banish slot"] =
             &RaidKarazhanActionContext::netherspite_move_to_banish_slot;
@@ -342,17 +342,17 @@ private:
     {
         return new NetherspiteBlockRedBeamAction(botAI);
     }
-    static Action* netherspite_block_green_or_blue_beam(PlayerbotAI* botAI)
+    static Action* netherspite_block_blue_or_green_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteBlockGreenOrBlueBeamAction(botAI);
+        return new NetherspiteBlockBlueOrGreenBeamAction(botAI);
     }
     static Action* netherspite_wait_to_block_beam(PlayerbotAI* botAI)
     {
         return new NetherspiteWaitToBlockBeamAction(botAI);
     }
-    static Action* netherspite_move_between_beams(PlayerbotAI* botAI)
+    static Action* netherspite_move_between_blue_and_green_beams(PlayerbotAI* botAI)
     {
-        return new NetherspiteMoveBetweenBeamsAction(botAI);
+        return new NetherspiteMoveBetweenBlueAndGreenBeamsAction(botAI);
     }
     static Action* netherspite_move_to_banish_slot(PlayerbotAI* botAI)
     {

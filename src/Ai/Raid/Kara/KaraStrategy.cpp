@@ -119,14 +119,14 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("netherspite should block red beam",
         { NextAction("netherspite block red beam", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("netherspite should block green or blue beam",
-        { NextAction("netherspite block green or blue beam", ACTION_EMERGENCY + 6) }));
+    triggers.push_back(new TriggerNode("netherspite should block blue or green beam",
+        { NextAction("netherspite block blue or green beam", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("netherspite next beam blocker should prepare",
         { NextAction("netherspite wait to block beam", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("netherspite should stand between beams",
-        { NextAction("netherspite move between beams", ACTION_EMERGENCY + 6) }));
+        { NextAction("netherspite move between blue and green beams", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("netherspite should spread for netherbreath",
         { NextAction("netherspite move to banish slot", ACTION_EMERGENCY + 1) }));

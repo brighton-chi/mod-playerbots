@@ -378,24 +378,23 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
 
 // Netherspite
 
-// The beam area and the banish slots decide where bots stand, so formation moves, avoid AoE, flee,
-// follow, Killing Spree, Disengage, and Blink are off for everyone. Blockers and the bots waiting
-// to block don't reach at all, except the red tank. Nobody else reaches or charges through a void
-// zone.
+// Positioning in and around the beams decides the outcome of the fight, and a tight formation is
+// kept during the Banish phase, so reactive and unpredictable movement is blocked. Blue and green
+// blockers themselves and those on deck are further blocked from reaching targets, as their primary
+// purpose is to maintain position in or along the beam, even at the expense of DPS or healing.
 float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isReactiveMovement =
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action) ||
         dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action);
-    bool const isReposition = IsKillingSpree(bot, action) || IsRepositionAction(bot, action);
-    bool const isReachAction =
-        dynamic_cast<ReachTargetAction*>(action) || dynamic_cast<CastReachTargetSpellAction*>(action);
-
-    if (isReactiveMovement || isReposition)
+    if (isReactiveMovement || IsKillingSpree(bot, action) || IsRepositionAction(bot, action))
         return 0.0f;
 
-    if (!isReachAction)
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
         return 1.0f;
+    }
 
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())

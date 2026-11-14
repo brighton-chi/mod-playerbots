@@ -35,9 +35,9 @@ bool KarazhanResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
-    Action* areaAction = context->GetAction("netherspite move between beams");
+    Action* areaAction = context->GetAction("netherspite move between blue and green beams");
     if (areaAction &&
-        static_cast<NetherspiteMoveBetweenBeamsAction*>(areaAction)->ResetDestination())
+        static_cast<NetherspiteMoveBetweenBlueAndGreenBeamsAction*>(areaAction)->ResetDestination())
     {
         reset = true;
     }
@@ -945,7 +945,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool NetherspiteBlockGreenOrBlueBeamAction::Execute(Event /*event*/)
+bool NetherspiteBlockBlueOrGreenBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
@@ -991,7 +991,7 @@ bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
         false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool NetherspiteMoveBetweenBeamsAction::Execute(Event /*event*/)
+bool NetherspiteMoveBetweenBlueAndGreenBeamsAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
@@ -1667,7 +1667,6 @@ bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
     if (IsWaitingForLastMove(priority))
         return true;
 
-    // Null for a rezzed bot until it is back on his threat list. Leaving fire doesn't need him.
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
     if (_destination && !IsClearOfMalchezaarHazards(bot, malchezaar, infernals, *_destination))

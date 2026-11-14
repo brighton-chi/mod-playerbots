@@ -120,8 +120,8 @@ public:
         creators["netherspite should block red beam"] =
             &RaidKarazhanTriggerContext::netherspite_should_block_red_beam;
 
-        creators["netherspite should block green or blue beam"] =
-            &RaidKarazhanTriggerContext::netherspite_should_block_green_or_blue_beam;
+        creators["netherspite should block blue or green beam"] =
+            &RaidKarazhanTriggerContext::netherspite_should_block_blue_or_green_beam;
 
         creators["netherspite next beam blocker should prepare"] =
             &RaidKarazhanTriggerContext::netherspite_next_beam_blocker_should_prepare;
@@ -325,9 +325,9 @@ private:
     {
         return new NetherspiteShouldBlockRedBeamTrigger(botAI);
     }
-    static Trigger* netherspite_should_block_green_or_blue_beam(PlayerbotAI* botAI)
+    static Trigger* netherspite_should_block_blue_or_green_beam(PlayerbotAI* botAI)
     {
-        return new NetherspiteShouldBlockGreenOrBlueBeamTrigger(botAI);
+        return new NetherspiteShouldBlockBlueOrGreenBeamTrigger(botAI);
     }
     static Trigger* netherspite_next_beam_blocker_should_prepare(PlayerbotAI* botAI)
     {

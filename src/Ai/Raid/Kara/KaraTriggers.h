@@ -407,12 +407,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class NetherspiteShouldBlockGreenOrBlueBeamTrigger : public KarazhanEncounterTrigger
+class NetherspiteShouldBlockBlueOrGreenBeamTrigger : public KarazhanEncounterTrigger
 {
 public:
-    NetherspiteShouldBlockGreenOrBlueBeamTrigger(PlayerbotAI* botAI)
+    NetherspiteShouldBlockBlueOrGreenBeamTrigger(PlayerbotAI* botAI)
         : KarazhanEncounterTrigger(
-            botAI, "netherspite should block green or blue beam",
+            botAI, "netherspite should block blue or green beam",
             KaraHelpers::KaraBosses::DATA_NETHERSPITE) {}
 
 protected:

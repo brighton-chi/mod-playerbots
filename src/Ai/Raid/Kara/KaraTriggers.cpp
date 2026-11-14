@@ -317,7 +317,7 @@ bool NetherspiteShouldBlockRedBeamTrigger::IsActiveInEncounter()
         state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID();
 }
 
-bool NetherspiteShouldBlockGreenOrBlueBeamTrigger::IsActiveInEncounter()
+bool NetherspiteShouldBlockBlueOrGreenBeamTrigger::IsActiveInEncounter()
 {
     KaraInstanceState const* state = FindKaraState(bot->GetInstanceId());
     if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())

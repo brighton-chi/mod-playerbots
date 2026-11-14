@@ -330,11 +330,11 @@ private:
     bool _redBeamTimerWasSet = false;
 };
 
-class NetherspiteBlockGreenOrBlueBeamAction : public MovementAction
+class NetherspiteBlockBlueOrGreenBeamAction : public MovementAction
 {
 public:
-    NetherspiteBlockGreenOrBlueBeamAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite block green or blue beam") {}
+    NetherspiteBlockBlueOrGreenBeamAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite block blue or green beam") {}
     bool Execute(Event event) override;
 };
 
@@ -346,11 +346,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class NetherspiteMoveBetweenBeamsAction : public MovementAction
+class NetherspiteMoveBetweenBlueAndGreenBeamsAction : public MovementAction
 {
 public:
-    NetherspiteMoveBetweenBeamsAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "netherspite move between beams") {}
+    NetherspiteMoveBetweenBlueAndGreenBeamsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "netherspite move between blue and green beams") {}
     bool Execute(Event event) override;
     bool ResetDestination()
     {

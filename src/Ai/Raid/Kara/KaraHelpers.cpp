@@ -646,7 +646,7 @@ float GetBeamAngle(
     return netherspite.GetAngle(portal.GetPositionX(), portal.GetPositionY());
 }
 
-// The arc between the green and blue beams on the side without red.
+// The arc between the blue and green beams on the side without red.
 NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState const& state)
 {
     float const red = GetBeamAngle(netherspite, state, NetherspiteBeam::Red);
@@ -1050,7 +1050,7 @@ float FindNetherspiteBeamPositionDistance(
     return best;
 }
 
-// The side of the green or blue beam that faces the other one, away from red: +1 counterclockwise.
+// The side of the blue or green beam that faces the other one, away from red: +1 counterclockwise.
 float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
 {
@@ -1060,7 +1060,7 @@ float GetNetherspiteInnerSide(
     return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
 }
 
-// Tanks only stay off the beams and out of void zones. Everyone else stands between green and blue
+// Tanks only stay off the beams and out of void zones. Everyone else stands between blue and green
 // on the side without red, at attack range: melee behind Netherspite, and healers within range of
 // the red tank.
 bool IsBetweenNetherspiteBeams(
