@@ -936,9 +936,8 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
         y += (beam.portal->GetPositionX() - netherspite->GetPositionX()) / length * sideDistance;
     }
 
-    // The position is 18 yd from Netherspite toward the portal, so it moves when he does. A tank
-    // moving while he chases it would lead him all the way to the portal, so it waits for him to
-    // stop first.
+    // The position is 18 yd from Netherspite toward the portal, so it shifts as he moves. Thus, the
+    // tank needs to wait until Netherspite stops moving to establish a stable position.
     if (netherspite->isMoving() ||
         bot->GetExactDist2d(x, y) <= NETHERSPITE_BEAM_POSITION_TOLERANCE)
     {
@@ -1075,8 +1074,6 @@ bool NetherspiteSelectTargetForHoldAction::Execute(Event /*event*/)
         botAI, AI_VALUE(Unit*, PlayerbotAI::IsTank(bot) ? "tank target" : "dps target"));
 }
 
-// Pets still attacking Netherspite when the banish ends keep going after the threat reset, and can
-// take him from the tank.
 bool NetherspiteSetPetStanceAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
@@ -1125,7 +1122,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (!AreNetherspitePortalsKnown(state))
         return false;
 
-    // A bot blocking or waiting for one beam can't be picked for another.
+    // An otherwise-eligible bot blocking or waiting for one beam can't be picked for another.
     std::vector<ObjectGuid> taken;
     for (NetherspiteBeamState const& beamState : state.netherspiteBeams)
     {
@@ -1139,10 +1136,12 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     return false;
 }
 
-// Bots only, in order of preference. Green: non-mana DPS, who can hold it a whole phase, then
-// healers, then mana DPS. Blue: mana DPS, then non-mana DPS. Red: tanks.
-// The current blocker counts until the stack limit. Anyone else drops out a stack earlier, since
-// they would reach the limit on their first tick on the beam.
+// Bots only, in order of preference.
+// Red: tanks only. No stack limit.
+// Blue: mana DPS, then non-mana DPS.
+// Green: non-mana DPS (no stack limit), then healers, then mana DPS.
+// The current blocker stays a candidate up to the stack limit. Any other bot cannot be a candidate
+// unless it is under the stack limit.
 std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates(
     NetherspiteBeamData const& data, NetherspiteBeamState const& beamState,
     std::vector<ObjectGuid> const& taken)
@@ -1169,7 +1168,7 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
         }
 
         uint8 const stackLimit = guid == beamState.blocker ?
-            NETHERSPITE_BEAM_STACK_LIMIT : NETHERSPITE_NEXT_STEPS_ON_AT_STACKS;
+            NETHERSPITE_BEAM_STACK_LIMIT : NETHERSPITE_BEAM_STACK_LIMIT - 1;
         if (HasNetherspiteBeamStackLimit(member, data.beam) &&
             GetNetherspiteBeamStacks(member, data) >= stackLimit)
         {
@@ -1217,9 +1216,10 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
     return candidates;
 }
 
-// Whether the next blocker's waiting position still works: 3.5-6 yd off the line on its inner side,
-// within its stretch along the line widened by the void zone shift (for hunters, only away from
-// Netherspite), and clear of void zones and beams.
+// Whether the waiting position is still usable: (1) in the band FindNextPosition picks from, within
+// 0.5 yd, or moved up to 4 yd along the line by ShiftNextPositionAlongLine (hunters only away from
+// Netherspite because 4 yd toward him would take them to the edge of his melee range, 20.8 yd or
+// 21.3 under Bloodlust, where Auto Shot fails), and (2) clear of void zones and beams.
 bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
     Unit* netherspite, Position const& portal, KaraInstanceState const& state, float side,
     Position const& position, float low, bool isHunter)
@@ -1243,13 +1243,14 @@ bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
     }
 
     return IsClearOfVoidZones(
-            state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_CLEARANCE) &&
+            state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_SAFE_DISTANCE) &&
         IsClearOfNetherspiteBeams(
             *netherspite, state, position.GetPositionX(), position.GetPositionY());
 }
 
-// A random position 3.5-6 yd off the line on its inner side (facing the other beam, away from red),
-// clear of void zones and beams.
+// Where the next blocker waits: a random point 3.5-6 yd off the line on its inner side (toward
+// the other beam), 17-19.5 yd from Netherspite along it (hunters 25-27.5), and clear of void zones
+// and beams.
 std::optional<Position> NetherspiteManageTimersAndTrackersAction::FindNextPosition(
     Unit* netherspite, Position const& portal, KaraInstanceState const& state, float side,
     float low)
@@ -1264,7 +1265,7 @@ std::optional<Position> NetherspiteManageTimersAndTrackersAction::FindNextPositi
             side * frand(NETHERSPITE_NEXT_MIN_OFF_LINE, NETHERSPITE_NEXT_MAX_OFF_LINE);
         float const x = netherspite->GetPositionX() + dirX * along - dirY * off;
         float const y = netherspite->GetPositionY() + dirY * along + dirX * off;
-        if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) ||
+        if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE) ||
             !IsClearOfNetherspiteBeams(*netherspite, state, x, y))
         {
             continue;
@@ -1277,9 +1278,9 @@ std::optional<Position> NetherspiteManageTimersAndTrackersAction::FindNextPositi
     return std::nullopt;
 }
 
-// A void zone at the waiting bot's feet can cover its whole band. The position then moves along the
-// line, keeping its distance off it: nearest first, and toward Netherspite first so melee stay in
-// range.
+// The bot waiting to block has a narrow band off the line, so a void zone dropped on it moves the
+// position along the line instead, by the smallest shift that clears it. At each distance, toward
+// Netherspite is tried first, so melee stay in range.
 std::optional<Position> NetherspiteManageTimersAndTrackersAction::ShiftNextPositionAlongLine(
     Unit* netherspite, Position const& portal, KaraInstanceState const& state, float side,
     Position const& position, float low, bool isHunter)
@@ -1306,7 +1307,6 @@ std::optional<Position> NetherspiteManageTimersAndTrackersAction::ShiftNextPosit
     return std::nullopt;
 }
 
-// None if the floor ends 1 yd or more short of the position, on a straight line from Netherspite.
 std::optional<Position> NetherspiteManageTimersAndTrackersAction::GetFloorPosition(
     Unit* netherspite, float x, float y)
 {
@@ -1354,26 +1354,20 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
         }
     }
 
-    // Near the end of beams, the blocker holds to the end rather than swap for a tick or two.
+    // Near the end of the Portal Phase, the blocker does not swap, even at threshold stacks.
     bool const isPhaseEnding = state.netherspitePortalPhaseTimer &&
         getMSTimeDiff(*state.netherspitePortalPhaseTimer, getMSTime()) >= NETHERSPITE_LAST_SWAP_MS;
     Player* newBlocker = blocker;
     bool const isDueToStepOn = !isPhaseEnding && blocker && next &&
         HasNetherspiteBeamStackLimit(blocker, data.beam) &&
         GetNetherspiteBeamStacks(blocker, data) >= NETHERSPITE_NEXT_STEPS_ON_AT_STACKS;
+
     if (!isBlockerEligible && !isBlockerAtLimit)
-    {
-        // Dead, gone or exhausted.
         newBlocker = next ? next : (candidates.empty() ? nullptr : candidates.front());
-    }
     else if (isDueToStepOn && IsOnNetherspiteBeam(netherspite, *beamState.portal, next))
-    {
         newBlocker = next;
-    }
     else if (isBlockerAtLimit && !next && !isPhaseEnding)
-    {
         newBlocker = nullptr;
-    }
 
     if (newBlocker != blocker)
     {
@@ -1401,8 +1395,8 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     if (blocker)
     {
         taken.push_back(blockerGuid);
-        // The red tank ignores void zones: moving out of one could take it out of melee range or
-        // pull Netherspite with it.
+        // The red tank ignores void zones: moving out of one could move Netherspite and disrupt
+        // the other beam blockers.
         float const distance = data.beam == NetherspiteBeam::Red ? NETHERSPITE_BLOCKER_DISTANCE :
             FindNetherspiteBeamPositionDistance(*netherspite, *beamState.portal, state, blocker);
         beamState.blockerPosition =
@@ -1429,7 +1423,6 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     if (isNextNew || !IsNextPositionGood(
             netherspite, *beamState.portal, state, side, beamState.nextPosition, low, isHunter))
     {
-        // If there's nowhere for it yet, it stays where it is.
         std::optional<Position> position;
         if (!isNextNew)
         {
@@ -1446,7 +1439,10 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     }
 }
 
-// A slot keeps its bearing and comes in along it until it's on the floor and clear of void zones.
+// A banish slot's position on its bearing from Netherspite: at the slot's distance, or shorter if
+// a wall or the floor's edge cuts the straight line from him. If that is within 3 yd of a void
+// zone, the position comes in 1 yd at a time, no closer than 6 yd. The bearing never changes, so
+// the slots stay evenly spread for Netherbreath.
 Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
     Unit const& netherspite, KaraInstanceState const& state, float angle, float startRadius)
 {
@@ -1467,7 +1463,7 @@ Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
         z = bossZ;
         if (bot->GetMap()->CheckCollisionAndGetValidCoords(
                 bot, bossX, bossY, bossZ, x, y, z, false) &&
-            IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE))
+            IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE))
         {
             break;
         }
@@ -1478,38 +1474,43 @@ Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
     return Position(x, y, z);
 }
 
-// Spread out for Netherbreath, a 45 degree cone. Slots are 360 / bots degrees apart, so in a
-// 10-player raid one breath hits one bot.
+// Spread out for Netherbreath, a 45-degree cone (22.5 degrees either side of its target). Every
+// group member gets a slot, so they are 36 degrees apart in a full 10-player raid, meaning only
+// one player gets hit by each Netherbreath.
 void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
     Unit* netherspite, KaraInstanceState& state)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return;
-
-    std::vector<Player*> members;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->GetMapId() == KARA_MAP_ID &&
-            GET_PLAYERBOT_AI(member))
-        {
-            members.push_back(member);
-        }
-    }
-
     std::vector<NetherspiteBanishSlot>& slots = state.netherspiteBanishSlots;
     if (slots.empty())
     {
-        if (members.empty())
+        Group* group = bot->GetGroup();
+        if (!group)
             return;
 
-        // Hunters choose first, taking the slots with the most floor: Auto Shot fails within his
-        // melee range (20.8 yd), so their slots are 25 yd out.
-        std::stable_partition(members.begin(), members.end(), [](Player* member)
+        // Hunter bots choose first, taking the slots with the most floor: Auto Shot fails within
+        // Netherspite's melee range (20.8 yd), so their slots are 25 yd out. Then, in group order,
+        // everyone else takes the free bearing nearest them.
+        std::vector<Player*> tiers[3];
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            return member->getClass() == CLASS_HUNTER;
-        });
+            Player* member = ref->GetSource();
+            if (!member)
+                continue;
+
+            if (member->GetMapId() != KARA_MAP_ID)
+                tiers[2].push_back(member);
+            else if (member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
+                tiers[0].push_back(member);
+            else
+                tiers[1].push_back(member);
+        }
+
+        std::vector<Player*> members;
+        for (std::vector<Player*> const& tier : tiers)
+            members.insert(members.end(), tier.begin(), tier.end());
+
+        if (members.empty())
+            return;
 
         std::vector<float> angles;
         for (size_t i = 0; i < members.size(); ++i)
@@ -1518,13 +1519,15 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
         for (Player* member : members)
         {
             float const radius = GetNetherspiteBanishRadius(member);
-            bool const isHunter = member->getClass() == CLASS_HUNTER;
+            bool const isInKara = member->GetMapId() == KARA_MAP_ID;
+            bool const isHunterBot =
+                member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member) && isInKara;
             auto best = angles.begin();
             float bestScore = std::numeric_limits<float>::lowest();
-            for (auto angle = angles.begin(); angle != angles.end(); ++angle)
+            for (auto angle = angles.begin(); angle != angles.end() && isInKara; ++angle)
             {
                 float score;
-                if (isHunter)
+                if (isHunterBot)
                 {
                     Position const position =
                         GetBanishPosition(*netherspite, state, *angle, radius);
@@ -1558,7 +1561,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
     {
         if (IsClearOfVoidZones(
                 state, slot.position.GetPositionX(), slot.position.GetPositionY(),
-                VOID_ZONE_CLEARANCE))
+                VOID_ZONE_SAFE_DISTANCE))
         {
             continue;
         }
@@ -1567,23 +1570,6 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
             *netherspite, state,
             netherspite->GetAngle(slot.position.GetPositionX(), slot.position.GetPositionY()),
             netherspite->GetExactDist2d(slot.position));
-    }
-
-    // A bot rezzed since the slots were made takes the slot of one that has died.
-    for (Player* member : members)
-    {
-        if (FindNetherspiteBanishSlot(state, member->GetGUID()))
-            continue;
-
-        for (NetherspiteBanishSlot& slot : slots)
-        {
-            Player* holder = ObjectAccessor::GetPlayer(*bot, slot.guid);
-            if (!holder || !holder->IsAlive())
-            {
-                slot.guid = member->GetGUID();
-                break;
-            }
-        }
     }
 }
 
@@ -1635,7 +1621,7 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     {
         // How far a bot can run (7 yd/s) in the 7.5s from Enfeeble to Shadow Nova landing.
         constexpr float searchDistance = 52.0f;
-        _destination = FindMalchezaarPosition(
+        _destination = FindNearestMalchezaarSafePosition(
             bot, bot->GetPosition(), infernals, searchDistance, false, HELLFIRE_SAFE_DISTANCE,
             canNovaHit ? malchezaar : nullptr);
 

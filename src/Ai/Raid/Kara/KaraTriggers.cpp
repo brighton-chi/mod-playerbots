@@ -357,8 +357,11 @@ bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
     if (!slot)
         return false;
 
-    if (!IsClearOfVoidZones(*state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_CLEARANCE))
+    if (!IsClearOfVoidZones(
+            *state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_SAFE_DISTANCE))
+    {
         return true;
+    }
 
     Unit* netherspite = GetEncounterBoss();
     if (!netherspite)

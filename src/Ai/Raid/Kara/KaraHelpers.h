@@ -445,10 +445,10 @@ inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
 // A void zone hits players within 2 yd of its center, with no combat reach added.
-inline constexpr float VOID_ZONE_RADIUS = 2.0f;
-inline constexpr float VOID_ZONE_CLEARANCE = VOID_ZONE_RADIUS + 1.0f;
-inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = VOID_ZONE_RADIUS + 0.5f;
-inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = VOID_ZONE_CLEARANCE + 0.5f;
+inline constexpr float VOID_ZONE_HAZARD_RADIUS = 2.0f;
+inline constexpr float VOID_ZONE_SAFE_DISTANCE = VOID_ZONE_HAZARD_RADIUS + 1.0f;
+inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = VOID_ZONE_HAZARD_RADIUS + 0.5f;
+inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = VOID_ZONE_SAFE_DISTANCE + 0.5f;
 // Tried when neither side of the void zone is clear at the normal step-around distance.
 inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROUND_DISTANCE + 2.0f;
 inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
@@ -466,8 +466,8 @@ inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
 // second early because the tracker's phase timer can start up to a second late.
 inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 56 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
-// The next blocker steps on a stack early: it needs a moment to get there and may first have to
-// finish a cast.
+// At this many stacks on the blocker, the next blocker moves onto the beam and takes over once it
+// is there. One stack under the limit gives it a second to arrive, or to finish a cast first.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
 inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
@@ -553,7 +553,7 @@ bool IsClearOfInfernals(
     Position const& position, std::vector<Position> const& infernals, float clearance);
 bool IsLineClearOfInfernals(
     Position const& from, Position const& to, std::vector<Position> const& infernals);
-std::optional<Position> FindMalchezaarPosition(
+std::optional<Position> FindNearestMalchezaarSafePosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
     float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource);
 std::optional<Position> FindMalchezaarClearPosition(

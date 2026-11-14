@@ -682,9 +682,6 @@ NetherspiteArc GetNetherspiteStandingArc(
     return { isStart ? own : own - width, width };
 }
 
-// Netherspite's combat reach is 18 yd. I believe in retail, the beams extended all the way to his
-// center, but in AC, they are measured with combat reach taken into account and thus cannot be
-// blocked inside of his combat reach.
 NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
 {
     if (PlayerbotAI::IsHeal(bot))
@@ -720,7 +717,7 @@ bool CrossesBeam(
     return false;
 }
 
-// Crossing costs nothing if the bot is across before the beams start.
+// Crossing between Netherspite and a portal is fine if the bot is across before the beams start.
 bool CrossesBeamAfterStart(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -742,11 +739,11 @@ Position const* FindFirstVoidZoneOnPath(
     for (Position const& zone : state.netherspiteVoidZones)
     {
         float const fromZone = zone.GetExactDist2d(from);
-        if (fromZone < VOID_ZONE_RADIUS || fromZone >= firstDistance)
+        if (fromZone < VOID_ZONE_HAZARD_RADIUS || fromZone >= firstDistance)
             continue;
 
         float const clearance =
-            fromZone < VOID_ZONE_CLEARANCE ? VOID_ZONE_RADIUS : VOID_ZONE_CLEARANCE;
+            fromZone < VOID_ZONE_SAFE_DISTANCE ? VOID_ZONE_HAZARD_RADIUS : VOID_ZONE_SAFE_DISTANCE;
         if (GetDistanceToSegment2d(zone, from, to) < clearance)
         {
             first = &zone;
@@ -1066,7 +1063,7 @@ float GetNetherspiteInnerSide(
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
-    if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) ||
+    if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE) ||
         !IsClearOfNetherspiteBeams(netherspite, state, x, y))
     {
         return false;
@@ -1139,7 +1136,8 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
         }
     }
 
-    if (IsClearOfVoidZones(state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_CLEARANCE) &&
+    if (IsClearOfVoidZones(
+            state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_SAFE_DISTANCE) &&
         IsClearOfNetherspiteBeams(
             *netherspite, state, bot->GetPositionX(), bot->GetPositionY()))
     {
@@ -1157,7 +1155,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
             float const x = bot->GetPositionX() + std::cos(angle) * distance;
             float const y = bot->GetPositionY() + std::sin(angle) * distance;
 
-            if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
+            if (IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE) &&
                 IsClearOfNetherspiteBeams(*netherspite, state, x, y) &&
                 !CrossesVoidZone(state, bot->GetPosition(), Position(x, y)) &&
                 !CrossesBeamAfterStart(bot, *netherspite, state, x, y) &&
@@ -1200,7 +1198,7 @@ std::optional<Position> GetStepAroundVoidZones(
             float const y = zone->GetPositionY() + normalY * side * distance;
             float z = bot->GetPositionZ();
 
-            if (IsClearOfVoidZones(state, x, y, VOID_ZONE_CLEARANCE) &&
+            if (IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE) &&
                 IsClearOfNetherspiteBeams(*netherspite, state, x, y) &&
                 !CrossesVoidZone(state, from, Position(x, y)) &&
                 !CrossesBeamAfterStart(bot, *netherspite, state, x, y) &&
@@ -1301,9 +1299,8 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
 }
 
 // The nearest position clear of Hellfire from which the bot can keep fighting or healing. Ranged:
-// just out of Shadow Nova range from Malchezaar (and in standard spell range of the target). Melee:
-// just inside melee range of him. Prioritize a safe path along a straight line, but accept any
-// straight line if no safe path is available.
+// just out of Shadow Nova from Malchezaar, and in range of their target. Melee: just inside melee
+// range of their target. A line that passes no infernal comes first, then any straight line.
 std::optional<Position> FindPositionInRangeOfTarget(
     PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
 {
@@ -1363,10 +1360,10 @@ std::optional<Position> FindPositionInRangeOfTarget(
 
 } // end anonymous namespace (Prince Malchezaar)
 
-// The nearest position on rings around origin that is infernalClearance clear of landed infernals,
-// SHADOW_NOVA_SAFE_DISTANCE from novaSource if there is one, and can be walked to in a straight
-// line. A line clear of landed infernals comes first; with mayCross, any line after that.
-std::optional<Position> FindMalchezaarPosition(
+// The nearest position to origin, searching outward up to maxDistance, that is infernalClearance
+// from every landed infernal, out of Shadow Nova from novaSource if one is given, and reachable in
+// a straight line. Lines that pass no infernal come first; with mayCross, any line after that.
+std::optional<Position> FindNearestMalchezaarSafePosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
     float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource)
 {
@@ -1411,9 +1408,6 @@ std::optional<Position> FindMalchezaarPosition(
     return std::nullopt;
 }
 
-// A position clear of Hellfire and, for ranged, out of Shadow Nova. Prioritize the nearest position
-// from which the bot can keep fighting or healing. Failing that, accept the nearest within 60 yd of
-// the bot.
 std::optional<Position> FindMalchezaarClearPosition(
     PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals)
 {
@@ -1427,7 +1421,7 @@ std::optional<Position> FindMalchezaarClearPosition(
 
     Player* bot = botAI->GetBot();
     bool const isRanged = PlayerbotAI::IsRanged(bot);
-    return FindMalchezaarPosition(
+    return FindNearestMalchezaarSafePosition(
         bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true,
         HELLFIRE_SAFE_DISTANCE, isRanged ? malchezaar : nullptr);
 }
@@ -1457,7 +1451,7 @@ std::optional<Position> FindMalchezaarTankPosition(
 
     for (float const candidateClearance : clearances)
     {
-        std::optional<Position> const position = FindMalchezaarPosition(
+        std::optional<Position> const position = FindNearestMalchezaarSafePosition(
             bot, bot->GetPosition(), infernals, MALCHEZAAR_SEARCH_DISTANCE, true,
             candidateClearance, nullptr);
 
