@@ -15,14 +15,6 @@ using namespace EncounterHelpers;
 namespace SwpHelpers
 {
 
-ObjectGuid FindSwpVolatileFiendGuid(Player* bot)
-{
-    Creature* fiend = bot->FindNearestCreature(
-        Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS);
-
-    return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
-}
-
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
@@ -141,6 +133,79 @@ bool GetPathStepToPosition(
         (stepY - botY) * (facing->GetPositionY() - botY) < 0.0f;
 
     return true;
+}
+
+// Volatile Fiends
+
+bool IsNearGauntlet(Player* bot)
+{
+    return bot->GetExactDist(GAUNTLET_CENTER) <= GAUNTLET_RADIUS;
+}
+
+// Gauntlet fiends: the nearest, engaged or not, since they explode right after engaging.
+// Static fiends: only those engaged (on attackers) since they are harmless until they die.
+ObjectGuid FindSwpVolatileFiendGuid(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    if (IsNearGauntlet(bot))
+    {
+        Creature* fiend = bot->FindNearestCreature(
+            Id(SwpNpcs::NPC_VOLATILE_FIEND), VOLATILE_FIEND_SEARCH_RADIUS);
+
+        return fiend ? fiend->GetGUID() : ObjectGuid::Empty;
+    }
+
+    ObjectGuid nearestGuid;
+    float nearestDistance = VOLATILE_FIEND_SEARCH_RADIUS;
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || unit->GetEntry() != Id(SwpNpcs::NPC_VOLATILE_FIEND) || !unit->IsAlive())
+            continue;
+
+        float const distance = bot->GetExactDist(unit);
+        if (distance <= nearestDistance)
+        {
+            nearestDistance = distance;
+            nearestGuid = guid;
+        }
+    }
+
+    return nearestGuid;
+}
+
+bool IsVolatileFiendInterceptor(Player* bot)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    if (Player* assistTank = GetGroupAssistTank(bot, 0))
+        return assistTank == bot;
+
+    return GetGroupMainTank(bot) == bot;
+}
+
+// Apocalypse Guards
+
+Unit* GetInfernalDefenseGuard(PlayerbotAI* botAI)
+{
+    Unit* guard = nullptr;
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    for (ObjectGuid const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || unit->GetEntry() != Id(SwpNpcs::NPC_APOCALYPSE_GUARD) || !unit->IsAlive() ||
+            !unit->HasAura(Id(SwpSpells::SPELL_INFERNAL_DEFENSE)))
+        {
+            continue;
+        }
+
+        if (!guard || guid < guard->GetGUID())
+            guard = unit;
+    }
+
+    return guard;
 }
 
 }

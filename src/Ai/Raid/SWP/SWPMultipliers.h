@@ -70,9 +70,6 @@ public:
 
 protected:
     float GetValueInEncounter(Action* action) override;
-
-private:
-    uint32 _tempLogMs = 0; // TEMP LOG
 };
 
 // Kalecgos

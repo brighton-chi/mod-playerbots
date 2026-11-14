@@ -27,7 +27,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Trash
     triggers.push_back(new TriggerNode("volatile fiend self destructs when near",
-        { NextAction("volatile fiend keep enemy away from group", ACTION_EMERGENCY + 1) }));
+        { NextAction("volatile fiend intercept", ACTION_EMERGENCY + 1),
+          NextAction("volatile fiend move away", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("apocalypse guard protected by infernal defense",
         { NextAction("apocalypse guard attack with holy magic", ACTION_RAID) }));
@@ -292,14 +293,39 @@ namespace
 {
 
 void AppendVolatileFiendMeleeDpsExclusions(
-    PlayerbotAI* botAI, Player* bot, AiObjectContext* context, GuidSet& exclusions)
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
+    Player* bot = botAI->GetBot();
     if (PlayerbotAI::IsRanged(bot) || PlayerbotAI::IsTank(bot))
         return;
 
-    Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
-    if (volatileFiend && volatileFiend->IsAlive())
-        exclusions.insert(volatileFiend->GetGUID());
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_VOLATILE_FIEND))
+            exclusions.insert(guid);
+    }
+}
+
+void AppendApocalypseGuardInfernalDefenseExclusions(
+    PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (PlayerbotAI::IsTank(bot) || bot->getClass() == CLASS_PALADIN ||
+        bot->getClass() == CLASS_PRIEST)
+    {
+        return;
+    }
+
+    for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_APOCALYPSE_GUARD) &&
+            attacker->HasAura(Id(SwpSpells::SPELL_INFERNAL_DEFENSE)))
+        {
+            exclusions.insert(guid);
+        }
+    }
 }
 
 void AppendFelmystVaporPhaseMeleeExclusions(
@@ -336,7 +362,7 @@ void AppendMuruTankExclusions(
         return;
 
     bool const darknessActive = PeekMuruDarknessActiveState(bot);
-    // Even during Darkness, the Sentinel Tank has full freedom to pick up Sentinels
+    // Even during Darkness, the Sentinel Tank has full freedom to pick up Sentinels.
     bool const distanceUnrestricted = darknessActive &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
 
@@ -386,7 +412,8 @@ void RaidSwpStrategy::AppendTargetExclusions(
         return;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    AppendVolatileFiendMeleeDpsExclusions(botAI, bot, context, exclusions);
+    AppendVolatileFiendMeleeDpsExclusions(botAI, context, exclusions);
+    AppendApocalypseGuardInfernalDefenseExclusions(botAI, context, exclusions);
 
     if (!IsEncounterInProgress(bot, SWP_MAP_ID))
         return;

@@ -38,12 +38,22 @@ public:
 
 // Trash
 
-class VolatileFiendKeepEnemyAwayFromGroupAction : public AttackAction
+class VolatileFiendInterceptAction : public AttackAction
 {
 public:
-    VolatileFiendKeepEnemyAwayFromGroupAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "volatile fiend keep enemy away from group") {}
+    VolatileFiendInterceptAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "volatile fiend intercept") {}
     bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class VolatileFiendMoveAwayAction : public MovementAction
+{
+public:
+    VolatileFiendMoveAwayAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "volatile fiend move away") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class ApocalypseGuardAttackWithHolyMagicAction : public Action

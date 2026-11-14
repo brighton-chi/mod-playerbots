@@ -60,7 +60,7 @@ float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
     if (!volatileFiend || !volatileFiend->IsAlive())
         return 1.0f;
 
-    return bot->GetExactDist2d(volatileFiend) < VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS ?
+    return bot->GetExactDist(volatileFiend) < VOLATILE_FIEND_APPROACH_SUPPRESSION_RADIUS ?
         0.0f : 1.0f;
 }
 
@@ -110,22 +110,6 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
-
-    // TEMP LOG (Kil'jaeden cooldown hold), remove after testing
-    if (getMSTimeDiff(_tempLogMs, getMSTime()) >= 1000)
-    {
-        _tempLogMs = getMSTime();
-        Unit* tempHand = AI_VALUE2(Unit*, "find target", "hand of the deceiver");
-        Unit* tempKiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
-        if (tempHand || tempKiljaeden)
-        {
-            LOG_INFO("playerbots",
-                "[SWP cooldowns] {} {}: hand {}, kil'jaeden {} (entry {}, {:.0f}%)",
-                bot->GetName(), action->getName(), tempHand ? "found" : "none",
-                tempKiljaeden ? "found" : "none", tempKiljaeden ? tempKiljaeden->GetEntry() : 0,
-                tempKiljaeden ? tempKiljaeden->GetHealthPct() : 0.0f);
-        }
-    }
 
     Unit* hand = nullptr;
     Unit* kiljaeden = nullptr;

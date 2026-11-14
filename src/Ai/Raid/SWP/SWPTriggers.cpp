@@ -15,7 +15,6 @@
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
-#include <cmath>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -47,13 +46,7 @@ bool SunwellAuraToRemoveTrigger::IsActive()
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
     Unit* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
-    if (!fiend || !fiend->IsAlive())
-        return false;
-
-    // Z-position comparison is so bots will go up the ramp to M'uru without getting stuck due to
-    // proximity to the volatile fiends below (in case the player decides to skip them).
-    constexpr float verticalOffset = 10.0f;
-    return std::abs(bot->GetPositionZ() - fiend->GetPositionZ()) < verticalOffset;
+    return fiend && fiend->IsAlive();
 }
 
 bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
@@ -61,7 +54,7 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
     if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_PRIEST)
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "apocalypse guard");
+    return GetInfernalDefenseGuard(botAI);
 }
 
 // Shared Bosses

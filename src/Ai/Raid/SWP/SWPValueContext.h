@@ -92,7 +92,7 @@ public:
               botAI, "swp volatile fiend", SwpHelpers::VOLATILE_FIEND_CACHE_INTERVAL_MS) {}
 
 protected:
-    ObjectGuid Calculate() override { return SwpHelpers::FindSwpVolatileFiendGuid(bot); }
+    ObjectGuid Calculate() override { return SwpHelpers::FindSwpVolatileFiendGuid(botAI); }
 };
 
 class KalecgosSpectralRiftValue : public CalculatedValue<ObjectGuid>

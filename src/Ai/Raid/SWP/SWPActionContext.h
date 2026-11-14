@@ -23,8 +23,11 @@ public:
             &RaidSwpActionContext::sunwell_remove_aura;
 
         // Trash
-        creators["volatile fiend keep enemy away from group"] =
-            &RaidSwpActionContext::volatile_fiend_keep_enemy_away_from_group;
+        creators["volatile fiend intercept"] =
+            &RaidSwpActionContext::volatile_fiend_intercept;
+
+        creators["volatile fiend move away"] =
+            &RaidSwpActionContext::volatile_fiend_move_away;
 
         creators["apocalypse guard attack with holy magic"] =
             &RaidSwpActionContext::apocalypse_guard_attack_with_holy_magic;
@@ -249,9 +252,13 @@ private:
     }
 
     // Trash
-    static Action* volatile_fiend_keep_enemy_away_from_group(PlayerbotAI* botAI)
+    static Action* volatile_fiend_intercept(PlayerbotAI* botAI)
     {
-        return new VolatileFiendKeepEnemyAwayFromGroupAction(botAI);
+        return new VolatileFiendInterceptAction(botAI);
+    }
+    static Action* volatile_fiend_move_away(PlayerbotAI* botAI)
+    {
+        return new VolatileFiendMoveAwayAction(botAI);
     }
     static Action* apocalypse_guard_attack_with_holy_magic(PlayerbotAI* botAI)
     {

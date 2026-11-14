@@ -16,7 +16,6 @@
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
-#include <list>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -125,57 +124,59 @@ bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 
 // Trash
 
-bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
+bool VolatileFiendInterceptAction::isUseful()
 {
-    Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
-    if (!volatileFiend || !volatileFiend->IsAlive())
+    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    return fiend && fiend->IsAlive() && fiend->IsSummon() &&
+        AI_VALUE(Unit*, "current target") != fiend && IsVolatileFiendInterceptor(bot);
+}
+
+bool VolatileFiendInterceptAction::Execute(Event /*event*/)
+{
+    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    return fiend && Attack(fiend);
+}
+
+bool VolatileFiendMoveAwayAction::isUseful()
+{
+    return !PlayerbotAI::IsTank(bot);
+}
+
+bool VolatileFiendMoveAwayAction::Execute(Event /*event*/)
+{
+    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    if (!fiend || !fiend->IsAlive())
         return false;
 
-    if (PlayerbotAI::IsTank(bot))
-        return AI_VALUE(Unit*, "current target") != volatileFiend && Attack(volatileFiend);
-
-    float const currentDistance = bot->GetExactDist2d(volatileFiend);
-    if (currentDistance >= VOLATILE_FIEND_SAFE_DISTANCE)
+    float const distance = bot->GetExactDist(fiend);
+    if (distance >= VOLATILE_FIEND_SAFE_DISTANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(volatileFiend, VOLATILE_FIEND_SAFE_DISTANCE - currentDistance);
+    return MoveAway(fiend, VOLATILE_FIEND_SAFE_DISTANCE - distance);
 }
 
 // At low health, Infernal Defense is cast, granting immunity to all damage but holy.
 bool ApocalypseGuardAttackWithHolyMagicAction::Execute(Event /*event*/)
 {
-    Unit* target = nullptr;
-    constexpr float searchRadius = 40.0f;
-    std::list<Creature*> apocalypseGuards;
-    bot->GetCreatureListWithEntryInGrid(
-        apocalypseGuards, Id(SwpNpcs::NPC_APOCALYPSE_GUARD), searchRadius);
-
-    for (Creature* apocalypseGuard : apocalypseGuards)
-    {
-        if (!apocalypseGuard || !apocalypseGuard->IsAlive() ||
-            !apocalypseGuard->HasAura(Id(SwpSpells::SPELL_INFERNAL_DEFENSE)))
-        {
-            continue;
-        }
-
-        if (!target || apocalypseGuard->GetGUID() < target->GetGUID())
-            target = apocalypseGuard;
-    }
-
-    if (!target)
+    Unit* guard = GetInfernalDefenseGuard(botAI);
+    if (!guard)
         return false;
 
-    if (bot->getClass() == CLASS_PALADIN)
-        return botAI->CanCastSpell("exorcism", target) && botAI->CastSpell("exorcism", target);
+    bool const isPriest = bot->getClass() == CLASS_PRIEST;
+    std::string const spell = isPriest ? "smite" : "exorcism";
+    SpellInfo const* spellInfo =
+        sSpellMgr->GetSpellInfo(AI_VALUE2(uint32, "spell id", spell));
+    if (!spellInfo || bot->GetDistance(guard) > spellInfo->GetMaxRange(false, bot))
+        return false;
 
-    if (bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
+    if (isPriest && bot->HasAura(Id(SwpSpells::SPELL_SHADOWFORM)))
     {
         bot->RemoveOwnedAura(
             Id(SwpSpells::SPELL_SHADOWFORM), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
     }
 
-    return botAI->CanCastSpell("smite", target) && botAI->CastSpell("smite", target);
+    return botAI->CanCastSpell(spell, guard) && botAI->CastSpell(spell, guard);
 }
 
 // Shared Bosses
