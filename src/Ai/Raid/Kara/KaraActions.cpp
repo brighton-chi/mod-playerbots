@@ -799,7 +799,8 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
 
 bool ShadeOfAranMoveBehindBlizzardAction::Execute(Event /*event*/)
 {
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_FORCED))
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
         return false;
 
     std::optional<Position> const position = GetBlizzardEscapePosition(bot);
@@ -809,7 +810,7 @@ bool ShadeOfAranMoveBehindBlizzardAction::Execute(Event /*event*/)
     bot->CastStop();
     return MoveTo(
         KARA_MAP_ID, position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, priority, true, false);
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up.
@@ -840,6 +841,10 @@ bool ShadeOfAranMarkElementalAction::Execute(Event /*event*/)
 
 bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* aran = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
     if (!aran)
         return false;
@@ -876,8 +881,8 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 // Netherspite
@@ -947,6 +952,10 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 
 bool NetherspiteBlockBlueOrGreenBeamAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
@@ -964,12 +973,16 @@ bool NetherspiteBlockBlueOrGreenBeamAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false, false,
+        false, false, priority, true, false);
 }
 
 bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
@@ -987,12 +1000,16 @@ bool NetherspiteWaitToBlockBeamAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false,
-        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false, false,
+        false, false, priority, true, false);
 }
 
 bool NetherspiteMoveBetweenBlueAndGreenBeamsAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
@@ -1012,12 +1029,15 @@ bool NetherspiteMoveBetweenBlueAndGreenBeamsAction::Execute(Event /*event*/)
     bot->CastStop();
     return MoveTo(
         KARA_MAP_ID, _destination->GetPositionX(), _destination->GetPositionY(),
-        bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-        true, false);
+        bot->GetPositionZ(), false, false, false, false, priority, true, false);
 }
 
 bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
     if (!netherspite)
         return false;
@@ -1035,8 +1055,8 @@ bool NetherspiteMoveToBanishSlotAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false,
-        false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        KARA_MAP_ID, step->GetPositionX(), step->GetPositionY(), bot->GetPositionZ(), false, false,
+        false, false, priority, true, false);
 }
 
 bool NetherspiteStopAttackingAction::Execute(Event /*event*/)
@@ -1582,19 +1602,13 @@ void NetherspiteManageTimersAndTrackersAction::UpdateVoidZones(KaraInstanceState
 }
 
 // Prince Malchezaar
-// CombatReach is 4 yards
 
-// One tick kills at 1 health, so this run never crosses a landed infernal. Shadow Nova lands 7.5s
-// after Enfeeble, which is about 52 yd of movement.
+// Move out of Shadow Nova range in a straight line that does not pass through Hellfire.
 bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
-    if (!IsMovingAllowed())
-        return false;
-
-    // Taking the tick keeps a new cast from starting between steps.
     if (IsWaitingForLastMove(priority))
-        return true;
+        return false;
 
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     if (!malchezaar)
@@ -1604,7 +1618,8 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     if (!enfeeble)
         return false;
 
-    // Once the Nova has landed, a position held for it is dropped and only fire counts.
+    // Once Shadow Nova's cast finishes, there is no longer any need to keep distance for it. The
+    // enfeebled bot needs only to stay out of Hellfire.
     bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
     if (_destination &&
@@ -1618,6 +1633,7 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
 
     if (!_destination)
     {
+        // How far a bot can run (7 yd/s) in the 7.5s from Enfeeble to Shadow Nova landing.
         constexpr float searchDistance = 52.0f;
         _destination = FindMalchezaarPosition(
             bot, bot->GetPosition(), infernals, searchDistance, false, HELLFIRE_SAFE_DISTANCE,
@@ -1629,7 +1645,8 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
         _enfeebleApplyTime = enfeeble->GetApplyTime();
         _forShadowNova = canNovaHit;
 
-        // A fire or Nova move cut short by Enfeeble would otherwise resume once the aura is gone.
+        // An in-progress move cut short by Enfeeble would otherwise resume after Enfeeble, even
+        // though it would no longer make sense to execute.
         Action* hazardAction = context->GetAction("prince malchezaar move clear of hazards");
         if (hazardAction)
         {
@@ -1654,18 +1671,13 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
         backwards);
 }
 
-// Standard reach moves to the target. and this takes over at a landed infernal. It holds its
-// position until it gets there, or reach would walk the bot straight back in. The position is in
-// range, so reach has nothing left to do on arrival.
+// Moves a bot out of Hellfire, and a ranged bot out of Shadow Nova, to a position from which it can
+// reach its target. This prevents the bot from running back into the hazard with standard reach.
 bool PrinceMalchezaarMoveClearOfHazardsAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
-    if (!IsMovingAllowed())
-        return false;
-
-    // Taking the tick keeps a new cast from starting between steps.
     if (IsWaitingForLastMove(priority))
-        return true;
+        return false;
 
     Unit* malchezaar = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
@@ -1714,6 +1726,10 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
         return false;
     }
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     if (_destination && !IsClearOfInfernals(*_destination, infernals, _destinationClearance))
         _destination.reset();
 
@@ -1739,8 +1755,8 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 // Nightbane
@@ -1761,6 +1777,10 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot || !bot->IsWithinMeleeRange(nightbane))
         return false;
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     float const angle =
         std::clamp(GetTerraceAngle(*nightbane), TERRACE_ARC_START, TERRACE_ARC_END);
     Position const destination(
@@ -1776,8 +1796,8 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
