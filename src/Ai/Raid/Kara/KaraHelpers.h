@@ -444,7 +444,7 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
 inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
-// A void zone hits players within 2 yd of its center, with no combat reach added.
+// No reach added.
 inline constexpr float VOID_ZONE_HAZARD_RADIUS = 2.0f;
 inline constexpr float VOID_ZONE_SAFE_DISTANCE = VOID_ZONE_HAZARD_RADIUS + 1.0f;
 inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = VOID_ZONE_HAZARD_RADIUS + 0.5f;
@@ -454,20 +454,21 @@ inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROU
 inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
 inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
     static_cast<float>(M_PI) * 6.0f / 180.0f;
-// A bot more than this far outside its banish slot moves back in. Netherbreath knocks a bot about
-// 25 yd out along its bearing, past the healers' range.
+// A bot more than this far away from its banish slot moves back in. Netherbreath knocks a bot about
+// 25 yd out along its bearing.
 inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
 // Beams start 10s into a portal phase. Between 0 and 5s, all non-tanks hold DPS. Between 5s and
 // 10s, non-tanks hold DPS unless a tank is the victim. After beams spawn, nobody holds DPS.
 inline constexpr uint32 NETHERSPITE_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
-// Beams tick every second from 10 to 59 s (the banish switch wins at 60 s). From here, a blocker
-// due to swap stays on to the end, so a phase's second blocker ends on 26 stacks at most. It is a
-// second early because the tracker's phase timer can start up to a second late.
+// The portal phase lasts for one minute. For the final 3s, no beam swaps occur. With a 25-stack
+// limit, the second blocker can exceed the limit just before the end of the phase. In that case, it
+// should just take a couple more stacks instead of forcing a late swap that puts exhaustion on a
+// bot that may be needed for the next portal phase.
 inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 56 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
-// At this many stacks on the blocker, the next blocker moves onto the beam and takes over once it
-// is there. One stack under the limit gives it a second to arrive, or to finish a cast first.
+// At this many stacks on the blocker, the next blocker moves onto the beam and takes over. One
+// stack under the limit gives it a second to arrive, or to finish a cast first.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
 inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
@@ -477,12 +478,13 @@ inline constexpr float NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE = 34.0f;
 inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
 inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
 inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
-// How far the next blocker's waiting position can move along the line to get clear of a void zone
-// at its feet, which needs 3 yd.
+// How far the next blocker's waiting position can move along the beam to get clear of a void zone.
 inline constexpr float NETHERSPITE_NEXT_SHIFT_RANGE = 4.0f;
 inline constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
 inline constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
 inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
+// Standard player run speed, used to determine if a bot can pass between a portal and Netherspite
+// at the beginning of a portal phase before the beam spawns (CrossesBeamAfterStart).
 inline constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
 
 bool IsBanishPhase(Unit* netherspite);
@@ -521,7 +523,7 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state);
 std::optional<Position> GetStepAroundVoidZones(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, Position const& destination);
-Position GetReachEndPosition(Unit const& bot, Unit const& target, float range);
+Position GetNetherspiteReachEndPosition(Unit const& bot, Unit const& target, float range);
 
 // Prince Malchezaar
 

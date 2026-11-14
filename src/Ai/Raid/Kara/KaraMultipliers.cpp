@@ -415,7 +415,7 @@ float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
     else if (dynamic_cast<ReachTargetAction*>(action))
         range = botAI->GetRange("spell");
 
-    Position const end = GetReachEndPosition(*bot, *target, range);
+    Position const end = GetNetherspiteReachEndPosition(*bot, *target, range);
     return CrossesVoidZone(*state, bot->GetPosition(), end) ? 0.0f : 1.0f;
 }
 

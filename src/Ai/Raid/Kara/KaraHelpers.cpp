@@ -646,7 +646,7 @@ float GetBeamAngle(
     return netherspite.GetAngle(portal.GetPositionX(), portal.GetPositionY());
 }
 
-// The arc between the blue and green beams on the side without red.
+// The arc between the blue and green beams.
 NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState const& state)
 {
     float const red = GetBeamAngle(netherspite, state, NetherspiteBeam::Red);
@@ -660,10 +660,10 @@ NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState cons
     return { green, greenToBlue };
 }
 
-// Within 60 degrees of the beam the bot would block (blue for mana users, green otherwise), on the
-// side without red. The wedge is under 180 degrees, so a straight move inside it can't cross a
+// Blue and green blockers only. Within 60 degrees of the beam the bot would block, between the blue
+// and green beams. The wedge is under 180 degrees, so a straight move inside it can't cross a
 // beam. Healers take the middle of the side instead, to keep the tank in range; a healer picked to
-// block green has about 25 s to get there.
+// block green has about 25s to get there.
 NetherspiteArc GetNetherspiteStandingArc(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state)
 {
@@ -704,7 +704,7 @@ bool CrossesBeam(
         NetherspiteBeamOffset const from = GetNetherspiteBeamOffset(
             netherspite, *beam.portal, bot->GetPositionX(), bot->GetPositionY());
         NetherspiteBeamOffset const to = GetNetherspiteBeamOffset(netherspite, *beam.portal, x, y);
-        // A bot already on the beam, such as a blocker stepping off, can leave by either side.
+        // A bot leaving a beam can move off of it toward either side.
         if (std::abs(from.off) < NETHERSPITE_BEAM_WIDTH || from.off * to.off >= 0.0f)
             continue;
 
@@ -717,7 +717,7 @@ bool CrossesBeam(
     return false;
 }
 
-// Crossing between Netherspite and a portal is fine if the bot is across before the beams start.
+// Crossing between Netherspite and a portal is fine if the bot gets across before the beams start.
 bool CrossesBeamAfterStart(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -730,7 +730,7 @@ bool CrossesBeamAfterStart(
     return CrossesBeam(bot, netherspite, state, x, y);
 }
 
-// The void zone on the way that is nearest the bot, so a step goes around that one first.
+// The void zone on the path that is nearest the bot, so a step goes around that one first.
 Position const* FindFirstVoidZoneOnPath(
     KaraInstanceState const& state, Position const& from, Position const& to)
 {
@@ -787,8 +787,7 @@ bool IsManaUser(Player* player)
     return player->getPowerType() == POWER_MANA;
 }
 
-// The threat reset at each portal phase leaves Netherspite on the first player to make threat, so
-// non-tanks wait for a tank to take him. At 10 s the red beam's threat settles it.
+// Threat resets at the beginning of each portal phase.
 bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite)
 {
     if (!netherspite)
@@ -836,7 +835,6 @@ bool AreNetherspitePortalsKnown(KaraInstanceState const& state)
         [](NetherspiteBeamState const& beam) { return beam.portal.has_value(); });
 }
 
-// Includes the red blocker.
 bool IsNetherspiteBlockerOrNext(KaraInstanceState const& state, ObjectGuid guid)
 {
     return std::any_of(
@@ -1214,7 +1212,7 @@ std::optional<Position> GetStepAroundVoidZones(
 
 // Where a standard reach toward the target stops: range plus both combat reaches from the target,
 // as ReachCombatTo has it.
-Position GetReachEndPosition(Unit const& bot, Unit const& target, float range)
+Position GetNetherspiteReachEndPosition(Unit const& bot, Unit const& target, float range)
 {
     float const distance = bot.GetExactDist2d(target);
     float const end = range + bot.GetCombatReach() + target.GetCombatReach();

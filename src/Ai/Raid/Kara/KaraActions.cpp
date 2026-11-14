@@ -1136,7 +1136,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     return false;
 }
 
-// Bots only, in order of preference.
+// Beam blocker candidates are bots only, in order of preference:
 // Red: tanks only. No stack limit.
 // Blue: mana DPS, then non-mana DPS.
 // Green: non-mana DPS (no stack limit), then healers, then mana DPS.
@@ -1439,10 +1439,9 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     }
 }
 
-// A banish slot's position on its bearing from Netherspite: at the slot's distance, or shorter if
-// a wall or the floor's edge cuts the straight line from him. If that is within 3 yd of a void
-// zone, the position comes in 1 yd at a time, no closer than 6 yd. The bearing never changes, so
-// the slots stay evenly spread for Netherbreath.
+// A banish slot's position on its bearing from Netherspite, 20 yd from him (25 for Hunters). If
+// such position is within 3 yd of a void zone, the position shifts closer to Netherspite. But the
+// bearing never changes, so the slots always stay evenly spread for Netherbreath.
 Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
     Unit const& netherspite, KaraInstanceState const& state, float angle, float startRadius)
 {
