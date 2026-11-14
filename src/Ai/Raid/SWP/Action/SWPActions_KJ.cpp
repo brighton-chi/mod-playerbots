@@ -326,7 +326,7 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddo
     if (!state || state->armageddons.empty())
         return true;
 
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
         HasKiljaedenDragonAura(bot))
     {
@@ -429,7 +429,7 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 
     if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
     {
-        Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+        Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
         if (!kiljaeden)
             return false;
 
@@ -535,7 +535,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 
 bool KiljaedenDragonBuffAndProtectRaidAction::Execute(Event /*event*/)
 {
-    Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+    Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
     if (!kiljaeden)
         return false;
 
@@ -548,7 +548,8 @@ bool KiljaedenDragonBuffAndProtectRaidAction::Execute(Event /*event*/)
             return false;
 
         bot->RemoveOwnedAura(
-            Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT), ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
+            Id(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT),
+            ObjectGuid::Empty, 0, AURA_REMOVE_BY_CANCEL);
 
         return true;
     }
@@ -655,7 +656,6 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandS
         return false;
 
     float const distanceToTarget = dragon->GetExactDist2d(target);
-
     if (distanceToTarget > KILJAEDEN_DRAGON_BREATH_STANDOFF + KILJAEDEN_DRAGON_STANDOFF_TOLERANCE ||
         (distanceToTarget > std::numeric_limits<float>::min() &&
          distanceToTarget < KILJAEDEN_DRAGON_BREATH_STANDOFF - KILJAEDEN_DRAGON_STANDOFF_TOLERANCE))
@@ -672,7 +672,6 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandS
     }
 
     dragon->SetFacingToObject(target);
-
     return CastKiljaedenDragonSpell(dragon, spellId);
 }
 

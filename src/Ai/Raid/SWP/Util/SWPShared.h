@@ -178,6 +178,19 @@ enum class SwpObjects : uint32
 
 inline constexpr uint32 SWP_MAP_ID = 580;
 
+// DungeonEncounter.dbc encounterIndex, map 580
+enum class SwpBosses : uint32
+{
+    DATA_KALECGOS                   = 0,
+    DATA_BRUTALLUS                  = 1,
+    DATA_FELMYST                    = 2,
+    DATA_EREDAR_TWINS               = 3,
+    DATA_MURU                       = 4,
+    DATA_KILJAEDEN                  = 5,
+};
+
+Unit* GetSwpBoss(Player* bot, SwpBosses boss);
+
 // Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;

@@ -13,6 +13,7 @@
 #include "MovementActions.h"
 #include "ObjectGuid.h"
 #include "Position.h"
+#include "SWPShared.h"
 #include <limits>
 #include <string>
 #include <vector>
@@ -78,12 +79,12 @@ class SunwellMisdirectToMainTankAction : public Action
 {
 public:
     SunwellMisdirectToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, SwpHelpers::SwpBosses boss)
+        : Action(botAI, name), _boss(boss) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    SwpHelpers::SwpBosses const _boss;
 };
 
 // Kalecgos

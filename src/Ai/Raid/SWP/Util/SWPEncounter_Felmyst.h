@@ -263,7 +263,6 @@ struct FelmystEncounterState
 
 FelmystEncounterState& FelmystState(uint32 instanceId);
 FelmystEncounterState* FindFelmystState(uint32 instanceId);
-bool FelmystResetInstance(uint32 instanceId);
 
 }
 

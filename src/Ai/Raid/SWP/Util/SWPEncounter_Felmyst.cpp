@@ -7,11 +7,11 @@
 #include "SWPEncounter_Felmyst.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
 #include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <list>
-#include <mutex>
 
 using namespace EncounterHelpers;
 
@@ -22,9 +22,6 @@ namespace SwpHelpers
 
 namespace
 {
-
-std::mutex felmystStateMutex;
-std::unordered_map<uint32, FelmystEncounterState> felmystStates;
 
 FelmystDemonicVaporGuids const& GetCachedDemonicVapors(Player* bot)
 {
@@ -1027,7 +1024,7 @@ bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
     if (PlayerbotAI::IsMainTank(botAI->GetBot()))
         return false;
 
-    Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
+    Unit* felmyst = GetSwpBoss(botAI->GetBot(), SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
@@ -1426,21 +1423,17 @@ Player* GetFelmystFlightLeader(Player* bot)
 
 FelmystEncounterState& FelmystState(uint32 instanceId)
 {
-    std::lock_guard lock(felmystStateMutex);
-    return felmystStates[instanceId];
+    std::optional<FelmystEncounterState>& state = SwpState(instanceId).felmyst;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 FelmystEncounterState* FindFelmystState(uint32 instanceId)
 {
-    std::lock_guard lock(felmystStateMutex);
-    auto it = felmystStates.find(instanceId);
-    return it != felmystStates.end() ? &it->second : nullptr;
-}
-
-bool FelmystResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(felmystStateMutex);
-    return felmystStates.erase(instanceId) > 0;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->felmyst ? &*state->felmyst : nullptr;
 }
 
 }

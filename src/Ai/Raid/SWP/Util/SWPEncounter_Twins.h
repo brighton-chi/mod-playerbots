@@ -134,7 +134,6 @@ struct EredarTwinsEncounterState
 
 EredarTwinsEncounterState& EredarTwinsState(uint32 instanceId);
 EredarTwinsEncounterState* FindEredarTwinsState(uint32 instanceId);
-bool EredarTwinsResetInstance(uint32 instanceId);
 
 }
 

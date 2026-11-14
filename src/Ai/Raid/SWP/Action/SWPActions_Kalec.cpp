@@ -10,6 +10,7 @@
 #include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPShared.h"
+#include "ThreatHelpers.h"
 #include <cmath>
 #include <map>
 #include <string>
@@ -19,7 +20,7 @@ using namespace EncounterHelpers;
 
 bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
 {
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS);
     if (!kalecgos)
         return false;
 
@@ -47,7 +48,7 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
         if (state.spectralHealthAnnounced)
             return false;
 
-        Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+        Unit* sathrovarr = FindThreatTarget(bot, "sathrovarr the corruptor");
         if (!sathrovarr)
             return false;
 
@@ -60,8 +61,7 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
             "sathrovarr_health_when_kalecgos_below_twenty_percent_health",
             "Sathrovarr's health is at %sathrovarrHealth%! "
             "Don't forget that we need to defeat them at about the same time!",
-            std::map<std::string, std::string>{
-                {"%sathrovarrHealth", sathrovarrHealth}});
+            std::map<std::string, std::string>{{"%sathrovarrHealth", sathrovarrHealth}});
     }
 
     return botAI->SayToRaid(text);
@@ -69,7 +69,7 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
 
 bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
 {
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS);
     if (!kalecgos)
         return false;
 
@@ -91,10 +91,10 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
             MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
-    if (GetKalecgosDesignatedTank(bot) == bot && kalecgos->GetVictim() != bot)
-        return botAI->DoSpecificAction("taunt spell", event, true);
+    if (GetKalecgosDesignatedTank(bot) != bot || kalecgos->GetVictim() == bot)
+        return false;
 
-    return false;
+    return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
 // FYI, there is a (Blizzlike) delay of 1s after a player clicks a rift before the next can click.
@@ -126,7 +126,7 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 
 bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
 {
-    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS);
     if (!kalecgos)
         return false;
 
@@ -137,10 +137,7 @@ bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
         return false;
 
     Position const& position = KALECGOS_TANK_POSITION;
-    if (surfaceTank->GetExactDist2d(position) > 3.0f || kalecgos->GetVictim() != surfaceTank)
-        return false;
-
-    return true;
+    return surfaceTank->GetExactDist2d(position) <= 3.0f && kalecgos->GetVictim() == surfaceTank;
 }
 
 bool KalecgosSpreadRangedAction::Execute(Event /*event*/)
@@ -175,7 +172,7 @@ bool KalecgosSpreadRangedAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos"))
+    if (Unit* kalecgos = GetSwpBoss(bot, SwpBosses::DATA_KALECGOS))
     {
         constexpr float safeDistFromDragon = 20.0f;
         constexpr uint32 minInterval = 0;
@@ -193,7 +190,7 @@ bool KalecgosSpreadRangedAction::Execute(Event /*event*/)
 
 bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
 {
-    Unit* sathrovarr = AI_VALUE2(Unit*, "find target", "sathrovarr the corruptor");
+    Unit* sathrovarr = FindThreatTarget(bot, "sathrovarr the corruptor");
     if (!sathrovarr)
         return false;
 

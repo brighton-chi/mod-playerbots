@@ -16,7 +16,7 @@ using namespace EncounterHelpers;
 
 bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 {
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    Unit* brutallus = GetSwpBoss(bot, SwpBosses::DATA_BRUTALLUS);
     if (!brutallus)
         return false;
 
@@ -69,8 +69,8 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
             return false;
 
         return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            priority, true, backwards);
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+            true, backwards);
     }
     else if (assistTank == bot)
     {
@@ -99,8 +99,8 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
             return false;
 
         return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            priority, true, backwards);
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+            true, backwards);
     }
 
     return false;
@@ -108,7 +108,7 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
 
 bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
 {
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    Unit* brutallus = GetSwpBoss(bot, SwpBosses::DATA_BRUTALLUS);
     if (!brutallus)
         return false;
 
@@ -135,8 +135,8 @@ bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
@@ -170,10 +170,8 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        float const midpointX =
-            (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
-        float const midpointY =
-            (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
+        float const midpointX = (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
+        float const midpointY = (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
 
         if (brutallus->GetExactDist2d(midpointX, midpointY) <= 0.1f)
         {
@@ -207,7 +205,7 @@ bool BrutallusPositionMeleeAtRearCenterAction::TryGetBrutallusMeleePosition(
 
 bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
 {
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    Unit* brutallus = GetSwpBoss(bot, SwpBosses::DATA_BRUTALLUS);
     if (!brutallus)
         return false;
 
@@ -262,8 +260,8 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
     {
         Position returnTargetPosition;
         if (!TryGetBrutallusRangedPosition(
-                bot, brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_OUTER_LANE_RADIUS, returnTargetPosition))
+                bot, brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_OUTER_LANE_RADIUS,
+                returnTargetPosition))
         {
             return false;
         }
@@ -292,8 +290,8 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
     {
         Position position;
         if (!TryGetBrutallusRangedPosition(
-                bot, brutallus, mainTank, assistTank, rangedIndex,
-                BRUTALLUS_NORMAL_RANGED_RADIUS, position))
+                bot, brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_NORMAL_RANGED_RADIUS,
+                position))
         {
             return false;
         }
@@ -310,8 +308,8 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
 
     Position position;
     if (!TryGetBrutallusRangedPosition(
-            bot, brutallus, mainTank, assistTank, rangedIndex,
-            BRUTALLUS_NORMAL_RANGED_RADIUS, position))
+            bot, brutallus, mainTank, assistTank, rangedIndex, BRUTALLUS_NORMAL_RANGED_RADIUS,
+            position))
     {
         return false;
     }
@@ -333,13 +331,13 @@ bool BrutallusPositionRangedInTwoGroupsAction::StepToPosition(
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
 {
-    Unit* brutallus = AI_VALUE2(Unit*, "find target", "brutallus");
+    Unit* brutallus = GetSwpBoss(bot, SwpBosses::DATA_BRUTALLUS);
     if (!brutallus)
         return false;
 
@@ -462,6 +460,6 @@ bool BrutallusIsolateBurnAction::StepToPosition(Position const& position, float 
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }

@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPShared.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -23,13 +24,13 @@ bool MuruMisdirectEnemyToTankAction::Execute(Event /*event*/)
     Unit* enemy = nullptr;
     Player* tank = nullptr;
 
-    if (Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    if (Unit* voidSentinel = FindThreatTarget(bot, "void sentinel");
         voidSentinel && voidSentinel->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
     {
         enemy = voidSentinel;
         tank = GetGroupAssistTank(bot, 0);
     }
-    else if (Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    else if (Unit* entropius = FindThreatTarget(bot, "entropius");
         entropius && entropius->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT)
     {
         enemy = entropius;
@@ -44,7 +45,7 @@ bool MuruMisdirectEnemyToTankAction::Execute(Event /*event*/)
 
 bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 {
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    Unit* entropius = FindThreatTarget(bot, "entropius");
     if (!entropius)
         return false;
 
@@ -53,7 +54,7 @@ bool MuruMainTankPickUpEntropiusAction::Execute(Event /*event*/)
 
 bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
 {
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
     if (IsMuruPhaseActive(muru))
     {
         _entropiusRangedPositionReached = false;
@@ -357,8 +358,8 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
 
 bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 {
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
+    Unit* entropius = FindThreatTarget(bot, "entropius");
     if (!muru && !entropius)
         return false;
 
@@ -418,7 +419,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 {
-    Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
+    Unit* voidSentinel = FindThreatTarget(bot, "void sentinel");
     if (!voidSentinel)
     {
         constexpr float arrivalDistance = 3.0f;
@@ -480,7 +481,7 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 
 bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
 {
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
     if (!muru)
         return false;
 
@@ -753,7 +754,7 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
 
 bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
 {
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
+    Unit* entropius = FindThreatTarget(bot, "entropius");
     if (!entropius)
         return false;
 

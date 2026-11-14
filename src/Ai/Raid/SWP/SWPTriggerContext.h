@@ -249,7 +249,7 @@ private:
     static Trigger* kalecgos_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "kalecgos hunter should misdirect", "kalecgos");
+            botAI, "kalecgos hunter should misdirect", SwpHelpers::SwpBosses::DATA_KALECGOS);
     }
     static Trigger* kalecgos_should_communicate_boss_health(PlayerbotAI* botAI)
     {
@@ -284,7 +284,7 @@ private:
     static Trigger* brutallus_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "brutallus hunter should misdirect", "brutallus");
+            botAI, "brutallus hunter should misdirect", SwpHelpers::SwpBosses::DATA_BRUTALLUS);
     }
     static Trigger* brutallus_requires_two_tanks(PlayerbotAI* botAI)
     {
@@ -373,7 +373,8 @@ private:
     static Trigger* eredar_twins_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "eredar twins hunter should misdirect", "grand warlock alythess");
+            botAI, "eredar twins hunter should misdirect",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS);
     }
     static Trigger* eredar_twins_sacrolash_requires_two_tanks(PlayerbotAI* botAI)
     {

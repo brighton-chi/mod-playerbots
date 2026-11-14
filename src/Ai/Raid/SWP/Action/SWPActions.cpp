@@ -15,6 +15,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
+#include "SWPInstanceState.h"
 #include "SWPShared.h"
 
 using namespace SwpHelpers;
@@ -88,12 +89,7 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     reset |= ClearStrategyTargetIcon(
         bot, RtiTargetValue::skullIndex, { Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER) });
 
-    reset |= KalecgosResetInstance(instanceId);
-    reset |= BrutallusResetInstance(instanceId);
-    reset |= FelmystResetInstance(instanceId);
-    reset |= EredarTwinsResetInstance(instanceId);
-    reset |= MuruResetInstance(instanceId);
-    reset |= KiljaedenResetInstance(instanceId);
+    reset |= SwpResetInstance(instanceId);
 
     return reset;
 }
@@ -190,7 +186,7 @@ bool SunwellRemoveDebuffWithImmunityAction::Execute(Event /*event*/)
 
 bool SunwellMisdirectToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetSwpBoss(bot, _boss);
     if (!boss)
         return false;
 

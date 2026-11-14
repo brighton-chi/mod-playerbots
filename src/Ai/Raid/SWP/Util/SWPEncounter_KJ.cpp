@@ -7,12 +7,12 @@
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
 #include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <list>
-#include <mutex>
 
 namespace SwpHelpers
 {
@@ -93,9 +93,6 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
     lastRebuildMs = now;
     return true;
 }
-
-std::mutex kiljaedenStateMutex;
-std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenStates;
 
 } // end anonymous namespace
 
@@ -717,21 +714,17 @@ bool ReleaseStaleRootFlag(Player* bot)
 
 KiljaedenEncounterState& KiljaedenState(uint32 instanceId)
 {
-    std::lock_guard lock(kiljaedenStateMutex);
-    return kiljaedenStates[instanceId];
+    std::optional<KiljaedenEncounterState>& state = SwpState(instanceId).kiljaeden;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 KiljaedenEncounterState* FindKiljaedenState(uint32 instanceId)
 {
-    std::lock_guard lock(kiljaedenStateMutex);
-    auto it = kiljaedenStates.find(instanceId);
-    return it != kiljaedenStates.end() ? &it->second : nullptr;
-}
-
-bool KiljaedenResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(kiljaedenStateMutex);
-    return kiljaedenStates.erase(instanceId) > 0;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->kiljaeden ? &*state->kiljaeden : nullptr;
 }
 
 }

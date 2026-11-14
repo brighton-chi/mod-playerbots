@@ -8,9 +8,9 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "SWPInstanceState.h"
 #include <algorithm>
 #include <map>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -23,9 +23,6 @@ namespace SwpHelpers
 
 namespace
 {
-
-std::mutex kalecgosStateMutex;
-std::unordered_map<uint32, KalecgosEncounterState> kalecgosStates;
 
 void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
 {
@@ -287,13 +284,7 @@ Player* GetSurfaceTankAfterCurrentHandOff(Group* group, KalecgosEncounterState c
 Player* GetKalecgosCurrentVictimTank(
     Player* player, Group* group, KalecgosEncounterState const& state)
 {
-    Unit* kalecgos = nullptr;
-
-    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player))
-    {
-        AiObjectContext* context = botAI->GetAiObjectContext();
-        kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-    }
+    Unit* kalecgos = GetSwpBoss(player, SwpBosses::DATA_KALECGOS);
 
     constexpr float searchRadius = 200.0f;
     if (!kalecgos)
@@ -771,21 +762,17 @@ void RecordSpectralRealmEnter(Player* player)
 
 KalecgosEncounterState& KalecgosState(uint32 instanceId)
 {
-    std::lock_guard lock(kalecgosStateMutex);
-    return kalecgosStates[instanceId];
+    std::optional<KalecgosEncounterState>& state = SwpState(instanceId).kalecgos;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 KalecgosEncounterState* FindKalecgosState(uint32 instanceId)
 {
-    std::lock_guard lock(kalecgosStateMutex);
-    auto it = kalecgosStates.find(instanceId);
-    return it != kalecgosStates.end() ? &it->second : nullptr;
-}
-
-bool KalecgosResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(kalecgosStateMutex);
-    return kalecgosStates.erase(instanceId) > 0;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->kalecgos ? &*state->kalecgos : nullptr;
 }
 
 }

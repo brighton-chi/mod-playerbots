@@ -151,7 +151,6 @@ struct KiljaedenEncounterState
 
 KiljaedenEncounterState& KiljaedenState(uint32 instanceId);
 KiljaedenEncounterState* FindKiljaedenState(uint32 instanceId);
-bool KiljaedenResetInstance(uint32 instanceId);
 
 }
 

@@ -140,7 +140,6 @@ struct MuruEncounterState
 
 MuruEncounterState& MuruState(uint32 instanceId);
 MuruEncounterState* FindMuruState(uint32 instanceId);
-bool MuruResetInstance(uint32 instanceId);
 
 }
 

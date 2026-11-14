@@ -269,7 +269,7 @@ private:
     static Action* kalecgos_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SunwellMisdirectToMainTankAction(
-            botAI, "kalecgos misdirect to main tank", "kalecgos");
+            botAI, "kalecgos misdirect to main tank", SwpHelpers::SwpBosses::DATA_KALECGOS);
     }
     static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI)
     {
@@ -305,7 +305,7 @@ private:
     static Action* brutallus_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SunwellMisdirectToMainTankAction(
-            botAI, "brutallus misdirect to main tank", "brutallus");
+            botAI, "brutallus misdirect to main tank", SwpHelpers::SwpBosses::DATA_BRUTALLUS);
     }
     static Action* brutallus_tanks_position_and_swap(PlayerbotAI* botAI)
     {
@@ -328,7 +328,7 @@ private:
     static Action* felmyst_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SunwellMisdirectToMainTankAction(
-            botAI, "felmyst misdirect to main tank", "felmyst");
+            botAI, "felmyst misdirect to main tank", SwpHelpers::SwpBosses::DATA_FELMYST);
     }
     static Action* felmyst_main_tank_position_boss_on_ground(PlayerbotAI* botAI)
     {

@@ -22,7 +22,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
@@ -51,15 +51,15 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, backwards);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, backwards);
 }
 
 bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
@@ -81,15 +81,15 @@ bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 {
     ClearFelmystDemonicVaporKiteState(bot);
 
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
@@ -109,8 +109,8 @@ bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool FelmystRemoveEncapsulateAction::Execute(Event /*event*/)
@@ -125,7 +125,7 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     if (!encapsulateTarget || encapsulateTarget == bot)
         return false;
 
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
@@ -159,8 +159,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
         }
 
         return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            priority, true, false);
+            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+            true, false);
     };
 
     if (targetStack == FelmystGroundStack::Left || targetStack == FelmystGroundStack::Right)
@@ -338,8 +338,8 @@ bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
 
     bot->CastStop();
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 void FelmystAvoidDemonicVaporAction::AnnounceFlightLeader(Player* leader)
@@ -371,13 +371,13 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
 {
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
     {
         _fogCrateStuckSampleMs = 0;
@@ -493,7 +493,7 @@ bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)
 
 bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
 {
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
@@ -506,7 +506,7 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
 
 bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
 {
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 

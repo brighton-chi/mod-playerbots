@@ -112,7 +112,6 @@ struct BrutallusEncounterState
 
 BrutallusEncounterState& BrutallusState(uint32 instanceId);
 BrutallusEncounterState* FindBrutallusState(uint32 instanceId);
-bool BrutallusResetInstance(uint32 instanceId);
 
 }
 

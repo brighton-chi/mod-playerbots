@@ -80,7 +80,6 @@ struct KalecgosEncounterState
 
 KalecgosEncounterState& KalecgosState(uint32 instanceId);
 KalecgosEncounterState* FindKalecgosState(uint32 instanceId);
-bool KalecgosResetInstance(uint32 instanceId);
 
 }
 

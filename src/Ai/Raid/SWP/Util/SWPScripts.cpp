@@ -96,7 +96,7 @@ void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit)
         if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             continue;
 
-        Unit* felmyst = PAI_VALUE2(Unit*, "find target", "felmyst");
+        Unit* felmyst = GetSwpBoss(player, SwpBosses::DATA_FELMYST);
         if (!felmyst || !felmyst->IsFlying())
             continue;
 

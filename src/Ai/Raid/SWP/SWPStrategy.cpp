@@ -328,13 +328,12 @@ void AppendApocalypseGuardInfernalDefenseExclusions(
     }
 }
 
-void AppendFelmystVaporPhaseMeleeExclusions(
-    Player* bot, AiObjectContext* context, GuidSet& exclusions)
+void AppendFelmystVaporPhaseMeleeExclusions(Player* bot, GuidSet& exclusions)
 {
     if (!PlayerbotAI::IsMelee(bot))
         return;
 
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (felmyst && IsFelmystAirPhaseTargetSuppressed(felmyst))
         exclusions.insert(felmyst->GetGUID());
 }
@@ -357,7 +356,7 @@ void AppendMuruTankExclusions(
     if (!PlayerbotAI::IsTank(bot))
         return;
 
-    Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
+    Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
     if (!muru || !IsMuruPhaseActive(muru))
         return;
 
@@ -418,7 +417,7 @@ void RaidSwpStrategy::AppendTargetExclusions(
     if (!IsEncounterInProgress(bot, SWP_MAP_ID))
         return;
 
-    AppendFelmystVaporPhaseMeleeExclusions(bot, context, exclusions);
+    AppendFelmystVaporPhaseMeleeExclusions(bot, exclusions);
     AppendMuruDarkFiendExclusions(botAI, context, exclusions);
     AppendMuruTankExclusions(botAI, context, exclusions);
     AppendKiljaedenShieldOrbExclusions(botAI, context, exclusions);

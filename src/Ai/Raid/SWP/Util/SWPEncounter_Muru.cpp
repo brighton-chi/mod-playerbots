@@ -7,10 +7,10 @@
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
 #include <algorithm>
 #include <limits>
 #include <list>
-#include <mutex>
 
 namespace SwpHelpers
 {
@@ -136,9 +136,6 @@ Unit* SelectNearestQualifying(
 
     return best;
 }
-
-std::mutex muruStateMutex;
-std::unordered_map<uint32, MuruEncounterState> muruStates;
 
 MuruDarknessState& GetOrEmplaceDarkness(uint32 instanceId)
 {
@@ -535,29 +532,17 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
 
 MuruEncounterState& MuruState(uint32 instanceId)
 {
-    std::lock_guard lock(muruStateMutex);
-    return muruStates[instanceId];
+    std::optional<MuruEncounterState>& state = SwpState(instanceId).muru;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 MuruEncounterState* FindMuruState(uint32 instanceId)
 {
-    std::lock_guard lock(muruStateMutex);
-    auto it = muruStates.find(instanceId);
-    return it != muruStates.end() ? &it->second : nullptr;
-}
-
-bool MuruResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(muruStateMutex);
-    auto it = muruStates.find(instanceId);
-    if (it == muruStates.end())
-        return false;
-
-    MuruEncounterState const& state = it->second;
-    bool const wasSet = state.darkness || !state.voidSentinelTankAssignments.empty();
-
-    muruStates.erase(it);
-    return wasSet;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->muru ? &*state->muru : nullptr;
 }
 
 }

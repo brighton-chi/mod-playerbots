@@ -17,16 +17,23 @@
 class SunwellEncounterTrigger : public Trigger
 {
 public:
-    SunwellEncounterTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
+    SunwellEncounterTrigger(
+        PlayerbotAI* botAI, std::string const name, SwpHelpers::SwpBosses boss,
+        int32 checkInterval = 1)
+        : Trigger(botAI, name, checkInterval), _boss(boss) {}
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, SwpHelpers::SWP_MAP_ID) &&
-            IsActiveInEncounter();
+        return EncounterHelpers::IsBossInProgress(
+            bot, SwpHelpers::SWP_MAP_ID, SwpHelpers::Id(_boss)) && IsActiveInEncounter();
     }
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
+    Unit* GetEncounterBoss() { return SwpHelpers::GetSwpBoss(bot, _boss); }
+
+private:
+    SwpHelpers::SwpBosses const _boss;
 };
 
 class SunwellNoEncounterInProgressTrigger : public Trigger
@@ -71,14 +78,11 @@ class SunwellHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
 {
 public:
     SunwellHunterShouldMisdirectTrigger(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : SunwellEncounterTrigger(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, SwpHelpers::SwpBosses boss)
+        : SunwellEncounterTrigger(botAI, name, boss) {}
 
 protected:
     bool IsActiveInEncounter() override;
-
-private:
-    std::string const _bossName;
 };
 
 // Kalecgos
@@ -87,7 +91,9 @@ class KalecgosShouldCommunicateBossHealthTrigger : public SunwellEncounterTrigge
 {
 public:
     KalecgosShouldCommunicateBossHealthTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos should communicate boss health") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos should communicate boss health",
+            SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -97,7 +103,8 @@ class KalecgosRequiresTankRotationTrigger : public SunwellEncounterTrigger
 {
 public:
     KalecgosRequiresTankRotationTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos requires tank rotation") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos requires tank rotation", SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -107,7 +114,8 @@ class KalecgosSpectralRiftIsOpenTrigger : public SunwellEncounterTrigger
 {
 public:
     KalecgosSpectralRiftIsOpenTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos spectral rift is open") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos spectral rift is open", SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -117,7 +125,8 @@ class KalecgosRangedShouldSpreadTrigger : public SunwellEncounterTrigger
 {
 public:
     KalecgosRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos ranged should spread") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos ranged should spread", SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -127,7 +136,9 @@ class KalecgosTooManyArcaneBuffetStacksTrigger : public SunwellEncounterTrigger
 {
 public:
     KalecgosTooManyArcaneBuffetStacksTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos too many arcane buffet stacks") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos too many arcane buffet stacks",
+            SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -137,7 +148,9 @@ class KalecgosHumanoidKalecTanksSathrovarrTrigger : public SunwellEncounterTrigg
 {
 public:
     KalecgosHumanoidKalecTanksSathrovarrTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos humanoid kalec tanks sathrovarr") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos humanoid kalec tanks sathrovarr",
+            SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -147,7 +160,8 @@ class KalecgosBotsDontObserveGravityTrigger : public SunwellEncounterTrigger
 {
 public:
     KalecgosBotsDontObserveGravityTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kalecgos bots don't observe gravity") {}
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos bots don't observe gravity", SwpHelpers::SwpBosses::DATA_KALECGOS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -159,7 +173,8 @@ class BrutallusRequiresTwoTanksTrigger : public SunwellEncounterTrigger
 {
 public:
     BrutallusRequiresTwoTanksTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus requires two tanks") {}
+        : SunwellEncounterTrigger(
+            botAI, "brutallus requires two tanks", SwpHelpers::SwpBosses::DATA_BRUTALLUS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -169,7 +184,9 @@ class BrutallusMeleeShouldStandInPlaceTrigger : public SunwellEncounterTrigger
 {
 public:
     BrutallusMeleeShouldStandInPlaceTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus melee should stand in place") {}
+        : SunwellEncounterTrigger(
+            botAI, "brutallus melee should stand in place",
+            SwpHelpers::SwpBosses::DATA_BRUTALLUS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -179,7 +196,9 @@ class BrutallusRangedShouldSoakMeteorSlashTrigger : public SunwellEncounterTrigg
 {
 public:
     BrutallusRangedShouldSoakMeteorSlashTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus ranged should soak meteor slash") {}
+        : SunwellEncounterTrigger(
+            botAI, "brutallus ranged should soak meteor slash",
+            SwpHelpers::SwpBosses::DATA_BRUTALLUS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -189,7 +208,8 @@ class BrutallusBurnOnNonTankTrigger : public SunwellEncounterTrigger
 {
 public:
     BrutallusBurnOnNonTankTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "brutallus burn on non-tank") {}
+        : SunwellEncounterTrigger(
+            botAI, "brutallus burn on non-tank", SwpHelpers::SwpBosses::DATA_BRUTALLUS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -201,7 +221,8 @@ class FelmystHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst hunter should misdirect") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst hunter should misdirect", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -211,7 +232,8 @@ class FelmystGroundPhaseShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystGroundPhaseShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst ground phase should be tanked") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst ground phase should be tanked", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -222,7 +244,8 @@ class FelmystRangedShouldPositionToDispelAndFleeTrigger : public SunwellEncounte
 public:
     FelmystRangedShouldPositionToDispelAndFleeTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "felmyst ranged should position to dispel and flee") {}
+            botAI, "felmyst ranged should position to dispel and flee",
+            SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -232,7 +255,8 @@ class FelmystMeleeShouldStayTogetherTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystMeleeShouldStayTogetherTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst melee should stay together") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst melee should stay together", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -242,7 +266,8 @@ class FelmystEncapsulateOnMageOrPaladinTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystEncapsulateOnMageOrPaladinTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst encapsulate on mage or paladin") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst encapsulate on mage or paladin", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -252,7 +277,8 @@ class FelmystNearEncapsulatedPlayerTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystNearEncapsulatedPlayerTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst near encapsulated player") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst near encapsulated player", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -262,7 +288,8 @@ class FelmystPlayerHasGasNovaTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystPlayerHasGasNovaTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst player has gas nova") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst player has gas nova", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -272,7 +299,9 @@ class FelmystShouldAvoidDemonicVaporTrailsTrigger : public SunwellEncounterTrigg
 {
 public:
     FelmystShouldAvoidDemonicVaporTrailsTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst should avoid demonic vapor trails") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst should avoid demonic vapor trails",
+            SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -282,7 +311,8 @@ class FelmystTargetedByDemonicVaporTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystTargetedByDemonicVaporTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst targeted by demonic vapor") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst targeted by demonic vapor", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -292,7 +322,8 @@ class FelmystFogOfCorruptionIsActiveTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystFogOfCorruptionIsActiveTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst fog of corruption is active") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst fog of corruption is active", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -302,7 +333,8 @@ class FelmystMeleeCannotReachFlyingBossTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystMeleeCannotReachFlyingBossTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst melee cannot reach flying boss") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst melee cannot reach flying boss", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -312,7 +344,8 @@ class FelmystPlayerIsCharmedByFogTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystPlayerIsCharmedByFogTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst player is charmed by fog") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst player is charmed by fog", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -322,7 +355,8 @@ class FelmystShouldHoldDpsWhileLandingTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystShouldHoldDpsWhileLandingTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst should hold dps while landing") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst should hold dps while landing", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -332,7 +366,8 @@ class FelmystLandingDpsHoldIsActiveTrigger : public SunwellEncounterTrigger
 {
 public:
     FelmystLandingDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "felmyst landing dps hold is active") {}
+        : SunwellEncounterTrigger(
+            botAI, "felmyst landing dps hold is active", SwpHelpers::SwpBosses::DATA_FELMYST) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -344,7 +379,8 @@ class EredarTwinsMeleeIsAtBalconyTrigger : public SunwellEncounterTrigger
 {
 public:
     EredarTwinsMeleeIsAtBalconyTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins melee is at balcony") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins melee is at balcony", SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -354,7 +390,9 @@ class EredarTwinsShouldAnnounceAlythessTankTrigger : public SunwellEncounterTrig
 {
 public:
     EredarTwinsShouldAnnounceAlythessTankTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins should announce alythess tank") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins should announce alythess tank",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -364,7 +402,9 @@ class EredarTwinsSacrolashRequiresTwoTanksTrigger : public SunwellEncounterTrigg
 {
 public:
     EredarTwinsSacrolashRequiresTwoTanksTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins sacrolash requires two tanks") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins sacrolash requires two tanks",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -374,7 +414,9 @@ class EredarTwinsAlythessCastsBlazeOnTankTrigger : public SunwellEncounterTrigge
 {
 public:
     EredarTwinsAlythessCastsBlazeOnTankTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins alythess casts blaze on tank") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins alythess casts blaze on tank",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -384,7 +426,8 @@ class EredarTwinsRangedNeedsLosTrigger : public SunwellEncounterTrigger
 {
 public:
     EredarTwinsRangedNeedsLosTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins ranged needs los") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins ranged needs los", SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -394,7 +437,9 @@ class EredarTwinsOnlyAlythessRemainsTrigger : public SunwellEncounterTrigger
 {
 public:
     EredarTwinsOnlyAlythessRemainsTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins only alythess remains") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins only alythess remains",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -404,7 +449,9 @@ class EredarTwinsTooManyFlameTouchedStacksTrigger : public SunwellEncounterTrigg
 {
 public:
     EredarTwinsTooManyFlameTouchedStacksTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins too many flame touched stacks") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins too many flame touched stacks",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -414,7 +461,8 @@ class EredarTwinsShouldFocusDpsTrigger : public SunwellEncounterTrigger
 {
 public:
     EredarTwinsShouldFocusDpsTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins should focus dps") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins should focus dps", SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -424,7 +472,9 @@ class EredarTwinsShouldManagePetAggressionTrigger : public SunwellEncounterTrigg
 {
 public:
     EredarTwinsShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins should manage pet aggression") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins should manage pet aggression",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -434,7 +484,9 @@ class EredarTwinsActiveConflagrationTargetTrigger : public SunwellEncounterTrigg
 {
 public:
     EredarTwinsActiveConflagrationTargetTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "eredar twins active conflagration target") {}
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins active conflagration target",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -445,7 +497,8 @@ class EredarTwinsSacrolashVictimHasConflagrationTrigger : public SunwellEncounte
 public:
     EredarTwinsSacrolashVictimHasConflagrationTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "eredar twins sacrolash victim has conflagration") {}
+            botAI, "eredar twins sacrolash victim has conflagration",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -457,7 +510,8 @@ class MuruHunterShouldMisdirectNewEnemyTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruHunterShouldMisdirectNewEnemyTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru hunter should misdirect new enemy") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru hunter should misdirect new enemy", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -467,7 +521,8 @@ class MuruTransformedIntoEntropiusTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruTransformedIntoEntropiusTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru transformed into entropius") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru transformed into entropius", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -477,7 +532,8 @@ class MuruRangedShouldStackOrSpreadTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruRangedShouldStackOrSpreadTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru ranged should stack or spread") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru ranged should stack or spread", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -487,7 +543,8 @@ class MuruShouldAssignDpsPriorityTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru should assign dps priority") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru should assign dps priority", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -497,7 +554,8 @@ class MuruVoidSentinelShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruVoidSentinelShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru void sentinel should be tanked") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru void sentinel should be tanked", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -507,7 +565,8 @@ class MuruAddsSpawnAtEntranceTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruAddsSpawnAtEntranceTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru adds spawn at entrance") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru adds spawn at entrance", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -517,7 +576,8 @@ class MuruDarkFiendsSpawnedTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruDarkFiendsSpawnedTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru dark fiends spawned") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru dark fiends spawned", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -527,7 +587,8 @@ class MuruDarknessIsComingTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruDarknessIsComingTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru darkness is coming") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru darkness is coming", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -537,7 +598,8 @@ class MuruBerserkerHasFlurryTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruBerserkerHasFlurryTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru berserker has flurry") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru berserker has flurry", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -547,7 +609,8 @@ class MuruFuryMageCastingFelFireballTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruFuryMageCastingFelFireballTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru fury mage casting fel fireball") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru fury mage casting fel fireball", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -557,7 +620,8 @@ class MuruFuryMageHasSpellFuryTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruFuryMageHasSpellFuryTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru fury mage has spell fury") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru fury mage has spell fury", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -567,7 +631,8 @@ class MuruVoidSpawnAvailableForEnslaveTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruVoidSpawnAvailableForEnslaveTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru void spawn available for enslave") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru void spawn available for enslave", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -577,7 +642,8 @@ class MuruWarlockHasEnslavedVoidSpawnTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruWarlockHasEnslavedVoidSpawnTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru warlock has enslaved void spawn") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru warlock has enslaved void spawn", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -588,7 +654,7 @@ class MuruEntropiusSummonsVoidZonesTrigger : public SunwellEncounterTrigger
 public:
     MuruEntropiusSummonsVoidZonesTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru entropius summons void zones") {}
+            botAI, "m'uru entropius summons void zones", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -598,7 +664,8 @@ class MuruTheSingularityIsNearTrigger : public SunwellEncounterTrigger
 {
 public:
     MuruTheSingularityIsNearTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "m'uru the singularity is near") {}
+        : SunwellEncounterTrigger(
+            botAI, "m'uru the singularity is near", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -610,7 +677,8 @@ class KiljaedenShouldCoordinateOrbUseTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenShouldCoordinateOrbUseTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden should coordinate orb use") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden should coordinate orb use", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -620,7 +688,9 @@ class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public SunwellEncounterTrigg
 {
 public:
     KiljaedenHandsOfTheDeceiverAreActiveTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden hands of the deceiver are active") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden hands of the deceiver are active",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -631,7 +701,8 @@ class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public SunwellEncounte
 public:
     KiljaedenTanksShouldHoldBossAndReflectionsTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "kil'jaeden tanks should hold boss and reflections") {}
+            botAI, "kil'jaeden tanks should hold boss and reflections",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -641,7 +712,9 @@ class KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger : public SunwellEncounterTri
 {
 public:
     KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden melee should split into two groups") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden melee should split into two groups",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -651,7 +724,9 @@ class KiljaedenRangedShouldSpreadInTwoArcsTrigger : public SunwellEncounterTrigg
 {
 public:
     KiljaedenRangedShouldSpreadInTwoArcsTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden ranged should spread in two arcs") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden ranged should spread in two arcs",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -661,7 +736,9 @@ class KiljaedenFireBloomOnImmunityClassTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenFireBloomOnImmunityClassTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden fire bloom on immunity class") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden fire bloom on immunity class",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -671,7 +748,9 @@ class KiljaedenSaysChaosDestructionOblivionTrigger : public SunwellEncounterTrig
 {
 public:
     KiljaedenSaysChaosDestructionOblivionTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden says: Chaos! Destruction! Oblivion!") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden says: Chaos! Destruction! Oblivion!",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -681,7 +760,8 @@ class KiljaedenDragonOrbIsActiveTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenDragonOrbIsActiveTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden dragon orb is active") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden dragon orb is active", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -691,7 +771,8 @@ class KiljaedenBotControlsDragonTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenBotControlsDragonTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden bot controls dragon") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden bot controls dragon", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -701,7 +782,8 @@ class KiljaedenStaleRootAfterDragonTrigger : public SunwellEncounterTrigger
 {
 public:
     KiljaedenStaleRootAfterDragonTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(botAI, "kil'jaeden stale root after dragon") {}
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden stale root after dragon", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;

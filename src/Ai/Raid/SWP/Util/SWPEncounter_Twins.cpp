@@ -12,9 +12,10 @@
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
+#include "ThreatHelpers.h"
 #include "ThreatManager.h"
 #include <list>
-#include <mutex>
 #include <unordered_map>
 
 using namespace EncounterHelpers;
@@ -96,9 +97,6 @@ bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float thre
     return tankThreat > 0.0f &&
         boss->GetThreatMgr().GetThreat(bot) >= tankThreat * threatHoldRatio;
 }
-
-std::mutex eredarTwinsStateMutex;
-std::unordered_map<uint32, EredarTwinsEncounterState> eredarTwinsStates;
 
 } // end anonymous namespace
 
@@ -288,7 +286,7 @@ bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
     if (PlayerbotAI::IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get())
+    if (!FindThreatTarget(bot, "lady sacrolash"))
         return false;
 
     EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
@@ -440,30 +438,17 @@ Player* GetEredarTwinsBlazeTarget(Player* bot)
 
 EredarTwinsEncounterState& EredarTwinsState(uint32 instanceId)
 {
-    std::lock_guard lock(eredarTwinsStateMutex);
-    return eredarTwinsStates[instanceId];
+    std::optional<EredarTwinsEncounterState>& state = SwpState(instanceId).eredarTwins;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 EredarTwinsEncounterState* FindEredarTwinsState(uint32 instanceId)
 {
-    std::lock_guard lock(eredarTwinsStateMutex);
-    auto it = eredarTwinsStates.find(instanceId);
-    return it != eredarTwinsStates.end() ? &it->second : nullptr;
-}
-
-bool EredarTwinsResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(eredarTwinsStateMutex);
-    auto it = eredarTwinsStates.find(instanceId);
-    if (it == eredarTwinsStates.end())
-        return false;
-
-    EredarTwinsEncounterState const& state = it->second;
-    bool const wasSet = state.incomingConflagration || state.blazeTarget ||
-        state.dpsHoldStartMs || state.tankAssignment;
-
-    eredarTwinsStates.erase(it);
-    return wasSet;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->eredarTwins ? &*state->eredarTwins : nullptr;
 }
 
 }

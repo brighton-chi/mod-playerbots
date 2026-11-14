@@ -6,10 +6,10 @@
 
 #include "SWPEncounter_Brut.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
 #include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
-#include <mutex>
 #include <vector>
 
 namespace SwpHelpers
@@ -19,9 +19,6 @@ namespace SwpHelpers
 
 namespace
 {
-
-std::mutex brutallusStateMutex;
-std::unordered_map<uint32, BrutallusEncounterState> brutallusStates;
 
 bool IsBurnPadActive(BrutallusEncounterState const& state, ObjectGuid ownerGuid)
 {
@@ -413,21 +410,17 @@ bool HasBrutallusBurn(Player* bot)
 
 BrutallusEncounterState& BrutallusState(uint32 instanceId)
 {
-    std::lock_guard lock(brutallusStateMutex);
-    return brutallusStates[instanceId];
+    std::optional<BrutallusEncounterState>& state = SwpState(instanceId).brutallus;
+    if (!state)
+        state.emplace();
+
+    return *state;
 }
 
 BrutallusEncounterState* FindBrutallusState(uint32 instanceId)
 {
-    std::lock_guard lock(brutallusStateMutex);
-    auto it = brutallusStates.find(instanceId);
-    return it != brutallusStates.end() ? &it->second : nullptr;
-}
-
-bool BrutallusResetInstance(uint32 instanceId)
-{
-    std::lock_guard lock(brutallusStateMutex);
-    return brutallusStates.erase(instanceId) > 0;
+    SwpInstanceState* state = FindSwpState(instanceId);
+    return state && state->brutallus ? &*state->brutallus : nullptr;
 }
 
 }

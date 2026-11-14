@@ -8,12 +8,55 @@
 #include "EncounterHelpers.h"
 #include "PetDefines.h"
 #include "Playerbots.h"
+#include "SWPInstanceState.h"
+#include "ThreatHelpers.h"
 #include <array>
+#include <mutex>
+#include <string_view>
+#include <unordered_map>
 
 using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
+
+namespace
+{
+
+std::mutex swpStateMutex;
+std::unordered_map<uint32, SwpInstanceState> swpStates;
+
+constexpr std::string_view BossName(SwpBosses boss)
+{
+    switch (boss)
+    {
+        case SwpBosses::DATA_KALECGOS:
+            return "kalecgos";
+        case SwpBosses::DATA_BRUTALLUS:
+            return "brutallus";
+        case SwpBosses::DATA_FELMYST:
+            return "felmyst";
+        // Sacrolash is killed first, so Alythess stands for the encounter.
+        case SwpBosses::DATA_EREDAR_TWINS:
+            return "grand warlock alythess";
+        case SwpBosses::DATA_MURU:
+            return "m'uru";
+        case SwpBosses::DATA_KILJAEDEN:
+            return "kil'jaeden";
+        default:
+            return {};
+    }
+}
+
+} // end anonymous namespace
+
+Unit* GetSwpBoss(Player* bot, SwpBosses boss)
+{
+    if (!IsBossInProgress(bot, SWP_MAP_ID, Id(boss)))
+        return nullptr;
+
+    return FindThreatTarget(bot, BossName(boss));
+}
 
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
@@ -206,6 +249,35 @@ Unit* GetInfernalDefenseGuard(PlayerbotAI* botAI)
     }
 
     return guard;
+}
+
+// Shared encounter state
+
+SwpInstanceState& SwpState(uint32 instanceId)
+{
+    std::lock_guard lock(swpStateMutex);
+    return swpStates[instanceId];
+}
+
+SwpInstanceState* FindSwpState(uint32 instanceId)
+{
+    std::lock_guard lock(swpStateMutex);
+    auto it = swpStates.find(instanceId);
+    return it != swpStates.end() ? &it->second : nullptr;
+}
+
+bool SwpResetInstance(uint32 instanceId)
+{
+    std::lock_guard lock(swpStateMutex);
+    auto it = swpStates.find(instanceId);
+    if (it == swpStates.end())
+        return false;
+
+    SwpInstanceState& state = it->second;
+    bool const wasSet = state.kalecgos || state.brutallus || state.felmyst ||
+        state.eredarTwins || state.muru || state.kiljaeden;
+    state = SwpInstanceState{};
+    return wasSet;
 }
 
 }
