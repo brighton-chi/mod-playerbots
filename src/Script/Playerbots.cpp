@@ -611,14 +611,15 @@ public:
 
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSelfBotAfkScripts();
+void AddSC_Aq40BotScripts();
+void AddSC_BlackTempleBotScripts();
+void AddSC_HyjalBotScripts();
+void AddSC_IcecrownBotScripts();
 void AddSC_MagtheridonBotScripts();
+void AddSC_RubySanctumBotScripts();
 void AddSC_SerpentshrineCavernBotScripts();
 void AddSC_TempestKeepBotScripts();
-void AddSC_HyjalBotScripts();
-void AddSC_BlackTempleBotScripts();
 void AddSC_SunwellBotScripts();
-void AddSC_IcecrownBotScripts();
-void AddSC_RubySanctumBotScripts();
 void AddSC_randombot_level_mgr();
 
 void AddPlayerbotsScripts()
@@ -637,13 +638,14 @@ void AddPlayerbotsScripts()
     AddPlayerbotsSelfBotAfkScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
+    AddSC_Aq40BotScripts();
+    AddSC_BlackTempleBotScripts();
+    AddSC_HyjalBotScripts();
+    AddSC_IcecrownBotScripts();
     AddSC_MagtheridonBotScripts();
+    AddSC_RubySanctumBotScripts();
     AddSC_SerpentshrineCavernBotScripts();
     AddSC_TempestKeepBotScripts();
-    AddSC_HyjalBotScripts();
-    AddSC_BlackTempleBotScripts();
     AddSC_SunwellBotScripts();
-    AddSC_IcecrownBotScripts();
-    AddSC_RubySanctumBotScripts();
     AddSC_randombot_level_mgr();
 }
