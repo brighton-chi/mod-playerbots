@@ -7,12 +7,8 @@
 #include "SWPActions.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
-#include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPShared.h"
-#include <cmath>
-#include <limits>
-#include <string>
 #include <vector>
 
 using namespace SwpHelpers;
@@ -20,8 +16,6 @@ using namespace EncounterHelpers;
 
 bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 {
-    ClearFelmystDemonicVaporKiteState(bot);
-
     Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
@@ -57,8 +51,6 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 
 bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
 {
-    ClearFelmystDemonicVaporKiteState(bot);
-
     Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
@@ -87,8 +79,6 @@ bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
 
 bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 {
-    ClearFelmystDemonicVaporKiteState(bot);
-
     Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
@@ -204,185 +194,144 @@ bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
         botAI->CastSpell(Id(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget);
 }
 
-bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
+bool FelmystMoveToAirGroupPositionAction::Execute(Event /*event*/)
 {
-    Player* leader = GetFelmystFlightLeader(bot);
-    if (!leader)
-        return MoveAwayFromVapor(false);
-
-    if (leader == bot)
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
+    Position position;
+    if (!TryGetFelmystAirGroupPosition(felmyst, position) ||
+        bot->GetExactDist2d(position) <= FELMYST_GROUP_ARRIVAL_DISTANCE)
     {
-        if (MarkTargetWithDiamond(bot, leader))
-            return true;
-
-        if (leader->GetGUID() != _announcedFlightLeaderGuid)
-        {
-            _announcedFlightLeaderGuid = leader->GetGUID();
-            AnnounceFlightLeader(leader);
-        }
-
-        return MoveAwayFromVapor(false);
-    }
-
-    constexpr float tooFarDistance = 20.0f;
-    if (bot->GetExactDist2d(leader) > tooFarDistance && MoveAwayFromVapor(true))
-        return true;
-
-    return MoveToFlightLeader(leader);
-}
-
-bool FelmystAvoidDemonicVaporAction::MoveAwayFromVapor(bool unrestricted)
-{
-    std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
-
-    constexpr float hazardRadius = 13.0f;
-    bool inDanger = false;
-    for (Creature* hazard : hazards)
-    {
-        if (hazard && bot->GetExactDist2d(hazard) < hazardRadius)
-        {
-            inDanger = true;
-            break;
-        }
-    }
-
-    if (!inDanger)
         return false;
-
-    constexpr float maxSearchRadius = 40.0f;
-    constexpr float distanceStep = 1.0f;
-
-    std::vector<float> angles;
-    if (unrestricted)
-    {
-        for (int i = 0; i < 8; ++i)
-            angles.push_back(static_cast<float>(i) * (2.0f * static_cast<float>(M_PI) / 8.0f));
-    }
-    else
-    {
-        angles.push_back(0.0f);
-        angles.push_back(static_cast<float>(M_PI));
     }
 
-    Position bestPos;
-    float minMoveDistance = std::numeric_limits<float>::max();
-    bool foundSafe = false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const botZ = bot->GetPositionZ();
-
-    uint32 const stepCount = static_cast<uint32>(maxSearchRadius / distanceStep);
-    for (uint32 step = 0; step <= stepCount; ++step)
-    {
-        float const distance = static_cast<float>(step) * distanceStep;
-        for (float angle : angles)
-        {
-            float candidateX = botX + distance * std::cos(angle);
-            float candidateY = botY + distance * std::sin(angle);
-
-            bool isSafe = true;
-            for (Creature* hazard : hazards)
-            {
-                if (hazard && hazard->GetExactDist2d(candidateX, candidateY) < hazardRadius)
-                {
-                    isSafe = false;
-                    break;
-                }
-            }
-
-            if (!isSafe)
-                continue;
-
-            float candidateZ = botZ;
-            bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, botX, botY, botZ, candidateX, candidateY, candidateZ, false);
-
-            float const moveDistance = bot->GetExactDist2d(candidateX, candidateY);
-            if (moveDistance < minMoveDistance)
-            {
-                bestPos = Position(candidateX, candidateY, candidateZ);
-                minMoveDistance = moveDistance;
-                foundSafe = true;
-            }
-        }
-
-        if (foundSafe)
-            break;
-    }
-
-    if (!foundSafe)
-        return false;
-
-    bot->CastStop();
-    return MoveTo(
-        SWP_MAP_ID, bestPos.GetPositionX(), bestPos.GetPositionY(), bestPos.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool FelmystAvoidDemonicVaporAction::MoveToFlightLeader(Player* leader)
-{
-    constexpr float followDist = 5.0f;
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
 
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(
-            bot, leader->GetPosition(), followDist, nullptr, moveX, moveY, backwards))
+    // Hold rather than cross a patch: it is gone within 20 s, and the sidestep keeps the bot safe.
+    float stepX;
+    float stepY;
+    if (TryGetFelmystAirStep(
+            bot, position, GetDemonicVaporHazards(bot), DEMONIC_VAPOR_CLEARANCE, FogLane::None,
+            stepX, stepY) != FelmystAirStep::Step)
     {
         return false;
     }
 
     bot->CastStop();
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        SWP_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
         true, false);
 }
 
-void FelmystAvoidDemonicVaporAction::AnnounceFlightLeader(Player* leader)
+bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
 {
-    std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "felmyst_flight_leader",
-        "[NAME] is now the flight phase leader. Everybody needs to stack on [NAME] "
-        "during the flight phase.",
-        std::map<std::string, std::string>{{"[NAME]", leader->GetName()}});
-
-    botAI->SayToRaid(text);
-}
-
-bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
-{
-    Position destination;
-    if (!TryGetFelmystDemonicVaporKiteDestination(bot, destination))
+    if (!IsNearFelmystDemonicVaporHazard(bot))
         return false;
 
-    constexpr float arrivalDist = 0.5f;
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
     if (IsWaitingForLastMove(priority))
         return false;
 
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(bot, destination, arrivalDist, nullptr, moveX, moveY, backwards))
+    Position destination;
+    if (!TryGetFelmystSidestepPosition(bot, GetDemonicVaporHazards(bot), destination))
         return false;
 
+    float stepX;
+    float stepY;
+    bool backwards;
+    if (!GetStepToPosition(bot, destination, 0.0f, nullptr, stepX, stepY, backwards))
+        return false;
+
+    bot->CastStop();
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        SWP_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
         true, false);
+}
+
+bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
+{
+    Creature* demonicVapor = GetFelmystOwnDemonicVapor(bot);
+    if (!demonicVapor)
+        return false;
+
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
+    if (!felmyst)
+        return false;
+
+    if (demonicVapor->GetGUID() != _demonicVaporGuid)
+        StartRoute(felmyst, demonicVapor->GetGUID());
+
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    if (_throughPosition &&
+        bot->GetExactDist2d(*_throughPosition) <= FELMYST_GROUP_ARRIVAL_DISTANCE)
+    {
+        _throughPosition = nullptr;
+    }
+
+    while (!_throughPosition && _routePointIndex + 1 < _route.size() &&
+        bot->GetExactDist2d(_route[_routePointIndex]) <= FELMYST_ROUTE_POINT_ARRIVAL_DISTANCE)
+    {
+        ++_routePointIndex;
+    }
+
+    Position const& target = _throughPosition ? *_throughPosition : _route[_routePointIndex];
+
+    // The route is not turned aside for patches, heads, or the crate; it passes clear of all three.
+    float stepX;
+    float stepY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, target, FELMYST_ROUTE_POINT_ARRIVAL_DISTANCE, nullptr, stepX, stepY, backwards))
+    {
+        return false;
+    }
+
+    bot->CastStop();
+    return MoveTo(
+        SWP_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
+}
+
+// The route is chosen by the vapor count when the head appears. The first vapor's target, if the
+// second vapor picks it again, goes back through G1 first.
+void FelmystKiteDemonicVaporAction::StartRoute(Unit* felmyst, ObjectGuid const& demonicVaporGuid)
+{
+    FelmystEncounterState const* state = FindFelmystState(bot->GetInstanceId());
+    FelmystAirEnd end = state ? state->airPhaseEnd : FelmystAirEnd::None;
+    if (end == FelmystAirEnd::None)
+        end = GetNearestFelmystAirEnd(felmyst);
+
+    uint8 const demonicVaporCount = state ? state->demonicVaporCount : 0;
+
+    _demonicVaporGuid = demonicVaporGuid;
+    _route = GetFelmystDemonicVaporRoute(end, demonicVaporCount);
+    _routePointIndex = 0;
+    _throughPosition = demonicVaporCount >= 2 &&
+        state->firstDemonicVaporTargetGuid == bot->GetGUID() ?
+        &GetFelmystGroupPosition(end, 1) : nullptr;
+}
+
+bool FelmystKiteDemonicVaporAction::ResetRouteProgress()
+{
+    if (_demonicVaporGuid.IsEmpty() && _route.empty() && !_routePointIndex && !_throughPosition)
+        return false;
+
+    _demonicVaporGuid = ObjectGuid::Empty;
+    _route = {};
+    _routePointIndex = 0;
+    _throughPosition = nullptr;
+    return true;
 }
 
 bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
 {
     Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
-    {
-        _fogCrateStuckSampleMs = 0;
         return false;
-    }
 
     FogOfCorruptionState fogState;
     bool const hasActiveFog = TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
@@ -392,32 +341,18 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
     if (!hasActiveFog && !shouldRepositionAfterThirdPass)
-    {
-        _fogCrateStuckSampleMs = 0;
         return false;
-    }
 
+    // After the third pass, steps are kept out of that lane's fog, which is still down
     Position destination;
-    bool const foundDestination = shouldRepositionAfterThirdPass ?
-        TryGetFelmystLandingApproachDestination(bot, thirdPassLane, felmyst, destination) :
-        TryGetFelmystFogCrossingDestination(bot, fogState.lane, destination);
-
-    if (!foundDestination)
+    if (shouldRepositionAfterThirdPass)
     {
-        _fogCrateStuckSampleMs = 0;
-        return false;
+        if (!TryGetFelmystLandingApproachDestination(bot, thirdPassLane, felmyst, destination))
+            return false;
     }
-
-    LastMovement const& lastMove = AI_VALUE(LastMovement&, "last movement");
-    if (Position(
-            lastMove.lastMoveToX, lastMove.lastMoveToY,
-            lastMove.lastMoveToZ).GetExactDist(destination) > FELMYST_LOCATION_MATCH_DISTANCE)
+    else
     {
-        _fogCrateStuckSampleMs = 0;
-    }
-    else if (TryTeleportStuckBotOntoCrate(destination))
-    {
-        return true;
+        destination = GetFelmystFogStopPosition(bot, fogState.lane);
     }
 
     // Try ccing skeletons in place before first pass move
@@ -433,55 +368,25 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return true;
     }
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    // Cross a patch when nothing else is allowed: a charmed bot costs the raid more.
+    float stepX;
+    float stepY;
+    if (TryGetFelmystAirStep(
+            bot, destination, GetDemonicVaporHazards(bot), FOG_MOVE_VAPOR_CLEARANCE,
+            shouldRepositionAfterThirdPass ? thirdPassLane : FogLane::None, stepX,
+            stepY) == FelmystAirStep::Blocked)
+    {
+        return false;
+    }
+
     bot->CastStop();
     return MoveTo(
-        SWP_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-        destination.GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
-}
-
-bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
-    Position const& destination)
-{
-    constexpr float collisionCheckDist = 2.0f;
-    if (bot->GetExactDist2d(FOG_CRATE_STUCK_POSITION) > collisionCheckDist)
-    {
-        _fogCrateStuckSampleMs = 0;
-        return false;
-    }
-
-    uint32 const now = getMSTime();
-    float const distToDestination = bot->GetExactDist(destination);
-
-    if (!_fogCrateStuckSampleMs || _fogCrateStuckDestination.GetExactDist(destination) >
-        FELMYST_LOCATION_MATCH_DISTANCE)
-    {
-        _fogCrateStuckDestination = destination;
-        _fogCrateStuckNearestDist = distToDestination;
-        _fogCrateStuckSampleMs = now;
-        return false;
-    }
-
-    constexpr float progressResetDist = 1.0f;
-    if (distToDestination + progressResetDist < _fogCrateStuckNearestDist)
-    {
-        _fogCrateStuckNearestDist = distToDestination;
-        _fogCrateStuckSampleMs = now;
-        return false;
-    }
-
-    constexpr uint32 stuckTimeoutMs = 1000;
-    if (getMSTimeDiff(_fogCrateStuckSampleMs, now) < stuckTimeoutMs)
-        return false;
-
-    Position const& onCratePosition = FOG_CRATE_TELEPORT_POSITION;
-
-    _fogCrateStuckSampleMs = 0;
-    bot->CastStop();
-    bot->NearTeleportTo(
-        onCratePosition.GetPositionX(), onCratePosition.GetPositionY(),
-        onCratePosition.GetPositionZ(), bot->GetOrientation());
-    return true;
+        SWP_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool FelmystMeleeClearTargetAction::Execute(Event /*event*/)

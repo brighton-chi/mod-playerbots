@@ -14,6 +14,7 @@
 #include "SWPEncounter_KJ.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
+#include "SWPTriggers.h"
 #include <list>
 #include <vector>
 
@@ -80,12 +81,34 @@ Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
     return nullptr;
 }
 
-void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit)
+// Each test is the one the move's trigger uses: the fog move, the group move (the early move
+// included), and the sidestep.
+bool IsFelmystMoveDueForBot(Player* player, PlayerbotAI* botAI, Creature* felmyst)
 {
-    if (!contextUnit)
+    FogOfCorruptionState fogState;
+    if (TryGetActiveFogOfCorruptionState(player, felmyst, fogState))
+        return true;
+
+    Position groupPosition;
+    if ((IsFelmystAirGroupMoveActive(player, felmyst) || HasFelmystEarlyMoveStarted(botAI) ||
+         IsFelmystEarlyMoveDue(player, felmyst)) &&
+        TryGetFelmystAirGroupPosition(felmyst, groupPosition) &&
+        player->GetExactDist2d(groupPosition) > FELMYST_GROUP_ARRIVAL_DISTANCE)
+    {
+        return true;
+    }
+
+    return felmyst->IsFlying() && !GetFelmystOwnDemonicVapor(player) &&
+        IsNearFelmystDemonicVaporHazard(player);
+}
+
+void RequestInterruptForBotsNeedingFelmystMovement(Creature* felmyst)
+{
+    // No state before the bots' triggers first see the encounter in progress
+    if (!felmyst || !FindFelmystState(felmyst->GetInstanceId()))
         return;
 
-    Map::PlayerList const& players = contextUnit->GetMap()->GetPlayers();
+    Map::PlayerList const& players = felmyst->GetMap()->GetPlayers();
     for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
     {
         Player* player = it->GetSource();
@@ -96,19 +119,8 @@ void RequestInterruptForBotsNeedingFelmystFogMovement(Unit* contextUnit)
         if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             continue;
 
-        Unit* felmyst = GetSwpBoss(player, SwpBosses::DATA_FELMYST);
-        if (!felmyst || !felmyst->IsFlying())
-            continue;
-
-        FogOfCorruptionState fogState;
-        if (!TryGetActiveFogOfCorruptionState(player, felmyst, fogState))
-            continue;
-
-        Position ignored;
-        if (!TryGetFelmystFogCrossingDestination(player, fogState.lane, ignored))
-            continue;
-
-        botAI->RequestSpellInterrupt();
+        if (IsFelmystMoveDueForBot(player, botAI, felmyst))
+            botAI->RequestSpellInterrupt();
     }
 }
 
@@ -218,6 +230,9 @@ public:
             return;
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (FindFirstSunwellCombatBotInGroup(target))
+            RecordFelmystDemonicVaporSummon(target);
+
         if (!IsCastingOrChanneling(target))
             return;
 
@@ -315,7 +330,7 @@ public:
         {
             case Id(SwpNpcs::NPC_FELMYST):
             {
-                RequestInterruptForBotsNeedingFelmystFogMovement(creature);
+                RequestInterruptForBotsNeedingFelmystMovement(creature);
                 RequestInterruptForBotsWithFelmystEncapsulate(creature);
                 break;
             }

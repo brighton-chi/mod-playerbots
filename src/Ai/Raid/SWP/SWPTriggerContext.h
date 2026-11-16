@@ -90,6 +90,11 @@ public:
         creators["felmyst player has gas nova"] =
             &RaidSwpTriggerContext::felmyst_player_has_gas_nova;
 
+        creators["felmyst takeoff is near"] = &RaidSwpTriggerContext::felmyst_takeoff_is_near;
+
+        creators["felmyst air phase has started"] =
+            &RaidSwpTriggerContext::felmyst_air_phase_has_started;
+
         creators["felmyst should avoid demonic vapor trails"] =
             &RaidSwpTriggerContext::felmyst_should_avoid_demonic_vapor_trails;
 
@@ -331,6 +336,14 @@ private:
     static Trigger* felmyst_player_has_gas_nova(PlayerbotAI* botAI)
     {
         return new FelmystPlayerHasGasNovaTrigger(botAI);
+    }
+    static Trigger* felmyst_takeoff_is_near(PlayerbotAI* botAI)
+    {
+        return new FelmystTakeoffIsNearTrigger(botAI);
+    }
+    static Trigger* felmyst_air_phase_has_started(PlayerbotAI* botAI)
+    {
+        return new FelmystAirPhaseHasStartedTrigger(botAI);
     }
     static Trigger* felmyst_should_avoid_demonic_vapor_trails(PlayerbotAI* botAI)
     {

@@ -17,6 +17,7 @@
 #include "SWPEncounter_Twins.h"
 #include "SWPInstanceState.h"
 #include "SWPShared.h"
+#include "SWPTriggers.h"
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
@@ -47,6 +48,21 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
     if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(brutallusAction)
             ->ResetInitialPositionReached())
+    {
+        reset = true;
+    }
+
+    // Felmyst
+    Action* felmystKiteAction = context->GetAction("felmyst kite demonic vapor");
+    if (felmystKiteAction &&
+        static_cast<FelmystKiteDemonicVaporAction*>(felmystKiteAction)->ResetRouteProgress())
+    {
+        reset = true;
+    }
+
+    Trigger* felmystTakeoffTrigger = context->GetTrigger("felmyst takeoff is near");
+    if (felmystTakeoffTrigger &&
+        static_cast<FelmystTakeoffIsNearTrigger*>(felmystTakeoffTrigger)->ResetEarlyMove())
     {
         reset = true;
     }

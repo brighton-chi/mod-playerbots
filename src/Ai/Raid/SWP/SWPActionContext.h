@@ -95,6 +95,9 @@ public:
         creators["felmyst mass dispel gas nova"] =
             &RaidSwpActionContext::felmyst_mass_dispel_gas_nova;
 
+        creators["felmyst move to air group position"] =
+            &RaidSwpActionContext::felmyst_move_to_air_group_position;
+
         creators["felmyst avoid demonic vapor"] =
             &RaidSwpActionContext::felmyst_avoid_demonic_vapor;
 
@@ -353,6 +356,10 @@ private:
     static Action* felmyst_mass_dispel_gas_nova(PlayerbotAI* botAI)
     {
         return new FelmystMassDispelGasNovaAction(botAI);
+    }
+    static Action* felmyst_move_to_air_group_position(PlayerbotAI* botAI)
+    {
+        return new FelmystMoveToAirGroupPositionAction(botAI);
     }
     static Action* felmyst_avoid_demonic_vapor(PlayerbotAI* botAI)
     {

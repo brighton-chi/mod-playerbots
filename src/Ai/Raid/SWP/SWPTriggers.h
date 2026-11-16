@@ -295,6 +295,37 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FelmystTakeoffIsNearTrigger : public SunwellEncounterTrigger
+{
+public:
+    FelmystTakeoffIsNearTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "felmyst takeoff is near", SwpHelpers::SwpBosses::DATA_FELMYST) {}
+    bool HasEarlyMoveStarted() const;
+    bool ResetEarlyMove();
+
+protected:
+    bool IsActiveInEncounter() override;
+
+private:
+    // The touchdown the bot's early move started under
+    uint32 _earlyMoveTouchdownMs = 0;
+};
+
+// Read by the ground-position triggers and Felmyst's update hook.
+bool HasFelmystEarlyMoveStarted(PlayerbotAI* botAI);
+
+class FelmystAirPhaseHasStartedTrigger : public SunwellEncounterTrigger
+{
+public:
+    FelmystAirPhaseHasStartedTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "felmyst air phase has started", SwpHelpers::SwpBosses::DATA_FELMYST) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class FelmystShouldAvoidDemonicVaporTrailsTrigger : public SunwellEncounterTrigger
 {
 public:

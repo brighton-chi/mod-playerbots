@@ -259,7 +259,7 @@ bool FelmystGroundPhaseShouldBeTankedTrigger::IsActiveInEncounter()
         return false;
     }
 
-    return true;
+    return !HasFelmystEarlyMoveStarted(botAI);
 }
 
 bool FelmystRangedShouldPositionToDispelAndFleeTrigger::IsActiveInEncounter()
@@ -278,6 +278,9 @@ bool FelmystRangedShouldPositionToDispelAndFleeTrigger::IsActiveInEncounter()
 
         return false;
     }
+
+    if (HasFelmystEarlyMoveStarted(botAI))
+        return false;
 
     if (felmyst->GetVictim() == bot)
         return false;
@@ -309,6 +312,9 @@ bool FelmystMeleeShouldStayTogetherTrigger::IsActiveInEncounter()
 
         return false;
     }
+
+    if (HasFelmystEarlyMoveStarted(botAI))
+        return false;
 
     if (felmyst->GetVictim() == bot)
         return false;
@@ -353,13 +359,67 @@ bool FelmystPlayerHasGasNovaTrigger::IsActiveInEncounter()
     return GetFelmystGasNovaDispelTarget(bot);
 }
 
+bool FelmystTakeoffIsNearTrigger::IsActiveInEncounter()
+{
+    Unit* felmyst = GetEncounterBoss();
+    if (!felmyst)
+        return false;
+
+    AdvanceFelmystEncounterState(felmyst);
+
+    // Once started, the early move stays on until takeoff, or it would switch itself off as the
+    // bot nears G0 and the ground action would take the bot back out.
+    if (HasEarlyMoveStarted())
+        return true;
+
+    FelmystEncounterState const* state = FindFelmystState(bot->GetInstanceId());
+    if (!state || !IsFelmystEarlyMoveDue(bot, felmyst))
+        return false;
+
+    _earlyMoveTouchdownMs = state->touchdownMs;
+    return true;
+}
+
+// Takeoff clears the touchdown time, which ends the mark.
+bool FelmystTakeoffIsNearTrigger::HasEarlyMoveStarted() const
+{
+    FelmystEncounterState const* state = FindFelmystState(bot->GetInstanceId());
+    return _earlyMoveTouchdownMs && state && state->touchdownMs == _earlyMoveTouchdownMs;
+}
+
+bool FelmystTakeoffIsNearTrigger::ResetEarlyMove()
+{
+    if (!_earlyMoveTouchdownMs)
+        return false;
+
+    _earlyMoveTouchdownMs = 0;
+    return true;
+}
+
+bool HasFelmystEarlyMoveStarted(PlayerbotAI* botAI)
+{
+    Trigger* trigger = botAI->GetAiObjectContext()->GetTrigger("felmyst takeoff is near");
+    return trigger && static_cast<FelmystTakeoffIsNearTrigger*>(trigger)->HasEarlyMoveStarted();
+}
+
+bool FelmystAirPhaseHasStartedTrigger::IsActiveInEncounter()
+{
+    Unit* felmyst = GetEncounterBoss();
+    if (!felmyst)
+        return false;
+
+    AdvanceFelmystEncounterState(felmyst);
+    return IsFelmystAirGroupMoveActive(bot, felmyst);
+}
+
 bool FelmystShouldAvoidDemonicVaporTrailsTrigger::IsActiveInEncounter()
 {
     Unit* felmyst = GetEncounterBoss();
-    if (!felmyst || !felmyst->IsFlying())
+    if (!felmyst)
         return false;
 
-    if (GetFelmystDemonicVaporSummonedBy(bot, bot))
+    AdvanceFelmystEncounterState(felmyst);
+    if (!felmyst->IsFlying() || GetFelmystOwnDemonicVapor(bot))
         return false;
 
     FogOfCorruptionState fogState;
@@ -369,20 +429,17 @@ bool FelmystShouldAvoidDemonicVaporTrailsTrigger::IsActiveInEncounter()
 bool FelmystTargetedByDemonicVaporTrigger::IsActiveInEncounter()
 {
     Unit* felmyst = GetEncounterBoss();
-    if (!felmyst || !felmyst->IsFlying())
-        return false;
-
-    FogOfCorruptionState fogState;
-    if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
-        return false;
-
-    return IsFelmystDemonicVaporHeadNearBot(bot);
+    return felmyst && felmyst->IsFlying() && GetFelmystOwnDemonicVapor(bot);
 }
 
 bool FelmystFogOfCorruptionIsActiveTrigger::IsActiveInEncounter()
 {
     Unit* felmyst = GetEncounterBoss();
-    if (!felmyst || !felmyst->IsFlying())
+    if (!felmyst)
+        return false;
+
+    AdvanceFelmystEncounterState(felmyst);
+    if (!felmyst->IsFlying())
         return false;
 
     FogOfCorruptionState fogState;

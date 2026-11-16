@@ -15,6 +15,7 @@
 #include "Position.h"
 #include "SWPShared.h"
 #include <limits>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -256,19 +257,20 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystMoveToAirGroupPositionAction : public MovementAction
+{
+public:
+    FelmystMoveToAirGroupPositionAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "felmyst move to air group position") {}
+    bool Execute(Event event) override;
+};
+
 class FelmystAvoidDemonicVaporAction : public MovementAction
 {
 public:
     FelmystAvoidDemonicVaporAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "felmyst avoid demonic vapor") {}
     bool Execute(Event event) override;
-
-private:
-    void AnnounceFlightLeader(Player* leader);
-    bool MoveAwayFromVapor(bool unrestricted = false);
-    bool MoveToFlightLeader(Player* leader);
-
-    ObjectGuid _announcedFlightLeaderGuid;
 };
 
 class FelmystKiteDemonicVaporAction : public MovementAction
@@ -277,6 +279,15 @@ public:
     FelmystKiteDemonicVaporAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "felmyst kite demonic vapor") {}
     bool Execute(Event event) override;
+    bool ResetRouteProgress();
+
+private:
+    ObjectGuid _demonicVaporGuid;
+    std::span<Position const> _route;
+    size_t _routePointIndex = 0;
+    // G1, which the first vapor's target passes through if the second vapor picks it again
+    Position const* _throughPosition = nullptr;
+    void StartRoute(Unit* felmyst, ObjectGuid const& demonicVaporGuid);
 };
 
 class FelmystMoveToSafeFogLaneAction : public MovementAction
@@ -285,12 +296,6 @@ public:
     FelmystMoveToSafeFogLaneAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "felmyst move to safe fog lane") {}
     bool Execute(Event event) override;
-
-private:
-    Position _fogCrateStuckDestination;
-    float _fogCrateStuckNearestDist = std::numeric_limits<float>::max();
-    uint32 _fogCrateStuckSampleMs = 0;
-    bool TryTeleportStuckBotOntoCrate(Position const& destination);
 };
 
 class FelmystMeleeClearTargetAction : public Action
