@@ -309,11 +309,21 @@ float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
+    // Melee positions are all within reach of Brutallus, so melee may reach for him. His victim
+    // may not: reaching would undo the main tank's steps away from him while it places him.
+    if (dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        if (!PlayerbotAI::IsMelee(bot))
+            return 0.0f;
+
+        Unit* brutallus = GetEncounterBoss();
+        return brutallus && brutallus->GetVictim() == bot ? 0.0f : 1.0f;
+    }
+
     if (!dynamic_cast<FollowAction*>(action) &&
-        !dynamic_cast<ReachTargetAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FleeAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
         !dynamic_cast<CastDisengageAction*>(action) &&
         !dynamic_cast<CastBlinkBackAction*>(action))
     {

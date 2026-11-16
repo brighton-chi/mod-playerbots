@@ -43,34 +43,44 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
 
-        if (_mainTankInitialPositionReached)
+        if (_mainTankInPlace || brutallus->GetVictim() != bot)
             return false;
 
-        Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
-        constexpr float arrivalDist = 2.0f;
+        uint32 const now = getMSTime();
+        if (!_placementStartMs)
+            _placementStartMs = now;
 
-        if (bot->GetExactDist2d(position) <= arrivalDist)
+        if (IsBrutallusMainTankInPlace(bot, brutallus) ||
+            getMSTimeDiff(_placementStartMs, now) >= BRUTALLUS_PLACEMENT_TIMEOUT_MS)
         {
-            _mainTankInitialPositionReached = true;
+            _mainTankInPlace = true;
             return false;
         }
-
-        if (brutallus->GetVictim() != bot || !bot->IsWithinMeleeRange(brutallus))
-            return false;
 
         constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
         if (IsWaitingForLastMove(priority))
             return false;
 
+        Position const destination = GetBrutallusMainTankDestination(bot, *brutallus);
+
         float moveX;
         float moveY;
+        float moveZ;
         bool backwards;
-        if (!GetPathStepToPosition(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
+        if (!GetBrutallusMainTankStep(
+                bot, brutallus, destination, moveX, moveY, moveZ, backwards))
+        {
+            return false;
+        }
+
+        // A step away from Brutallus waits until he has closed to melee range, so that he is
+        // drawn along and not left behind.
+        if (backwards && !bot->IsWithinMeleeRange(brutallus))
             return false;
 
         return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
-            true, backwards);
+            SWP_MAP_ID, moveX, moveY, moveZ, false, false, false, false, priority, true,
+            backwards);
     }
     else if (assistTank == bot)
     {
@@ -87,7 +97,7 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
         Position const position = GetBrutallusPositionAtAngle(
             bot, *brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
 
-        constexpr float arrivalDist = 2.0f;
+        constexpr float arrivalDist = BRUTALLUS_TANK_ARRIVAL_DISTANCE;
         constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
         if (IsWaitingForLastMove(priority))
             return false;

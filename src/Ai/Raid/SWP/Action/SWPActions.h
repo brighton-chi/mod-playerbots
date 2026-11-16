@@ -159,16 +159,18 @@ public:
     BrutallusTanksPositionAndSwapAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "brutallus tanks position and swap") {}
     bool Execute(Event event) override;
-    bool ResetInitialPositionReached()
+    bool ResetMainTankPlacement()
     {
-        if (!_mainTankInitialPositionReached)
+        if (!_mainTankInPlace && !_placementStartMs)
             return false;
-        _mainTankInitialPositionReached = false;
+        _mainTankInPlace = false;
+        _placementStartMs = 0;
         return true;
     }
 
 private:
-    bool _mainTankInitialPositionReached = false;
+    bool _mainTankInPlace = false;
+    uint32 _placementStartMs = 0;
 };
 
 class BrutallusPositionMeleeAtRearCenterAction : public MovementAction

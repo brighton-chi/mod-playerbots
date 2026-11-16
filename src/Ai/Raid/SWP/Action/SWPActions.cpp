@@ -47,7 +47,7 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
 
     Action* brutallusAction = context->GetAction("brutallus tanks position and swap");
     if (brutallusAction && static_cast<BrutallusTanksPositionAndSwapAction*>(brutallusAction)
-            ->ResetInitialPositionReached())
+            ->ResetMainTankPlacement())
     {
         reset = true;
     }
