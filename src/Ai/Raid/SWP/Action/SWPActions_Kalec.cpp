@@ -302,6 +302,25 @@ bool KalecgosReturnToSpectralRealmGroundAction::Execute(Event /*event*/)
         static_cast<uint32>(bot->GetMotionMaster()->GetCurrentMovementGeneratorType()),
         lastMovement.lastMoveToX, lastMovement.lastMoveToY, lastMovement.lastMoveToZ);
 
+    // Temporary: whether a spline is running and where to, the motion slots, and time in the realm.
+    MotionMaster* motionMaster = bot->GetMotionMaster();
+    float splineX = 0.0f;
+    float splineY = 0.0f;
+    float splineZ = 0.0f;
+    bool const isSplineRunning = motionMaster->GetDestination(splineX, splineY, splineZ);
+    Aura const* realm = bot->GetAura(Id(SwpSpells::SPELL_SPECTRAL_REALM));
+    int32 const msInRealm = realm ? realm->GetMaxDuration() - realm->GetDuration() : -1;
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    bool const isBlasted = state && state->blastedPlayerGuid == bot->GetGUID();
+    LOG_INFO(
+        "playerbots",
+        "Kalecgos realm gravity: {} spline running {} to ({:.1f}, {:.1f}, {:.1f}), slots {} "
+        "(active {}, controlled {}), {} ms in realm, blasted by current rift {}",
+        bot->GetName(), isSplineRunning, splineX, splineY, splineZ, motionMaster->size(),
+        static_cast<uint32>(motionMaster->GetMotionSlotType(MOTION_SLOT_ACTIVE)),
+        static_cast<uint32>(motionMaster->GetMotionSlotType(MOTION_SLOT_CONTROLLED)), msInRealm,
+        isBlasted);
+
     bot->NearTeleportTo(
         bot->GetPositionX(), bot->GetPositionY(), SPECTRAL_REALM_Z, bot->GetOrientation());
 
