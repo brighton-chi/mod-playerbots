@@ -505,6 +505,11 @@ inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
 // Far enough that a patch centered on the mage tank can't reach the healer. Patches reach 11.5 yd
 // (10 yd radius plus a player's combat reach), and this leaves another yard.
 inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
+// A step toward the mage tank stops here, not at MIN_DISTANCE. Path steps end a little inside their
+// stop distance so that a bot moving to a position always counts as arrived. Here, the stop is a
+// minimum to stay OUTSIDE, so that margin would leave the healer just inside it. The extra half
+// yard also covers path steps measuring in 3D, while the minimum is checked in 2D.
+inline constexpr float MAGE_TANK_HEALER_STEP_STOP_DISTANCE = MAGE_TANK_HEALER_MIN_DISTANCE + 0.5f;
 // Zerevor casts Arcane Explosion when anyone is within 10 yd, plus both combat reaches (14.65 yd).
 inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
 // Non-tanks closer than the safe distance move away to this distance from Zerevor.

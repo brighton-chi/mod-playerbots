@@ -461,6 +461,12 @@ bool GetPathStepTowardPoint(
     if (bot->GetExactDist(destination) < stopDistance)
         return false;
 
+    // Steps end a little inside stopDistance. If a step ended exactly on it, float rounding would
+    // decide a caller's arrival test at the same distance, and a bot that failed it would be stuck
+    // due to having not arrived but having no step left to take it closer.
+    constexpr float stopMargin = 0.1f;
+    float const aimDistance = std::max(0.0f, stopDistance - stopMargin);
+
     PathGenerator path(bot);
     path.CalculatePath(
         destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
@@ -487,15 +493,15 @@ bool GetPathStepTowardPoint(
         float const toDist = (to - targetPos).length();
         float ratio = 1.0f;
 
-        if (toDist < stopDistance)
+        if (toDist < aimDistance)
         {
             float const fromDist = (from - targetPos).length();
-            if (fromDist <= stopDistance)
+            if (fromDist <= aimDistance)
                 break;
 
             float const a = segment * segment;
             float const b = (from - targetPos).dot(to - from);
-            float const c = fromDist * fromDist - stopDistance * stopDistance;
+            float const c = fromDist * fromDist - aimDistance * aimDistance;
             ratio = (-b - std::sqrt(std::max(0.0f, b * b - a * c))) / a;
         }
 

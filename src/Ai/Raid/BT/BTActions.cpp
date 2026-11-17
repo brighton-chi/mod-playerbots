@@ -1755,7 +1755,7 @@ bool IllidariCouncilPositionMageTankHealerAction::Execute(Event /*event*/)
     float stepX;
     float stepY;
     if (!GetPathStepTowardUnit(
-            bot, mageTank, MAGE_TANK_HEALER_MIN_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+            bot, mageTank, MAGE_TANK_HEALER_STEP_STOP_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
     {
         return false;
     }
