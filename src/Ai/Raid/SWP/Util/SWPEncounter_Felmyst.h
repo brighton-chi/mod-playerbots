@@ -145,6 +145,9 @@ inline constexpr float FOG_CLEAR_PAST_THRESHOLD = 2.5f;
 inline constexpr float FELMYST_RANGED_GROUP_RADIUS = 2.0f;
 // Bots wait this long to react to Encapsulate (to make the action look less artificial).
 inline constexpr uint32 ENCAPSULATE_DELAY_MS = 300;
+// Encapsulate (45662) hits friendly units within this distance of its target, center to center.
+inline constexpr float ENCAPSULATE_RADIUS = 20.0f;
+inline constexpr float ENCAPSULATE_CLEARANCE = ENCAPSULATE_RADIUS + 2.0f;
 // How close ranged have to be to a player charmed by Fog to attack.
 inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
 // How long after landing following a flight phase does the raid keeps holding DPS.

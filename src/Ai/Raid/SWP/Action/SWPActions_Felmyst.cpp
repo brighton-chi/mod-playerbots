@@ -119,12 +119,11 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(bot, felmyst, bot);
     FelmystGroundStack const targetStack = GetClosestFelmystGroundStack(
         bot, felmyst, encapsulateTarget);
 
-    if (botStack == FelmystGroundStack::None || targetStack == FelmystGroundStack::None ||
-        botStack != targetStack)
+    if (targetStack == FelmystGroundStack::None ||
+        bot->GetExactDist2d(encapsulateTarget) >= ENCAPSULATE_CLEARANCE)
     {
         return false;
     }
@@ -132,8 +131,11 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     auto const tryMoveToStack = [&](FelmystGroundStack stack)
     {
         Position position;
-        if (!TryGetFelmystGroundStackPosition(bot, felmyst, stack, position))
+        if (!TryGetFelmystGroundStackPosition(bot, felmyst, stack, position) ||
+            encapsulateTarget->GetExactDist2d(position) < ENCAPSULATE_CLEARANCE)
+        {
             return false;
+        }
 
         constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
         if (IsWaitingForLastMove(priority))

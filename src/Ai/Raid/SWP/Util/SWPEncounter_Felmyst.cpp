@@ -530,10 +530,7 @@ bool TryGetFelmystGroundStackPosition(
     if (destinationZ <= INVALID_HEIGHT)
         destinationZ = bot->GetPositionZ();
 
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        destinationX, destinationY, destinationZ, false);
-
+    // No raycast clamp from the bot: it froze bots behind a tree. The path step goes around.
     position = Position{ destinationX, destinationY, destinationZ };
     return true;
 }
@@ -1190,9 +1187,7 @@ bool ShouldMoveAwayFromFelmystEncapsulateTarget(
     if (!felmyst || !encapsulateTarget || encapsulateTarget == bot || felmyst->GetVictim() == bot)
         return false;
 
-    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(bot, felmyst, bot);
-    return botStack != FelmystGroundStack::None &&
-        botStack == GetClosestFelmystGroundStack(bot, felmyst, encapsulateTarget);
+    return bot->GetExactDist2d(encapsulateTarget) < ENCAPSULATE_CLEARANCE;
 }
 
 bool DidEncapsulateOccurThisGroundPhase(Player* bot)
