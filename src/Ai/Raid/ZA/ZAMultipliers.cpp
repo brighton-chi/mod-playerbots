@@ -363,7 +363,10 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValueInEncounter(Action* 
     if (!malacrass)
         return 1.0f;
 
-    Unit* target = AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
+    // The party action's pick is limited by its spell's range; the plain value is not.
+    Unit* target = dynamic_cast<CurePartyMemberAction*>(action)
+                       ? action->GetTarget()
+                       : AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
     return target && target->HasAura(Id(ZaSpells::SPELL_UNSTABLE_AFFLICTION)) ? 0.0f : 1.0f;
 }
 

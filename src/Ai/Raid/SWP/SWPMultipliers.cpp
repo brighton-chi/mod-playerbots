@@ -224,7 +224,8 @@ float KalecgosWaitToDecurseMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    Unit* target = AI_VALUE2(Unit*, "party member to dispel", DISPEL_CURSE);
+    Unit* target = dynamic_cast<CurePartyMemberAction*>(action) ?
+        action->GetTarget() : AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
     if (!target)
         return 1.0f;
 
