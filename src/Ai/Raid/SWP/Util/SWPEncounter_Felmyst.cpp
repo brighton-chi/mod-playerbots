@@ -389,12 +389,6 @@ bool TryFindSpotPastFogThreshold(
     float const alongX = (threshold.b.GetPositionX() - threshold.a.GetPositionX()) / segmentLength;
     float const alongY = (threshold.b.GetPositionY() - threshold.a.GetPositionY()) / segmentLength;
 
-    auto const clearancePastThreshold = [&threshold, unitX, unitY](float x, float y)
-    {
-        return (x - threshold.a.GetPositionX()) * unitX +
-            (y - threshold.a.GetPositionY()) * unitY;
-    };
-
     std::vector<Creature*> const hazards = GetDemonicVaporHazards(bot);
     auto const isClearOfVapor = [&hazards](float x, float y)
     {
@@ -461,22 +455,12 @@ bool TryFindSpotPastFogThreshold(
         if (!isClearOfVapor(candidate.x, candidate.y))
             continue;
 
-        float x = candidate.x;
-        float y = candidate.y;
-        float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+        // No raycast clamp from the bot: it held bots at obstacles. The air step goes around.
+        float z = bot->GetMapWaterOrGroundLevel(candidate.x, candidate.y, bot->GetPositionZ());
         if (z <= INVALID_HEIGHT)
             z = bot->GetPositionZ();
 
-        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
-                bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z, true))
-        {
-            continue;
-        }
-
-        if (clearancePastThreshold(x, y) < minThresholdClearance || !isClearOfVapor(x, y))
-            continue;
-
-        destination = Position(x, y, z);
+        destination = Position(candidate.x, candidate.y, z);
         return true;
     }
 
