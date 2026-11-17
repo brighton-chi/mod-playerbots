@@ -280,6 +280,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
     multipliers.push_back(new BrutallusNoKillingSpreeWhenNearbyBurnMultiplier(botAI));
     multipliers.push_back(new BrutallusRestrictTauntMultiplier(botAI));
+    multipliers.push_back(new BrutallusNoRebirthWhileBurningMultiplier(botAI));
 
     // Felmyst
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));

@@ -18,6 +18,7 @@
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "SWPActions.h"
+#include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
@@ -33,6 +34,22 @@ using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
 // Shared
+
+namespace
+{
+
+bool IsRepositionAction(Player* bot, Action* action)
+{
+    return (bot->getClass() == CLASS_HUNTER && dynamic_cast<CastDisengageAction*>(action)) ||
+        (bot->getClass() == CLASS_MAGE && dynamic_cast<CastBlinkBackAction*>(action));
+}
+
+bool IsKillingSpree(Player* bot, Action* action)
+{
+    return bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action);
+}
+
+} // end anonymous namespace (Shared)
 
 // Without this, bots are able to drink after Kil'jaeden's Hands go down. I assume it's due to the
 // issue reported here: https://github.com/azerothcore/azerothcore-wotlk/issues/22122.
@@ -69,9 +86,6 @@ float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
 
 float SunwellControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -106,9 +120,6 @@ float SunwellControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 
 float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -227,9 +238,6 @@ float KalecgosWaitToDecurseMultiplier::GetValueInEncounter(Action* action)
 
 float KalecgosControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action))
     {
@@ -246,9 +254,6 @@ float KalecgosControlMovementMultiplier::GetValueInEncounter(Action* action)
 // Avoid dueling taunts in the surface and spectral realms
 float KalecgosRestrictTauntMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
@@ -316,9 +321,6 @@ float KalecgosHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
 float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     // Melee positions are all within reach of Brutallus, so melee may reach for him. His victim
     // may not: reaching would undo the main tank's steps away from him while it places him.
     if (dynamic_cast<ReachTargetAction*>(action) ||
@@ -346,13 +348,10 @@ float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
 // Don't use KS if any melee member (other than the Brutallus tanks) has Burn
 float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (bot->getClass() != CLASS_ROGUE)
         return 1.0f;
 
-    if (!dynamic_cast<CastKillingSpreeAction*>(action))
+    if (!IsKillingSpree(bot, action))
         return 1.0f;
 
     Group* group = bot->GetGroup();
@@ -362,7 +361,7 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValueInEncounter(Actio
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->HasAura(Id(SwpSpells::SPELL_BURN)))
+        if (!member || !HasBrutallusBurn(member))
             continue;
 
         if (PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsMainTank(member) &&
@@ -377,9 +376,6 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValueInEncounter(Actio
 
 float BrutallusRestrictTauntMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!IsTauntAction(bot, action))
         return 1.0f;
 
@@ -395,22 +391,23 @@ float BrutallusRestrictTauntMultiplier::GetValueInEncounter(Action* action)
     return playerVictim && PlayerbotAI::IsTank(playerVictim) ? 0.0f : 1.0f;
 }
 
+float BrutallusNoRebirthWhileBurningMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_DRUID)
+        return 1.0f;
+
+    if (!HasBrutallusBurn(bot))
+        return 1.0f;
+
+    return dynamic_cast<CastRebirthAction*>(action) ? 0.0f : 1.0f;
+}
+
 // Felmyst
 
 float FelmystControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return 0.0f;
+    return dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) || IsRepositionAction(bot, action) ? 0.0f : 1.0f;
 }
 
 float FelmystWaitForLandingDpsMultiplier::GetValueInEncounter(Action* action)
@@ -511,9 +508,6 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValueInEncounter(Action* 
 
 float FelmystDisableDotsOnAddsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 1.0f;
 
@@ -531,13 +525,8 @@ float EredarTwinsDisableAutoTargetingMultiplier::GetValueInEncounter(Action* act
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) && !dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return 0.0f;
+    return dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ? 0.0f : 1.0f;
 }
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
@@ -583,9 +572,6 @@ float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
 
 float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
@@ -593,9 +579,7 @@ float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (!isReachAction &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FleeAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !dynamic_cast<CastKillingSpreeAction*>(action) &&
+        !IsRepositionAction(bot, action) && !IsKillingSpree(bot, action) &&
         !(PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action)))
     {
         return 1.0f;
@@ -672,9 +656,6 @@ float MuruDisableDefaultTargetingMultiplier::GetValueInEncounter(Action* action)
 
 float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
@@ -735,9 +716,6 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
 
 float KiljaedenSingleTargetHandsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     // The only Shaman spell classified as ActionThreatType::Aoe is Chain Lightning, which is a
     // strong single-target spell in addition to providing AoE damage.
     if (bot->getClass() == CLASS_SHAMAN)
@@ -757,26 +735,14 @@ float KiljaedenSingleTargetHandsMultiplier::GetValueInEncounter(Action* action)
 
 float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!dynamic_cast<FleeAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action) &&
-        !(dynamic_cast<TankAssistAction*>(action) && PlayerbotAI::IsMainTank(bot)))
-    {
-        return 1.0f;
-    }
-
-    return GetEncounterBoss() ? 0.0f : 1.0f;
+    return dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        IsRepositionAction(bot, action) ||
+        (dynamic_cast<TankAssistAction*>(action) && PlayerbotAI::IsMainTank(bot)) ? 0.0f : 1.0f;
 }
 
 float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
@@ -798,14 +764,11 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValueInEncounter(Actio
 
 float KiljaedenControlDragonMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!GetEncounterBoss())
+    if (!HasKiljaedenDragonAura(bot))
         return 1.0f;
 
     if (dynamic_cast<KiljaedenDragonBuffAndProtectRaidAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<WipeAction*>(action))
-        return 1.0f;
-
-    return HasKiljaedenDragonAura(bot) ? 0.0f : 1.0f;
+    return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
 }

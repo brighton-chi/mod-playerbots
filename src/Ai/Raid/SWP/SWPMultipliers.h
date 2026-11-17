@@ -191,6 +191,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class BrutallusNoRebirthWhileBurningMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    BrutallusNoRebirthWhileBurningMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "brutallus no rebirth while burning", SwpHelpers::SwpBosses::DATA_BRUTALLUS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Felmyst
 
 class FelmystControlMovementMultiplier : public SunwellEncounterMultiplier
