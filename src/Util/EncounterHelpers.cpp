@@ -642,7 +642,7 @@ Player* GetNearestPlayerInRadius(Player* bot, float radius)
     Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || member == bot)

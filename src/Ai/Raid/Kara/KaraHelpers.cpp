@@ -777,8 +777,9 @@ bool IsBanishPhase(Unit* netherspite)
     return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED));
 }
 
-// Cat Form turns a druid's power to energy, so a druid goes by its strategies: cat and bear are not
-// mana users, balance and resto are.
+// A druid's power type changes to reflect its form, so a cat shifting out to offheal would count as
+// a mana user, when it should be treated as a non-mana user prioritized for the green beam. To
+// avoid this, a role check is used to differentiate druids.
 bool IsManaUser(Player* player)
 {
     if (player->getClass() == CLASS_DRUID)
@@ -1003,11 +1004,10 @@ bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float 
         [x, y, clearance](Position const& zone) { return zone.GetExactDist2d(x, y) < clearance; });
 }
 
-// True if the straight line passes within 3 yd of a void zone. A bot already in a zone can leave
-// it any way, and a bot already within 3 yd of one only has to stay out of it.
+// True if the straight line passes within 3 yd of a void zone (except one the bot is already in).
 bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to)
 {
-    return FindFirstVoidZoneOnPath(state, from, to) != nullptr;
+    return FindFirstVoidZoneOnPath(state, from, to);
 }
 
 // How far from Netherspite's center the blocker stands on the line: the point nearest 18 yd
@@ -1055,9 +1055,8 @@ float GetNetherspiteInnerSide(
     return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
 }
 
-// Tanks only stay off the beams and out of void zones. Everyone else stands between blue and green
-// on the side without red, at attack range: melee behind Netherspite, and healers within range of
-// the red tank.
+// Non-tanks only. Stand between the blue and green beams. Healers stay closer to Netherspite so
+// they can be in healing range of the red beam tank.
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1090,7 +1089,7 @@ bool IsBetweenNetherspiteBeams(
     if (bot->getClass() == CLASS_HUNTER || !PlayerbotAI::IsMelee(bot))
         return true;
 
-    // Netherspite faces the red tank, so this is behind him. Set behind is off here.
+    // Netherspite faces the red beam tank, so this is behind him. Set behind is off here.
     float const fromRed = Position::NormalizeOrientation(
         angle - GetBeamAngle(netherspite, state, NetherspiteBeam::Red));
     return fromRed > M_PI / 2.0f && fromRed < 3.0f * M_PI / 2.0f;

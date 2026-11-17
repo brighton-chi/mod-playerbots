@@ -1486,9 +1486,9 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
         if (!group)
             return;
 
-        // Hunter bots choose first, taking the slots with the most floor: Auto Shot fails within
-        // Netherspite's melee range (20.8 yd), so their slots are 25 yd out. Then, in group order,
-        // everyone else takes the free bearing nearest them.
+        // Hunter bots choose first because they have an extra constraint: they cannot get into
+        // Netherspite's melee range (20.8 yd), or they cannot shoot, so their slots are 25 yd out.
+        // Then, in group order, everyone else takes the free bearing nearest them.
         std::vector<Player*> tiers[3];
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
