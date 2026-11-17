@@ -360,7 +360,7 @@ inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
 inline constexpr float CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS = 10.0f;
 inline constexpr float CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE =
     CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS + 2.0f;
-// Bots walk to Caribdis until she's in sight and then stop at no closer than this distance away.
+// Bots move toward Caribdis until she's in sight, and stop once within this distance of her.
 inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
 // A Cyclone spawns on a random player within 45y of Caribdis and picks up all players within 4y.
 inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;
@@ -446,6 +446,12 @@ inline constexpr float VASHJ_STATIC_CHARGE_HAZARD_RADIUS = 10.0f;
 inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = VASHJ_STATIC_CHARGE_HAZARD_RADIUS + 1.0f;
 // Vashj's Entangle has a 15y range, so ranged bots stay at least this far back from her.
 inline constexpr float VASHJ_PHASE_3_RANGED_DISTANCE = 15.0f;
+// A step toward Vashj to get her in sight stops here, not at RANGED_DISTANCE. Path steps end a
+// little inside their stop distance so that a bot moving to a position always counts as arrived.
+// Here, the stop is a minimum to stay OUTSIDE, so that margin would leave the bot just inside it.
+// The extra half yard also covers path steps measuring in 3D, while the minimum is checked in 2D.
+inline constexpr float VASHJ_PHASE_3_RANGED_STEP_STOP_DISTANCE =
+    VASHJ_PHASE_3_RANGED_DISTANCE + 0.5f;
 inline constexpr float VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE = 4.0f;
 
 bool HasVashjStaticCharge(Player* player);

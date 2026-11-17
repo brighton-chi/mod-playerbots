@@ -1642,7 +1642,7 @@ bool LadyVashjPhase3MoveIntoSightAction::Execute(Event /*event*/)
     float stepX;
     float stepY;
     if (!GetPathStepTowardUnit(
-            bot, vashj, VASHJ_PHASE_3_RANGED_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+            bot, vashj, VASHJ_PHASE_3_RANGED_STEP_STOP_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
     {
         return false;
     }
