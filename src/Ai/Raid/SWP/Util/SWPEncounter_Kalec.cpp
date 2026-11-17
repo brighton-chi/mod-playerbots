@@ -5,6 +5,7 @@
  */
 
 #include "SWPEncounter_Kalec.h"
+#include "EncounterHelpers.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
@@ -25,18 +26,22 @@ namespace SwpHelpers
 namespace
 {
 
-void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
+bool IsActiveRiftOpen(KalecgosEncounterState const& state)
 {
-    if (!state.activeRiftOpenedMs)
-        return;
+    return state.activeRiftOpenedMs &&
+        getMSTimeDiff(state.activeRiftOpenedMs, getMSTime()) <= SPECTRAL_RIFT_ACTIVE_WINDOW_MS;
+}
 
-    if (getMSTimeDiff(state.activeRiftOpenedMs, now) <= SPECTRAL_RIFT_ACTIVE_WINDOW_MS)
-        return;
+bool ClearExpiredActiveRift(KalecgosEncounterState& state)
+{
+    if (!state.activeRiftOpenedMs || IsActiveRiftOpen(state))
+        return false;
 
     state.activeRiftOpenedMs = 0;
     state.activeRiftGroup = KALECGOS_INVALID_GROUP;
     state.blastedPlayerGuid = ObjectGuid::Empty;
     state.activeRiftOutgoingTankGuid = ObjectGuid::Empty;
+    return true;
 }
 
 uint8 GetAssignedGroup(KalecgosEncounterState const& state, ObjectGuid playerGuid)
@@ -45,15 +50,11 @@ uint8 GetAssignedGroup(KalecgosEncounterState const& state, ObjectGuid playerGui
     return assignment != state.playerToGroup.end() ? assignment->second : KALECGOS_INVALID_GROUP;
 }
 
+// For the spell listener, which can't wait for the tracker's next update.
 KalecgosEncounterState& GetPreparedEncounterState(Player* player)
 {
-    KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
-    if (!state.encounterStartMs)
-        state.encounterStartMs = getMSTime();
-
-    ClearExpiredActiveRift(state, getMSTime());
-    EnsureKalecgosRaidAssignments(player);
-    return state;
+    UpdateKalecgosEncounterState(player);
+    return KalecgosState(player->GetInstanceId());
 }
 
 // Exhaustion must end before what is left of the rift's life, not its whole life.
@@ -520,11 +521,11 @@ bool IsKalecgosDecurser(Player* bot)
     return botAI->HasStrategy("cure", BOT_STATE_COMBAT);
 }
 
-void EnsureKalecgosRaidAssignments(Player* player)
+bool EnsureKalecgosRaidAssignments(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
-        return;
+        return false;
 
     KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
     std::vector<Player*> botMembers;
@@ -556,7 +557,7 @@ void EnsureKalecgosRaidAssignments(Player* player)
     }
 
     if (!needsRebuild)
-        return;
+        return false;
 
     state.playerToGroup.clear();
     state.tankAssignmentGuids = expectedTankAssignmentGuids;
@@ -638,6 +639,17 @@ void EnsureKalecgosRaidAssignments(Player* player)
 
     if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
         state.activeRiftGroup = ResolveActivePortalGroup(group, state);
+
+    return true;
+}
+
+bool UpdateKalecgosEncounterState(Player* player)
+{
+    KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
+    bool const isStarted = EncounterHelpers::EmplaceIfUnset(state.encounterStartMs, getMSTime());
+    bool const isRiftCleared = ClearExpiredActiveRift(state);
+    bool const isRebuilt = EnsureKalecgosRaidAssignments(player);
+    return isStarted || isRiftCleared || isRebuilt;
 }
 
 // Read-only companion to GetKalecgosDesignatedTank below.
@@ -660,7 +672,7 @@ Player* GetKalecgosDesignatedTank(Player* player)
     if (!group)
         return nullptr;
 
-    KalecgosEncounterState& state = GetPreparedEncounterState(player);
+    KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
     Player* const tank = ResolveKalecgosDesignatedTank(player, group, state);
 
     if (!ResolveSurfaceTank(group, state.currentTankGuid))
@@ -677,40 +689,41 @@ ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot)
     return rift ? rift->GetGUID() : ObjectGuid::Empty;
 }
 
+// Reads only, so a multiplier may call it. An expired rift not yet cleared counts as closed.
 bool ShouldEnterKalecgosPortal(Player* bot)
 {
     if (!IsPortalCandidate(bot))
         return false;
 
-    KalecgosEncounterState& state = GetPreparedEncounterState(bot);
-    if (!state.activeRiftOpenedMs || !CanReachPortalBeforeExpiry(bot, state))
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    if (!state || !IsActiveRiftOpen(*state) || !CanReachPortalBeforeExpiry(bot, *state))
         return false;
 
-    if (HasKalecgosTankAssignment(state.tankAssignmentGuids, bot->GetGUID()))
+    if (HasKalecgosTankAssignment(state->tankAssignmentGuids, bot->GetGUID()))
     {
-        if (state.sathrovarrBanishCalled)
+        if (state->sathrovarrBanishCalled)
             return false;
 
         Group* group = bot->GetGroup();
         if (!group)
             return false;
 
-        return ResolveSurfaceTank(group, state.activeRiftOutgoingTankGuid) == bot &&
-            state.blastedPlayerGuid != bot->GetGUID();
+        return ResolveSurfaceTank(group, state->activeRiftOutgoingTankGuid) == bot &&
+            state->blastedPlayerGuid != bot->GetGUID();
     }
 
-    if (state.activeRiftGroup == KALECGOS_INVALID_GROUP ||
-        GetAssignedGroup(state, bot->GetGUID()) != state.activeRiftGroup)
+    if (state->activeRiftGroup == KALECGOS_INVALID_GROUP ||
+        GetAssignedGroup(*state, bot->GetGUID()) != state->activeRiftGroup)
     {
         return false;
     }
 
     // Once Sathrovarr is banished, only healers go down, so a blasted player isn't left alone with
     // Curse of Boundless Agony.
-    if (state.sathrovarrBanishCalled && !PlayerbotAI::IsHeal(bot))
+    if (state->sathrovarrBanishCalled && !PlayerbotAI::IsHeal(bot))
         return false;
 
-    return state.blastedPlayerGuid != bot->GetGUID();
+    return state->blastedPlayerGuid != bot->GetGUID();
 }
 
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)

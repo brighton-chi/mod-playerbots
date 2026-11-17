@@ -47,8 +47,9 @@ inline constexpr float SPECTRAL_REALM_Z = -74.5f;
 
 // Spectral Blast hits every other player within 10 yds of the blasted player's center.
 inline constexpr float KALECGOS_SPECTRAL_BLAST_HAZARD_RADIUS = 10.0f;
+// ...But there isn't really enough room to spread out that far, so the spread is limited to 6 yds.
 inline constexpr float KALECGOS_RANGED_SPREAD_CLEARANCE =
-    KALECGOS_SPECTRAL_BLAST_HAZARD_RADIUS + 1.0f;
+    KALECGOS_SPECTRAL_BLAST_HAZARD_RADIUS - 4.0f;
 
 // The first boss under this health is called, then the other's health.
 inline constexpr float KALECGOS_HEALTH_CALL_PCT = 15.0f;
@@ -99,7 +100,11 @@ enum class KalecgosDpsHold : uint8
 bool IsExhausted(Player* bot);
 bool IsInSpectralRealm(Player* bot);
 bool IsKalecgosDecurser(Player* bot);
-void EnsureKalecgosRaidAssignments(Player* bot);
+// Returns true if the assignments were rebuilt.
+bool EnsureKalecgosRaidAssignments(Player* player);
+// The tracker's once-a-second upkeep: the start time, an expired rift, and the assignments. Returns
+// true if anything changed.
+bool UpdateKalecgosEncounterState(Player* player);
 Player* FindKalecgosDesignatedTank(Player* player);
 Player* GetKalecgosDesignatedTank(Player* player);
 ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot);
@@ -118,7 +123,7 @@ KalecgosDpsHold GetKalecgosDpsHold(Player* bot);
 
 struct KalecgosEncounterState
 {
-    uint32 encounterStartMs = 0;
+    std::optional<uint32> encounterStartMs;
     uint32 activeRiftOpenedMs = 0;
     uint8 activeRiftGroup = KALECGOS_INVALID_GROUP;
     ObjectGuid blastedPlayerGuid = ObjectGuid::Empty;

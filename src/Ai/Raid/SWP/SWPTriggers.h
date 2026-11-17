@@ -167,6 +167,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class KalecgosShouldManageRaidAssignmentsTrigger : public SunwellEncounterTrigger
+{
+public:
+    KalecgosShouldManageRaidAssignmentsTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos should manage raid assignments",
+            SwpHelpers::SwpBosses::DATA_KALECGOS, 1000) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class KalecgosDpsHoldIsActiveTrigger : public SunwellEncounterTrigger
 {
 public:

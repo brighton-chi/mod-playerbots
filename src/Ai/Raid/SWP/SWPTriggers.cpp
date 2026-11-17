@@ -149,6 +149,11 @@ bool KalecgosBotsDontObserveGravityTrigger::IsActiveInEncounter()
         bot->GetPositionZ() < SPECTRAL_REALM_Z - verticalOffset;
 }
 
+bool KalecgosShouldManageRaidAssignmentsTrigger::IsActiveInEncounter()
+{
+    return IsMechanicTrackerBot(bot, SWP_MAP_ID);
+}
+
 bool KalecgosDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
     return GetKalecgosDpsHold(bot) != KalecgosDpsHold::None;

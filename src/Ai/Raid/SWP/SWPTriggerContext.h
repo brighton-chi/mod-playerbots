@@ -53,6 +53,9 @@ public:
         creators["kalecgos bots don't observe gravity"] =
             &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
 
+        creators["kalecgos should manage raid assignments"] =
+            &RaidSwpTriggerContext::kalecgos_should_manage_raid_assignments;
+
         creators["kalecgos dps hold is active"] =
             &RaidSwpTriggerContext::kalecgos_dps_hold_is_active;
 
@@ -289,6 +292,10 @@ private:
     static Trigger* kalecgos_bots_dont_observe_gravity(PlayerbotAI* botAI)
     {
         return new KalecgosBotsDontObserveGravityTrigger(botAI);
+    }
+    static Trigger* kalecgos_should_manage_raid_assignments(PlayerbotAI* botAI)
+    {
+        return new KalecgosShouldManageRaidAssignmentsTrigger(botAI);
     }
     static Trigger* kalecgos_dps_hold_is_active(PlayerbotAI* botAI)
     {

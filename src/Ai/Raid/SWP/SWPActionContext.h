@@ -57,6 +57,9 @@ public:
         creators["kalecgos return to spectral realm ground"] =
             &RaidSwpActionContext::kalecgos_return_to_spectral_realm_ground;
 
+        creators["kalecgos update raid assignments"] =
+            &RaidSwpActionContext::kalecgos_update_raid_assignments;
+
         creators["kalecgos stop attacking for hold"] =
             &RaidSwpActionContext::kalecgos_stop_attacking_for_hold;
 
@@ -311,6 +314,10 @@ private:
     static Action* kalecgos_return_to_spectral_realm_ground(PlayerbotAI* botAI)
     {
         return new KalecgosReturnToSpectralRealmGroundAction(botAI);
+    }
+    static Action* kalecgos_update_raid_assignments(PlayerbotAI* botAI)
+    {
+        return new KalecgosUpdateRaidAssignmentsAction(botAI);
     }
     static Action* kalecgos_stop_attacking_for_hold(PlayerbotAI* botAI)
     {

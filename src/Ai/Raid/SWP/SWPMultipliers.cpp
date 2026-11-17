@@ -275,11 +275,12 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValueInEncounter(Action
     if (!PlayerbotAI::IsAssistTank(bot))
         return 1.0f;
 
+    // Until the tracker stamps the start time, the pull has only just happened.
     KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
     if (!state || !state->encounterStartMs)
-        return 1.0f;
+        return 0.0f;
 
-    return getMSTimeDiff(state->encounterStartMs, getMSTime()) <
+    return getMSTimeDiff(*state->encounterStartMs, getMSTime()) <
         KALECGOS_PULL_THREAT_SUPPRESSION_MS ? 0.0f : 1.0f;
 }
 

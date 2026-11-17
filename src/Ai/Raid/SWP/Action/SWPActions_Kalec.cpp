@@ -105,6 +105,11 @@ bool KalecgosAnnounceBossHealthAction::Execute(Event /*event*/)
     return true;
 }
 
+bool KalecgosUpdateRaidAssignmentsAction::Execute(Event /*event*/)
+{
+    return UpdateKalecgosEncounterState(bot);
+}
+
 bool KalecgosStopAttackingForHoldAction::Execute(Event /*event*/)
 {
     return StopAttackingAndChanneling(bot);

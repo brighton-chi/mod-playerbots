@@ -98,6 +98,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class KalecgosUpdateRaidAssignmentsAction : public Action
+{
+public:
+    KalecgosUpdateRaidAssignmentsAction(PlayerbotAI* botAI)
+        : Action(botAI, "kalecgos update raid assignments") {}
+    bool Execute(Event event) override;
+};
+
 class KalecgosStopAttackingForHoldAction : public Action
 {
 public:

@@ -58,6 +58,9 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kalecgos bots don't observe gravity",
         { NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
 
+    triggers.push_back(new TriggerNode("kalecgos should manage raid assignments",
+        { NextAction("kalecgos update raid assignments", ACTION_EMERGENCY + 8) }));
+
     triggers.push_back(new TriggerNode("kalecgos dps hold is active",
         {
             NextAction("kalecgos stop attacking for hold", ACTION_EMERGENCY + 2),
