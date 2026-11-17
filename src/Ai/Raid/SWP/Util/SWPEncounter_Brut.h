@@ -104,6 +104,9 @@ inline constexpr float BRUTALLUS_INNER_LANE_RADIUS =
 inline constexpr float BRUTALLUS_OUTER_LANE_RADIUS =
     BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_LANE_OFFSET;
 inline constexpr float BRUTALLUS_BURN_PAD_RADIUS = BRUTALLUS_NORMAL_RANGED_RADIUS;
+// Burn moves count a position as reached within 1y but step to within this distance of it. A step
+// that stopped at 1y would end right on the line on level ground and could leave the bot stuck.
+inline constexpr float BRUTALLUS_BURN_STEP_STOP_DISTANCE = 0.5f;
 
 // Where Brutallus is held: open floor 19y from his spawn, with room for the layout on all sides.
 inline Position const BRUTALLUS_ANCHOR_POSITION = { 1472.0f, 594.0f, 22.4f };

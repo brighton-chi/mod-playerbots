@@ -263,7 +263,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
             return false;
         }
 
-        return StepToPosition(position, 1.0f);
+        return StepToPosition(position, BRUTALLUS_BURN_STEP_STOP_DISTANCE);
     }
 
     if (burnState == BrutallusRangedBurnState::TraversingOuterLane)
@@ -313,7 +313,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
             return false;
         }
 
-        return StepToPosition(position, 1.0f);
+        return StepToPosition(position, BRUTALLUS_BURN_STEP_STOP_DISTANCE);
     }
 
     Position position;
@@ -402,7 +402,7 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        return StepToPosition(position, 1.0f);
+        return StepToPosition(position, BRUTALLUS_BURN_STEP_STOP_DISTANCE);
     }
 
     if (burnState == BrutallusRangedBurnState::TraversingInnerLane)
@@ -448,7 +448,7 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    return StepToPosition(position, 1.0f);
+    return StepToPosition(position, BRUTALLUS_BURN_STEP_STOP_DISTANCE);
 }
 
 bool BrutallusIsolateBurnAction::RemoveBurnWithCooldown()
