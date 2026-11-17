@@ -441,12 +441,13 @@ protected:
 
 // Eredar Twins
 
-class EredarTwinsMeleeIsAtBalconyTrigger : public SunwellEncounterTrigger
+class EredarTwinsShouldLeaveBalconyTrigger : public SunwellEncounterTrigger
 {
 public:
-    EredarTwinsMeleeIsAtBalconyTrigger(PlayerbotAI* botAI)
+    EredarTwinsShouldLeaveBalconyTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "eredar twins melee is at balcony", SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
+            botAI, "eredar twins should leave balcony",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -464,36 +465,37 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsSacrolashRequiresTwoTanksTrigger : public SunwellEncounterTrigger
+class EredarTwinsSacrolashShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
-    EredarTwinsSacrolashRequiresTwoTanksTrigger(PlayerbotAI* botAI)
+    EredarTwinsSacrolashShouldBeTankedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "eredar twins sacrolash requires two tanks",
+            botAI, "eredar twins sacrolash should be tanked",
             SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsAlythessCastsBlazeOnTankTrigger : public SunwellEncounterTrigger
+class EredarTwinsAlythessShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
-    EredarTwinsAlythessCastsBlazeOnTankTrigger(PlayerbotAI* botAI)
+    EredarTwinsAlythessShouldBeTankedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "eredar twins alythess casts blaze on tank",
+            botAI, "eredar twins alythess should be tanked",
             SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsRangedNeedsLosTrigger : public SunwellEncounterTrigger
+class EredarTwinsRangedShouldStackOnBalconyTrigger : public SunwellEncounterTrigger
 {
 public:
-    EredarTwinsRangedNeedsLosTrigger(PlayerbotAI* botAI)
+    EredarTwinsRangedShouldStackOnBalconyTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "eredar twins ranged needs los", SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
+            botAI, "eredar twins ranged should stack on balcony",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:
     bool IsActiveInEncounter() override;

@@ -135,8 +135,8 @@ public:
             &RaidSwpActionContext::felmyst_select_target_for_hold;
 
         // Eredar Twins
-        creators["eredar twins melee jump from balcony"] =
-            &RaidSwpActionContext::eredar_twins_melee_jump_from_balcony;
+        creators["eredar twins jump from balcony"] =
+            &RaidSwpActionContext::eredar_twins_jump_from_balcony;
 
         creators["eredar twins announce alythess tank"] =
             &RaidSwpActionContext::eredar_twins_announce_alythess_tank;
@@ -423,9 +423,9 @@ private:
     }
 
     // Eredar Twins
-    static Action* eredar_twins_melee_jump_from_balcony(PlayerbotAI* botAI)
+    static Action* eredar_twins_jump_from_balcony(PlayerbotAI* botAI)
     {
-        return new EredarTwinsMeleeJumpFromBalconyAction(botAI);
+        return new EredarTwinsJumpFromBalconyAction(botAI);
     }
     static Action* eredar_twins_announce_alythess_tank(PlayerbotAI* botAI)
     {

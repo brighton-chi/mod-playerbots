@@ -34,7 +34,10 @@ std::vector<Position> const& GetCachedBlazePositions(PlayerbotAI* botAI)
         ->GetValue<std::vector<Position>>("eredar twins blaze")->RefGet();
 }
 
-// Adjusted positions are to address the occasional bug (?) where Alythess moves
+// Positions around Alythess follow her if she moves. Her script never chases, but the core moves
+// her to a melee attack point around her victim when it is in her melee range, isn't attacking
+// her, and is crowded by another attacker (MoveCircleChecks), and backs her off a victim inside
+// her (MoveBackwardsChecks). I don't know if it is Blizzlike for her not to chase.
 Position GetAdjustedPosition(Unit* alythess, Position const& basePosition)
 {
     if (!alythess)
@@ -283,9 +286,6 @@ bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    if (PlayerbotAI::IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
-        return false;
-
     if (!FindThreatTarget(bot, "lady sacrolash"))
         return false;
 
@@ -294,6 +294,24 @@ bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
         return true;
 
     return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS;
+}
+
+EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot)
+{
+    EredarTwinsThreatHolds holds;
+    if (PlayerbotAI::IsHeal(bot))
+        return holds;
+
+    // Fine to exclude all tanks for Sacrolash because the Alythess tank never attacks her.
+    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    if (sacrolash && !PlayerbotAI::IsTank(bot) && ShouldHoldSacrolashThreat(bot, sacrolash))
+        holds.sacrolash = sacrolash->GetGUID();
+
+    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    if (alythess && ShouldHoldAlythessThreat(bot, alythess))
+        holds.alythess = alythess->GetGUID();
+
+    return holds;
 }
 
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot)
@@ -318,31 +336,10 @@ bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
 {
     for (Position const& blaze : GetCachedBlazePositions(botAI))
     {
-        if (blaze.GetExactDist2d(position) <= BLAZE_DANGER_RADIUS)
+        if (blaze.GetExactDist2d(position) <= BLAZE_CLEARANCE)
             return false;
     }
 
-    return true;
-}
-
-bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot, ObjectGuid& lastBlazeGuid)
-{
-    if (!alythess)
-        return false;
-
-    GameObject* blazeObject =
-        bot->FindNearestGameObject(Id(SwpObjects::GO_BLAZE), BLAZE_DANGER_RADIUS);
-    if (!blazeObject)
-    {
-        lastBlazeGuid.Clear();
-        return false;
-    }
-
-    ObjectGuid const blazeGuid = blazeObject->GetGUID();
-    if (lastBlazeGuid == blazeGuid)
-        return false;
-
-    lastBlazeGuid = blazeGuid;
     return true;
 }
 
@@ -355,83 +352,28 @@ void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
     std::optional<EredarTwinsIncomingConflagrationState>& incoming =
         EredarTwinsState(target->GetInstanceId()).incomingConflagration;
     EredarTwinsIncomingConflagrationState& state = incoming ? *incoming : incoming.emplace();
-
-    if (state.targetGuid != target->GetGUID())
-        state.delayMs = now + CONFLAGRATION_DELAY_MS;
-
     state.targetGuid = target->GetGUID();
+    state.delayMs = now + CONFLAGRATION_DELAY_MS;
     state.expireMs = now + CONFLAGRATION_WINDOW_MS;
 }
 
-Player* GetEredarTwinsConflagrationTarget(Player* bot)
+ObjectGuid GetEredarTwinsConflagrationTargetGuid(uint32 instanceId)
 {
-    EredarTwinsEncounterState* twinsState = FindEredarTwinsState(bot->GetInstanceId());
+    EredarTwinsEncounterState const* twinsState = FindEredarTwinsState(instanceId);
     if (!twinsState || !twinsState->incomingConflagration)
-        return nullptr;
+        return ObjectGuid::Empty;
 
     EredarTwinsIncomingConflagrationState const& state = *twinsState->incomingConflagration;
     uint32 const now = getMSTime();
+    if (state.expireMs <= now || state.delayMs > now)
+        return ObjectGuid::Empty;
 
-    if (state.expireMs <= now)
-    {
-        twinsState->incomingConflagration.reset();
-        return nullptr;
-    }
-
-    if (state.delayMs > now)
-        return nullptr;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->GetGUID() == state.targetGuid)
-            return member;
-    }
-
-    return nullptr;
+    return state.targetGuid;
 }
 
-void RecordEredarTwinsBlazeTarget(Player* target)
+bool IsEredarTwinsConflagrationTarget(Player* bot)
 {
-    if (!target)
-        return;
-
-    std::optional<EredarTwinsBlazeTargetState>& blaze =
-        EredarTwinsState(target->GetInstanceId()).blazeTarget;
-    EredarTwinsBlazeTargetState& state = blaze ? *blaze : blaze.emplace();
-    state.targetGuid = target->GetGUID();
-    state.startMs = getMSTime();
-}
-
-Player* GetEredarTwinsBlazeTarget(Player* bot)
-{
-    EredarTwinsEncounterState* twinsState = FindEredarTwinsState(bot->GetInstanceId());
-    if (!twinsState || !twinsState->blazeTarget)
-        return nullptr;
-
-    EredarTwinsBlazeTargetState const& state = *twinsState->blazeTarget;
-    if (GetMSTimeDiffToNow(state.startMs) >= BLAZE_TARGET_WINDOW_MS)
-    {
-        twinsState->blazeTarget.reset();
-        return nullptr;
-    }
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->GetGUID() == state.targetGuid)
-            return member;
-    }
-
-    return nullptr;
+    return GetEredarTwinsConflagrationTargetGuid(bot->GetInstanceId()) == bot->GetGUID();
 }
 
 // Shared encounter state

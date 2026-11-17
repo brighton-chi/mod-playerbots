@@ -139,8 +139,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         }));
 
     // Eredar Twins
-    triggers.push_back(new TriggerNode("eredar twins melee is at balcony",
-        { NextAction("eredar twins melee jump from balcony", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("eredar twins should leave balcony",
+        { NextAction("eredar twins jump from balcony", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("eredar twins should announce alythess tank",
         { NextAction("eredar twins announce alythess tank", ACTION_RAID) }));
@@ -148,13 +148,13 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins hunter should misdirect",
         { NextAction("eredar twins misdirect to tanks", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("eredar twins sacrolash requires two tanks",
+    triggers.push_back(new TriggerNode("eredar twins sacrolash should be tanked",
         { NextAction("eredar twins position sacrolash tanks", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins alythess casts blaze on tank",
+    triggers.push_back(new TriggerNode("eredar twins alythess should be tanked",
         { NextAction("eredar twins alythess tank move out of blaze", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("eredar twins ranged needs los",
+    triggers.push_back(new TriggerNode("eredar twins ranged should stack on balcony",
         { NextAction("eredar twins ranged stack at balcony edge", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("eredar twins should focus dps",

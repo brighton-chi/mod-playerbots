@@ -146,27 +146,38 @@ void RequestInterruptForBotsWithFelmystEncapsulate(Creature* felmyst)
     }
 }
 
+void RequestInterruptForEredarTwinsBot(Player* player)
+{
+    if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
+        return;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+    if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        botAI->RequestSpellInterrupt();
+}
+
+// The Conflagration target moves away from the raid, and a ranged bot that pulls aggro on Alythess
+// on the balcony steps off to the side away from the ranged stack.
 void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 {
     if (!alythess)
         return;
 
-    Map::PlayerList const& players = alythess->GetMap()->GetPlayers();
-    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    ObjectGuid const conflagTargetGuid =
+        GetEredarTwinsConflagrationTargetGuid(alythess->GetInstanceId());
+    if (!conflagTargetGuid.IsEmpty())
+        RequestInterruptForEredarTwinsBot(ObjectAccessor::GetPlayer(*alythess, conflagTargetGuid));
+
+    Unit* victim = alythess->GetVictim();
+    Player* player = victim ? victim->ToPlayer() : nullptr;
+    if (!player || player->GetPositionZ() <= EREDAR_TWINS_BALCONY_Z)
+        return;
+
+    if (player->GetExactDist2d(EREDAR_TWINS_P1_RANGED_ASIDE_POSITION) >
+            EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE &&
+        PlayerbotAI::IsRanged(player))
     {
-        Player* player = it->GetSource();
-        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player))
-            continue;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-            continue;
-
-        if (GetEredarTwinsConflagrationTarget(player) == player ||
-            (GetEredarTwinsBlazeTarget(player) == player && PlayerbotAI::IsRanged(player)))
-        {
-            botAI->RequestSpellInterrupt();
-        }
+        RequestInterruptForEredarTwinsBot(player);
     }
 }
 
@@ -249,20 +260,14 @@ public:
 
     void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
     {
-        if (!caster || (spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION) &&
-            spellInfo->Id != Id(SwpSpells::SPELL_BLAZE)))
-        {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION))
             return;
-        }
 
         Player* target = GetFirstPlayerSpellTarget(spell, caster);
         if (!target || !FindFirstSunwellCombatBotInGroup(target))
             return;
 
-        if (spellInfo->Id == Id(SwpSpells::SPELL_CONFLAGRATION))
-            RecordIncomingEredarTwinsConflagrationTarget(target);
-        else
-            RecordEredarTwinsBlazeTarget(target);
+        RecordIncomingEredarTwinsConflagrationTarget(target);
     }
 };
 

@@ -19,22 +19,21 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-bool EredarTwinsMeleeJumpFromBalconyAction::Execute(Event /*event*/)
+// Ranged land in their phase 2 stack, behind the melee, wherever they jump.
+bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
 {
     Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
     Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
-    Position const landingPosition = GetEredarTwinsP2MeleePosition(alythess);
+    Position const landingPosition = PlayerbotAI::IsRanged(bot) ?
+        GetEredarTwinsP2RangedPosition(alythess) : GetEredarTwinsP2MeleePosition(alythess);
 
     constexpr float arrivalDistance = 2.0f;
-    float const distanceToJumpPos = bot->GetExactDist2d(jumpPosition);
-
-    if (distanceToJumpPos > arrivalDistance)
+    if (bot->GetExactDist2d(jumpPosition) > arrivalDistance)
     {
         float moveX;
         float moveY;
-        bool backwards;
-        if (!GetStepToPosition(
-                bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+        if (!GetPathStepTowardPoint(
+                bot, jumpPosition, arrivalDistance, PATH_STEP_DISTANCE, moveX, moveY))
         {
             return false;
         }
@@ -178,7 +177,7 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(
+    if (!GetTankPathStep(
             bot, SACROLASH_TANK_POSITION, arrivalDist, sacrolash, moveX, moveY, backwards))
     {
         return false;
@@ -230,31 +229,15 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         _alythessTankStep = index;
     }
 
-    Position const position = GetAlythessTankPosition(alythess, index);
-    constexpr float maxDistance = 1.0f;
-    float const distToPosition = bot->GetExactDist2d(position);
-
     if (alythess->GetVictim() != bot)
         return false;
 
-    if (distToPosition <= maxDistance &&
-        ShouldAdvanceAlythessTankPosition(alythess, bot, _lastBlazeGuid))
-    {
-        uint8 safeIndex = index;
-        if (!findSafeAlythessTankIndex(index, false, safeIndex))
-            return false;
+    Position const position = GetAlythessTankPosition(alythess, index);
+    constexpr float maxDistance = 1.0f;
+    if (bot->GetExactDist2d(position) <= maxDistance)
+        return false;
 
-        index = safeIndex;
-        _alythessTankStep = index;
-        Position const newPos = GetAlythessTankPosition(alythess, index);
-
-        if (bot->GetExactDist2d(newPos) > maxDistance)
-            return StepToPosition(alythess, newPos, maxDistance);
-    }
-    else if (distToPosition > maxDistance)
-        return StepToPosition(alythess, position, maxDistance);
-
-    return false;
+    return StepToPosition(alythess, position, maxDistance);
 }
 
 bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
@@ -263,7 +246,7 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, alythess, moveX, moveY, backwards))
+    if (!GetTankPathStep(bot, position, arrivalDist, alythess, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -273,48 +256,25 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
 
 bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 {
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
-    if (sacrolash && sacrolash->GetVictim() != bot && GetEredarTwinsBlazeTarget(bot) != bot)
-    {
-        Position const& position = EREDAR_TWINS_P1_RANGED_POSITION;
-        if (bot->GetExactDist2d(position) <= 1.0f)
-            return false;
+    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    Position const& position = alythess && alythess->GetVictim() == bot ?
+        EREDAR_TWINS_P1_RANGED_ASIDE_POSITION : EREDAR_TWINS_P1_RANGED_POSITION;
 
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    // Jump down during Phase 2 or if the bot pulls aggro on Alythess or Sacrolash
-    if (bot->GetPositionZ() <= EREDAR_TWINS_BALCONY_Z)
+    if (bot->GetExactDist2d(position) <= EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE)
         return false;
 
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
-    Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
-    Position const landingPosition = GetEredarTwinsP2RangedPosition(alythess);
-
-    constexpr float arrivalDistance = 2.0f;
-    float const distanceToJumpPos = bot->GetExactDist2d(jumpPosition);
-
-    if (distanceToJumpPos > arrivalDistance)
+    float moveX;
+    float moveY;
+    if (!GetPathStepTowardPoint(
+            bot, position, EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, moveX,
+            moveY))
     {
-        float moveX;
-        float moveY;
-        bool backwards;
-        if (!GetStepToPosition(
-                bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
-        {
-            return false;
-        }
-
-        return MoveTo(
-            SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+        return false;
     }
 
-    return JumpTo(
-        SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
-        landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
@@ -328,10 +288,12 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         GetEredarTwinsP2MeleePosition(alythess);
 
     constexpr float arrivalDist = 0.5f;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
+        return false;
+
     float moveX;
     float moveY;
-    bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(
@@ -353,8 +315,10 @@ bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
     if (!twinTarget)
         return false;
 
-    bool const shouldHoldThreat = sacrolash ?
-        ShouldHoldSacrolashThreat(bot, twinTarget) : ShouldHoldAlythessThreat(bot, twinTarget);
+    EredarTwinsThreatHolds const holds =
+        AI_VALUE(EredarTwinsThreatHolds, "eredar twins threat holds");
+    bool const shouldHoldThreat =
+        (sacrolash ? holds.sacrolash : holds.alythess) == twinTarget->GetGUID();
 
     if (shouldHoldThreat)
     {
@@ -388,26 +352,21 @@ bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
         return true;
     }
 
-    if (FindThreatTarget(bot, "lady sacrolash"))
-    {
-        Position const& position = PlayerbotAI::IsRanged(bot) ?
-            EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+    Position const& position = PlayerbotAI::IsRanged(bot) ?
+        EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
-        if (bot->GetExactDist2d(position) <= 1.0f)
-            return false;
-
-        return MoveTo(
-            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, CONFLAGRATION_SAFE_DISTANCE);
-    if (!nearestPlayer)
+    constexpr float arrivalDist = 1.0f;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;
 
-    bot->CastStop();
-    return MoveAway(
-        nearestPlayer, CONFLAGRATION_SAFE_DISTANCE - bot->GetExactDist2d(nearestPlayer));
+    float moveX;
+    float moveY;
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
@@ -420,9 +379,9 @@ bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
     if (!victim)
         return false;
 
-    if (bot->GetExactDist2d(victim) >= CONFLAGRATION_SAFE_DISTANCE)
+    if (bot->GetExactDist2d(victim) >= CONFLAGRATION_CLEARANCE)
         return false;
 
     bot->CastStop();
-    return MoveFromGroup(CONFLAGRATION_SAFE_DISTANCE);
+    return MoveFromGroup(CONFLAGRATION_CLEARANCE);
 }

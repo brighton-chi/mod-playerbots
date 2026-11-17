@@ -28,12 +28,6 @@ struct EredarTwinsIncomingConflagrationState
     uint32 expireMs = 0;
 };
 
-struct EredarTwinsBlazeTargetState
-{
-    ObjectGuid targetGuid = ObjectGuid::Empty;
-    uint32 startMs = 0;
-};
-
 // Which branch of the Alythess tank assignment was taken (for the raid announcement).
 enum class AlythessTankSource : uint8
 {
@@ -50,12 +44,22 @@ struct EredarTwinsTankAssignment
     uint32 announcementMs = 0;
 };
 
+// The twins whose threat cap the bot has reached; empty for a twin it may still attack.
+struct EredarTwinsThreatHolds
+{
+    ObjectGuid sacrolash;
+    ObjectGuid alythess;
+};
+
 // Used to measure if a bot is on the balcony; deliberately a little below the actual balcony Z.
 inline constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
+// Ranged count as on their balcony position within this distance.
+inline constexpr float EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE = 1.0f;
 
 inline constexpr uint32 EREDAR_TWINS_BLAZE_CACHE_INTERVAL_MS = 200;
-// The Blaze trap GO casts 45246, dealing damage in a 3y radius; extra 1.5y is avoidance buffer.
-inline constexpr float BLAZE_DANGER_RADIUS = 4.5f;
+// The Blaze trap GO casts 45246, dealing damage within 3y of its center.
+inline constexpr float BLAZE_HAZARD_RADIUS = 3.0f;
+inline constexpr float BLAZE_CLEARANCE = BLAZE_HAZARD_RADIUS + 1.5f;
 inline constexpr float BLAZE_SEARCH_RADIUS = 30.0f;
 
 // Grace period for the tanks to build threat before the rest of the raid opens fire.
@@ -68,14 +72,16 @@ inline constexpr float EREDAR_TWINS_MAX_DPS_HP_PERCENT = 80.0f;
 // second highest tank (unless there is only one Sacrolash tank).
 inline constexpr float SACROLASH_THREAT_HOLD_RATIO = 0.8f;
 inline constexpr float ALYTHESS_THREAT_HOLD_RATIO = 0.9f;
+inline constexpr uint32 EREDAR_TWINS_THREAT_HOLDS_CACHE_INTERVAL_MS = 100;
 
-inline constexpr float CONFLAGRATION_SAFE_DISTANCE = 10.0f;
+// Conflagration hits players within 8y of its target, who then burn players within 8y of them.
+inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 8.0f;
+inline constexpr float CONFLAGRATION_CLEARANCE = CONFLAGRATION_HAZARD_RADIUS + 2.0f;
 // Bots wait 300ms to react to Conflagration (to make the action look less artificial).
 inline constexpr uint32 CONFLAGRATION_DELAY_MS = 300;
-// Conflagration is a 3.5s cast, and Blaze is a 2.5s cast. For Conflagration, the bot needs to hold
-// position through the impact, so some time is added to account for the projectile's travel time.
+// Conflagration is a 3.5s cast. The bot needs to hold position through the impact, so some time is
+// added to account for the projectile's travel time.
 inline constexpr uint32 CONFLAGRATION_WINDOW_MS = 5500;
-inline constexpr uint32 BLAZE_TARGET_WINDOW_MS = 2500;
 
 inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2 * IN_MILLISECONDS;
@@ -92,6 +98,9 @@ inline std::array const ALYTHESS_TANK_POSITIONS = {
 // Phase 1 positions (ranged up top, melee on Sacrolash).
 inline Position const SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
 inline Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
+// A ranged bot that pulls aggro on Alythess waits here, out of the stack, so Blaze doesn't hit the
+// ranged stack. The twins are in LoS from only ~10 yd of the balcony edge; this is its east end.
+inline Position const EREDAR_TWINS_P1_RANGED_ASIDE_POSITION = { 1813.000f, 602.000f, 51.610f };
 inline Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
 inline Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
 
@@ -112,22 +121,20 @@ bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess);
 bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
 // The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro.
 bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI);
+// For the "eredar twins threat holds" value.
+EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
-bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot, ObjectGuid& lastBlazeGuid);
 void RecordIncomingEredarTwinsConflagrationTarget(Player* target);
-Player* GetEredarTwinsConflagrationTarget(Player* bot);
-void RecordEredarTwinsBlazeTarget(Player* target);
-Player* GetEredarTwinsBlazeTarget(Player* bot);
+// Empty until the reaction delay has passed and after the window has ended.
+ObjectGuid GetEredarTwinsConflagrationTargetGuid(uint32 instanceId);
+bool IsEredarTwinsConflagrationTarget(Player* bot);
 
 // Shared encounter state
 
-// The conflagration and Blaze targets are cleared mid-fight when they expire, so each field is
-// optional rather than the whole entry being erased.
 struct EredarTwinsEncounterState
 {
     std::optional<EredarTwinsIncomingConflagrationState> incomingConflagration;
-    std::optional<EredarTwinsBlazeTargetState> blazeTarget;
     std::optional<uint32> dpsHoldStartMs;
     std::optional<EredarTwinsTankAssignment> tankAssignment;
 };

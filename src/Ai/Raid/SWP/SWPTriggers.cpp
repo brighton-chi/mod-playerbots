@@ -478,12 +478,16 @@ bool FelmystLandingDpsHoldIsActiveTrigger::IsActiveInEncounter()
 
 // Eredar Twins
 
-bool EredarTwinsMeleeIsAtBalconyTrigger::IsActiveInEncounter()
+bool EredarTwinsShouldLeaveBalconyTrigger::IsActiveInEncounter()
 {
-    if (!PlayerbotAI::IsMelee(bot))
+    if (bot->GetPositionZ() <= EREDAR_TWINS_BALCONY_Z)
         return false;
 
-    return bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z;
+    if (PlayerbotAI::IsMelee(bot))
+        return true;
+
+    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    return !sacrolash || sacrolash->GetVictim() == bot;
 }
 
 bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
@@ -498,7 +502,7 @@ bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
     return true;
 }
 
-bool EredarTwinsSacrolashRequiresTwoTanksTrigger::IsActiveInEncounter()
+bool EredarTwinsSacrolashShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -512,7 +516,7 @@ bool EredarTwinsSacrolashRequiresTwoTanksTrigger::IsActiveInEncounter()
     return IsAnySacrolashTank(bot);
 }
 
-bool EredarTwinsAlythessCastsBlazeOnTankTrigger::IsActiveInEncounter()
+bool EredarTwinsAlythessShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -523,12 +527,16 @@ bool EredarTwinsAlythessCastsBlazeOnTankTrigger::IsActiveInEncounter()
     return IsAlythessTank(bot);
 }
 
-bool EredarTwinsRangedNeedsLosTrigger::IsActiveInEncounter()
+bool EredarTwinsRangedShouldStackOnBalconyTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    return GetEredarTwinsConflagrationTarget(bot) != bot;
+    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    if (!sacrolash || sacrolash->GetVictim() == bot)
+        return false;
+
+    return !IsEredarTwinsConflagrationTarget(bot);
 }
 
 bool EredarTwinsOnlyAlythessRemainsTrigger::IsActiveInEncounter()
@@ -539,7 +547,7 @@ bool EredarTwinsOnlyAlythessRemainsTrigger::IsActiveInEncounter()
     if (FindThreatTarget(bot, "lady sacrolash"))
         return false;
 
-    if (GetEredarTwinsConflagrationTarget(bot) == bot)
+    if (IsEredarTwinsConflagrationTarget(bot))
         return false;
 
     return !IsAlythessTank(bot);
@@ -567,10 +575,7 @@ bool EredarTwinsTooManyFlameTouchedStacksTrigger::IsActiveInEncounter()
 bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
 {
     // Healers are included to flip to their combat engines since dps assist is disabled.
-    if (PlayerbotAI::IsDps(bot) || PlayerbotAI::IsHeal(bot))
-        return true;
-
-    return !IsAnySacrolashTank(bot) && !IsAlythessTank(bot);
+    return !PlayerbotAI::IsTank(bot);
 }
 
 bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
@@ -589,7 +594,7 @@ bool EredarTwinsActiveConflagrationTargetTrigger::IsActiveInEncounter()
     if (bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot))
         return false;
 
-    return GetEredarTwinsConflagrationTarget(bot) == bot;
+    return IsEredarTwinsConflagrationTarget(bot);
 }
 
 bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActiveInEncounter()
@@ -598,11 +603,13 @@ bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActiveInEncounter()
     if (!sacrolash)
         return false;
 
-    Player* conflagTarget = GetEredarTwinsConflagrationTarget(bot);
-    if (!conflagTarget || conflagTarget == bot)
+    ObjectGuid const conflagTargetGuid =
+        GetEredarTwinsConflagrationTargetGuid(bot->GetInstanceId());
+    if (conflagTargetGuid.IsEmpty() || conflagTargetGuid == bot->GetGUID())
         return false;
 
-    return sacrolash->GetVictim() == conflagTarget;
+    Unit* victim = sacrolash->GetVictim();
+    return victim && victim->GetGUID() == conflagTargetGuid;
 }
 
 // M'uru

@@ -382,11 +382,11 @@ public:
 
 // Eredar Twins
 
-class EredarTwinsMeleeJumpFromBalconyAction : public MovementAction
+class EredarTwinsJumpFromBalconyAction : public MovementAction
 {
 public:
-    EredarTwinsMeleeJumpFromBalconyAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "eredar twins melee jump from balcony") {}
+    EredarTwinsJumpFromBalconyAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins jump from balcony") {}
     bool Execute(Event event) override;
 };
 
@@ -422,10 +422,9 @@ public:
     bool Execute(Event event) override;
     bool ResetAlythessTankState()
     {
-        if (!_alythessTankStep && _lastBlazeGuid.IsEmpty())
+        if (!_alythessTankStep)
             return false;
         _alythessTankStep = 0;
-        _lastBlazeGuid.Clear();
         return true;
     }
 
@@ -433,8 +432,6 @@ private:
     bool StepToPosition(Unit* alythess, Position const& position, float arrivalDist);
 
     uint8 _alythessTankStep = 0;
-    // The last Blaze the bot moved away from, so one Blaze moves it only one step
-    ObjectGuid _lastBlazeGuid;
 };
 
 class EredarTwinsRangedStackAtBalconyEdgeAction : public MovementAction

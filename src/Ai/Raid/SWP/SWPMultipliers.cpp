@@ -546,29 +546,26 @@ float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
     if (PlayerbotAI::IsHeal(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<AttackAction*>(action))
+    if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
     if (dynamic_cast<EredarTwinsDpsPrioritizeSacrolashAction*>(action))
         return 1.0f;
 
-    Unit* alythess = GetEncounterBoss();
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
-
-    bool const shouldHoldSacrolashThreat =
-        sacrolash && !PlayerbotAI::IsTank(bot) && ShouldHoldSacrolashThreat(bot, sacrolash);
-    bool const shouldHoldAlythessThreat = alythess && ShouldHoldAlythessThreat(bot, alythess);
-
-    if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
+    EredarTwinsThreatHolds const holds =
+        AI_VALUE(EredarTwinsThreatHolds, "eredar twins threat holds");
+    if (holds.sacrolash.IsEmpty() && holds.alythess.IsEmpty())
         return 1.0f;
 
-    Unit* actionTarget = action->GetTarget();
-    bool const suppressSacrolashAttack = shouldHoldSacrolashThreat &&
-        (actionTarget == sacrolash || AI_VALUE(Unit*, "current target") == sacrolash);
-    bool const suppressAlythessAttack = shouldHoldAlythessThreat &&
-        (actionTarget == alythess || AI_VALUE(Unit*, "current target") == alythess);
+    auto const isHeldTwin = [&holds](Unit* unit)
+    {
+        return unit && (unit->GetGUID() == holds.sacrolash || unit->GetGUID() == holds.alythess);
+    };
 
-    return suppressSacrolashAttack || suppressAlythessAttack ? 0.0f : 1.0f;
+    if (!isHeldTwin(action->GetTarget()) && !isHeldTwin(AI_VALUE(Unit*, "current target")))
+        return 1.0f;
+
+    return GetDpsHoldValue(bot, action);
 }
 
 float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
@@ -607,13 +604,14 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    Player* conflagTarget = GetEredarTwinsConflagrationTarget(bot);
-    if (!conflagTarget)
+    ObjectGuid const conflagTargetGuid =
+        GetEredarTwinsConflagrationTargetGuid(bot->GetInstanceId());
+    if (conflagTargetGuid.IsEmpty())
         return 1.0f;
 
     // Block movement for bot targeted by Conflagration, unless the target is a Rogue that has
     // vanished and caused Alythess to drop the target.
-    if (conflagTarget == bot)
+    if (conflagTargetGuid == bot->GetGUID())
         return bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot) ? 1.0f : 0.0f;
 
     if (IsAlythessTank(bot))
@@ -625,7 +623,7 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
 
     Unit* victim = sacrolash->GetVictim();
-    return victim && victim != bot && conflagTarget == victim ? 0.0f : 1.0f;
+    return victim && victim->GetGUID() == conflagTargetGuid ? 0.0f : 1.0f;
 }
 
 // M'uru

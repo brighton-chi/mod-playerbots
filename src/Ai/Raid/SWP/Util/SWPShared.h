@@ -53,7 +53,6 @@ enum class SwpSpells : uint32
     SPELL_FOG_OF_CORRUPTION_CHARM      = 45717,
 
     // Eredar Twins
-    SPELL_BLAZE                        = 45235,
     SPELL_CONFLAGRATION                = 45342,
     SPELL_FLAME_TOUCHED                = 45348,
     SPELL_FLAME_SEAR                   = 46771,

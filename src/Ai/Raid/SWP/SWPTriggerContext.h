@@ -126,8 +126,8 @@ public:
             &RaidSwpTriggerContext::felmyst_landing_dps_hold_is_active;
 
         // Eredar Twins
-        creators["eredar twins melee is at balcony"] =
-            &RaidSwpTriggerContext::eredar_twins_melee_is_at_balcony;
+        creators["eredar twins should leave balcony"] =
+            &RaidSwpTriggerContext::eredar_twins_should_leave_balcony;
 
         creators["eredar twins should announce alythess tank"] =
             &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
@@ -135,14 +135,14 @@ public:
         creators["eredar twins hunter should misdirect"] =
             &RaidSwpTriggerContext::eredar_twins_hunter_should_misdirect;
 
-        creators["eredar twins sacrolash requires two tanks"] =
-            &RaidSwpTriggerContext::eredar_twins_sacrolash_requires_two_tanks;
+        creators["eredar twins sacrolash should be tanked"] =
+            &RaidSwpTriggerContext::eredar_twins_sacrolash_should_be_tanked;
 
-        creators["eredar twins alythess casts blaze on tank"] =
-            &RaidSwpTriggerContext::eredar_twins_alythess_casts_blaze_on_tank;
+        creators["eredar twins alythess should be tanked"] =
+            &RaidSwpTriggerContext::eredar_twins_alythess_should_be_tanked;
 
-        creators["eredar twins ranged needs los"] =
-            &RaidSwpTriggerContext::eredar_twins_ranged_needs_los;
+        creators["eredar twins ranged should stack on balcony"] =
+            &RaidSwpTriggerContext::eredar_twins_ranged_should_stack_on_balcony;
 
         creators["eredar twins only alythess remains"] =
             &RaidSwpTriggerContext::eredar_twins_only_alythess_remains;
@@ -396,9 +396,9 @@ private:
     }
 
     // Eredar Twins
-    static Trigger* eredar_twins_melee_is_at_balcony(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_should_leave_balcony(PlayerbotAI* botAI)
     {
-        return new EredarTwinsMeleeIsAtBalconyTrigger(botAI);
+        return new EredarTwinsShouldLeaveBalconyTrigger(botAI);
     }
     static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI)
     {
@@ -410,17 +410,17 @@ private:
             botAI, "eredar twins hunter should misdirect",
             SwpHelpers::SwpBosses::DATA_EREDAR_TWINS);
     }
-    static Trigger* eredar_twins_sacrolash_requires_two_tanks(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_sacrolash_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new EredarTwinsSacrolashRequiresTwoTanksTrigger(botAI);
+        return new EredarTwinsSacrolashShouldBeTankedTrigger(botAI);
     }
-    static Trigger* eredar_twins_alythess_casts_blaze_on_tank(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_alythess_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new EredarTwinsAlythessCastsBlazeOnTankTrigger(botAI);
+        return new EredarTwinsAlythessShouldBeTankedTrigger(botAI);
     }
-    static Trigger* eredar_twins_ranged_needs_los(PlayerbotAI* botAI)
+    static Trigger* eredar_twins_ranged_should_stack_on_balcony(PlayerbotAI* botAI)
     {
-        return new EredarTwinsRangedNeedsLosTrigger(botAI);
+        return new EredarTwinsRangedShouldStackOnBalconyTrigger(botAI);
     }
     static Trigger* eredar_twins_only_alythess_remains(PlayerbotAI* botAI)
     {
