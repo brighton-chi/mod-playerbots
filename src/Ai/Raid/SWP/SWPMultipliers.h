@@ -144,6 +144,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class KalecgosHoldDpsMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    KalecgosHoldDpsMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "kalecgos hold dps", SwpHelpers::SwpBosses::DATA_KALECGOS) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Brutallus
 
 class BrutallusControlMovementMultiplier : public SunwellEncounterMultiplier

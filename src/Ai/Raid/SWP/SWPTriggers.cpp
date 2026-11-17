@@ -73,37 +73,7 @@ bool SunwellHunterShouldMisdirectTrigger::IsActiveInEncounter()
 
 bool KalecgosShouldCommunicateBossHealthTrigger::IsActiveInEncounter()
 {
-    Unit* kalecgos = GetEncounterBoss();
-    if (!kalecgos || kalecgos->GetHealthPct() >= 20.0f)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* spectralBot = nullptr;
-    Player* surfaceBot = nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
-            !GET_PLAYERBOT_AI(member))
-        {
-            continue;
-        }
-
-        if (!spectralBot && IsInSpectralRealm(member))
-            spectralBot = member;
-
-        if (!surfaceBot && !IsInSpectralRealm(member))
-            surfaceBot = member;
-
-        if (spectralBot && surfaceBot)
-            break;
-    }
-
-    return bot == spectralBot || bot == surfaceBot;
+    return GetDueKalecgosCall(bot) != KalecgosCall::None;
 }
 
 bool KalecgosRequiresTankRotationTrigger::IsActiveInEncounter()
@@ -177,6 +147,26 @@ bool KalecgosBotsDontObserveGravityTrigger::IsActiveInEncounter()
     constexpr float verticalOffset = 5.0f;
     return bot->GetPositionZ() > SPECTRAL_REALM_Z + verticalOffset ||
         bot->GetPositionZ() < SPECTRAL_REALM_Z - verticalOffset;
+}
+
+bool KalecgosDpsHoldIsActiveTrigger::IsActiveInEncounter()
+{
+    return GetKalecgosDpsHold(bot) != KalecgosDpsHold::None;
+}
+
+// Only once the health calls have started, so a pet passive by config doesn't run the action all
+// fight.
+bool KalecgosShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    if (!state || (state->healthCall == KalecgosHealthCall::None && !state->endHoldCalled))
+        return false;
+
+    return IsMinionStanceWrongForHold(
+        bot, GetKalecgosDpsHoldWindow(bot) != KalecgosDpsHold::None);
 }
 
 // Brutallus

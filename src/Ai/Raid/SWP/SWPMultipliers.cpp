@@ -185,8 +185,9 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             if (!GetSwpBoss(bot, SwpBosses::DATA_KALECGOS))
                 return 0.0f;
 
-            // Use cooldowns against Sathrovarr only.
-            return IsInSpectralRealm(bot) ? 1.0f : 0.0f;
+            // Use cooldowns against Sathrovarr only, and not while he is held.
+            return IsInSpectralRealm(bot) &&
+                GetKalecgosDpsHoldWindow(bot) == KalecgosDpsHold::None ? 1.0f : 0.0f;
         }
         default:
             return 1.0f;
@@ -300,6 +301,14 @@ float KalecgosEnterSpectralRiftMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     return botAI->GetGameObject(AI_VALUE(ObjectGuid, "kalecgos spectral rift")) ? 0.0f : 1.0f;
+}
+
+float KalecgosHoldDpsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsHoldCandidate(bot, action))
+        return 1.0f;
+
+    return GetKalecgosDpsHold(bot) != KalecgosDpsHold::None ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Brutallus

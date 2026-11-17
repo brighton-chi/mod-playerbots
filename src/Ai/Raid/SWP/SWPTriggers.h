@@ -167,6 +167,29 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class KalecgosDpsHoldIsActiveTrigger : public SunwellEncounterTrigger
+{
+public:
+    KalecgosDpsHoldIsActiveTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos dps hold is active", SwpHelpers::SwpBosses::DATA_KALECGOS) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class KalecgosShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    KalecgosShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kalecgos should manage pet aggression",
+            SwpHelpers::SwpBosses::DATA_KALECGOS) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Brutallus
 
 class BrutallusRequiresTwoTanksTrigger : public SunwellEncounterTrigger

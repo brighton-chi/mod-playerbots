@@ -57,6 +57,15 @@ public:
         creators["kalecgos return to spectral realm ground"] =
             &RaidSwpActionContext::kalecgos_return_to_spectral_realm_ground;
 
+        creators["kalecgos stop attacking for hold"] =
+            &RaidSwpActionContext::kalecgos_stop_attacking_for_hold;
+
+        creators["kalecgos select target for hold"] =
+            &RaidSwpActionContext::kalecgos_select_target_for_hold;
+
+        creators["kalecgos set pet stance"] =
+            &RaidSwpActionContext::kalecgos_set_pet_stance;
+
         // Brutallus
         creators["brutallus misdirect to main tank"] =
             &RaidSwpActionContext::brutallus_misdirect_to_main_tank;
@@ -302,6 +311,18 @@ private:
     static Action* kalecgos_return_to_spectral_realm_ground(PlayerbotAI* botAI)
     {
         return new KalecgosReturnToSpectralRealmGroundAction(botAI);
+    }
+    static Action* kalecgos_stop_attacking_for_hold(PlayerbotAI* botAI)
+    {
+        return new KalecgosStopAttackingForHoldAction(botAI);
+    }
+    static Action* kalecgos_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new KalecgosSelectTargetForHoldAction(botAI);
+    }
+    static Action* kalecgos_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new KalecgosSetPetStanceAction(botAI);
     }
 
     // Brutallus

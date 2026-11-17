@@ -39,6 +39,7 @@ enum class SwpSpells : uint32
     SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC = 45034,
     SPELL_TELEPORT_SPECTRAL            = 46019,
     SPELL_SPECTRAL_REALM               = 46021,
+    SPELL_KALECGOS_BANISH              = 44836, // Kalecgos and Sathrovarr at 1%
 
     // Brutallus
     SPELL_METEOR_SLASH                 = 45150, // 120° cone

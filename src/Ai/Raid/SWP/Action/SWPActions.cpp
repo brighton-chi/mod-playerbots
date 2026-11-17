@@ -39,6 +39,13 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* kalecPetAction = context->GetAction("kalecgos set pet stance");
+    if (kalecPetAction &&
+        static_cast<KalecgosSetPetStanceAction*>(kalecPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // Brutallus
     if (BrutallusEncounterState* brutallusState = FindBrutallusState(instanceId))
         reset |= brutallusState->rangedBurnStates.erase(guid) > 0;

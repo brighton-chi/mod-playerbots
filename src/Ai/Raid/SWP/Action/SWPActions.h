@@ -98,6 +98,36 @@ public:
     bool Execute(Event event) override;
 };
 
+class KalecgosStopAttackingForHoldAction : public Action
+{
+public:
+    KalecgosStopAttackingForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "kalecgos stop attacking for hold") {}
+    bool Execute(Event event) override;
+};
+
+// Takes the target dps assist would take, without attacking it, for a bot in its non-combat engine.
+class KalecgosSelectTargetForHoldAction : public Action
+{
+public:
+    KalecgosSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "kalecgos select target for hold") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
+class KalecgosSetPetStanceAction : public Action
+{
+public:
+    KalecgosSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "kalecgos set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
 class KalecgosSurfaceTankPositionDragonAction : public AttackAction
 {
 public:

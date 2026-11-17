@@ -53,6 +53,12 @@ public:
         creators["kalecgos bots don't observe gravity"] =
             &RaidSwpTriggerContext::kalecgos_bots_dont_observe_gravity;
 
+        creators["kalecgos dps hold is active"] =
+            &RaidSwpTriggerContext::kalecgos_dps_hold_is_active;
+
+        creators["kalecgos should manage pet aggression"] =
+            &RaidSwpTriggerContext::kalecgos_should_manage_pet_aggression;
+
         // Brutallus
         creators["brutallus hunter should misdirect"] =
             &RaidSwpTriggerContext::brutallus_hunter_should_misdirect;
@@ -283,6 +289,14 @@ private:
     static Trigger* kalecgos_bots_dont_observe_gravity(PlayerbotAI* botAI)
     {
         return new KalecgosBotsDontObserveGravityTrigger(botAI);
+    }
+    static Trigger* kalecgos_dps_hold_is_active(PlayerbotAI* botAI)
+    {
+        return new KalecgosDpsHoldIsActiveTrigger(botAI);
+    }
+    static Trigger* kalecgos_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new KalecgosShouldManagePetAggressionTrigger(botAI);
     }
 
     // Brutallus

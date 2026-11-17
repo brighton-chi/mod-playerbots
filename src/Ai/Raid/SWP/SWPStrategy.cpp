@@ -35,7 +35,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     // Kalecgos
     triggers.push_back(new TriggerNode("kalecgos should communicate boss health",
-        { NextAction("kalecgos announce boss health", ACTION_RAID + 1) }));
+        { NextAction("kalecgos announce boss health", ACTION_RAID + 5) }));
 
     triggers.push_back(new TriggerNode("kalecgos hunter should misdirect",
         { NextAction("kalecgos misdirect to main tank", ACTION_RAID + 1) }));
@@ -57,6 +57,15 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kalecgos bots don't observe gravity",
         { NextAction("kalecgos return to spectral realm ground", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("kalecgos dps hold is active",
+        {
+            NextAction("kalecgos stop attacking for hold", ACTION_EMERGENCY + 2),
+            NextAction("kalecgos select target for hold", ACTION_RAID),
+        }));
+
+    triggers.push_back(new TriggerNode("kalecgos should manage pet aggression",
+        { NextAction("kalecgos set pet stance", ACTION_RAID + 4) }));
 
     // Brutallus
     triggers.push_back(new TriggerNode("brutallus hunter should misdirect",
@@ -262,6 +271,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KalecgosRestrictTauntMultiplier(botAI));
     multipliers.push_back(new KalecgosSuppressAssistTankPullThreatMultiplier(botAI));
     multipliers.push_back(new KalecgosEnterSpectralRiftMultiplier(botAI));
+    multipliers.push_back(new KalecgosHoldDpsMultiplier(botAI));
 
     // Brutallus
     multipliers.push_back(new BrutallusControlMovementMultiplier(botAI));
