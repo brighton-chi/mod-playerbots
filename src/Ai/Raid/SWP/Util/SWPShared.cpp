@@ -154,8 +154,8 @@ uint32 GetReadySpellLock(Creature* pet, Unit* target)
     return 0;
 }
 
-bool GetPathStepToPosition(
-    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+bool GetTankPathStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* tankedUnit, float& stepX,
     float& stepY, bool& backwards)
 {
     backwards = false;
@@ -164,7 +164,8 @@ bool GetPathStepToPosition(
 
     // Whether the step is backwards is known only once the path is, so a tank takes the backward
     // length either way rather than paying for a second path.
-    bool const tanking = facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing);
+    bool const tanking = tankedUnit && tankedUnit->GetVictim() == bot &&
+        bot->IsWithinMeleeRange(tankedUnit);
     float const stepDistance = tanking ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
     if (!GetPathStepTowardPoint(bot, position, arrivalDist, stepDistance, stepX, stepY))
         return false;
@@ -172,8 +173,8 @@ bool GetPathStepToPosition(
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
     backwards = tanking &&
-        (stepX - botX) * (facing->GetPositionX() - botX) +
-        (stepY - botY) * (facing->GetPositionY() - botY) < 0.0f;
+        (stepX - botX) * (tankedUnit->GetPositionX() - botX) +
+        (stepY - botY) * (tankedUnit->GetPositionY() - botY) < 0.0f;
 
     return true;
 }

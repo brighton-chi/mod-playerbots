@@ -37,7 +37,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetPathStepToPosition(
+    if (!GetTankPathStep(
             bot, GetFelmystMainTankGroundPosition(bot), arrivalDist, felmyst, moveX, moveY,
             backwards))
     {
@@ -65,9 +65,8 @@ bool FelmystRangedStackInThreeGroupsAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(
-            bot, position, FELMYST_RANGED_GROUP_RADIUS, nullptr, moveX, moveY, backwards))
+    if (!GetPathStepTowardPoint(
+            bot, position, FELMYST_RANGED_GROUP_RADIUS, PATH_STEP_DISTANCE, moveX, moveY))
     {
         return false;
     }
@@ -94,8 +93,7 @@ bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(
@@ -143,9 +141,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 
         float moveX;
         float moveY;
-        bool backwards;
-        if (!GetPathStepToPosition(
-                bot, position, FELMYST_RANGED_GROUP_RADIUS, nullptr, moveX, moveY, backwards))
+        if (!GetPathStepTowardPoint(
+                bot, position, FELMYST_RANGED_GROUP_RADIUS, PATH_STEP_DISTANCE, moveX, moveY))
         {
             return false;
         }

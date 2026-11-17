@@ -454,6 +454,50 @@ bool CanTakeStepTowards(
     return true;
 }
 
+bool GetStepToPosition(
+    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+    float& stepY, bool& backwards)
+{
+    float const distToPosition = bot->GetExactDist2d(position);
+    if (distToPosition <= arrivalDist)
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = position.GetPositionX() - botX;
+    float const toPosY = position.GetPositionY() - botY;
+
+    // 'facing' is optional and is for tanks. Pass the mob being tanked to allow the step to be
+    // walked backwards when (1) the bot has aggro on the mob it is tanking, (2) the bot is in
+    // melee range of the mob, and (3) the destination is on the opposite side of the bot from the
+    // mob. Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
+    // exceptions and thus the checks are made again here. Pass nullptr for a plain forward step.
+    backwards = false;
+    if (facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing))
+    {
+        float const toFacingX = facing->GetPositionX() - botX;
+        float const toFacingY = facing->GetPositionY() - botY;
+        backwards = (toPosX * toFacingX + toPosY * toFacingY) < 0.0f;
+    }
+
+    // Default time between AI ticks is 100ms, and base movement speed for players is 7y/s forwards
+    // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
+    // step be farther than the distance that can be covered in a single tick. But this helper
+    // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
+    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain, but if you
+    // are moving steeply uphill and find that movement is failing, it may be possible that the step
+    // distances would need to be even shorter (in which case you couldn't use this helper).
+    constexpr float backwardDistancePerStep = 2.25f;
+    constexpr float forwardDistancePerStep = 3.5f;
+    float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
+    float const ratio = std::min(maxMoveDist, distToPosition) / distToPosition;
+
+    stepX = botX + toPosX * ratio;
+    stepY = botY + toPosY * ratio;
+
+    return true;
+}
+
 bool GetPathStepTowardPoint(
     Player* bot, Position const& destination, float stopDistance, float stepDistance,
     float& stepX, float& stepY)
@@ -529,50 +573,6 @@ bool GetPathStepTowardUnit(
 
     return GetPathStepTowardPoint(
         bot, target->GetPosition(), stopDistance, stepDistance, stepX, stepY);
-}
-
-bool GetStepToPosition(
-    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
-    float& stepY, bool& backwards)
-{
-    float const distToPosition = bot->GetExactDist2d(position);
-    if (distToPosition <= arrivalDist)
-        return false;
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    float const toPosX = position.GetPositionX() - botX;
-    float const toPosY = position.GetPositionY() - botY;
-
-    // 'facing' is optional and is for tanks. Pass the mob being tanked to allow the step to be
-    // walked backwards when (1) the bot has aggro on the mob it is tanking, (2) the bot is in
-    // melee range of the mob, and (3) the destination is on the opposite side of the bot from the
-    // mob. Generally, the entire movement would be gated on (1) and (2) anyway, but there are some
-    // exceptions and thus the checks are made again here. Pass nullptr for a plain forward step.
-    backwards = false;
-    if (facing && facing->GetVictim() == bot && bot->IsWithinMeleeRange(facing))
-    {
-        float const toFacingX = facing->GetPositionX() - botX;
-        float const toFacingY = facing->GetPositionY() - botY;
-        backwards = (toPosX * toFacingX + toPosY * toFacingY) < 0.0f;
-    }
-
-    // Default time between AI ticks is 100ms, and base movement speed for players is 7y/s forwards
-    // and 4.5y/s backwards (i.e., 0.7y/0.45y per tick). There is not really benefit to having the
-    // step be farther than the distance that can be covered in a single tick. But this helper
-    // uses 5x tick distance to account for possible speed boosts, latency, and longer configured
-    // AI ticks. In my experience, this is plenty short enough to navigate poor terrain, but if you
-    // are moving steeply uphill and find that movement is failing, it may be possible that the step
-    // distances would need to be even shorter (in which case you couldn't use this helper).
-    constexpr float backwardDistancePerStep = 2.25f;
-    constexpr float forwardDistancePerStep = 3.5f;
-    float const maxMoveDist = backwards ? backwardDistancePerStep : forwardDistancePerStep;
-    float const ratio = std::min(maxMoveDist, distToPosition) / distToPosition;
-
-    stepX = botX + toPosX * ratio;
-    stepY = botY + toPosY * ratio;
-
-    return true;
 }
 
 // Player Getters

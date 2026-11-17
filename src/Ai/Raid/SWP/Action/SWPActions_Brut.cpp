@@ -105,7 +105,7 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
         float moveX;
         float moveY;
         bool backwards;
-        if (!GetPathStepToPosition(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
+        if (!GetTankPathStep(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
             return false;
 
         return MoveTo(
@@ -140,8 +140,7 @@ bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(
@@ -336,8 +335,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::StepToPosition(
 
     float moveX;
     float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(
@@ -465,8 +463,7 @@ bool BrutallusIsolateBurnAction::StepToPosition(Position const& position, float 
 
     float moveX;
     float moveY;
-    bool backwards;
-    if (!GetPathStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(

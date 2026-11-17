@@ -227,11 +227,12 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 // The Spell Lock rank a living Felhunter can cast at the target now. This is needed because
 // PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
 uint32 GetReadySpellLock(Creature* pet, Unit* target);
-// GetStepToPosition() from EncounterHelpers, but each step follows the path. Pass the unit being
-// tanked as facing to walk the step backwards when it leads away from that unit. Returns false
-// once the bot is within arrivalDist or when there is no path. Pass the bot's Z to MoveTo().
-bool GetPathStepToPosition(
-    Player* bot, Position const& position, float arrivalDist, Unit* facing, float& stepX,
+// A path step for a tank that keeps the unit it is tanking in front of it. While the bot is
+// tankedUnit's victim and in melee range, the step takes the shorter backward length and is moved
+// backwards when it leads away from that unit; otherwise it is a normal forward step. Returns
+// false once the bot is within arrivalDist or when there is no path. Pass the bot's Z to MoveTo().
+bool GetTankPathStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* tankedUnit, float& stepX,
     float& stepY, bool& backwards);
 
 // Volatile Fiends: one entry, two types:
