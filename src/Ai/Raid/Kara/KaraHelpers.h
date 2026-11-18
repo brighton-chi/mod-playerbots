@@ -473,7 +473,6 @@ inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
 inline constexpr float NETHERSPITE_BLOCKER_MIN_DISTANCE = 17.0f;
 inline constexpr float NETHERSPITE_HUNTER_BLOCKER_DISTANCE = 25.0f;
-inline constexpr float NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE = 34.0f;
 inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
 inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
 inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;

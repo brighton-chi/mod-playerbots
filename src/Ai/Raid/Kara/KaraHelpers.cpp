@@ -1032,7 +1032,7 @@ float FindNetherspiteBeamPositionDistance(
     float const dirY = (portal.GetPositionY() - netherspite.GetPositionY()) / length;
 
     // Past the portal, a bot is off the beam.
-    float const high = std::min(NETHERSPITE_BEAM_SEARCH_MAX_DISTANCE, length - 1.0f);
+    float const high = length - 1.0f;
     constexpr float searchStep = 0.5f;
     float best = preferred;
     float bestGap = std::numeric_limits<float>::max();
