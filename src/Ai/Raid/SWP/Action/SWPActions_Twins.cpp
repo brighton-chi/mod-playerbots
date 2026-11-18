@@ -34,8 +34,9 @@ bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
     {
         float moveX;
         float moveY;
-        if (!GetPathStepTowardPoint(
-                bot, jumpPosition, arrivalDistance, PATH_STEP_DISTANCE, moveX, moveY))
+        bool backwards;
+        if (!GetStepToPosition(
+                bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
         {
             return false;
         }
@@ -125,15 +126,21 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != sacrolash)
         return Attack(sacrolash);
 
-    // The tank Sacrolash is hitting draws her along only while she is in reach of it; the other
-    // tank simply joins it.
-    if (sacrolash->GetVictim() == bot && !bot->IsWithinMeleeRange(sacrolash))
+    // Only once a Sacrolash tank holds her in its melee range, so the tank she is hitting draws
+    // her along; the other tank simply joins it.
+    Unit* victim = sacrolash->GetVictim();
+    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+    if (!victimPlayer || !IsAnySacrolashTank(victimPlayer) ||
+        !victimPlayer->IsWithinMeleeRange(sacrolash))
+    {
         return false;
+    }
 
+    // Backwards only for the tank she is hitting, when the step leads away from her.
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPathStep(
+    if (!GetStepToPosition(
             bot, SACROLASH_TANK_POSITION, SACROLASH_TANK_ARRIVAL_DISTANCE, sacrolash, moveX, moveY,
             backwards))
     {
@@ -203,7 +210,7 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetTankPathStep(bot, position, arrivalDist, alythess, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, arrivalDist, alythess, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -220,9 +227,10 @@ bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    if (!GetPathStepTowardPoint(
-            bot, position, EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, moveX,
-            moveY))
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, position, EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -246,7 +254,8 @@ bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -268,7 +277,8 @@ bool EredarTwinsStepAsideFromStackAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -327,8 +337,9 @@ bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
         return true;
     }
 
-    Position const& position = PlayerbotAI::IsRanged(bot) ?
-        EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
+    // By level, not role: a ranged bot on the floor can't reach the balcony in time.
+    Position const& position = bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z ?
+        EREDAR_TWINS_BALCONY_CONFLAG_POSITION : EREDAR_TWINS_FLOOR_CONFLAG_POSITION;
 
     constexpr float arrivalDist = 1.0f;
     if (bot->GetExactDist2d(position) <= arrivalDist)
@@ -336,7 +347,8 @@ bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
 
     float moveX;
     float moveY;
-    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+    bool backwards;
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(

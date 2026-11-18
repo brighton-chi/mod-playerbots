@@ -119,8 +119,8 @@ inline Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.46
 // A ranged bot that pulls aggro on Alythess waits here, out of the stack, so Blaze doesn't hit the
 // ranged stack. The twins are in LoS from only ~10 yd of the balcony edge; this is its east end.
 inline Position const EREDAR_TWINS_P1_RANGED_ASIDE_POSITION = { 1813.000f, 602.000f, 51.610f };
-inline Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1807.400f, 635.800f, 33.404f };
-inline Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
+inline Position const EREDAR_TWINS_FLOOR_CONFLAG_POSITION =   { 1807.400f, 635.800f, 33.404f };
+inline Position const EREDAR_TWINS_BALCONY_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
 
 // A bot (not the Alythess tank) holding Alythess waits here on the floor, where her Blazes land
 // away from everyone.

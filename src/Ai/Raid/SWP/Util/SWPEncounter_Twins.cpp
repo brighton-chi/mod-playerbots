@@ -154,8 +154,8 @@ bool UpdateEredarTwinsClassRoleAnnouncement(PlayerbotAI* botAI)
         });
 }
 
-// The class role's paladin. The main tank stands in only if no protection paladin was ever chosen,
-// so a paladin who dies during the fight isn't replaced by the main tank.
+// The class role's prot paladin. If there is no prot paladin, then the main tank, whatever class,
+// is assigned to Alythess. Good luck with that.
 Player* GetAlythessTank(Player* bot)
 {
     SwpInstanceState const* state = FindSwpState(bot->GetInstanceId());
