@@ -636,11 +636,11 @@ private:
     Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
 };
 
-class MuruKeepDistanceFromDarkFiendsAction : public MovementAction
+class MuruMoveClearOfVoidZonesAndFiendsAction : public MovementAction
 {
 public:
-    MuruKeepDistanceFromDarkFiendsAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "m'uru keep distance from dark fiends") {}
+    MuruMoveClearOfVoidZonesAndFiendsAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "m'uru move clear of void zones and fiends") {}
     bool Execute(Event event) override;
 };
 

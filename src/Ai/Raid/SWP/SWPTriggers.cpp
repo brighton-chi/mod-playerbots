@@ -722,15 +722,15 @@ bool MuruWarlockHasEnslavedVoidSpawnTrigger::IsActiveInEncounter()
     return charm && charm->IsAlive() && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN);
 }
 
-bool MuruEntropiusSummonsVoidZonesTrigger::IsActiveInEncounter()
+// Phase 2 only: void zones are Entropius's, and phase 1 fiends are left to the dispellers.
+bool MuruVoidZoneIsNearTrigger::IsActiveInEncounter()
 {
-    if (!FindThreatTarget(bot, "entropius"))
-        return false;
+    return !IsMuruPhaseActive(GetEncounterBoss()) && FindMuruVoidZoneToAvoid(botAI);
+}
 
-    if (FindMuruVoidZoneToAvoid(botAI))
-        return true;
-
-    return GetNearestMuruDarkFiend(botAI, DARK_FIEND_AVOID_SEARCH_RADIUS);
+bool MuruDarkFiendIsNearTrigger::IsActiveInEncounter()
+{
+    return !IsMuruPhaseActive(GetEncounterBoss()) && FindMuruDarkFiendToAvoid(botAI);
 }
 
 bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
@@ -740,7 +740,8 @@ bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
         return false;
 
     Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
-    return singularity && singularity->IsAlive();
+    return singularity && singularity->IsAlive() &&
+        bot->GetExactDist(singularity) < GetSingularityClearance(bot, entropius);
 }
 
 // Kil'jaeden <The Deceiver>

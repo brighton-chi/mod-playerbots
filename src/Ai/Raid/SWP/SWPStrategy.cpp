@@ -223,8 +223,11 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru warlock has enslaved void spawn",
         { NextAction("m'uru void spawn cast shadow bolt volley", ACTION_RAID + 4) }));
 
-    triggers.push_back(new TriggerNode("m'uru entropius summons void zones",
-        { NextAction("m'uru keep distance from dark fiends", ACTION_EMERGENCY + 9) }));
+    triggers.push_back(new TriggerNode("m'uru void zone is near",
+        { NextAction("m'uru move clear of void zones and fiends", ACTION_EMERGENCY + 9) }));
+
+    triggers.push_back(new TriggerNode("m'uru dark fiend is near",
+        { NextAction("m'uru move clear of void zones and fiends", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("m'uru the singularity is near",
         { NextAction("m'uru escape the singularity", ACTION_EMERGENCY + 7) }));

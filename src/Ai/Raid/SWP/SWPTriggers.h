@@ -725,12 +725,23 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruEntropiusSummonsVoidZonesTrigger : public SunwellEncounterTrigger
+class MuruVoidZoneIsNearTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruEntropiusSummonsVoidZonesTrigger(PlayerbotAI* botAI)
+    MuruVoidZoneIsNearTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru entropius summons void zones", SwpHelpers::SwpBosses::DATA_MURU) {}
+            botAI, "m'uru void zone is near", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class MuruDarkFiendIsNearTrigger : public SunwellEncounterTrigger
+{
+public:
+    MuruDarkFiendIsNearTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "m'uru dark fiend is near", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;

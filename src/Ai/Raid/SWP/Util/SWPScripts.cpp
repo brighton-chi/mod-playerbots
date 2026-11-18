@@ -4,6 +4,7 @@
  * or (at your option) any later version.
  */
 
+#include "InstanceScript.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "Player.h"
@@ -12,6 +13,7 @@
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
 #include "SWPEncounter_KJ.h"
+#include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
 #include "SWPTriggers.h"
@@ -179,6 +181,50 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
         RequestInterruptForEredarTwinsBot(player);
 }
 
+// A bot in a long cast can't move until it ends, so a new void zone (about to summon a fiend) stops
+// the casts of bots within the fiend's clearance.
+void RequestInterruptForBotsNearNewMuruVoidZone(Creature* voidZone)
+{
+    if (!voidZone->HasAura(Id(SwpSpells::SPELL_VOID_ZONE_VISUAL)))
+        return;
+
+    Map::PlayerList const& players = voidZone->GetMap()->GetPlayers();
+    for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+    {
+        Player* player = it->GetSource();
+        if (!player || !player->IsAlive() || !IsCastingOrChanneling(player) ||
+            player->GetExactDist(voidZone) >= DARK_FIEND_CLEARANCE)
+        {
+            continue;
+        }
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+            botAI->RequestSpellInterrupt();
+    }
+}
+
+// In phase 2, where bots keep clear of fiends, a fiend's victim in a long cast stops it to move.
+void RequestInterruptForMuruDarkFiendVictim(Creature* darkFiend)
+{
+    Unit* victimUnit = darkFiend->GetVictim();
+    Player* victim = victimUnit ? victimUnit->ToPlayer() : nullptr;
+    if (!victim || !victim->IsAlive() || !IsCastingOrChanneling(victim) ||
+        victim->GetExactDist(darkFiend) >= DARK_FIEND_CLEARANCE)
+    {
+        return;
+    }
+
+    InstanceScript* instance = darkFiend->GetInstanceScript();
+    Creature* muru = instance ? instance->GetCreature(Id(SwpBosses::DATA_MURU)) : nullptr;
+    if (IsMuruPhaseActive(muru))
+        return;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(victim);
+    if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+        botAI->RequestSpellInterrupt();
+}
+
 } // end anonymous namespace
 
 class KalecgosPortalSpellListenerScript : public AllSpellScript
@@ -266,27 +312,6 @@ public:
             return;
 
         RecordIncomingEredarTwinsConflagrationTarget(target);
-    }
-};
-
-class MuruVoidZoneSpellListenerScript : public AllSpellScript
-{
-public:
-    MuruVoidZoneSpellListenerScript() : AllSpellScript("MuruVoidZoneSpellListenerScript") {}
-
-    void OnSpellCast(
-        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
-    {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_ENTROPIUS_DARKNESS))
-            return;
-
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!IsCastingOrChanneling(target))
-            return;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
-        if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-            botAI->RequestSpellInterrupt();
     }
 };
 
@@ -381,6 +406,16 @@ public:
                 RequestInterruptForEredarTwinsAlythessTargets(creature);
                 break;
             }
+            case Id(SwpNpcs::NPC_DARKNESS):
+            {
+                RequestInterruptForBotsNearNewMuruVoidZone(creature);
+                break;
+            }
+            case Id(SwpNpcs::NPC_DARK_FIEND):
+            {
+                RequestInterruptForMuruDarkFiendVictim(creature);
+                break;
+            }
             default:
                 break;
         }
@@ -456,7 +491,6 @@ void AddSC_SunwellBotScripts()
     new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
-    new MuruVoidZoneSpellListenerScript();
     new MuruSpellFurySpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript

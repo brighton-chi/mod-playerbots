@@ -186,7 +186,7 @@ bool IsHoldingAlythessAggro(Player* player, Unit* alythess)
 // This ordering is needed only to determine Misdirection assignments.
 Player* GetSacrolashTank(Player* bot, uint8 index)
 {
-    Player* const alythessTank = GetAlythessTank(bot);
+    Player* alythessTank = GetAlythessTank(bot);
 
     Player* mainTank = GetGroupMainTank(bot);
     if (mainTank && (!PlayerbotAI::IsTank(mainTank) || mainTank == alythessTank))
@@ -228,7 +228,7 @@ bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess)
     if (PlayerbotAI::IsHeal(bot))
         return false;
 
-    Player* const alythessTank = GetAlythessTank(bot);
+    Player* alythessTank = GetAlythessTank(bot);
     if (!alythessTank || alythessTank == bot || !alythessTank->IsAlive())
         return false;
 
@@ -245,7 +245,7 @@ bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash)
     if (PlayerbotAI::IsHeal(bot) || IsAnySacrolashTank(bot))
         return false;
 
-    Player* const alythessTank = GetAlythessTank(bot);
+    Player* alythessTank = GetAlythessTank(bot);
 
     float highestTankThreat = 0.0f;
     float secondTankThreat = 0.0f;

@@ -7,11 +7,16 @@
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
 #include "DynamicObject.h"
+#include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "SWPInstanceState.h"
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <list>
+#include <utility>
+
+using namespace EncounterHelpers;
 
 namespace SwpHelpers
 {
@@ -386,7 +391,7 @@ GuidVector FindMuruDarkFiendGuids(Player* bot)
 {
     std::list<Creature*> darkFiends;
     bot->GetCreatureListWithEntryInGrid(
-        darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_DISPEL_SEARCH_RADIUS);
+        darkFiends, Id(SwpNpcs::NPC_DARK_FIEND), DARK_FIEND_SEARCH_RADIUS);
 
     GuidVector guids;
     guids.reserve(darkFiends.size());
@@ -435,6 +440,16 @@ Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius)
     return nearest;
 }
 
+// A new zone is about to summon a Dark Fiend at its center.
+float GetMuruVoidZoneClearance(Unit* voidZone)
+{
+    if (!voidZone)
+        return 0.0f;
+
+    return voidZone->HasAura(Id(SwpSpells::SPELL_VOID_ZONE_VISUAL)) ?
+        DARK_FIEND_CLEARANCE : MURU_VOID_ZONE_CLEARANCE;
+}
+
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -442,20 +457,17 @@ Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
         botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet();
 
     Creature* nearest = nullptr;
-    float nearestDistance = MURU_VOID_ZONE_CLEARANCE;
+    float nearestDistance = std::numeric_limits<float>::max();
 
     for (ObjectGuid const& guid : guids)
     {
         Unit* unit = ResolveLivingUnit(botAI, guid);
-        if (!unit)
-            continue;
-
-        float const distance = bot->GetExactDist2d(unit);
-        if (distance >= nearestDistance)
-            continue;
-
-        Creature* voidZone = unit->ToCreature();
+        Creature* voidZone = unit ? unit->ToCreature() : nullptr;
         if (!voidZone)
+            continue;
+
+        float const distance = bot->GetExactDist(voidZone);
+        if (distance >= GetMuruVoidZoneClearance(voidZone) || distance >= nearestDistance)
             continue;
 
         nearest = voidZone;
@@ -463,6 +475,90 @@ Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
     }
 
     return nearest;
+}
+
+Creature* FindMuruDarkFiendToAvoid(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    Creature* nearest = nullptr;
+    float nearestDistance = DARK_FIEND_CLEARANCE;
+
+    for (Creature* darkFiend : GetMuruDarkFiends(botAI))
+    {
+        float const distance = bot->GetExactDist(darkFiend);
+        if (distance >= nearestDistance)
+            continue;
+
+        nearest = darkFiend;
+        nearestDistance = distance;
+    }
+
+    return nearest;
+}
+
+// The nearest position clear of every void zone and Dark Fiend, in 16 directions out to
+// MURU_CLEAR_POSITION_SEARCH_RADIUS, that the bot can reach in a straight line.
+bool TryGetMuruClearPosition(PlayerbotAI* botAI, Position& destination)
+{
+    Player* bot = botAI->GetBot();
+
+    std::vector<std::pair<Position, float>> hazards;
+    for (ObjectGuid const& guid :
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet())
+    {
+        if (Unit* voidZone = ResolveLivingUnit(botAI, guid))
+            hazards.emplace_back(voidZone->GetPosition(), GetMuruVoidZoneClearance(voidZone));
+    }
+
+    for (Creature* darkFiend : GetMuruDarkFiends(botAI))
+        hazards.emplace_back(darkFiend->GetPosition(), DARK_FIEND_CLEARANCE);
+
+    auto const isClear = [&hazards](float x, float y)
+    {
+        return std::ranges::none_of(hazards, [x, y](std::pair<Position, float> const& hazard)
+            { return hazard.first.GetExactDist2d(x, y) < hazard.second; });
+    };
+
+    constexpr uint8 directionCount = 16;
+    constexpr float directionStep = 2.0f * static_cast<float>(M_PI) / directionCount;
+    constexpr float ringStep = 1.0f;
+    constexpr uint8 ringCount = static_cast<uint8>(MURU_CLEAR_POSITION_SEARCH_RADIUS / ringStep);
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+
+    for (uint8 ring = 1; ring <= ringCount; ++ring)
+    {
+        float const distance = ring * ringStep;
+        for (uint8 direction = 0; direction < directionCount; ++direction)
+        {
+            float const angle = direction * directionStep;
+            float const x = botX + std::cos(angle) * distance;
+            float const y = botY + std::sin(angle) * distance;
+            if (!isClear(x, y))
+                continue;
+
+            float stepX = 0.0f;
+            float stepY = 0.0f;
+            float stepZ = 0.0f;
+            if (!CanTakeStepTowards(bot, x, y, distance, stepX, stepY, stepZ) ||
+                !isClear(stepX, stepY))
+            {
+                continue;
+            }
+
+            destination = Position(stepX, stepY, bot->GetPositionZ());
+            return true;
+        }
+    }
+
+    return false;
+}
+
+float GetSingularityClearance(Player* bot, Unit* entropius)
+{
+    return entropius && entropius->GetVictim() == bot ?
+        SINGULARITY_TANK_CLEARANCE : SINGULARITY_CLEARANCE;
 }
 
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)

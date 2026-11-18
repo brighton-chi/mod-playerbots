@@ -734,25 +734,26 @@ Unit* MuruVoidSpawnCastShadowBoltVolleyAction::GetVoidSpawnVolleyPriorityTarget(
     return nullptr;
 }
 
-bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
+bool MuruMoveClearOfVoidZonesAndFiendsAction::Execute(Event /*event*/)
 {
-    if (Creature* voidZone = FindMuruVoidZoneToAvoid(botAI))
+    Position destination;
+    if (!TryGetMuruClearPosition(botAI, destination))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, destination, MURU_CLEAR_POSITION_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
+            backwards))
     {
-        float const distFromVoidZone = bot->GetExactDist2d(voidZone);
-        bot->CastStop();
-        return MoveAway(voidZone, MURU_VOID_ZONE_CLEARANCE - distFromVoidZone);
+        return false;
     }
 
-    Creature* darkFiend = GetNearestMuruDarkFiend(botAI, DARK_FIEND_AVOID_SEARCH_RADIUS);
-    if (!darkFiend)
-        return false;
-
-    float const distFromFiend = bot->GetExactDist2d(darkFiend);
-    if (distFromFiend > DARK_FIEND_SAFE_DISTANCE)
-        return false;
-
     bot->CastStop();
-    return MoveAway(darkFiend, DARK_FIEND_SAFE_DISTANCE - distFromFiend);
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
@@ -765,11 +766,9 @@ bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
     if (!singularity || !singularity->IsAlive())
         return false;
 
-    float const safeDistance = entropius->GetVictim() == bot ?
-        SINGULARITY_TANK_SAFE_DISTANCE : SINGULARITY_SAFE_DISTANCE;
-    float const currentDistance = bot->GetExactDist2d(singularity);
-    if (currentDistance >= safeDistance)
+    float const clearance = GetSingularityClearance(bot, entropius);
+    if (bot->GetExactDist(singularity) >= clearance)
         return false;
 
-    return FleePosition(singularity->GetPosition(), safeDistance);
+    return FleePosition(singularity->GetPosition(), clearance);
 }

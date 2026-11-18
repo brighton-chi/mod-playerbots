@@ -220,8 +220,8 @@ public:
         creators["m'uru void spawn cast shadow bolt volley"] =
             &RaidSwpActionContext::muru_void_spawn_cast_shadow_bolt_volley;
 
-        creators["m'uru keep distance from dark fiends"] =
-            &RaidSwpActionContext::muru_keep_distance_from_dark_fiends;
+        creators["m'uru move clear of void zones and fiends"] =
+            &RaidSwpActionContext::muru_move_clear_of_void_zones_and_fiends;
 
         creators["m'uru escape the singularity"] =
             &RaidSwpActionContext::muru_escape_the_singularity;
@@ -547,9 +547,9 @@ private:
     {
         return new MuruVoidSpawnCastShadowBoltVolleyAction(botAI);
     }
-    static Action* muru_keep_distance_from_dark_fiends(PlayerbotAI* botAI)
+    static Action* muru_move_clear_of_void_zones_and_fiends(PlayerbotAI* botAI)
     {
-        return new MuruKeepDistanceFromDarkFiendsAction(botAI);
+        return new MuruMoveClearOfVoidZonesAndFiendsAction(botAI);
     }
     static Action* muru_escape_the_singularity(PlayerbotAI* botAI)
     {

@@ -673,7 +673,7 @@ Player* GetKalecgosDesignatedTank(Player* player)
         return nullptr;
 
     KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
-    Player* const tank = ResolveKalecgosDesignatedTank(player, group, state);
+    Player* tank = ResolveKalecgosDesignatedTank(player, group, state);
 
     if (!ResolveSurfaceTank(group, state.currentTankGuid))
         state.currentTankGuid = tank ? tank->GetGUID() : ObjectGuid::Empty;

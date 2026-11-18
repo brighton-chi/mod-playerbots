@@ -88,9 +88,9 @@ bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
         return false;
 
     // Ensure that the Alythess tank is always top priority, whether or not it is the main tank.
-    Player* const alythessTank = GetAlythessTank(bot);
-    Player* const sacrolashTank = GetSacrolashTank(bot, 0);
-    Player* const sacrolashSecondTank = GetSacrolashTank(bot, 1);
+    Player* alythessTank = GetAlythessTank(bot);
+    Player* sacrolashTank = GetSacrolashTank(bot, 0);
+    Player* sacrolashSecondTank = GetSacrolashTank(bot, 1);
 
     Unit* boss = nullptr;
     Player* tank = nullptr;

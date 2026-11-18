@@ -203,8 +203,9 @@ public:
         creators["m'uru warlock has enslaved void spawn"] =
             &RaidSwpTriggerContext::muru_warlock_has_enslaved_void_spawn;
 
-        creators["m'uru entropius summons void zones"] =
-            &RaidSwpTriggerContext::muru_entropius_summons_void_zones;
+        creators["m'uru void zone is near"] = &RaidSwpTriggerContext::muru_void_zone_is_near;
+
+        creators["m'uru dark fiend is near"] = &RaidSwpTriggerContext::muru_dark_fiend_is_near;
 
         creators["m'uru the singularity is near"] =
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
@@ -507,9 +508,13 @@ private:
     {
         return new MuruWarlockHasEnslavedVoidSpawnTrigger(botAI);
     }
-    static Trigger* muru_entropius_summons_void_zones(PlayerbotAI* botAI)
+    static Trigger* muru_void_zone_is_near(PlayerbotAI* botAI)
     {
-        return new MuruEntropiusSummonsVoidZonesTrigger(botAI);
+        return new MuruVoidZoneIsNearTrigger(botAI);
+    }
+    static Trigger* muru_dark_fiend_is_near(PlayerbotAI* botAI)
+    {
+        return new MuruDarkFiendIsNearTrigger(botAI);
     }
     static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI)
     {

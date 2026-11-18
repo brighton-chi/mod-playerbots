@@ -75,22 +75,29 @@ inline constexpr float MURU_SHADOW_BOLT_VOLLEY_RADIUS = 20.0f;
 // end up ~4y from their target, and there's also some variability from the tanking moving adds.
 inline constexpr float MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL = 15.0f;
 
-// Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, and spawn Dark Fiends.
-// The wide safe distance is in anticipation of the Dark Fiend spawn. Search is measured by
-// IsWithinDist, which adds both combat reaches for a total of 14.5y.
-inline constexpr float MURU_VOID_ZONE_CLEARANCE = 10.0f;
-inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = MURU_VOID_ZONE_CLEARANCE + 2.0f;
-// Dark Fiend search radii for killing (dispelling) and avoiding, respectively.
-inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
-inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
-// A Dark Fiend detonates within 7y (center to center) of whoever it is chasing. The safe distance
-// is deliberately wide as touching a single Dark Fiend is almost a guaranteed wipe.
-inline constexpr float DARK_FIEND_SAFE_DISTANCE = 12.0f;
+// A Dark Fiend detonates when it comes within 7y (center to center) of the player it chases.
+// Everyone keeps clear of it, as touching one is almost a guaranteed wipe.
+inline constexpr float DARK_FIEND_BLAST_RANGE = 7.0f;
+inline constexpr float DARK_FIEND_CLEARANCE = DARK_FIEND_BLAST_RANGE + 5.0f;
+inline constexpr float DARK_FIEND_SEARCH_RADIUS = 50.0f;
+// A void zone (25879) hits within 3y of its center (46264). For its first 3s it carries 46265,
+// which summons a Dark Fiend at its center when it ends, so a new zone is kept at the fiend's
+// clearance.
+inline constexpr float MURU_VOID_ZONE_HAZARD_RADIUS = 3.0f;
+inline constexpr float MURU_VOID_ZONE_CLEARANCE = MURU_VOID_ZONE_HAZARD_RADIUS + 1.5f;
+// How far a bot looks for a position clear of every void zone and fiend.
+inline constexpr float MURU_CLEAR_POSITION_SEARCH_RADIUS = 15.0f;
+inline constexpr float MURU_CLEAR_POSITION_ARRIVAL_DISTANCE = 0.5f;
+// Covers every zone that can rule out a position the search tries.
+inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS =
+    MURU_CLEAR_POSITION_SEARCH_RADIUS + DARK_FIEND_CLEARANCE;
+// A Singularity throws everyone within 7y of its center (46230) from 8s after it appears. Bots
+// leave from the moment it appears, for time to react. Entropius's victim keeps farther away, so
+// melee on Entropius have room.
+inline constexpr float SINGULARITY_HAZARD_RADIUS = 7.0f;
+inline constexpr float SINGULARITY_CLEARANCE = SINGULARITY_HAZARD_RADIUS + 3.0f;
+inline constexpr float SINGULARITY_TANK_CLEARANCE = 20.0f;
 inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
-// Distance kept from a Singularity. The active tank's distance is greater in order to leave space
-// for melee on Entropius.
-inline constexpr float SINGULARITY_SAFE_DISTANCE = 15.0f;
-inline constexpr float SINGULARITY_TANK_SAFE_DISTANCE = 20.0f;
 // Hunters and shamans leave a new Spell Fury this long for a mage to Spellsteal, which allows for a
 // mage's global cooldown.
 inline constexpr uint32 SPELL_FURY_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
@@ -134,7 +141,11 @@ GuidVector FindMuruDarkFiendGuids(Player* bot);
 std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI);
 Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius);
 ObjectGuid FindMuruSingularityGuid(Player* bot);
+float GetMuruVoidZoneClearance(Unit* voidZone);
 Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI);
+Creature* FindMuruDarkFiendToAvoid(PlayerbotAI* botAI);
+bool TryGetMuruClearPosition(PlayerbotAI* botAI, Position& destination);
+float GetSingularityClearance(Player* bot, Unit* entropius);
 Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 
 // Shared encounter state
