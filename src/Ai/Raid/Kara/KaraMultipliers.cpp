@@ -378,9 +378,30 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Actio
 
 // Netherspite
 
+namespace
+{
+
+// Where a standard reach toward the target stops, worked out the way ReachCombatTo does it: range
+// plus both combat reaches from the target. The reach action doesn't expose that position, and the
+// void zone hold needs it before the reach runs.
+Position GetNetherspiteReachEndPosition(Unit const& bot, Unit const& target, float range)
+{
+    float const distance = bot.GetExactDist2d(target);
+    float const end = range + bot.GetCombatReach() + target.GetCombatReach();
+    if (distance <= end)
+        return bot.GetPosition();
+
+    float const fraction = end / distance;
+    return Position(
+        target.GetPositionX() + (bot.GetPositionX() - target.GetPositionX()) * fraction,
+        target.GetPositionY() + (bot.GetPositionY() - target.GetPositionY()) * fraction);
+}
+
+} // end anonymous namespace (Netherspite)
+
 // Positioning in and around the beams decides the outcome of the fight, and a tight formation is
 // kept during the Banish phase, so reactive and unpredictable movement is blocked. Blue and green
-// blockers themselves and those on deck are further blocked from reaching targets, as their primary
+// blockers themselves and those up next are further blocked from reaching targets, as their primary
 // purpose is to maintain position in or along the beam, even at the expense of DPS or healing.
 float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {

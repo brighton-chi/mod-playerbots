@@ -404,7 +404,7 @@ GuidVector FindMuruVoidZoneGuids(Player* bot)
 {
     std::list<Creature*> voidZones;
     bot->GetCreatureListWithEntryInGrid(
-        voidZones, Id(SwpNpcs::NPC_DARKNESS), VOID_ZONE_SEARCH_RADIUS);
+        voidZones, Id(SwpNpcs::NPC_DARKNESS), MURU_VOID_ZONE_SEARCH_RADIUS);
 
     GuidVector guids;
     guids.reserve(voidZones.size());
@@ -477,7 +477,7 @@ Creature* FindMuruVoidZoneToAvoid(PlayerbotAI* botAI)
         botAI->GetAiObjectContext()->GetValue<GuidVector>("muru void zones")->RefGet();
 
     Creature* nearest = nullptr;
-    float nearestDistance = VOID_ZONE_SAFE_DISTANCE;
+    float nearestDistance = MURU_VOID_ZONE_CLEARANCE;
 
     for (ObjectGuid const& guid : guids)
     {

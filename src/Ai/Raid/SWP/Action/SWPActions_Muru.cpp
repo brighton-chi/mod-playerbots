@@ -737,7 +737,7 @@ bool MuruKeepDistanceFromDarkFiendsAction::Execute(Event /*event*/)
     {
         float const distFromVoidZone = bot->GetExactDist2d(voidZone);
         bot->CastStop();
-        return MoveAway(voidZone, VOID_ZONE_SAFE_DISTANCE - distFromVoidZone);
+        return MoveAway(voidZone, MURU_VOID_ZONE_CLEARANCE - distFromVoidZone);
     }
 
     Creature* darkFiend = GetNearestMuruDarkFiend(botAI, DARK_FIEND_AVOID_SEARCH_RADIUS);

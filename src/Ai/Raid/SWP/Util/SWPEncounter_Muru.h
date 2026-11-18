@@ -82,8 +82,8 @@ inline constexpr float MURU_MELEE_ADD_MIN_DIST_FROM_SENTINEL = 15.0f;
 // Void Zones (25879) have aura 46262, ticking 46264 for 3k in a 3y radius, and spawn Dark Fiends.
 // The wide safe distance is in anticipation of the Dark Fiend spawn. Search is measured by
 // IsWithinDist, which adds both combat reaches for a total of 14.5y.
-inline constexpr float VOID_ZONE_SAFE_DISTANCE = 10.0f;
-inline constexpr float VOID_ZONE_SEARCH_RADIUS = VOID_ZONE_SAFE_DISTANCE + 2.0f;
+inline constexpr float MURU_VOID_ZONE_CLEARANCE = 10.0f;
+inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = MURU_VOID_ZONE_CLEARANCE + 2.0f;
 // Dark Fiend search radii for killing (dispelling) and avoiding, respectively.
 inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
 inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;

@@ -777,18 +777,18 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
         return false;
 
     float const distance = bot->GetExactDist(aran);
-    if (distance >= ARAN_ARCANE_EXPLOSION_SAFE_DISTANCE)
+    if (distance >= ARAN_ARCANE_EXPLOSION_CLEARANCE)
         return false;
 
     bot->CastStop();
     if (bot->GetExactDist2d(aran) > ARAN_PULLED_ONTO_BOSS_DISTANCE)
-        return MoveAway(aran, ARAN_ARCANE_EXPLOSION_SAFE_DISTANCE - distance);
+        return MoveAway(aran, ARAN_ARCANE_EXPLOSION_CLEARANCE - distance);
 
     uint32 const direction = bot->GetGUID().GetCounter() % ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS;
     float const angle =
         2.0f * static_cast<float>(M_PI) * direction / ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS;
-    float x = aran->GetPositionX() + ARAN_ARCANE_EXPLOSION_SAFE_DISTANCE * std::cos(angle);
-    float y = aran->GetPositionY() + ARAN_ARCANE_EXPLOSION_SAFE_DISTANCE * std::sin(angle);
+    float x = aran->GetPositionX() + ARAN_ARCANE_EXPLOSION_CLEARANCE * std::cos(angle);
+    float y = aran->GetPositionY() + ARAN_ARCANE_EXPLOSION_CLEARANCE * std::sin(angle);
     float z = bot->GetPositionZ();
     bool const exact = bot->GetMap()->CheckCollisionAndGetValidCoords(
         bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), x, y, z);
@@ -876,7 +876,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
     for (Position const& patch : GetDynamicObjectPositions(
              bot, ARAN_ROOM_SEARCH_RADIUS, Id(KaraSpells::SPELL_BLIZZARD)))
     {
-        if (patch.GetExactDist2d(position) <= ARAN_BLIZZARD_SAFE_DISTANCE)
+        if (patch.GetExactDist2d(position) <= ARAN_BLIZZARD_CLEARANCE)
             return false;
     }
 
@@ -1243,7 +1243,7 @@ bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
     }
 
     return IsClearOfVoidZones(
-            state, position.GetPositionX(), position.GetPositionY(), VOID_ZONE_SAFE_DISTANCE) &&
+            state, position.GetPositionX(), position.GetPositionY(), NETHERSPITE_VZ_CLEARANCE) &&
         IsClearOfNetherspiteBeams(
             *netherspite, state, position.GetPositionX(), position.GetPositionY());
 }
@@ -1265,7 +1265,7 @@ std::optional<Position> NetherspiteManageTimersAndTrackersAction::FindNextPositi
             side * frand(NETHERSPITE_NEXT_MIN_OFF_LINE, NETHERSPITE_NEXT_MAX_OFF_LINE);
         float const x = netherspite->GetPositionX() + dirX * along - dirY * off;
         float const y = netherspite->GetPositionY() + dirY * along + dirX * off;
-        if (!IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE) ||
+        if (!IsClearOfVoidZones(state, x, y, NETHERSPITE_VZ_CLEARANCE) ||
             !IsClearOfNetherspiteBeams(*netherspite, state, x, y))
         {
             continue;
@@ -1462,7 +1462,7 @@ Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
         z = bossZ;
         if (bot->GetMap()->CheckCollisionAndGetValidCoords(
                 bot, bossX, bossY, bossZ, x, y, z, false) &&
-            IsClearOfVoidZones(state, x, y, VOID_ZONE_SAFE_DISTANCE))
+            IsClearOfVoidZones(state, x, y, NETHERSPITE_VZ_CLEARANCE))
         {
             break;
         }
@@ -1560,7 +1560,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
     {
         if (IsClearOfVoidZones(
                 state, slot.position.GetPositionX(), slot.position.GetPositionY(),
-                VOID_ZONE_SAFE_DISTANCE))
+                NETHERSPITE_VZ_CLEARANCE))
         {
             continue;
         }
@@ -1609,8 +1609,8 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
     std::vector<Position> const infernals = GetLandedInfernals(botAI);
     if (_destination &&
         (!HasDestinationFor(enfeeble->GetApplyTime(), canNovaHit) ||
-         !IsClearOfInfernals(*_destination, infernals, HELLFIRE_SAFE_DISTANCE) ||
-         (canNovaHit && malchezaar->GetExactDist2d(*_destination) < SHADOW_NOVA_SAFE_DISTANCE) ||
+         !IsClearOfInfernals(*_destination, infernals, MALC_HELLFIRE_CLEARANCE) ||
+         (canNovaHit && malchezaar->GetExactDist2d(*_destination) < MALC_SHADOW_NOVA_CLEARANCE) ||
          !IsLineClearOfInfernals(bot->GetPosition(), *_destination, infernals)))
     {
         _destination.reset();
@@ -1621,7 +1621,7 @@ bool PrinceMalchezaarEnfeebledBotRunToSafetyAction::Execute(Event /*event*/)
         // How far a bot can run (7 yd/s) in the 7.5s from Enfeeble to Shadow Nova landing.
         constexpr float searchDistance = 52.0f;
         _destination = FindNearestMalchezaarSafePosition(
-            bot, bot->GetPosition(), infernals, searchDistance, false, HELLFIRE_SAFE_DISTANCE,
+            bot, bot->GetPosition(), infernals, searchDistance, false, MALC_HELLFIRE_CLEARANCE,
             canNovaHit ? malchezaar : nullptr);
 
         if (!_destination)
@@ -1974,7 +1974,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         state.nightbaneRainOfBonesCenter = *rainCenter;
 
     if (state.nightbaneFlightStackPosition && state.nightbaneFlightStackPosition->GetExactDist2d(
-            *rainCenter) >= RAIN_OF_BONES_SAFE_DISTANCE)
+            *rainCenter) >= RAIN_OF_BONES_CLEARANCE)
     {
         return true;
     }

@@ -358,7 +358,7 @@ bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
         return false;
 
     if (!IsClearOfVoidZones(
-            *state, bot->GetPositionX(), bot->GetPositionY(), VOID_ZONE_SAFE_DISTANCE))
+            *state, bot->GetPositionX(), bot->GetPositionY(), NETHERSPITE_VZ_CLEARANCE))
     {
         return true;
     }
@@ -413,8 +413,8 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActiveInEncounter()
         return false;
 
     bool const canNovaHit = CanShadowNovaHitEnfeebled(malchezaar, *enfeeble);
-    if ((canNovaHit && bot->GetExactDist(malchezaar) < SHADOW_NOVA_SAFE_DISTANCE) ||
-        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_SAFE_DISTANCE))
+    if ((canNovaHit && bot->GetExactDist(malchezaar) < MALC_SHADOW_NOVA_CLEARANCE) ||
+        !IsClearOfInfernals(*bot, GetLandedInfernals(botAI), MALC_HELLFIRE_CLEARANCE))
     {
         return true;
     }
@@ -434,9 +434,9 @@ bool PrinceMalchezaarNearHazardTrigger::IsActiveInEncounter()
     if (malchezaar && malchezaar->GetVictim() == bot && PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), HELLFIRE_SAFE_DISTANCE) ||
+    if (!IsClearOfInfernals(*bot, GetLandedInfernals(botAI), MALC_HELLFIRE_CLEARANCE) ||
         (malchezaar && PlayerbotAI::IsRanged(bot) &&
-         bot->GetExactDist(malchezaar) < SHADOW_NOVA_SAFE_DISTANCE))
+         bot->GetExactDist(malchezaar) < MALC_SHADOW_NOVA_CLEARANCE))
     {
         return true;
     }

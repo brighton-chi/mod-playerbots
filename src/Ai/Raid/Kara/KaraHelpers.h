@@ -339,8 +339,7 @@ bool IsTerestianSacrificeActive(Player* bot);
 
 // No reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
-inline constexpr float ARAN_ARCANE_EXPLOSION_SAFE_DISTANCE =
-    ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
+inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
 // The pull lands everyone on his spot, so each bot takes its own way out.
 inline constexpr float ARAN_PULLED_ONTO_BOSS_DISTANCE = 1.0f;
 inline constexpr uint32 ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS = 16;
@@ -353,7 +352,7 @@ inline constexpr float ARAN_RANGED_BAND_TOLERANCE = 0.5f;
 inline constexpr uint32 ARAN_ELEMENTALS_CACHE_INTERVAL_MS = 1000;
 // 13 yd + player reach.
 inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 14.5f;
-inline constexpr float ARAN_BLIZZARD_SAFE_DISTANCE = ARAN_BLIZZARD_HAZARD_RADIUS + 0.5f;
+inline constexpr float ARAN_BLIZZARD_CLEARANCE = ARAN_BLIZZARD_HAZARD_RADIUS + 0.5f;
 inline constexpr float ARAN_ROOM_SEARCH_RADIUS = 60.0f;
 // Ranged run here from a patch, measured from the room center. A single Blizzard is actually a
 // "train" of connected patches that are added onto the train's head and move clockwise. Blizzard
@@ -445,10 +444,10 @@ inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
 // No reach added.
-inline constexpr float VOID_ZONE_HAZARD_RADIUS = 2.0f;
-inline constexpr float VOID_ZONE_SAFE_DISTANCE = VOID_ZONE_HAZARD_RADIUS + 1.0f;
-inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = VOID_ZONE_HAZARD_RADIUS + 0.5f;
-inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = VOID_ZONE_SAFE_DISTANCE + 0.5f;
+inline constexpr float NETHERSPITE_VZ_HAZARD_RADIUS = 2.0f;
+inline constexpr float NETHERSPITE_VZ_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 1.0f;
+inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 0.5f;
+inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = NETHERSPITE_VZ_CLEARANCE + 0.5f;
 // Tried when neither side of the void zone is clear at the normal step-around distance.
 inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROUND_DISTANCE + 2.0f;
 inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
@@ -468,7 +467,7 @@ inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 56 * IN_MILLISECONDS;
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
 // At this many stacks on the blocker, the next blocker moves onto the beam and takes over. One
-// stack under the limit gives it a second to arrive, or to finish a cast first.
+// stack under the limit gives it a second to arrive or finish a cast.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
 inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
@@ -523,20 +522,20 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state);
 std::optional<Position> GetStepAroundVoidZones(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, Position const& destination);
-Position GetNetherspiteReachEndPosition(Unit const& bot, Unit const& target, float range);
 
 // Prince Malchezaar
 
 // Hellfire and Shadow Nova do not add player reach.
-inline constexpr float HELLFIRE_HAZARD_RADIUS = 20.0f;
-inline constexpr float HELLFIRE_SAFE_DISTANCE = HELLFIRE_HAZARD_RADIUS + 1.0f;
-inline constexpr float SHADOW_NOVA_HAZARD_RADIUS = 30.0f;
-inline constexpr float SHADOW_NOVA_SAFE_DISTANCE = SHADOW_NOVA_HAZARD_RADIUS + 1.0f;
-inline constexpr int32 SHADOW_NOVA_CAST_TIME_MS = 2 * IN_MILLISECONDS;
+inline constexpr float MALC_HELLFIRE_HAZARD_RADIUS = 20.0f;
+inline constexpr float MALC_HELLFIRE_CLEARANCE = MALC_HELLFIRE_HAZARD_RADIUS + 1.0f;
+inline constexpr float MALC_SHADOW_NOVA_HAZARD_RADIUS = 30.0f;
+inline constexpr float MALC_SHADOW_NOVA_CLEARANCE = MALC_SHADOW_NOVA_HAZARD_RADIUS + 1.0f;
+inline constexpr int32 MALC_SHADOW_NOVA_CAST_TIME_MS = 2 * IN_MILLISECONDS;
 // Malchezaar's melee range for a player: 4 yd (his reach) + 1.5 yd + 4/3 yd.
 inline constexpr float MALCHEZAAR_MELEE_RANGE = 6.83f;
 // Malchezaar being this far from an active Infernal means it is safe to stand in melee range.
-inline constexpr float MALCHEZAAR_MELEE_CLEARANCE = HELLFIRE_SAFE_DISTANCE + MALCHEZAAR_MELEE_RANGE;
+inline constexpr float MALCHEZAAR_MELEE_CLEARANCE =
+    MALC_HELLFIRE_CLEARANCE + MALCHEZAAR_MELEE_RANGE;
 // Malchezaar ends about this far behind a tank moving him.
 inline constexpr float MALCHEZAAR_TRAIL_DISTANCE = 6.0f;
 // The model an Infernal has until Infernal Rain lands on it.
@@ -593,13 +592,13 @@ inline constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 inline constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 inline constexpr uint32 NIGHTBANE_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
 inline constexpr float CHARRED_EARTH_HAZARD_RADIUS = 11.5f; // 10 yd patch + 1.5 yd player reach
-inline constexpr float CHARRED_EARTH_SAFE_DISTANCE = CHARRED_EARTH_HAZARD_RADIUS + 0.5f;
+inline constexpr float CHARRED_EARTH_CLEARANCE = CHARRED_EARTH_HAZARD_RADIUS + 0.5f;
 inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
 // Each Rain of Bones tick hits everyone within 6 yd of a random point up to 8 yd from its center
 // (no combat reach added), so the rain reaches 14 yd.
 inline constexpr float RAIN_OF_BONES_HAZARD_RADIUS = 14.0f;
-inline constexpr float RAIN_OF_BONES_SAFE_DISTANCE = RAIN_OF_BONES_HAZARD_RADIUS + 1.0f;
+inline constexpr float RAIN_OF_BONES_CLEARANCE = RAIN_OF_BONES_HAZARD_RADIUS + 1.0f;
 inline constexpr int32 RAIN_OF_BONES_REACTION_MS = 1000;
 // Nightbane's final flight phase starts when his HP drops below 25%. In AC, he is out of LoS in
 // flight, so his HP is similar at landing for the final (ground) phase. Using 20% covers variance.
@@ -634,7 +633,7 @@ inline constexpr float NIGHTBANE_MELEE_HOLD_DIST = 23.0f;
 // Ranged distances are calculated to keep melee safe from a Charred Earth that lands on ranged
 // positions, while allowing heals (43 yd range) to reach melee on Nightbane's far flank.
 inline constexpr float NIGHTBANE_RANGED_MIN_DIST =
-    NIGHTBANE_MELEE_FLANK_DIST + CHARRED_EARTH_SAFE_DISTANCE;
+    NIGHTBANE_MELEE_FLANK_DIST + CHARRED_EARTH_CLEARANCE;
 inline constexpr float NIGHTBANE_RANGED_MAX_DIST = 43.0f - NIGHTBANE_MELEE_FLANK_DIST;
 
 inline Position const NIGHTBANE_FLIGHT_POSITION = { -11160.125f, -1870.683f, 97.739f };
