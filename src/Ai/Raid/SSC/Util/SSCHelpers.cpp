@@ -2310,7 +2310,7 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase)
 
     bool const eliteHolderIsFree =
         phase == 3 && add->GetEntry() == Id(SscNpcs::NPC_COILFANG_STRIDER);
-    Unit const* vashjTank = phase == 3 ? vashj->GetVictim() : nullptr;
+    Unit* vashjTank = phase == 3 ? vashj->GetVictim() : nullptr;
     float const botDistance = bot->GetExactDist2d(add);
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

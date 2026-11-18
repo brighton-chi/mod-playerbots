@@ -555,11 +555,11 @@ bool IsLineClearOfInfernals(
     Position const& from, Position const& to, std::vector<Position> const& infernals);
 std::optional<Position> FindNearestMalchezaarSafePosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
-    float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource);
+    float maxDistance, bool mayCross, float infernalClearance, Unit* novaSource);
 std::optional<Position> FindMalchezaarClearPosition(
-    PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals);
+    PlayerbotAI* botAI, Unit* malchezaar, std::vector<Position> const& infernals);
 bool IsClearOfMalchezaarHazards(
-    Player* bot, Unit const* malchezaar, std::vector<Position> const& infernals,
+    Player* bot, Unit* malchezaar, std::vector<Position> const& infernals,
     Position const& position);
 std::optional<Position> FindMalchezaarTankPosition(
     Player* bot, std::vector<Position> const& infernals, float& clearance);

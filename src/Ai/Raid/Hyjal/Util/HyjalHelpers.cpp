@@ -382,7 +382,7 @@ GuidVector FindInfernalGuids(Player* bot)
             alive.push_back(infernal);
     }
 
-    std::sort(alive.begin(), alive.end(), [](Creature const* first, Creature const* second)
+    std::sort(alive.begin(), alive.end(), [](Creature* first, Creature* second)
     {
         return first->GetGUID().GetCounter() < second->GetGUID().GetCounter();
     });

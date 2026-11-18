@@ -1316,8 +1316,7 @@ std::optional<Position> FindPositionInRangeOfTarget(
     constexpr float rangeInset = 1.0f;
     float const reach = (isRanged ?
         botAI->GetRange(isHealer ? "heal" : "spell") + bot->GetCombatReach() +
-            target->GetCombatReach() :
-        bot->GetMeleeRange(target)) - rangeInset;
+            target->GetCombatReach() : bot->GetMeleeRange(target)) - rangeInset;
 
     Unit const* anchor = isRanged ? &malchezaar : target;
     float const anchorDist = isRanged ? MALC_SHADOW_NOVA_CLEARANCE : reach;
@@ -1366,7 +1365,7 @@ std::optional<Position> FindPositionInRangeOfTarget(
 // a straight line. Lines that pass no infernal come first; with mayCross, any line after that.
 std::optional<Position> FindNearestMalchezaarSafePosition(
     Player* bot, Position const& origin, std::vector<Position> const& infernals,
-    float maxDistance, bool mayCross, float infernalClearance, Unit const* novaSource)
+    float maxDistance, bool mayCross, float infernalClearance, Unit* novaSource)
 {
     constexpr float ringStep = 2.0f;
     constexpr uint8 angleCount = 32;
@@ -1410,7 +1409,7 @@ std::optional<Position> FindNearestMalchezaarSafePosition(
 }
 
 std::optional<Position> FindMalchezaarClearPosition(
-    PlayerbotAI* botAI, Unit const* malchezaar, std::vector<Position> const& infernals)
+    PlayerbotAI* botAI, Unit* malchezaar, std::vector<Position> const& infernals)
 {
     if (malchezaar)
     {
@@ -1428,8 +1427,7 @@ std::optional<Position> FindMalchezaarClearPosition(
 }
 
 bool IsClearOfMalchezaarHazards(
-    Player* bot, Unit const* malchezaar, std::vector<Position> const& infernals,
-    Position const& position)
+    Player* bot, Unit* malchezaar, std::vector<Position> const& infernals, Position const& position)
 {
     return IsClearOfInfernals(position, infernals, MALC_HELLFIRE_CLEARANCE) &&
         (!malchezaar || !PlayerbotAI::IsRanged(bot) ||
