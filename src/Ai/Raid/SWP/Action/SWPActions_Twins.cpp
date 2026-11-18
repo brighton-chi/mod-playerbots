@@ -190,11 +190,11 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         return false;
 
     Position const position = GetAlythessTankPosition(alythess, index);
-    constexpr float maxDistance = 1.0f;
-    if (bot->GetExactDist2d(position) <= maxDistance)
+    constexpr float arrivalDist = ALYTHESS_TANK_ARRIVAL_DISTANCE;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;
 
-    return StepToPosition(alythess, position, maxDistance);
+    return StepToPosition(alythess, position, arrivalDist);
 }
 
 bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(

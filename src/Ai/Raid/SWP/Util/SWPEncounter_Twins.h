@@ -90,16 +90,20 @@ inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2 * IN_MILLISECONDS;
 
 inline Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
-// All in Alythess's melee range (4.7y from her) and within Sacrolash's Shadow Blades (20y), which
-// clears the tank's Flame Touched. Visited in order; the move from the last to the first passes
-// 2.35y from her center, outside the 2.0y within which she backs off her victim.
+// All in Alythess's melee range (4.7-5.15y from her) and within Sacrolash's Shadow Blades (20y),
+// which clears the tank's Flame Touched. Visited in order; the move from the last to the first
+// passes 2.56y from her center, outside the 2.375y within which she backs off her victim once
+// Empower has grown her (2.0y before).
 inline std::array const ALYTHESS_TANK_POSITIONS = {
-    Position{ 1820.300f, 630.100f, 33.404f },
+    Position{ 1820.310f, 630.150f, 33.404f },
     Position{ 1815.800f, 628.800f, 33.404f },
     Position{ 1814.700f, 624.200f, 33.404f },
     Position{ 1818.100f, 621.000f, 33.404f },
-    Position{ 1822.600f, 622.300f, 33.404f },
+    Position{ 1823.040f, 622.130f, 33.404f },
 };
+// The tank's Blaze patch lands where it stops, and the positions are 4.67y apart against a 4.5y
+// clearance, so it must stop on the position, not short of it on the way in.
+inline constexpr float ALYTHESS_TANK_ARRIVAL_DISTANCE = 0.2f;
 // The Alythess tank's landing at the pull, the position nearest the balcony.
 inline constexpr uint8 ALYTHESS_TANK_LANDING_INDEX = 3;
 
