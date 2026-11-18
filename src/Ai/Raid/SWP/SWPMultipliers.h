@@ -238,6 +238,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class FelmystKeepHealersInSideStacksMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    FelmystKeepHealersInSideStacksMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "felmyst keep healers in side stacks", SwpHelpers::SwpBosses::DATA_FELMYST) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class FelmystPrioritizeFogAvoidanceMultiplier : public SunwellEncounterMultiplier
 {
 public:

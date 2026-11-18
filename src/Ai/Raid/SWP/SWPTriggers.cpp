@@ -279,21 +279,7 @@ bool FelmystRangedShouldPositionToDispelAndFleeTrigger::IsActiveInEncounter()
         return false;
     }
 
-    if (HasFelmystEarlyMoveStarted(botAI))
-        return false;
-
-    if (felmyst->GetVictim() == bot)
-        return false;
-
-    // On initial landing, let the MT get aggro before assuming positions
-    Player* mainTank = GetGroupMainTank(bot);
-    if (mainTank && felmyst->GetVictim() != mainTank &&
-        felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-    {
-        return false;
-    }
-
-    return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
+    return !HasFelmystEarlyMoveStarted(botAI) && IsFelmystRangedStackActive(bot, felmyst);
 }
 
 bool FelmystMeleeShouldStayTogetherTrigger::IsActiveInEncounter()

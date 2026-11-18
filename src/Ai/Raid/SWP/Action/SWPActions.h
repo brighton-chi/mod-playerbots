@@ -306,6 +306,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystMoveIntoMassDispelReachAction : public MovementAction
+{
+public:
+    FelmystMoveIntoMassDispelReachAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "felmyst move into mass dispel reach") {}
+    bool Execute(Event event) override;
+};
+
 class FelmystMoveToAirGroupPositionAction : public MovementAction
 {
 public:

@@ -188,9 +188,35 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
 bool FelmystMassDispelGasNovaAction::Execute(Event /*event*/)
 {
     Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
-    return gasNovaTarget &&
-        botAI->CanCastSpell(Id(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget) &&
+    if (!gasNovaTarget || bot->GetExactDist(gasNovaTarget) > MASS_DISPEL_REACH)
+        return false;
+
+    return botAI->CanCastSpell(Id(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget) &&
         botAI->CastSpell(Id(SwpSpells::SPELL_MASS_DISPEL), gasNovaTarget);
+}
+
+bool FelmystMoveIntoMassDispelReachAction::Execute(Event /*event*/)
+{
+    Player* gasNovaTarget = GetFelmystGasNovaDispelTarget(bot);
+    if (!gasNovaTarget || bot->GetExactDist(gasNovaTarget) <= MASS_DISPEL_REACH ||
+        !IsFelmystMassDispelReady(bot))
+    {
+        return false;
+    }
+
+    constexpr float arrivalDist = MASS_DISPEL_REACH - 2.0f;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float moveX;
+    float moveY;
+    if (!GetPathStepTowardUnit(bot, gasNovaTarget, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool FelmystMoveToAirGroupPositionAction::Execute(Event /*event*/)
@@ -429,7 +455,8 @@ bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
 
     if (felmyst->IsFlying())
     {
-        if (!IsFelmystLanding(felmyst))
+        // Felmyst is coming down for the pull on the engaging unit's position (95% health proxy).
+        if (!IsFelmystLanding(felmyst) && felmyst->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
             return clearTimers();
 
         if (state.landingDpsWaitStartMs)

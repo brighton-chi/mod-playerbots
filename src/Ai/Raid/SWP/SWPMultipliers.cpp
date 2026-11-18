@@ -434,7 +434,23 @@ float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValueInEncounter(Actio
     if (!felmyst || felmyst->IsFlying())
         return 1.0f;
 
-    return GetFelmystEncapsulateTarget(bot) ? 0.0f : 1.0f;
+    Player* encapsulateTarget = GetFelmystEncapsulateTarget(bot);
+    if (!encapsulateTarget)
+        return 1.0f;
+
+    // Healers may move to heal the target: the reach stops about 40 yd away, clear of its 20 yd.
+    return dynamic_cast<ReachPartyMemberToHealAction*>(action) &&
+        action->GetTarget() == encapsulateTarget ? 1.0f : 0.0f;
+}
+
+// Healers at the side stacks would otherwise keep reaching for players in the other side stack.
+// This does not impact healers at the rear stack with melee.
+float FelmystKeepHealersInSideStacksMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!dynamic_cast<ReachPartyMemberToHealAction*>(action))
+        return 1.0f;
+
+    return IsFelmystRangedStackActive(bot, GetEncounterBoss()) ? 0.0f : 1.0f;
 }
 
 float FelmystPrioritizeFogAvoidanceMultiplier::GetValueInEncounter(Action* action)

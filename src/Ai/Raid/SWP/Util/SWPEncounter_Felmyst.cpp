@@ -600,6 +600,32 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
     return TryGetFelmystGroundStackPosition(bot, felmyst, stack, position);
 }
 
+bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst)
+{
+    if (!felmyst || felmyst->IsFlying() || !PlayerbotAI::IsRanged(bot) ||
+        felmyst->GetVictim() == bot)
+    {
+        return false;
+    }
+
+    // On initial landing, let the MT get aggro before assuming positions
+    Player* mainTank = GetGroupMainTank(bot);
+    if (mainTank && felmyst->GetVictim() != mainTank &&
+        felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+    {
+        return false;
+    }
+
+    // Priests may leave the stack to Mass Dispel Gas Nova beyond their reach.
+    if (bot->getClass() == CLASS_PRIEST && IsFelmystMassDispelReady(bot) &&
+        GetFelmystGasNovaDispelTarget(bot))
+    {
+        return false;
+    }
+
+    return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
+}
+
 bool IsFelmystLanding(Unit* felmyst)
 {
     Position destination;
@@ -1204,6 +1230,18 @@ Player* GetFelmystGasNovaDispelTarget(Player* bot)
     }
 
     return closestTarget;
+}
+
+// CanCastSpell() skips the mana check and refuses a cast-time spell while the bot moves, so it
+// can't gate a move toward the cast.
+bool IsFelmystMassDispelReady(Player* bot)
+{
+    uint32 const spellId = Id(SwpSpells::SPELL_MASS_DISPEL);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    return spellInfo && bot->HasSpell(spellId) && !bot->HasSpellCooldown(spellId) &&
+        !bot->HasUnitFlag(UNIT_FLAG_SILENCED) &&
+        static_cast<int32>(bot->GetPower(POWER_MANA)) >=
+            spellInfo->CalcPowerCost(bot, spellInfo->GetSchoolMask());
 }
 
 Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst)

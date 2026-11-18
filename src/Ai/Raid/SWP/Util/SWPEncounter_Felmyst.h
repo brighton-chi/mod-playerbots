@@ -278,6 +278,8 @@ bool TryGetFelmystGroundStackPosition(
 FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Player* reference);
 float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
 bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
+// The ranged stack rule, apart from the early move, which the stack trigger checks itself.
+bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst);
 FelmystDemonicVaporGuids FindFelmystDemonicVaporGuids(Player* bot);
 Creature* GetFelmystOwnDemonicVapor(Player* bot);
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
@@ -301,8 +303,8 @@ bool TryGetFelmystLandingApproachDestination(
     Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
 bool IsFelmystLanding(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
-// From the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, for everyone but the
-// main tank.
+// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, for
+// everyone but the main tank.
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI);
 bool TryGetFelmystPostThirdPassWindow(Unit* felmyst, FogLane& lane);
 bool IsFelmystFogMovementSuppressed(Unit* felmyst);
@@ -314,6 +316,7 @@ bool ShouldMoveAwayFromFelmystEncapsulateTarget(
     Player* bot, Unit* felmyst, Player* encapsulateTarget);
 bool DidEncapsulateOccurThisGroundPhase(Player* bot);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
+bool IsFelmystMassDispelReady(Player* bot);
 Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst);
 
 // Shared encounter state

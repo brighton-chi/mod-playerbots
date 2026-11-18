@@ -110,7 +110,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("felmyst run away from encapsulated player", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("felmyst player has gas nova",
-        { NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6) }));
+        {
+            NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6),
+            NextAction("felmyst move into mass dispel reach", ACTION_EMERGENCY + 5),
+        }));
 
     triggers.push_back(new TriggerNode("felmyst takeoff is near",
         { NextAction("felmyst move to air group position", ACTION_EMERGENCY + 1) }));
@@ -290,6 +293,7 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
     multipliers.push_back(new FelmystWaitForLandingDpsMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeEncapsulateAvoidanceMultiplier(botAI));
+    multipliers.push_back(new FelmystKeepHealersInSideStacksMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeDemonicVaporAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));

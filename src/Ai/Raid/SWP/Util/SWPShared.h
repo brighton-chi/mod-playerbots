@@ -205,6 +205,7 @@ inline constexpr float ICY_TOUCH_REACH = 20.0f;
 inline constexpr float CHARGE_REACH = 25.0f;
 inline constexpr float WIND_SHEAR_REACH = 25.0f;
 inline constexpr float SILENCING_SHOT_REACH = 35.0f;
+inline constexpr float MASS_DISPEL_REACH = 30.0f;
 inline constexpr float CONSECRATION_RADIUS = 8.0f;
 inline constexpr float SHOCKWAVE_RADIUS = 10.0f;
 
