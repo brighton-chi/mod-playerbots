@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_SWPINSTANCESTATE_H
 #define PLAYERBOTS_SWPINSTANCESTATE_H
 
+#include "EncounterHelpers.h"
 #include "SWPEncounter_Brut.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Kalec.h"
@@ -26,12 +27,17 @@ struct SwpInstanceState
     std::optional<EredarTwinsEncounterState> eredarTwins;
     std::optional<MuruEncounterState> muru;
     std::optional<KiljaedenEncounterState> kiljaeden;
+    // Class roles survive SwpResetInstance (see ClassRoleAssignment).
+    EncounterHelpers::ClassRoleAssignment alythessPaladinTank;
 };
 
 SwpInstanceState& SwpState(uint32 instanceId);
 SwpInstanceState* FindSwpState(uint32 instanceId);
-// Clears every boss's state. Returns true if any was set.
+// Clears every boss's state but keeps the class roles. Returns true if any boss state was set.
 bool SwpResetInstance(uint32 instanceId);
+// Picks every class role player again out of encounters; during one, only fills an empty role or
+// replaces a player who died or left.
+bool UpdateSwpClassRoles(PlayerbotAI* botAI);
 
 }
 

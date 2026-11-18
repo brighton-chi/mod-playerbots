@@ -9,9 +9,8 @@ DELETE FROM ai_playerbot_texts WHERE name IN (
     'kalecgos_sathrovarr_banished',
     'kiljaeden_designated_dragon_orb_user',
     'kiljaeden_no_designated_dragon_orb_user',
-    'eredar_twins_alythess_tank_main_tank_paladin',
-    'eredar_twins_alythess_tank_paladin_tank',
-    'eredar_twins_alythess_tank_no_paladin'
+    'class_role_alythess_paladin_tank',
+    'class_role_class_protection_paladin'
 );
 
 DELETE FROM ai_playerbot_texts_chance WHERE name IN (
@@ -25,9 +24,8 @@ DELETE FROM ai_playerbot_texts_chance WHERE name IN (
     'kalecgos_sathrovarr_banished',
     'kiljaeden_designated_dragon_orb_user',
     'kiljaeden_no_designated_dragon_orb_user',
-    'eredar_twins_alythess_tank_main_tank_paladin',
-    'eredar_twins_alythess_tank_paladin_tank',
-    'eredar_twins_alythess_tank_no_paladin'
+    'class_role_alythess_paladin_tank',
+    'class_role_class_protection_paladin'
 );
 
 INSERT INTO ai_playerbot_texts
@@ -83,17 +81,12 @@ VALUES
 INSERT INTO ai_playerbot_texts
     (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
 VALUES
-    (1958, 'eredar_twins_alythess_tank_main_tank_paladin', 'Alythess requires a Paladin tank. %bot is the main tank and a Paladin and is assigned to tank Alythess.', 0, 0, '', '', '', '', '', '', '', '');
+    (1958, 'class_role_alythess_paladin_tank', 'Alythess paladin tank', 0, 0, '', '', '', '', '', '', '', '');
 
 INSERT INTO ai_playerbot_texts
     (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
 VALUES
-    (1959, 'eredar_twins_alythess_tank_paladin_tank', 'Alythess requires a Paladin tank. The main tank is not a Paladin. %bot is the best-geared Paladin tank and is assigned to tank Alythess.', 0, 0, '', '', '', '', '', '', '', '');
-
-INSERT INTO ai_playerbot_texts
-    (id, name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8)
-VALUES
-    (1960, 'eredar_twins_alythess_tank_no_paladin', 'Alythess requires a Paladin tank. However, no Paladin tank is present. Therefore, the main tank, %bot, is assigned to tank Alythess.', 0, 0, '', '', '', '', '', '', '', '');
+    (1959, 'class_role_class_protection_paladin', 'Protection Paladin', 0, 0, '', '', '', '', '', '', '', '');
 
 INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES
     ('kalecgos_tank_sent_to_spectral_realm', 100),
@@ -106,6 +99,5 @@ INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES
     ('kalecgos_sathrovarr_banished', 100),
     ('kiljaeden_designated_dragon_orb_user', 100),
     ('kiljaeden_no_designated_dragon_orb_user', 100),
-    ('eredar_twins_alythess_tank_main_tank_paladin', 100),
-    ('eredar_twins_alythess_tank_paladin_tank', 100),
-    ('eredar_twins_alythess_tank_no_paladin', 100);
+    ('class_role_alythess_paladin_tank', 100),
+    ('class_role_class_protection_paladin', 100);

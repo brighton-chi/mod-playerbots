@@ -117,6 +117,11 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     return reset;
 }
 
+bool SunwellAssignClassRolesAction::Execute(Event /*event*/)
+{
+    return UpdateSwpClassRoles(botAI);
+}
+
 bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 {
     // Only the immunities that stop the bot from contributing should be cancelled, so Cloak of

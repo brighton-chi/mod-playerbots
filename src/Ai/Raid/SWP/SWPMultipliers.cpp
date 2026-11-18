@@ -568,17 +568,21 @@ float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
     return GetDpsHoldValue(bot, action);
 }
 
+// Avoid-AoE is off for tanks and for a bot holding Alythess, which stays at its step-aside
+// position in its own Blaze patches.
 float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
 
+    bool const isAvoidAoeOff = dynamic_cast<AvoidAoeAction*>(action) &&
+        (PlayerbotAI::IsTank(bot) || IsHoldingAlythessAggro(bot, GetEncounterBoss()));
+
     if (!isReachAction &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FleeAction*>(action) &&
-        !IsRepositionAction(bot, action) && !IsKillingSpree(bot, action) &&
-        !(PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action)))
+        !IsRepositionAction(bot, action) && !IsKillingSpree(bot, action) && !isAvoidAoeOff)
     {
         return 1.0f;
     }

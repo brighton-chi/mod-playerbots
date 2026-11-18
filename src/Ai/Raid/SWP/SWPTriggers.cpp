@@ -27,6 +27,11 @@ bool SunwellNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, SWP_MAP_ID);
 }
 
+bool SunwellClassRolesShouldBeAssignedTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, SWP_MAP_ID);
+}
+
 bool SunwellAuraToRemoveTrigger::IsActive()
 {
     uint32 const spellId = GetSelfImmunitySpell(bot);
@@ -490,18 +495,6 @@ bool EredarTwinsShouldLeaveBalconyTrigger::IsActiveInEncounter()
     return !sacrolash || sacrolash->GetVictim() == bot;
 }
 
-bool EredarTwinsShouldAnnounceAlythessTankTrigger::IsActiveInEncounter()
-{
-    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
-        return false;
-
-    EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
-    if (state && state->tankAssignment && state->tankAssignment->announcementMs)
-        return false;
-
-    return true;
-}
-
 bool EredarTwinsSacrolashShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -551,6 +544,11 @@ bool EredarTwinsOnlyAlythessRemainsTrigger::IsActiveInEncounter()
         return false;
 
     return !IsAlythessTank(bot);
+}
+
+bool EredarTwinsAlythessTargetsNonTankTrigger::IsActiveInEncounter()
+{
+    return IsHoldingAlythessAggro(bot, GetEncounterBoss());
 }
 
 bool EredarTwinsTooManyFlameTouchedStacksTrigger::IsActiveInEncounter()

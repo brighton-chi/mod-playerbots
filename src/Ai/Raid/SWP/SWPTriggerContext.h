@@ -21,6 +21,9 @@ public:
 
         creators["sunwell aura to remove"] = &RaidSwpTriggerContext::sunwell_aura_to_remove;
 
+        creators["sunwell class roles should be assigned"] =
+            &RaidSwpTriggerContext::sunwell_class_roles_should_be_assigned;
+
         // Trash
         creators["volatile fiend self destructs when near"] =
             &RaidSwpTriggerContext::volatile_fiend_self_destructs_when_near;
@@ -129,9 +132,6 @@ public:
         creators["eredar twins should leave balcony"] =
             &RaidSwpTriggerContext::eredar_twins_should_leave_balcony;
 
-        creators["eredar twins should announce alythess tank"] =
-            &RaidSwpTriggerContext::eredar_twins_should_announce_alythess_tank;
-
         creators["eredar twins hunter should misdirect"] =
             &RaidSwpTriggerContext::eredar_twins_hunter_should_misdirect;
 
@@ -146,6 +146,9 @@ public:
 
         creators["eredar twins only alythess remains"] =
             &RaidSwpTriggerContext::eredar_twins_only_alythess_remains;
+
+        creators["eredar twins alythess targets non-tank"] =
+            &RaidSwpTriggerContext::eredar_twins_alythess_targets_non_tank;
 
         creators["eredar twins too many flame touched stacks"] =
             &RaidSwpTriggerContext::eredar_twins_too_many_flame_touched_stacks;
@@ -243,6 +246,10 @@ private:
     static Trigger* sunwell_no_encounter_in_progress(PlayerbotAI* botAI)
     {
         return new SunwellNoEncounterInProgressTrigger(botAI);
+    }
+    static Trigger* sunwell_class_roles_should_be_assigned(PlayerbotAI* botAI)
+    {
+        return new SunwellClassRolesShouldBeAssignedTrigger(botAI);
     }
     static Trigger* sunwell_aura_to_remove(PlayerbotAI* botAI)
     {
@@ -400,10 +407,6 @@ private:
     {
         return new EredarTwinsShouldLeaveBalconyTrigger(botAI);
     }
-    static Trigger* eredar_twins_should_announce_alythess_tank(PlayerbotAI* botAI)
-    {
-        return new EredarTwinsShouldAnnounceAlythessTankTrigger(botAI);
-    }
     static Trigger* eredar_twins_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SunwellHunterShouldMisdirectTrigger(
@@ -425,6 +428,10 @@ private:
     static Trigger* eredar_twins_only_alythess_remains(PlayerbotAI* botAI)
     {
         return new EredarTwinsOnlyAlythessRemainsTrigger(botAI);
+    }
+    static Trigger* eredar_twins_alythess_targets_non_tank(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsAlythessTargetsNonTankTrigger(botAI);
     }
     static Trigger* eredar_twins_too_many_flame_touched_stacks(PlayerbotAI* botAI)
     {

@@ -8,24 +8,26 @@
 #include "EncounterHelpers.h"
 #include "Pet.h"
 #include "Playerbots.h"
-#include "PlayerbotTextMgr.h"
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
 #include "ThreatHelpers.h"
-#include <map>
-#include <string>
 #include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-// Ranged land in their phase 2 stack, behind the melee, wherever they jump.
+// While Sacrolash lives, everyone lands with her melee, a ranged bot she is chasing included so
+// she comes back to her tanks; the Alythess tank lands on its own position.
 bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
 {
     Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
     Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
-    Position const landingPosition = PlayerbotAI::IsRanged(bot) ?
-        GetEredarTwinsP2RangedPosition(alythess) : GetEredarTwinsP2MeleePosition(alythess);
+
+    Position landingPosition = EREDAR_TWINS_MELEE_LANDING_POSITION;
+    if (!FindThreatTarget(bot, "lady sacrolash"))
+        landingPosition = GetEredarTwinsP2StackPosition(alythess);
+    else if (IsAlythessTank(bot))
+        landingPosition = GetAlythessTankPosition(alythess, ALYTHESS_TANK_LANDING_INDEX);
 
     constexpr float arrivalDistance = 2.0f;
     if (bot->GetExactDist2d(jumpPosition) > arrivalDistance)
@@ -48,56 +50,9 @@ bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
         landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
 }
 
-// Alythess really needs a Paladin tank so has a custom tank-selection method. To try to limit
-// confusion, announcements are made about which tank is assigned to Alythess and why.
-bool EredarTwinsAnnounceAlythessTankAction::Execute(Event /*event*/)
+bool EredarTwinsAnnounceClassRolesAction::Execute(Event /*event*/)
 {
-    ResolveEredarTwinsTankAssignment(bot);
-
-    AlythessTankSource const source = GetAlythessTankSource(bot);
-    Player* alythessTank = GetAlythessTank(bot);
-    if (source == AlythessTankSource::Unresolved || !alythessTank)
-        return false;
-
-    std::optional<EredarTwinsTankAssignment>& assignment =
-        EredarTwinsState(bot->GetInstanceId()).tankAssignment;
-    (assignment ? *assignment : assignment.emplace()).announcementMs = getMSTime();
-
-    std::map<std::string, std::string> placeholders = {{"%bot", alythessTank->GetName()}};
-    std::string text;
-
-    switch (source)
-    {
-        case AlythessTankSource::MainTankPaladin:
-        {
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "eredar_twins_alythess_tank_main_tank_paladin",
-                "Alythess requires a Paladin tank. %bot is the main tank and a Paladin and is "
-                "assigned to tank Alythess.",
-                placeholders);
-            break;
-        }
-        case AlythessTankSource::PaladinTank:
-        {
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "eredar_twins_alythess_tank_paladin_tank",
-                "Alythess requires a Paladin tank. The main tank is not a Paladin. %bot is the "
-                "best-geared Paladin tank and is assigned to tank Alythess.",
-                placeholders);
-            break;
-        }
-        default:
-        {
-            text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "eredar_twins_alythess_tank_no_paladin",
-                "Alythess requires a Paladin tank. However, no Paladin tank is present. "
-                "Therefore, the main tank, %bot, is assigned to tank Alythess.",
-                placeholders);
-            break;
-        }
-    }
-
-    return botAI->SayToRaid(text);
+    return IsMechanicTrackerBot(bot, SWP_MAP_ID) && UpdateEredarTwinsClassRoleAnnouncement(botAI);
 }
 
 bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
@@ -170,15 +125,17 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != sacrolash)
         return Attack(sacrolash);
 
-    if (sacrolash->GetVictim() != bot || !bot->IsWithinMeleeRange(sacrolash))
+    // The tank Sacrolash is hitting draws her along only while she is in reach of it; the other
+    // tank simply joins it.
+    if (sacrolash->GetVictim() == bot && !bot->IsWithinMeleeRange(sacrolash))
         return false;
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetTankPathStep(
-            bot, SACROLASH_TANK_POSITION, arrivalDist, sacrolash, moveX, moveY, backwards))
+            bot, SACROLASH_TANK_POSITION, SACROLASH_TANK_ARRIVAL_DISTANCE, sacrolash, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -217,7 +174,7 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         return false;
     };
 
-    uint8 index = _alythessTankStep;
+    uint8 index = _alythessTankStep.value_or(ALYTHESS_TANK_LANDING_INDEX);
 
     if (!IsAlythessTankPositionSafe(botAI, GetAlythessTankPosition(alythess, index)))
     {
@@ -256,9 +213,7 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::StepToPosition(
 
 bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 {
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
-    Position const& position = alythess && alythess->GetVictim() == bot ?
-        EREDAR_TWINS_P1_RANGED_ASIDE_POSITION : EREDAR_TWINS_P1_RANGED_POSITION;
+    Position const& position = EREDAR_TWINS_P1_RANGED_POSITION;
 
     if (bot->GetExactDist2d(position) <= EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE)
         return false;
@@ -277,17 +232,37 @@ bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
+bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
 {
     Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
     if (!alythess)
         return false;
 
-    Position const position = PlayerbotAI::IsRanged(bot) ?
-        GetEredarTwinsP2RangedPosition(alythess) :
-        GetEredarTwinsP2MeleePosition(alythess);
+    // The route moves on to the next waypoint before the bot is this close to the last one.
+    Position const position = GetEredarTwinsP2StackRouteTarget(bot, alythess);
+    constexpr float arrivalDist = EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
+        return false;
 
-    constexpr float arrivalDist = 0.5f;
+    float moveX;
+    float moveY;
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+        return false;
+
+    return MoveTo(
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool EredarTwinsStepAsideFromStackAction::Execute(Event /*event*/)
+{
+    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    if (!alythess)
+        return false;
+
+    Position const position = GetEredarTwinsStepAsidePosition(
+        alythess, bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z);
+    constexpr float arrivalDist = EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE;
     if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;
 

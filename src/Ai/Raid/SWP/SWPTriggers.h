@@ -44,6 +44,14 @@ public:
     bool IsActive() override;
 };
 
+class SunwellClassRolesShouldBeAssignedTrigger : public Trigger
+{
+public:
+    SunwellClassRolesShouldBeAssignedTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sunwell class roles should be assigned", 1000) {}
+    bool IsActive() override;
+};
+
 class SunwellAuraToRemoveTrigger : public Trigger
 {
 public:
@@ -453,18 +461,6 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class EredarTwinsShouldAnnounceAlythessTankTrigger : public SunwellEncounterTrigger
-{
-public:
-    EredarTwinsShouldAnnounceAlythessTankTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(
-            botAI, "eredar twins should announce alythess tank",
-            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class EredarTwinsSacrolashShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
@@ -507,6 +503,18 @@ public:
     EredarTwinsOnlyAlythessRemainsTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
             botAI, "eredar twins only alythess remains",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class EredarTwinsAlythessTargetsNonTankTrigger : public SunwellEncounterTrigger
+{
+public:
+    EredarTwinsAlythessTargetsNonTankTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins alythess targets non-tank",
             SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
 
 protected:

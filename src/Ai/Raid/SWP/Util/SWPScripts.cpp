@@ -156,8 +156,8 @@ void RequestInterruptForEredarTwinsBot(Player* player)
         botAI->RequestSpellInterrupt();
 }
 
-// The Conflagration target moves away from the raid, and a ranged bot that pulls aggro on Alythess
-// on the balcony steps off to the side away from the ranged stack.
+// The Conflagration target moves away from the raid, and a bot that pulls aggro on Alythess
+// steps aside from its stack.
 void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 {
     if (!alythess)
@@ -170,15 +170,13 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
 
     Unit* victim = alythess->GetVictim();
     Player* player = victim ? victim->ToPlayer() : nullptr;
-    if (!player || player->GetPositionZ() <= EREDAR_TWINS_BALCONY_Z)
+    if (!IsHoldingAlythessAggro(player, alythess))
         return;
 
-    if (player->GetExactDist2d(EREDAR_TWINS_P1_RANGED_ASIDE_POSITION) >
-            EREDAR_TWINS_BALCONY_ARRIVAL_DISTANCE &&
-        PlayerbotAI::IsRanged(player))
-    {
+    Position const aside = GetEredarTwinsStepAsidePosition(
+        alythess, player->GetPositionZ() > EREDAR_TWINS_BALCONY_Z);
+    if (player->GetExactDist2d(aside) > EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE)
         RequestInterruptForEredarTwinsBot(player);
-    }
 }
 
 } // end anonymous namespace

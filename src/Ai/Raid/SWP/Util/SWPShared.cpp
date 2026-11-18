@@ -14,6 +14,7 @@
 #include <mutex>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 
 using namespace EncounterHelpers;
 
@@ -277,8 +278,18 @@ bool SwpResetInstance(uint32 instanceId)
     SwpInstanceState& state = it->second;
     bool const wasSet = state.kalecgos || state.brutallus || state.felmyst ||
         state.eredarTwins || state.muru || state.kiljaeden;
-    state = SwpInstanceState{};
+    SwpInstanceState kept;
+    kept.alythessPaladinTank = state.alythessPaladinTank;
+    state = std::move(kept);
     return wasSet;
+}
+
+bool UpdateSwpClassRoles(PlayerbotAI* botAI)
+{
+    SwpInstanceState& state = SwpState(botAI->GetBot()->GetInstanceId());
+    return UpdateClassRoleAssignments(botAI, SWP_MAP_ID, {
+        { ALYTHESS_PALADIN_TANK_ROLE, state.alythessPaladinTank },
+    });
 }
 
 }

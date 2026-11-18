@@ -22,6 +22,9 @@ public:
         creators["sunwell remove aura"] =
             &RaidSwpActionContext::sunwell_remove_aura;
 
+        creators["sunwell assign class roles"] =
+            &RaidSwpActionContext::sunwell_assign_class_roles;
+
         // Trash
         creators["volatile fiend intercept"] =
             &RaidSwpActionContext::volatile_fiend_intercept;
@@ -138,8 +141,8 @@ public:
         creators["eredar twins jump from balcony"] =
             &RaidSwpActionContext::eredar_twins_jump_from_balcony;
 
-        creators["eredar twins announce alythess tank"] =
-            &RaidSwpActionContext::eredar_twins_announce_alythess_tank;
+        creators["eredar twins announce class roles"] =
+            &RaidSwpActionContext::eredar_twins_announce_class_roles;
 
         creators["eredar twins misdirect to tanks"] =
             &RaidSwpActionContext::eredar_twins_misdirect_to_tanks;
@@ -153,8 +156,11 @@ public:
         creators["eredar twins ranged stack at balcony edge"] =
             &RaidSwpActionContext::eredar_twins_ranged_stack_at_balcony_edge;
 
-        creators["eredar twins stack in room center"] =
-            &RaidSwpActionContext::eredar_twins_stack_in_room_center;
+        creators["eredar twins stack behind alythess"] =
+            &RaidSwpActionContext::eredar_twins_stack_behind_alythess;
+
+        creators["eredar twins step aside from stack"] =
+            &RaidSwpActionContext::eredar_twins_step_aside_from_stack;
 
         creators["eredar twins remove flame sear"] =
             &RaidSwpActionContext::eredar_twins_remove_flame_sear;
@@ -260,6 +266,10 @@ private:
     static Action* sunwell_reset_encounter_states(PlayerbotAI* botAI)
     {
         return new SunwellResetEncounterStatesAction(botAI);
+    }
+    static Action* sunwell_assign_class_roles(PlayerbotAI* botAI)
+    {
+        return new SunwellAssignClassRolesAction(botAI);
     }
     static Action* sunwell_remove_aura(PlayerbotAI* botAI)
     {
@@ -427,9 +437,9 @@ private:
     {
         return new EredarTwinsJumpFromBalconyAction(botAI);
     }
-    static Action* eredar_twins_announce_alythess_tank(PlayerbotAI* botAI)
+    static Action* eredar_twins_announce_class_roles(PlayerbotAI* botAI)
     {
-        return new EredarTwinsAnnounceAlythessTankAction(botAI);
+        return new EredarTwinsAnnounceClassRolesAction(botAI);
     }
     static Action* eredar_twins_misdirect_to_tanks(PlayerbotAI* botAI)
     {
@@ -447,9 +457,13 @@ private:
     {
         return new EredarTwinsRangedStackAtBalconyEdgeAction(botAI);
     }
-    static Action* eredar_twins_stack_in_room_center(PlayerbotAI* botAI)
+    static Action* eredar_twins_stack_behind_alythess(PlayerbotAI* botAI)
     {
-        return new EredarTwinsStackInRoomCenterAction(botAI);
+        return new EredarTwinsStackBehindAlythessAction(botAI);
+    }
+    static Action* eredar_twins_step_aside_from_stack(PlayerbotAI* botAI)
+    {
+        return new EredarTwinsStepAsideFromStackAction(botAI);
     }
     static Action* eredar_twins_remove_flame_sear(PlayerbotAI* botAI)
     {

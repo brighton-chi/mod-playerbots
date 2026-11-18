@@ -15,6 +15,7 @@
 #include "Position.h"
 #include "SWPShared.h"
 #include <limits>
+#include <optional>
 #include <span>
 #include <string>
 #include <vector>
@@ -28,6 +29,14 @@ class SunwellResetEncounterStatesAction : public Action
 public:
     SunwellResetEncounterStatesAction(PlayerbotAI* botAI)
         : Action(botAI, "sunwell reset encounter states") {}
+    bool Execute(Event event) override;
+};
+
+class SunwellAssignClassRolesAction : public Action
+{
+public:
+    SunwellAssignClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "sunwell assign class roles") {}
     bool Execute(Event event) override;
 };
 
@@ -390,11 +399,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsAnnounceAlythessTankAction : public Action
+class EredarTwinsAnnounceClassRolesAction : public Action
 {
 public:
-    EredarTwinsAnnounceAlythessTankAction(PlayerbotAI* botAI)
-        : Action(botAI, "eredar twins announce alythess tank") {}
+    EredarTwinsAnnounceClassRolesAction(PlayerbotAI* botAI)
+        : Action(botAI, "eredar twins announce class roles") {}
     bool Execute(Event event) override;
 };
 
@@ -420,18 +429,13 @@ public:
     EredarTwinsAlythessTankMoveOutOfBlazeAction(PlayerbotAI* botAI)
         : AttackAction(botAI, "eredar twins alythess tank move out of blaze") {}
     bool Execute(Event event) override;
-    bool ResetAlythessTankState()
-    {
-        if (!_alythessTankStep)
-            return false;
-        _alythessTankStep = 0;
-        return true;
-    }
+    bool ResetAlythessTankState() { return EncounterHelpers::ResetIfSet(_alythessTankStep); }
 
 private:
     bool StepToPosition(Unit* alythess, Position const& position, float arrivalDist);
 
-    uint8 _alythessTankStep = 0;
+    // Unset until the tank first moves, when it starts from the position it landed on.
+    std::optional<uint8> _alythessTankStep;
 };
 
 class EredarTwinsRangedStackAtBalconyEdgeAction : public MovementAction
@@ -442,11 +446,19 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsStackInRoomCenterAction : public MovementAction
+class EredarTwinsStackBehindAlythessAction : public MovementAction
 {
 public:
-    EredarTwinsStackInRoomCenterAction(PlayerbotAI* botAI)
-        : MovementAction(botAI, "eredar twins stack in room center") {}
+    EredarTwinsStackBehindAlythessAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins stack behind alythess") {}
+    bool Execute(Event event) override;
+};
+
+class EredarTwinsStepAsideFromStackAction : public MovementAction
+{
+public:
+    EredarTwinsStepAsideFromStackAction(PlayerbotAI* botAI)
+        : MovementAction(botAI, "eredar twins step aside from stack") {}
     bool Execute(Event event) override;
 };
 

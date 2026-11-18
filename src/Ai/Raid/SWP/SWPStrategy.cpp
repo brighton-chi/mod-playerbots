@@ -20,7 +20,11 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Shared
     triggers.push_back(new TriggerNode("sunwell no encounter in progress",
-        { NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10) }));
+        { NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10),
+          NextAction("eredar twins announce class roles", ACTION_EMERGENCY + 8) }));
+
+    triggers.push_back(new TriggerNode("sunwell class roles should be assigned",
+        { NextAction("sunwell assign class roles", ACTION_EMERGENCY + 9) }));
 
     triggers.push_back(new TriggerNode("sunwell aura to remove",
         { NextAction("sunwell remove aura", ACTION_EMERGENCY) }));
@@ -142,9 +146,6 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("eredar twins should leave balcony",
         { NextAction("eredar twins jump from balcony", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("eredar twins should announce alythess tank",
-        { NextAction("eredar twins announce alythess tank", ACTION_RAID) }));
-
     triggers.push_back(new TriggerNode("eredar twins hunter should misdirect",
         { NextAction("eredar twins misdirect to tanks", ACTION_RAID + 2) }));
 
@@ -167,7 +168,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("eredar twins remove flame sear", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("eredar twins only alythess remains",
-        { NextAction("eredar twins stack in room center", ACTION_RAID + 4) }));
+        { NextAction("eredar twins stack behind alythess", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("eredar twins alythess targets non-tank",
+        { NextAction("eredar twins step aside from stack", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("eredar twins active conflagration target",
         { NextAction(
