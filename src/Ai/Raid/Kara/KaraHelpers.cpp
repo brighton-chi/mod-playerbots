@@ -717,7 +717,8 @@ bool CrossesBeam(
     return false;
 }
 
-// Crossing between Netherspite and a portal is fine if the bot gets across before the beams start.
+// True if a straight move to the position crosses a beam that will be up by the time the bot
+// arrives. Beams start 10s into a portal phase so a move that ends before 10s never touches a beam.
 bool CrossesBeamAfterStart(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -935,8 +936,9 @@ void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteB
     }
 }
 
-// How far the point is along the line from Netherspite's center toward the portal, and how far off
-// it to the side, positive counterclockwise.
+// The point's position relative to the beam. along: distance from Netherspite's center toward the
+// portal (negative behind him). off: distance to the side of the line, positive to his left as he
+// faces the portal.
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
     Unit const& netherspite, Position const& portal, float x, float y)
 {
@@ -975,8 +977,11 @@ Position GetPositionOnNetherspiteBeam(
         netherspite.GetPositionZ());
 }
 
-// At least 3 yd off every beam along its whole length, including the part within 16.5 yd of
-// Netherspite where the script doesn't give a player the beam. Bots don't rely on that cutoff.
+// At least 3 yd off every beam along its whole length. Netherspite's AC script does not allow
+// players to interact with beams that are closer than 16.5 yd from him, but I believe this is a bug
+// (the beam visual continues to his center, and I think it should be blockable for the whole
+// length). The strategy has bots avoid the beam all the way to his center so it should continue to
+// work even if the AC script is fixed.
 bool IsClearOfNetherspiteBeams(
     Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1010,8 +1015,9 @@ bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Posit
     return FindFirstVoidZoneOnPath(state, from, to);
 }
 
-// How far from Netherspite's center the blocker stands on the line: the point nearest 18 yd
-// (hunters 25) that is clear of void zones, or 18 (25) if there is none.
+// How far from Netherspite's center the blocker stands on the line: the point closest to 18 yd
+// (hunters 25) that is 2.5 yd clear of void zones. If every point searched is in a zone, it's 18
+// (25) anyway (possible only when the portal is too close to Netherspite).
 float FindNetherspiteBeamPositionDistance(
     Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
     Player* blocker)
@@ -1030,33 +1036,43 @@ float FindNetherspiteBeamPositionDistance(
     constexpr float searchStep = 0.5f;
     float best = preferred;
     float bestGap = std::numeric_limits<float>::max();
-    for (float distance = low; distance <= high; distance += searchStep)
+    auto const search = [&](float from)
     {
-        float const x = netherspite.GetPositionX() + dirX * distance;
-        float const y = netherspite.GetPositionY() + dirY * distance;
-        float const gap = std::abs(distance - preferred);
-        if (gap < bestGap && IsClearOfVoidZones(state, x, y, VOID_ZONE_BEAM_POSITION_CLEARANCE))
+        for (float distance = from; distance <= high; distance += searchStep)
         {
-            best = distance;
-            bestGap = gap;
+            float const x = netherspite.GetPositionX() + dirX * distance;
+            float const y = netherspite.GetPositionY() + dirY * distance;
+            float const gap = std::abs(distance - preferred);
+            if (gap < bestGap &&
+                IsClearOfVoidZones(state, x, y, VOID_ZONE_BEAM_POSITION_CLEARANCE))
+            {
+                best = distance;
+                bestGap = gap;
+            }
         }
-    }
+    };
+
+    search(low);
+    // A destination in a void zone is never reached, and blocking matters more than shooting, so
+    // a hunter with no safe blocking position in shooting range blocks from inside its dead zone.
+    if (isHunter && bestGap == std::numeric_limits<float>::max())
+        search(NETHERSPITE_BLOCKER_MIN_DISTANCE);
 
     return best;
 }
 
-// The side of the blue or green beam that faces the other one, away from red: +1 counterclockwise.
+// The side of the blue or green beam that faces the other one: +1 if that's Netherspite's left as
+// he faces this beam's portal, where off is positive, and -1 if it's his right.
 float GetNetherspiteInnerSide(
     Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
 {
     float const toOwn = Position::NormalizeOrientation(
-        GetBeamAngle(netherspite, state, beam) -
-        GetSideWithoutRed(netherspite, state).start);
+        GetBeamAngle(netherspite, state, beam) - GetSideWithoutRed(netherspite, state).start);
     return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
 }
 
-// Non-tanks only. Stand between the blue and green beams. Healers stay closer to Netherspite so
-// they can be in healing range of the red beam tank.
+// Non-tanks that are not blocking will position in the space between the blue and green beams. In
+// that space, healers position closer to Netherspite to be in healing range of the red beam tank.
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1089,14 +1105,16 @@ bool IsBetweenNetherspiteBeams(
     if (bot->getClass() == CLASS_HUNTER || !PlayerbotAI::IsMelee(bot))
         return true;
 
-    // Netherspite faces the red beam tank, so this is behind him. Set behind is off here.
+    // To keep melee behind Netherspite while respecting beams and void zones, set behind is
+    // disabled by multiplier, and this test is used to reject melee positions in front of him.
     float const fromRed = Position::NormalizeOrientation(
         angle - GetBeamAngle(netherspite, state, NetherspiteBeam::Red));
     return fromRed > M_PI / 2.0f && fromRed < 3.0f * M_PI / 2.0f;
 }
 
-// In the area, and the straight way there crosses no void zone and no beam that will be up by the
-// time the bot arrives.
+// True if the position passes IsBetweenNetherspiteBeams and a straight move there from the bot
+// crosses no void zone, and no beam that will be up by the time it arrives (i.e., the bot will not
+// cross an active beam on its way to its destination).
 bool CanMoveBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, float x, float y)
 {
