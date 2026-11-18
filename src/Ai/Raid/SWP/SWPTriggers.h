@@ -582,23 +582,23 @@ protected:
 
 // M'uru
 
-class MuruHunterShouldMisdirectNewEnemyTrigger : public SunwellEncounterTrigger
+class MuruHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruHunterShouldMisdirectNewEnemyTrigger(PlayerbotAI* botAI)
+    MuruHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru hunter should misdirect new enemy", SwpHelpers::SwpBosses::DATA_MURU) {}
+            botAI, "m'uru hunter should misdirect", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruTransformedIntoEntropiusTrigger : public SunwellEncounterTrigger
+class MuruEntropiusShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruTransformedIntoEntropiusTrigger(PlayerbotAI* botAI)
+    MuruEntropiusShouldBeTankedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru transformed into entropius", SwpHelpers::SwpBosses::DATA_MURU) {}
+            botAI, "m'uru entropius should be tanked", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -637,12 +637,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruAddsSpawnAtEntranceTrigger : public SunwellEncounterTrigger
+class MuruEntranceShouldBeGuardedTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruAddsSpawnAtEntranceTrigger(PlayerbotAI* botAI)
+    MuruEntranceShouldBeGuardedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru adds spawn at entrance", SwpHelpers::SwpBosses::DATA_MURU) {}
+            botAI, "m'uru entrance should be guarded", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -659,12 +659,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class MuruDarknessIsComingTrigger : public SunwellEncounterTrigger
+class MuruDarknessIsActiveTrigger : public SunwellEncounterTrigger
 {
 public:
-    MuruDarknessIsComingTrigger(PlayerbotAI* botAI)
+    MuruDarknessIsActiveTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "m'uru darkness is coming", SwpHelpers::SwpBosses::DATA_MURU) {}
+            botAI, "m'uru darkness is active", SwpHelpers::SwpBosses::DATA_MURU) {}
 
 protected:
     bool IsActiveInEncounter() override;

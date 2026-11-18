@@ -6,6 +6,7 @@
 
 #include "SWPEncounter_Muru.h"
 #include "AiObjectContext.h"
+#include "DynamicObject.h"
 #include "Playerbots.h"
 #include "SWPInstanceState.h"
 #include <algorithm>
@@ -17,17 +18,6 @@ namespace SwpHelpers
 
 namespace
 {
-
-void StampMuruDarknessWindow(
-    MuruDarknessState& state, uint32 now, uint32 elapsedMs, uint32 remainingMs)
-{
-    uint32 const startMs = now > elapsedMs ? now - elapsedMs : 0;
-
-    if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
-        state.startMs = startMs;
-
-    state.expireMs = std::max(state.expireMs, now + remainingMs);
-}
 
 MuruEncounterGuids const& GetCachedMuruEncounterGuids(PlayerbotAI* botAI)
 {
@@ -137,12 +127,6 @@ Unit* SelectNearestQualifying(
     return best;
 }
 
-MuruDarknessState& GetOrEmplaceDarkness(uint32 instanceId)
-{
-    std::optional<MuruDarknessState>& darkness = MuruState(instanceId).darkness;
-    return darkness ? *darkness : darkness.emplace();
-}
-
 } // end anonymous namespace
 
 bool IsMuruPhaseActive(Unit* muru)
@@ -152,77 +136,58 @@ bool IsMuruPhaseActive(Unit* muru)
     return muru && muru->GetHealth() > 1;
 }
 
-bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
+// From the pre-effect's start to the zone's end.
+bool IsMuruDarknessActive(Unit* muru)
+{
+    return muru && (muru->HasAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)) ||
+        muru->GetDynObject(Id(SwpSpells::SPELL_DARKNESS)));
+}
+
+// The first MURU_DARKNESS_EARLY_WINDOW_MS from the pre-effect's start.
+bool IsMuruDarknessEarly(Unit* muru)
 {
     if (!muru)
         return false;
 
-    uint32 const instanceId = bot->GetInstanceId();
-    uint32 const now = getMSTime();
-
-    if (Aura const* darkness = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS)))
-    {
-        int32 const remainingMs = std::max(darkness->GetDuration(), 0);
-        int32 const elapsedZoneMs = std::max(darkness->GetMaxDuration() - remainingMs, 0);
-
-        StampMuruDarknessWindow(
-            GetOrEmplaceDarkness(instanceId), now,
-            MURU_DARKNESS_PRE_EFFECT_MS + static_cast<uint32>(elapsedZoneMs),
-            static_cast<uint32>(remainingMs));
-    }
-    else if (Aura const* preEffect = muru->GetAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
-    {
-        int32 const duration = preEffect->GetDuration();
-        uint32 const remainingPreEffectMs = duration < 0 ?
-            MURU_DARKNESS_PRE_EFFECT_MS :
-            std::min(static_cast<uint32>(duration), MURU_DARKNESS_PRE_EFFECT_MS);
-
-        StampMuruDarknessWindow(
-            GetOrEmplaceDarkness(instanceId), now,
-            MURU_DARKNESS_PRE_EFFECT_MS - remainingPreEffectMs,
-            remainingPreEffectMs + MURU_DARKNESS_AURA_MS);
-    }
-
-    MuruEncounterState* state = FindMuruState(instanceId);
-    if (!state || !state->darkness)
-        return false;
-
-    uint32 const expireMs = state->darkness->expireMs;
-    if (expireMs > now)
+    if (muru->HasAura(Id(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
         return true;
 
-    if (expireMs <= now)
-        state->darkness.reset();
-
-    return false;
-}
-
-bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
-{
-    if (!TryGetMuruDarknessActiveState(bot, muru))
+    DynamicObject* darkness = muru->GetDynObject(Id(SwpSpells::SPELL_DARKNESS));
+    if (!darkness)
         return false;
 
-    return PeekMuruDarknessEarlyState(bot, earlyWindowMs);
+    int32 const remainingMs =
+        std::clamp(darkness->GetDuration(), 0, static_cast<int32>(MURU_DARKNESS_DURATION_MS));
+    uint32 const elapsedMs =
+        MURU_DARKNESS_PRE_EFFECT_MS + MURU_DARKNESS_DURATION_MS - static_cast<uint32>(remainingMs);
+
+    return elapsedMs < MURU_DARKNESS_EARLY_WINDOW_MS;
 }
 
-bool PeekMuruDarknessActiveState(Player* bot)
+bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target)
 {
-    MuruEncounterState const* state = FindMuruState(bot->GetInstanceId());
-    return state && state->darkness && state->darkness->expireMs > getMSTime();
+    return muru && target &&
+        muru->GetExactDist2d(target) <= MURU_DARKNESS_MELEE_TARGET_DISTANCE;
 }
 
-bool PeekMuruDarknessEarlyState(Player* bot, uint32 earlyWindowMs)
+// Phase 2 with a phase 1 Darkness still on the ground and Entropius inside it.
+bool IsEntropiusDpsHeld(Unit* muru, Unit* entropius)
 {
-    MuruEncounterState const* state = FindMuruState(bot->GetInstanceId());
-    if (!state || !state->darkness)
+    return entropius && !IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru) &&
+        muru->GetExactDist2d(entropius) <= MURU_DARKNESS_RADIUS;
+}
+
+bool IsSpellFuryReservedForMages(Unit* furyMage)
+{
+    if (!furyMage)
         return false;
 
-    MuruDarknessState const& darkness = *state->darkness;
-    uint32 const now = getMSTime();
-    if (darkness.expireMs <= now)
+    Aura const* spellFury = furyMage->GetAura(Id(SwpSpells::SPELL_SPELL_FURY));
+    if (!spellFury)
         return false;
 
-    return darkness.startMs < now && now - darkness.startMs < earlyWindowMs;
+    int32 const elapsedMs = spellFury->GetMaxDuration() - spellFury->GetDuration();
+    return elapsedMs < static_cast<int32>(SPELL_FURY_MAGE_PRIORITY_MS);
 }
 
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI)
@@ -510,8 +475,11 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI)
     for (ObjectGuid const& guid : GetCachedMuruEncounterGuids(botAI).voidSpawns)
     {
         Unit* unit = ResolveLivingUnit(botAI, guid);
-        if (!unit || unit->IsCharmed() || unit->GetCharmer())
+        if (!unit || unit->IsCharmed() || unit->GetCharmer() ||
+            !bot->IsWithinCombatRange(unit, RANGED_ABILITY_REACH))
+        {
             continue;
+        }
 
         Creature* creature = unit->ToCreature();
         if (!creature)

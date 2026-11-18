@@ -166,11 +166,11 @@ public:
             &RaidSwpTriggerContext::eredar_twins_sacrolash_victim_has_conflagration;
 
         // M'uru
-        creators["m'uru hunter should misdirect new enemy"] =
-            &RaidSwpTriggerContext::muru_hunter_should_misdirect_new_enemy;
+        creators["m'uru hunter should misdirect"] =
+            &RaidSwpTriggerContext::muru_hunter_should_misdirect;
 
-        creators["m'uru transformed into entropius"] =
-            &RaidSwpTriggerContext::muru_transformed_into_entropius;
+        creators["m'uru entropius should be tanked"] =
+            &RaidSwpTriggerContext::muru_entropius_should_be_tanked;
 
         creators["m'uru ranged should stack or spread"] =
             &RaidSwpTriggerContext::muru_ranged_should_stack_or_spread;
@@ -181,12 +181,12 @@ public:
         creators["m'uru void sentinel should be tanked"] =
             &RaidSwpTriggerContext::muru_void_sentinel_should_be_tanked;
 
-        creators["m'uru adds spawn at entrance"] =
-            &RaidSwpTriggerContext::muru_adds_spawn_at_entrance;
+        creators["m'uru entrance should be guarded"] =
+            &RaidSwpTriggerContext::muru_entrance_should_be_guarded;
 
         creators["m'uru dark fiends spawned"] = &RaidSwpTriggerContext::muru_dark_fiends_spawned;
 
-        creators["m'uru darkness is coming"] = &RaidSwpTriggerContext::muru_darkness_is_coming;
+        creators["m'uru darkness is active"] = &RaidSwpTriggerContext::muru_darkness_is_active;
 
         creators["m'uru berserker has flurry"] =
             &RaidSwpTriggerContext::muru_berserker_has_flurry;
@@ -455,13 +455,13 @@ private:
     }
 
     // M'uru
-    static Trigger* muru_hunter_should_misdirect_new_enemy(PlayerbotAI* botAI)
+    static Trigger* muru_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new MuruHunterShouldMisdirectNewEnemyTrigger(botAI);
+        return new MuruHunterShouldMisdirectTrigger(botAI);
     }
-    static Trigger* muru_transformed_into_entropius(PlayerbotAI* botAI)
+    static Trigger* muru_entropius_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new MuruTransformedIntoEntropiusTrigger(botAI);
+        return new MuruEntropiusShouldBeTankedTrigger(botAI);
     }
     static Trigger* muru_ranged_should_stack_or_spread(PlayerbotAI* botAI)
     {
@@ -475,17 +475,17 @@ private:
     {
         return new MuruVoidSentinelShouldBeTankedTrigger(botAI);
     }
-    static Trigger* muru_adds_spawn_at_entrance(PlayerbotAI* botAI)
+    static Trigger* muru_entrance_should_be_guarded(PlayerbotAI* botAI)
     {
-        return new MuruAddsSpawnAtEntranceTrigger(botAI);
+        return new MuruEntranceShouldBeGuardedTrigger(botAI);
     }
     static Trigger* muru_dark_fiends_spawned(PlayerbotAI* botAI)
     {
         return new MuruDarkFiendsSpawnedTrigger(botAI);
     }
-    static Trigger* muru_darkness_is_coming(PlayerbotAI* botAI)
+    static Trigger* muru_darkness_is_active(PlayerbotAI* botAI)
     {
-        return new MuruDarknessIsComingTrigger(botAI);
+        return new MuruDarknessIsActiveTrigger(botAI);
     }
     static Trigger* muru_berserker_has_flurry(PlayerbotAI* botAI)
     {

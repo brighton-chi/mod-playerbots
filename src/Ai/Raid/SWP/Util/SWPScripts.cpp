@@ -290,6 +290,45 @@ public:
     }
 };
 
+// A mage mid-cast when a Fury Mage gains Spell Fury stops the cast to steal it.
+class MuruSpellFurySpellListenerScript : public AllSpellScript
+{
+public:
+    MuruSpellFurySpellListenerScript() : AllSpellScript("MuruSpellFurySpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_SPELL_FURY))
+            return;
+
+        uint32 const spellsteal = Id(SwpSpells::SPELL_SPELLSTEAL);
+        Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive() || player->getClass() != CLASS_MAGE ||
+                !player->IsWithinCombatRange(caster, RANGED_ABILITY_REACH) ||
+                !IsCastingOrChanneling(player))
+            {
+                continue;
+            }
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                continue;
+
+            if (!player->HasSpell(spellsteal) || player->HasSpellCooldown(spellsteal) ||
+                player->HasAura(Id(SwpSpells::SPELL_SPELL_FURY)))
+            {
+                continue;
+            }
+
+            botAI->RequestSpellInterrupt();
+        }
+    }
+};
+
 class KiljaedenDarknessSpellListenerScript : public AllSpellScript
 {
 public:
@@ -418,6 +457,7 @@ void AddSC_SunwellBotScripts()
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
     new MuruVoidZoneSpellListenerScript();
+    new MuruSpellFurySpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript
     new SunwellBossUpdateScript();

@@ -10,7 +10,6 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPShared.h"
-#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -42,12 +41,6 @@ struct MuruEncounterGuids
     GuidVector berserkers;
 };
 
-struct MuruDarknessState
-{
-    uint32 startMs = 0;
-    uint32 expireMs = 0;
-};
-
 inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
 // Dps cooldowns are held until 97% to allow for initial positioning.
 inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
@@ -57,16 +50,19 @@ inline constexpr uint32 VOID_ZONE_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DARK_FIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 SINGULARITY_CACHE_INTERVAL_MS = 200;
 
-// Darkness cycle: 45998 ticks every 45s and triggers the 3s pre-effect 45999, whose own tick casts
-// 45996, a 15y zone doing 3k a second. 45996 is also applied to M'uru itself (via a separate
-// effect), so once it is applied, the Darkness window is read off that aura and these two are only
-// estimates used before the aura is applied.
+// Darkness cycle: 45998 ticks every 45s and triggers the 3s pre-effect 45999 on M'uru, whose own
+// tick casts 45996, a zone at M'uru's position doing 3k a second for 20s. The zone is M'uru's
+// dynamic object, so it outlasts the aura wipe at the transition to Entropius.
 inline constexpr uint32 MURU_DARKNESS_PRE_EFFECT_MS = 3 * IN_MILLISECONDS;
-inline constexpr uint32 MURU_DARKNESS_AURA_MS = 20 * IN_MILLISECONDS;
+inline constexpr uint32 MURU_DARKNESS_DURATION_MS = 20 * IN_MILLISECONDS;
 // This is an arbitrary window to allow tanks a bit more time to get positioned after Darkness.
 inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10 * IN_MILLISECONDS;
-// Darkness damages within 15 yards of M'uru; the rest is avoidance padding.
-inline constexpr float MURU_DARKNESS_SAFE_DISTANCE = 20.0f;
+// The zone hits a player whose center is within 16.5y of M'uru's (15y plus the player's reach).
+inline constexpr float MURU_DARKNESS_RADIUS = 15.0f;
+inline constexpr float MURU_DARKNESS_CLEARANCE = MURU_DARKNESS_RADIUS + 5.0f;
+// Melee don't attack a unit this close to M'uru during Darkness: 1.5y for their reach, 5y for melee
+// range, and a 1.5y margin.
+inline constexpr float MURU_DARKNESS_MELEE_TARGET_DISTANCE = MURU_DARKNESS_RADIUS + 8.0f;
 // Tanks won't try to pick up anything farther than this distance from the ranged stack.
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 30.0f;
 // The maximum distance from the melee dps holding spot that they wander to attack during Darkness.
@@ -87,28 +83,41 @@ inline constexpr float MURU_VOID_ZONE_SEARCH_RADIUS = MURU_VOID_ZONE_CLEARANCE +
 // Dark Fiend search radii for killing (dispelling) and avoiding, respectively.
 inline constexpr float DARK_FIEND_DISPEL_SEARCH_RADIUS = 50.0f;
 inline constexpr float DARK_FIEND_AVOID_SEARCH_RADIUS = 15.0f;
-// A Dark Fiend detonates within 2y of whoever it is chasing. The safe distance is deliberately
-// wide as touching a single Dark Fiend is almost a guaranteed wipe.
+// A Dark Fiend detonates within 7y (center to center) of whoever it is chasing. The safe distance
+// is deliberately wide as touching a single Dark Fiend is almost a guaranteed wipe.
 inline constexpr float DARK_FIEND_SAFE_DISTANCE = 12.0f;
 inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
 // Distance kept from a Singularity. The active tank's distance is greater in order to leave space
 // for melee on Entropius.
 inline constexpr float SINGULARITY_SAFE_DISTANCE = 15.0f;
 inline constexpr float SINGULARITY_TANK_SAFE_DISTANCE = 20.0f;
+// Hunters and shamans leave a new Spell Fury this long for a mage to Spellsteal, which allows for a
+// mage's global cooldown.
+inline constexpr uint32 SPELL_FURY_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
+
+inline constexpr float MURU_RANGED_STACK_ARRIVAL_DISTANCE = 3.5f;
+inline constexpr float MURU_MELEE_STACK_ARRIVAL_DISTANCE = 4.5f;
+inline constexpr float MURU_TANK_STACK_ARRIVAL_DISTANCE = 3.0f;
+inline constexpr float MURU_TANK_HOLDING_ARRIVAL_DISTANCE = 2.5f;
+inline constexpr float MURU_ENTRANCE_ARRIVAL_DISTANCE = 1.0f;
+inline constexpr float MURU_VOID_SENTINEL_TANK_ARRIVAL_DISTANCE = 2.0f;
+inline constexpr float ENTROPIUS_RANGED_ARRIVAL_DISTANCE = 2.0f;
 
 inline Position const MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.250f };
 inline Position const MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
 inline Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f, 71.222f };
 inline Position const MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
 inline Position const MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
+// Where the main tank waits for Entropius while a Darkness from phase 1 lasts: on the line from
+// M'uru to the ranged stack, at the Darkness clearance.
+inline Position const ENTROPIUS_TANK_DARKNESS_POSITION =   { 1831.754f, 612.850f, 70.841f };
 
 bool IsMuruPhaseActive(Unit* muru);
-bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
-bool TryGetMuruDarknessEarlyState(
-    Player* bot, Unit* muru, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
-bool PeekMuruDarknessActiveState(Player* bot);
-bool PeekMuruDarknessEarlyState(
-    Player* bot, uint32 earlyWindowMs = MURU_DARKNESS_EARLY_WINDOW_MS);
+bool IsMuruDarknessActive(Unit* muru);
+bool IsMuruDarknessEarly(Unit* muru);
+bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target);
+bool IsEntropiusDpsHeld(Unit* muru, Unit* entropius);
+bool IsSpellFuryReservedForMages(Unit* furyMage);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* SelectNearestMuruTargetByEntry(
@@ -130,11 +139,8 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 
 // Shared encounter state
 
-// Darkness is cleared mid-fight each time it expires, so it is optional rather than the whole
-// entry being erased.
 struct MuruEncounterState
 {
-    std::optional<MuruDarknessState> darkness;
     std::unordered_map<ObjectGuid, uint8> voidSentinelTankAssignments;
 };
 

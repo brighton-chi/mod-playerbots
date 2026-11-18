@@ -378,6 +378,28 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class MuruHoldDpsOnEntropiusMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    MuruHoldDpsOnEntropiusMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "m'uru hold dps on entropius", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
+class MuruLetMagesStealSpellFuryMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    MuruLetMagesStealSpellFuryMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "m'uru let mages steal spell fury", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Kil'jaeden <The Deceiver>
 
 class KiljaedenSingleTargetHandsMultiplier : public SunwellEncounterMultiplier

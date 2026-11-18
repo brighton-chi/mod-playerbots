@@ -584,6 +584,9 @@ public:
     MuruMeleeFleeTheDarknessAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "m'uru melee flee the darkness") {}
     bool Execute(Event event) override;
+
+private:
+    bool StepToPosition(Position const& position, float arrivalDistance);
 };
 
 class MuruCastStunOnBerserkerAction : public Action
@@ -621,24 +624,16 @@ public:
     bool Execute(Event event) override;
 };
 
-class MuruEnslavedVoidSpawnAttackAction : public Action
-{
-public:
-    MuruEnslavedVoidSpawnAttackAction(PlayerbotAI* botAI, std::string const name)
-        : Action(botAI, name) {}
-
-protected:
-    Unit* GetControlledVoidSpawn() const;
-    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
-};
-
-class MuruVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction
+class MuruVoidSpawnCastShadowBoltVolleyAction : public Action
 {
 public:
     MuruVoidSpawnCastShadowBoltVolleyAction(PlayerbotAI* botAI)
-        : MuruEnslavedVoidSpawnAttackAction(
-            botAI, "m'uru void spawn cast shadow bolt volley") {}
+        : Action(botAI, "m'uru void spawn cast shadow bolt volley") {}
     bool Execute(Event event) override;
+
+private:
+    Unit* GetControlledVoidSpawn() const;
+    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* voidSpawn) const;
 };
 
 class MuruKeepDistanceFromDarkFiendsAction : public MovementAction

@@ -184,10 +184,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("eredar twins move away from sacrolash victim", ACTION_EMERGENCY + 10) }));
 
     // M'uru
-    triggers.push_back(new TriggerNode("m'uru hunter should misdirect new enemy",
+    triggers.push_back(new TriggerNode("m'uru hunter should misdirect",
         { NextAction("m'uru misdirect enemy to tank", ACTION_RAID + 2) }));
 
-    triggers.push_back(new TriggerNode("m'uru transformed into entropius",
+    triggers.push_back(new TriggerNode("m'uru entropius should be tanked",
         { NextAction("m'uru main tank pick up entropius", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("m'uru ranged should stack or spread",
@@ -196,7 +196,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru void sentinel should be tanked",
         { NextAction("m'uru tanks move sentinel to safe position", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("m'uru adds spawn at entrance",
+    triggers.push_back(new TriggerNode("m'uru entrance should be guarded",
         { NextAction("m'uru second assist tank guard ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("m'uru should assign dps priority",
@@ -205,7 +205,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru dark fiends spawned",
         { NextAction("m'uru kill dark fiends with dispel", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("m'uru darkness is coming",
+    triggers.push_back(new TriggerNode("m'uru darkness is active",
         { NextAction("m'uru melee flee the darkness", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("m'uru berserker has flurry",
@@ -309,6 +309,8 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     // M'uru
     multipliers.push_back(new MuruDisableDefaultTargetingMultiplier(botAI));
     multipliers.push_back(new MuruControlMovementMultiplier(botAI));
+    multipliers.push_back(new MuruHoldDpsOnEntropiusMultiplier(botAI));
+    multipliers.push_back(new MuruLetMagesStealSpellFuryMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenSingleTargetHandsMultiplier(botAI));
@@ -388,7 +390,7 @@ void AppendMuruTankExclusions(
     if (!muru || !IsMuruPhaseActive(muru))
         return;
 
-    bool const darknessActive = PeekMuruDarknessActiveState(bot);
+    bool const darknessActive = IsMuruDarknessActive(muru);
     // Even during Darkness, the Sentinel Tank has full freedom to pick up Sentinels.
     bool const distanceUnrestricted = darknessActive &&
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);

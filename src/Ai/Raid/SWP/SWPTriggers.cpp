@@ -598,7 +598,7 @@ bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActiveInEncounter()
 
 // M'uru
 
-bool MuruHunterShouldMisdirectNewEnemyTrigger::IsActiveInEncounter()
+bool MuruHunterShouldMisdirectTrigger::IsActiveInEncounter()
 {
     if (bot->getClass() != CLASS_HUNTER)
         return false;
@@ -611,7 +611,7 @@ bool MuruHunterShouldMisdirectNewEnemyTrigger::IsActiveInEncounter()
     return entropius && entropius->GetHealthPct() > MURU_MISDIRECT_MIN_TARGET_HP_PERCENT;
 }
 
-bool MuruTransformedIntoEntropiusTrigger::IsActiveInEncounter()
+bool MuruEntropiusShouldBeTankedTrigger::IsActiveInEncounter()
 {
     return PlayerbotAI::IsMainTank(bot) && FindThreatTarget(bot, "entropius");
 }
@@ -641,13 +641,13 @@ bool MuruVoidSentinelShouldBeTankedTrigger::IsActiveInEncounter()
     return IsMuruPhaseActive(muru);
 }
 
-bool MuruAddsSpawnAtEntranceTrigger::IsActiveInEncounter()
+bool MuruEntranceShouldBeGuardedTrigger::IsActiveInEncounter()
 {
-    Unit* muru = GetEncounterBoss();
-    if (!IsMuruPhaseActive(muru))
+    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
         return false;
 
-    if (!PlayerbotAI::IsAssistTankOfIndex(bot, 1, true))
+    Unit* muru = GetEncounterBoss();
+    if (!IsMuruPhaseActive(muru))
         return false;
 
     Unit* voidSentinel = FindThreatTarget(bot, "void sentinel");
@@ -663,29 +663,23 @@ bool MuruDarkFiendsSpawnedTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    return GetNearestMuruDarkFiend(botAI, DARK_FIEND_DISPEL_SEARCH_RADIUS);
+    return GetNearestMuruDarkFiend(botAI, RANGED_ABILITY_REACH);
 }
 
-bool MuruDarknessIsComingTrigger::IsActiveInEncounter()
+bool MuruDarknessIsActiveTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    Unit* muru = GetEncounterBoss();
-    if (!IsMuruPhaseActive(muru))
-        return false;
-
-    return TryGetMuruDarknessActiveState(bot, muru);
+    // Also in phase 2, while a Darkness from phase 1 lasts.
+    return IsMuruDarknessActive(GetEncounterBoss());
 }
 
 bool MuruBerserkerHasFlurryTrigger::IsActiveInEncounter()
 {
     // These classes have no stuns and can't be Tauren.
-    if (bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST ||
-        bot->getClass() == CLASS_WARLOCK)
-    {
+    if (bot->getClass() == CLASS_MAGE || bot->getClass() == CLASS_PRIEST)
         return false;
-    }
 
     return FindMuruBerserkerToStun(botAI);
 }

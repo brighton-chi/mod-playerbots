@@ -707,7 +707,7 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    if (!PeekMuruDarknessActiveState(bot))
+    if (!IsMuruDarknessActive(muru))
         return 1.0f;
 
     auto const isReachTargetSafeFromDarkness = [&](Action* action) -> bool
@@ -716,19 +716,54 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
         if (!actionTarget)
             return false;
 
-        float const targetDistFromMuru = muru->GetExactDist2d(actionTarget);
         Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         float const targetDistFromRef = actionTarget->GetExactDist2d(refPosition);
 
-        return targetDistFromMuru > MURU_DARKNESS_SAFE_DISTANCE &&
+        return !IsMeleeTargetInMuruDarkness(muru, actionTarget) &&
             targetDistFromRef < MURU_HOLDING_POSITION_RADIUS;
     };
 
     if (isReachTargetSafeFromDarkness(action))
         return 1.0f;
 
-    return PlayerbotAI::IsTank(bot) && !PeekMuruDarknessEarlyState(bot) ? 1.0f : 0.0f;
+    // In phase 2 the main tank waits for Entropius to come out of a leftover Darkness.
+    return PlayerbotAI::IsTank(bot) && IsMuruPhaseActive(muru) && !IsMuruDarknessEarly(muru) ?
+        1.0f : 0.0f;
+}
+
+float MuruHoldDpsOnEntropiusMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<MuruAssignDpsPriorityAction*>(action))
+        return 1.0f;
+
+    if (PlayerbotAI::IsMainTank(bot))
+        return 1.0f;
+
+    Unit* target = action->GetTarget();
+    if (!target || target->GetEntry() != Id(SwpNpcs::NPC_ENTROPIUS))
+        return 1.0f;
+
+    return IsEntropiusDpsHeld(GetEncounterBoss(), target) ? GetDpsHoldValue(bot, action) : 1.0f;
+}
+
+// Standard Purge and Tranquilizing Shot would otherwise take Spell Fury before a mage steals it.
+float MuruLetMagesStealSpellFuryMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastPurgeAction*>(action) &&
+        !dynamic_cast<CastTranquilizingShotAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* target = action->GetTarget();
+    if (!target || target->GetEntry() != Id(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE))
+        return 1.0f;
+
+    return IsSpellFuryReservedForMages(target) ? 0.0f : 1.0f;
 }
 
 // Kil'jaeden <The Deceiver>
