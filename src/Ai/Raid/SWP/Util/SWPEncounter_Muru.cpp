@@ -175,13 +175,6 @@ bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target)
         muru->GetExactDist2d(target) <= MURU_DARKNESS_MELEE_TARGET_DISTANCE;
 }
 
-// Phase 2 with a phase 1 Darkness still on the ground and Entropius inside it.
-bool IsEntropiusDpsHeld(Unit* muru, Unit* entropius)
-{
-    return entropius && !IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru) &&
-        muru->GetExactDist2d(entropius) <= MURU_DARKNESS_RADIUS;
-}
-
 bool IsSpellFuryReservedForMages(Unit* furyMage)
 {
     if (!furyMage)
@@ -193,6 +186,16 @@ bool IsSpellFuryReservedForMages(Unit* furyMage)
 
     int32 const elapsedMs = spellFury->GetMaxDuration() - spellFury->GetDuration();
     return elapsedMs < static_cast<int32>(SPELL_FURY_MAGE_PRIORITY_MS);
+}
+
+// Before any bot has seen Entropius, the hold counts as active.
+bool IsEntropiusDpsHoldActive(Player* bot)
+{
+    MuruEncounterState const* state = FindMuruState(bot->GetInstanceId());
+    if (!state || !state->entropiusFirstSeenMs)
+        return true;
+
+    return getMSTimeDiff(*state->entropiusFirstSeenMs, getMSTime()) < ENTROPIUS_DPS_HOLD_MS;
 }
 
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI)

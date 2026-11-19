@@ -736,24 +736,23 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (isReachTargetSafeFromDarkness(action))
         return 1.0f;
 
-    // If phase 2 starts during Darkness, the main tank waits for Entropius to move out of it.
-    return PlayerbotAI::IsTank(bot) && IsMuruPhaseActive(muru) && !IsMuruDarknessEarly(muru) ?
-        1.0f : 0.0f;
+    return PlayerbotAI::IsTank(bot) && !IsMuruDarknessEarly(muru) ? 1.0f : 0.0f;
 }
 
+// Only attacks on Entropius are held; adds may still be attacked.
 float MuruHoldDpsOnEntropiusMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<MuruAssignDpsPriorityAction*>(action))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (PlayerbotAI::IsMainTank(bot))
+    if (!IsDpsHoldCandidate(bot, action) || dynamic_cast<MuruAssignDpsPriorityAction*>(action))
         return 1.0f;
 
     Unit* target = action->GetTarget();
     if (!target || target->GetEntry() != Id(SwpNpcs::NPC_ENTROPIUS))
         return 1.0f;
 
-    return IsEntropiusDpsHeld(GetEncounterBoss(), target) ? GetDpsHoldValue(bot, action) : 1.0f;
+    return IsEntropiusDpsHoldActive(bot) ? GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 // Standard Purge and Tranquilizing Shot would otherwise take Spell Fury before a mage steals it.

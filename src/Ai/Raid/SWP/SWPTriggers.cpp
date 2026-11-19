@@ -666,8 +666,8 @@ bool MuruDarknessIsActiveTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsMelee(bot))
         return false;
 
-    // Also in phase 2, while a Darkness from phase 1 lasts.
-    return IsMuruDarknessActive(GetEncounterBoss());
+    Unit* muru = GetEncounterBoss();
+    return IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru);
 }
 
 bool MuruBerserkerHasFlurryTrigger::IsActiveInEncounter()

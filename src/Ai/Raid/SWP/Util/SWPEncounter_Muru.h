@@ -10,6 +10,7 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPShared.h"
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -101,6 +102,8 @@ inline constexpr float SINGULARITY_SEARCH_RADIUS = 30.0f;
 // Hunters and shamans leave a new Spell Fury this long for a mage to Spellsteal, which allows for a
 // mage's global cooldown.
 inline constexpr uint32 SPELL_FURY_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
+// DPS hold Entropius this long after he first appears, so the main tank gets aggro first.
+inline constexpr uint32 ENTROPIUS_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 
 inline constexpr float MURU_RANGED_STACK_ARRIVAL_DISTANCE = 3.5f;
 inline constexpr float MURU_MELEE_STACK_ARRIVAL_DISTANCE = 4.5f;
@@ -115,16 +118,13 @@ inline Position const MURU_CENTER_POSITION =               { 1816.250f, 625.484f
 inline Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f, 71.222f };
 inline Position const MURU_VOID_SENTINEL_N_TANK_POSITION = { 1840.448f, 630.605f, 70.567f };
 inline Position const MURU_VOID_SENTINEL_E_TANK_POSITION = { 1814.960f, 601.646f, 70.547f };
-// Where the main tank waits for Entropius while a Darkness from phase 1 lasts: on the line from
-// M'uru to the ranged stack, at the Darkness clearance.
-inline Position const ENTROPIUS_TANK_DARKNESS_POSITION =   { 1831.754f, 612.850f, 70.841f };
 
 bool IsMuruPhaseActive(Unit* muru);
 bool IsMuruDarknessActive(Unit* muru);
 bool IsMuruDarknessEarly(Unit* muru);
 bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target);
-bool IsEntropiusDpsHeld(Unit* muru, Unit* entropius);
 bool IsSpellFuryReservedForMages(Unit* furyMage);
+bool IsEntropiusDpsHoldActive(Player* bot);
 MuruEncounterGuids FindMuruEncounterGuids(PlayerbotAI* botAI);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Unit* SelectNearestMuruTargetByEntry(
@@ -153,6 +153,7 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI);
 struct MuruEncounterState
 {
     std::unordered_map<ObjectGuid, uint8> voidSentinelTankAssignments;
+    std::optional<uint32> entropiusFirstSeenMs;
 };
 
 MuruEncounterState& MuruState(uint32 instanceId);

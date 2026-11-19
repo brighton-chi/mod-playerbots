@@ -178,9 +178,8 @@ bool MuruAssignDpsPriorityAction::Execute(Event /*event*/)
         }
     }
 
-    // Held while a phase 1 Darkness covers Entropius, so the main tank gets aggro outside it.
-    if (target->GetEntry() == Id(SwpNpcs::NPC_ENTROPIUS) &&
-        IsEntropiusDpsHeld(GetSwpBoss(bot, SwpBosses::DATA_MURU), target))
+    // Select Entropius without attacking him while the DPS hold is active.
+    if (target->GetEntry() == Id(SwpNpcs::NPC_ENTROPIUS) && IsEntropiusDpsHoldActive(bot))
     {
         return IsAttackingTarget(bot, target) ? StopAttackingTarget(bot, target) :
             SelectTarget(botAI, target);
@@ -202,6 +201,10 @@ Unit* MuruAssignDpsPriorityAction::ResolveMuruDpsTarget(Unit* currentTarget)
 
     if (!muru && !entropius)
         return nullptr;
+
+    // Start the DPS hold's clock.
+    if (entropius)
+        EmplaceIfUnset(MuruState(bot->GetInstanceId()).entropiusFirstSeenMs, getMSTime());
 
     if (muru && currentTarget == muru)
         context->GetValue<bool>("neglect threat")->Set(true);
@@ -505,11 +508,6 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         if (currentTarget->GetExactDist2d(refPosition) <= MURU_HOLDING_POSITION_RADIUS)
             return false;
     }
-
-    // If Darkness is in effect when Entropius spawns, the main tank waits outside of the Darkness
-    // for a Misdirect.
-    if (PlayerbotAI::IsMainTank(bot) && !IsMuruPhaseActive(muru))
-        return StepToPosition(ENTROPIUS_TANK_DARKNESS_POSITION, MURU_TANK_HOLDING_ARRIVAL_DISTANCE);
 
     if (PlayerbotAI::IsTank(bot))
     {
