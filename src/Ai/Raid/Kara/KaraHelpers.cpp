@@ -153,8 +153,8 @@ bool IsManaWarpClaimedForWarStomp(Unit* warp)
     return false;
 }
 
-// Above 10%, from 15%; below it, only on the cast bar: a warp there that isn't casting has either
-// cast Warp Breach already or will retry it, and the retry's cast bar is caught then.
+// First attempt to stun between 10% and 15% HP because if the mob is stunned at 10%, it will not
+// cast Warp Breach. If that fails, then there is a second opportunity to stun while it is casting.
 bool IsManaWarpToStun(Player* bot, Unit* unit, float reach)
 {
     if (!unit || unit->GetEntry() != Id(KaraNpcs::NPC_MANA_WARP) || !unit->IsAlive() ||
