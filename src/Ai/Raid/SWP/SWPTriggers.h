@@ -80,8 +80,8 @@ public:
 
 // Shared Bosses
 
-// For Misdirection before BOSS_ENGAGED_HEALTH_PCT (i.e., shortly after pull). Used for Kalecgos,
-// Brutallus, and the Eredar Twins (on Alythess).
+// For Misdirection before BOSS_ENGAGED_HEALTH_PCT (i.e., shortly after pull). Used for Kalecgos
+// and Brutallus.
 class SunwellHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
 {
 public:
@@ -448,6 +448,18 @@ protected:
 };
 
 // Eredar Twins
+
+class EredarTwinsHunterShouldMisdirectTrigger : public SunwellEncounterTrigger
+{
+public:
+    EredarTwinsHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "eredar twins hunter should misdirect",
+            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
 
 class EredarTwinsShouldLeaveBalconyTrigger : public SunwellEncounterTrigger
 {

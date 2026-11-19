@@ -407,9 +407,7 @@ private:
     }
     static Trigger* eredar_twins_hunter_should_misdirect(PlayerbotAI* botAI)
     {
-        return new SunwellHunterShouldMisdirectTrigger(
-            botAI, "eredar twins hunter should misdirect",
-            SwpHelpers::SwpBosses::DATA_EREDAR_TWINS);
+        return new EredarTwinsHunterShouldMisdirectTrigger(botAI);
     }
     static Trigger* eredar_twins_sacrolash_should_be_tanked(PlayerbotAI* botAI)
     {

@@ -53,59 +53,29 @@ bool EredarTwinsAnnounceClassRolesAction::Execute(Event /*event*/)
     return IsMechanicTrackerBot(bot, SWP_MAP_ID) && UpdateEredarTwinsClassRoleAnnouncement(botAI);
 }
 
+// At the pull the first bot hunter gives Alythess to her tank and the rest give Sacrolash to her
+// first tank. Then every hunter feeds Sacrolash's second tank, whom Confounding Blow sends her to
+// and whose threat sets the DPS cap.
 bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    Unit* sacrolash = FindSacrolash(bot);
+    if (!sacrolash)
         return false;
 
-    std::vector<Player*> hunters;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->GetMapId() == SWP_MAP_ID &&
-            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
-        {
-            hunters.push_back(member);
-        }
-
-        if (hunters.size() >= 3)
-            break;
-    }
-
-    int8 hunterIndex = -1;
-    for (size_t i = 0; i < hunters.size(); ++i)
-    {
-        if (hunters[i] == bot)
-        {
-            hunterIndex = static_cast<int8>(i);
-            break;
-        }
-    }
-    if (hunterIndex == -1)
-        return false;
-
-    // Ensure that the Alythess tank is always top priority, whether or not it is the main tank.
-    Player* alythessTank = GetAlythessTank(bot);
-    Player* sacrolashTank = GetSacrolashTank(bot, 0);
-    Player* sacrolashSecondTank = GetSacrolashTank(bot, 1);
-
-    Unit* boss = nullptr;
+    Unit* boss = sacrolash;
     Player* tank = nullptr;
-    if (hunterIndex == 0)
+    if (sacrolash->GetHealthPct() <= BOSS_ENGAGED_HEALTH_PCT)
+    {
+        tank = GetSacrolashSecondTank(bot, sacrolash);
+    }
+    else if (IsAlythessPullMisdirectHunter(bot))
     {
         boss = FindAlythess(bot);
-        tank = alythessTank;
+        tank = GetAlythessTank(bot);
     }
-    else if (hunterIndex == 1)
+    else
     {
-        boss = FindSacrolash(bot);
-        tank = sacrolashTank;
-    }
-    else if (hunterIndex == 2)
-    {
-        boss = FindSacrolash(bot);
-        tank = sacrolashSecondTank;
+        tank = GetSacrolashTank(bot, 0);
     }
 
     if (!boss || !tank || !tank->IsAlive())
@@ -247,7 +217,7 @@ bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
         return false;
 
     // The route moves on to the next waypoint before the bot is this close to the last one.
-    Position const position = GetEredarTwinsPhase2RouteTarget(bot, alythess);
+    Position const position = GetEredarTwinsPhase2RouteTarget(botAI, alythess);
     constexpr float arrivalDist = EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE;
     if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;

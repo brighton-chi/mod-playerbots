@@ -87,6 +87,17 @@ bool IsClearOfAlythessTankPositions(Player* bot, Unit* alythess, Position const&
     return true;
 }
 
+bool IsClearOfBlaze(PlayerbotAI* botAI, Position const& position, float clearance)
+{
+    for (Position const& blaze : GetCachedBlazePositions(botAI))
+    {
+        if (blaze.GetExactDist2d(position) <= clearance)
+            return false;
+    }
+
+    return true;
+}
+
 // Hold once the bot has closed to within the ratio of the lowest tank threat on that boss.
 bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float threatHoldRatio)
 {
@@ -121,6 +132,23 @@ Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess)
             EREDAR_TWINS_P2_HUNTER_POSITION : EREDAR_TWINS_P2_STACK_POSITION);
 }
 
+std::optional<Position> GetEredarTwinsPhase2Fallback(PlayerbotAI* botAI, Unit* alythess)
+{
+    Player* bot = botAI->GetBot();
+    constexpr float clearance = EREDAR_TWINS_P2_BLAZE_CLEARANCE;
+    if (IsClearOfBlaze(botAI, GetEredarTwinsPhase2Position(bot, alythess), clearance))
+        return std::nullopt;
+
+    for (Position const& basePosition : EREDAR_TWINS_P2_FALLBACK_POSITIONS)
+    {
+        Position const fallback = GetAdjustedPosition(alythess, basePosition);
+        if (IsClearOfBlaze(botAI, fallback, clearance))
+            return fallback;
+    }
+
+    return std::nullopt;
+}
+
 Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony)
 {
     return onBalcony ? EREDAR_TWINS_P1_RANGED_ASIDE_POSITION :
@@ -130,8 +158,13 @@ Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony)
 // Every waypoint leads to the stack waypoint, from which the straight line to the bot's position is
 // clear. The position 4 waypoint serves the landing and the floor step-aside; from Sacrolash's
 // side its line crosses the tank positions, so bots there go round position 0.
-Position GetEredarTwinsPhase2RouteTarget(Player* bot, Unit* alythess)
+Position GetEredarTwinsPhase2RouteTarget(PlayerbotAI* botAI, Unit* alythess)
 {
+    if (std::optional<Position> const fallback = GetEredarTwinsPhase2Fallback(botAI, alythess))
+        return *fallback;
+
+    Player* bot = botAI->GetBot();
+
     Position const destination = GetEredarTwinsPhase2Position(bot, alythess);
     Position const stackWaypoint = GetAdjustedPosition(alythess, EREDAR_TWINS_P2_STACK_WAYPOINT);
     Position const position0Waypoint =
@@ -178,8 +211,8 @@ bool UpdateEredarTwinsClassRoleAnnouncement(PlayerbotAI* botAI)
         });
 }
 
-// The class role's prot paladin. If there is no prot paladin, then the main tank, whatever class,
-// is assigned to Alythess. Good luck with that.
+// A prot paladin, chosen by the class role picker rules. If there is no prot paladin, then the main
+// tank, whatever class, is assigned to Alythess.
 Player* GetAlythessTank(Player* bot)
 {
     SwpInstanceState const* state = FindSwpState(bot->GetInstanceId());
@@ -269,11 +302,19 @@ bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash)
     if (PlayerbotAI::IsHeal(bot) || IsAnySacrolashTank(bot))
         return false;
 
-    Player* alythessTank = GetAlythessTank(bot);
+    Player* tank = GetSacrolashSecondTank(bot, sacrolash);
+    return tank && HasClosedOnTankThreat(
+        sacrolash, bot, sacrolash->GetThreatMgr().GetThreat(tank), SACROLASH_THREAT_HOLD_RATIO);
+}
 
-    float highestTankThreat = 0.0f;
-    float secondTankThreat = 0.0f;
-    uint8 tankCount = 0;
+// The Sacrolash tank second on her threat, whom Confounding Blow sends her to, or the only one.
+Player* GetSacrolashSecondTank(Player* bot, Unit* sacrolash)
+{
+    Player* alythessTank = GetAlythessTank(bot);
+    Player* highestTank = nullptr;
+    Player* secondTank = nullptr;
+    float highestThreat = 0.0f;
+    float secondThreat = 0.0f;
 
     auto const threatList = sacrolash->GetThreatMgr().GetUnsortedThreatList();
     for (auto itr = threatList.begin(); itr != threatList.end(); ++itr)
@@ -292,25 +333,40 @@ bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash)
         }
 
         float const threat = threatRef->GetThreat();
-        ++tankCount;
-
-        if (threat > highestTankThreat)
+        if (!highestTank || threat > highestThreat)
         {
-            secondTankThreat = highestTankThreat;
-            highestTankThreat = threat;
+            secondTank = highestTank;
+            secondThreat = highestThreat;
+            highestTank = threatPlayer;
+            highestThreat = threat;
         }
-        else if (threat > secondTankThreat)
+        else if (!secondTank || threat > secondThreat)
         {
-            secondTankThreat = threat;
+            secondTank = threatPlayer;
+            secondThreat = threat;
         }
     }
 
-    if (!tankCount)
+    return secondTank ? secondTank : highestTank;
+}
+
+bool IsAlythessPullMisdirectHunter(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    float const tankThreat = tankCount > 1 ? secondTankThreat : highestTankThreat;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && member->GetMapId() == SWP_MAP_ID &&
+            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
+        {
+            return member == bot;
+        }
+    }
 
-    return HasClosedOnTankThreat(sacrolash, bot, tankThreat, SACROLASH_THREAT_HOLD_RATIO);
+    return false;
 }
 
 bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
@@ -367,13 +423,7 @@ std::vector<Position> FindEredarTwinsBlazePositions(Player* bot)
 
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
 {
-    for (Position const& blaze : GetCachedBlazePositions(botAI))
-    {
-        if (blaze.GetExactDist2d(position) <= BLAZE_CLEARANCE)
-            return false;
-    }
-
-    return true;
+    return IsClearOfBlaze(botAI, position, BLAZE_CLEARANCE);
 }
 
 // Alythess casts Conflagration while Sacrolash lives; Sacrolash casts it if Alythess dies first.

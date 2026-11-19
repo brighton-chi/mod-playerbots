@@ -467,6 +467,12 @@ bool FelmystLandingDpsHoldIsActiveTrigger::IsActiveInEncounter()
 
 // Eredar Twins
 
+// Hunters misdirect Sacrolash all through phase 1 and nothing in phase 2.
+bool EredarTwinsHunterShouldMisdirectTrigger::IsActiveInEncounter()
+{
+    return bot->getClass() == CLASS_HUNTER && FindSacrolash(bot);
+}
+
 bool EredarTwinsShouldLeaveBalconyTrigger::IsActiveInEncounter()
 {
     if (bot->GetPositionZ() <= EREDAR_TWINS_BALCONY_Z)

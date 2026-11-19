@@ -145,6 +145,17 @@ inline Position const EREDAR_TWINS_P2_STACK_WAYPOINT =       { 1828.800f, 628.40
 inline Position const EREDAR_TWINS_P2_POSITION_4_WAYPOINT =  { 1827.000f, 618.500f, 33.404f };
 inline constexpr float EREDAR_TWINS_WAYPOINT_ARRIVAL_DISTANCE = 1.0f;
 inline constexpr float EREDAR_TWINS_ROUTE_LEG_TOLERANCE = 0.5f;
+// A stray Blaze patch (from a human holding Alythess, or a victim that can't step aside) on a bot's
+// phase 2 position sends it to the first of these clear of every patch: 9y from Alythess, a
+// quarter turn apart, starting on the stack's side. Bots go straight there.
+inline std::array const EREDAR_TWINS_P2_FALLBACK_POSITIONS = {
+    Position{ 1827.800f, 628.000f, 33.404f },
+    Position{ 1816.700f, 634.200f, 33.404f },
+    Position{ 1821.700f, 616.900f, 33.404f },
+    Position{ 1810.500f, 623.000f, 33.404f },
+};
+// Burn's 3y plus the 0.3y arrival and a margin.
+inline constexpr float EREDAR_TWINS_P2_BLAZE_CLEARANCE = BLAZE_HAZARD_RADIUS + 0.8f;
 
 // Each twin, if it is on the bot's threat list. Alythess also stands for the encounter boss, so
 // she is found only while the encounter is in progress.
@@ -153,11 +164,14 @@ Unit* FindSacrolash(Player* bot);
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 // The stack, or the hunters' position for a hunter.
 Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess);
+// The first clear fallback while a Blaze patch is on the bot's phase 2 position; empty otherwise,
+// and while every fallback has a patch too.
+std::optional<Position> GetEredarTwinsPhase2Fallback(PlayerbotAI* botAI, Unit* alythess);
 // Where a bot holding Alythess waits: on the balcony, or on the floor.
 Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony);
-// The bot's phase 2 position, or the next waypoint while the straight line to it crosses the
-// Alythess tank positions.
-Position GetEredarTwinsPhase2RouteTarget(Player* bot, Unit* alythess);
+// A fallback, else the bot's phase 2 position, or the next waypoint while the straight line to it
+// crosses the Alythess tank positions.
+Position GetEredarTwinsPhase2RouteTarget(PlayerbotAI* botAI, Unit* alythess);
 bool UpdateEredarTwinsClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetAlythessTank(Player* bot);
 bool IsAlythessTank(Player* player);
@@ -167,6 +181,9 @@ Player* GetSacrolashTank(Player* bot, uint8 index);
 bool IsAnySacrolashTank(Player* bot);
 bool ShouldHoldAlythessThreat(Player* bot, Unit* alythess);
 bool ShouldHoldSacrolashThreat(Player* bot, Unit* sacrolash);
+Player* GetSacrolashSecondTank(Player* bot, Unit* sacrolash);
+// The first living bot hunter in group order, who misdirects Alythess at the pull.
+bool IsAlythessPullMisdirectHunter(Player* bot);
 // The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro.
 bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI);
 // For the "eredar twins threat holds" value.
