@@ -297,6 +297,24 @@ public:
 };
 
 // A mage mid-cast when a Fury Mage gains Spell Fury stops the cast to steal it.
+// Records a completed Conflagration cast, so its target holds position while the missile flies.
+class EredarTwinsSpellListenerScript : public AllSpellScript
+{
+public:
+    EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION))
+            return;
+
+        Player* target = GetFirstPlayerSpellTarget(spell, caster);
+        if (target && FindFirstSunwellCombatBotInGroup(target))
+            RecordEredarTwinsConflagrationImpact(target);
+    }
+};
+
 class MuruSpellFurySpellListenerScript : public AllSpellScript
 {
 public:
@@ -471,6 +489,7 @@ void AddSC_SunwellBotScripts()
     // AllSpellScript
     new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
+    new EredarTwinsSpellListenerScript();
     new MuruSpellFurySpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript

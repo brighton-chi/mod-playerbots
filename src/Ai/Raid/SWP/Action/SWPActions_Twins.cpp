@@ -23,7 +23,7 @@ bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
 {
     Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
     Position const& landingPosition =
-        FindThreatTarget(bot, "lady sacrolash") && !IsAlythessTank(bot) ?
+        FindSacrolash(bot) && !IsAlythessTank(bot) ?
         EREDAR_TWINS_SACROLASH_LANDING_POSITION : EREDAR_TWINS_ALYTHESS_LANDING_POSITION;
 
     constexpr float arrivalDistance = 2.0f;
@@ -94,17 +94,17 @@ bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
     Player* tank = nullptr;
     if (hunterIndex == 0)
     {
-        boss = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+        boss = FindAlythess(bot);
         tank = alythessTank;
     }
     else if (hunterIndex == 1)
     {
-        boss = FindThreatTarget(bot, "lady sacrolash");
+        boss = FindSacrolash(bot);
         tank = sacrolashTank;
     }
     else if (hunterIndex == 2)
     {
-        boss = FindThreatTarget(bot, "lady sacrolash");
+        boss = FindSacrolash(bot);
         tank = sacrolashSecondTank;
     }
 
@@ -116,7 +116,7 @@ bool EredarTwinsMisdirectToTanksAction::Execute(Event /*event*/)
 
 bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
 {
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    Unit* sacrolash = FindSacrolash(bot);
     if (!sacrolash)
         return false;
 
@@ -152,7 +152,7 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
 
 bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 {
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    Unit* alythess = FindAlythess(bot);
     if (!alythess)
         return false;
 
@@ -242,7 +242,7 @@ bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 
 bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
 {
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    Unit* alythess = FindAlythess(bot);
     if (!alythess)
         return false;
 
@@ -265,7 +265,7 @@ bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
 
 bool EredarTwinsStepAsideFromStackAction::Execute(Event /*event*/)
 {
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    Unit* alythess = FindAlythess(bot);
     if (!alythess)
         return false;
 
@@ -293,9 +293,8 @@ bool EredarTwinsDpsPrioritizeSacrolashAction::Execute(Event /*event*/)
     // Select a target without attacking while the DPS hold is active.
     bool const isDpsHeld = IsEredarTwinsStartHoldActive(botAI);
 
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
-    Unit* twinTarget =
-        sacrolash ? sacrolash : GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    Unit* sacrolash = FindSacrolash(bot);
+    Unit* twinTarget = sacrolash ? sacrolash : FindAlythess(bot);
 
     if (!twinTarget)
         return false;
@@ -358,7 +357,7 @@ bool EredarTwinsConflagrationTargetMoveFromGroupAction::Execute(Event /*event*/)
 
 bool EredarTwinsMoveAwayFromSacrolashVictimAction::Execute(Event /*event*/)
 {
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    Unit* sacrolash = FindSacrolash(bot);
     if (!sacrolash)
         return false;
 

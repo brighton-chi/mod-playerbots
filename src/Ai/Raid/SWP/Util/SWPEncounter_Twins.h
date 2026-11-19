@@ -25,6 +25,13 @@ namespace SwpHelpers
 {
 
 // The twins whose threat cap the bot has reached; empty for a twin it may still attack.
+// A completed Conflagration cast whose missile hasn't landed yet.
+struct EredarTwinsConflagrationImpact
+{
+    ObjectGuid targetGuid;
+    uint32 expireMs = 0;
+};
+
 struct EredarTwinsThreatHolds
 {
     ObjectGuid sacrolash;
@@ -75,6 +82,9 @@ inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 8.0f;
 inline constexpr float CONFLAGRATION_CLEARANCE = CONFLAGRATION_HAZARD_RADIUS + 2.0f;
 // Bots wait 300ms to react to Conflagration (to make the action look less artificial).
 inline constexpr int32 CONFLAGRATION_DELAY_MS = 300;
+// The missile (speed 30) lands up to about 1.5s after the cast ends and hits its target wherever it
+// has gone, so the target holds its position this long after the cast.
+inline constexpr uint32 CONFLAGRATION_IMPACT_WINDOW_MS = 2 * IN_MILLISECONDS;
 
 inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2 * IN_MILLISECONDS;
@@ -138,6 +148,10 @@ inline Position const EREDAR_TWINS_P2_POSITION_4_WAYPOINT =  { 1827.000f, 618.50
 inline constexpr float EREDAR_TWINS_WAYPOINT_ARRIVAL_DISTANCE = 1.0f;
 inline constexpr float EREDAR_TWINS_ROUTE_LEG_TOLERANCE = 0.5f;
 
+// Each twin, if it is on the bot's threat list. Alythess also stands for the encounter boss, so
+// she is found only while the encounter is in progress.
+Unit* FindAlythess(Player* bot);
+Unit* FindSacrolash(Player* bot);
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 // The stack, or the hunters' position for a hunter.
 Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess);
@@ -165,11 +179,14 @@ bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
 // A Vanish that stops the cast ends it at once.
 ObjectGuid GetEredarTwinsConflagrationTargetGuid(Unit* alythess, Unit* sacrolash);
 bool IsEredarTwinsConflagrationTarget(Player* bot, Unit* alythess, Unit* sacrolash);
+// For the spell listener, when a Conflagration cast completes (a Vanish that stops it never does).
+void RecordEredarTwinsConflagrationImpact(Player* target);
 
 // Shared encounter state
 
 struct EredarTwinsEncounterState
 {
+    std::optional<EredarTwinsConflagrationImpact> conflagrationImpact;
     std::optional<uint32> dpsHoldStartMs;
 };
 

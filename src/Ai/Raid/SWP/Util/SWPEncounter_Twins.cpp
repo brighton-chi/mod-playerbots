@@ -96,6 +96,16 @@ bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float thre
 
 } // end anonymous namespace
 
+Unit* FindAlythess(Player* bot)
+{
+    return GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+}
+
+Unit* FindSacrolash(Player* bot)
+{
+    return FindThreatTarget(bot, "lady sacrolash");
+}
+
 Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 {
     if (index >= ALYTHESS_TANK_POSITIONS.size())
@@ -309,7 +319,7 @@ bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    if (!FindThreatTarget(bot, "lady sacrolash"))
+    if (!FindSacrolash(bot))
         return false;
 
     EredarTwinsEncounterState const* state = FindEredarTwinsState(bot->GetInstanceId());
@@ -326,11 +336,11 @@ EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot)
         return holds;
 
     // Fine to exclude all tanks for Sacrolash because the Alythess tank never attacks her.
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    Unit* sacrolash = FindSacrolash(bot);
     if (sacrolash && !PlayerbotAI::IsTank(bot) && ShouldHoldSacrolashThreat(bot, sacrolash))
         holds.sacrolash = sacrolash->GetGUID();
 
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
+    Unit* alythess = FindAlythess(bot);
     if (alythess && ShouldHoldAlythessThreat(bot, alythess))
         holds.alythess = alythess->GetGUID();
 
@@ -367,6 +377,8 @@ bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
 }
 
 // Alythess casts Conflagration while Sacrolash lives; Sacrolash casts it if Alythess dies first.
+// The cast is read live; once it ends, the twin's next cast replaces it, so the missile's flight
+// comes from the record the spell listener writes.
 ObjectGuid GetEredarTwinsConflagrationTargetGuid(Unit* alythess, Unit* sacrolash)
 {
     for (Unit* twin : { alythess, sacrolash })
@@ -379,13 +391,28 @@ ObjectGuid GetEredarTwinsConflagrationTargetGuid(Unit* alythess, Unit* sacrolash
         }
     }
 
-    return ObjectGuid::Empty;
+    Unit* twin = alythess ? alythess : sacrolash;
+    EredarTwinsEncounterState const* state =
+        twin ? FindEredarTwinsState(twin->GetInstanceId()) : nullptr;
+    if (!state || !state->conflagrationImpact ||
+        state->conflagrationImpact->expireMs <= getMSTime())
+    {
+        return ObjectGuid::Empty;
+    }
+
+    return state->conflagrationImpact->targetGuid;
 }
 
 bool IsEredarTwinsConflagrationTarget(Player* bot, Unit* alythess, Unit* sacrolash)
 {
     ObjectGuid const targetGuid = GetEredarTwinsConflagrationTargetGuid(alythess, sacrolash);
     return !targetGuid.IsEmpty() && targetGuid == bot->GetGUID();
+}
+
+void RecordEredarTwinsConflagrationImpact(Player* target)
+{
+    EredarTwinsState(target->GetInstanceId()).conflagrationImpact = EredarTwinsConflagrationImpact{
+        target->GetGUID(), getMSTime() + CONFLAGRATION_IMPACT_WINDOW_MS };
 }
 
 // Shared encounter state

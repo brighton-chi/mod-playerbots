@@ -170,10 +170,10 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         }
         case SwpBosses::DATA_EREDAR_TWINS:
         {
-            if (!GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS))
+            if (!FindAlythess(bot))
                 return 0.0f;
 
-            Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+            Unit* sacrolash = FindSacrolash(bot);
             return sacrolash && sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ?
                 0.0f : 1.0f;
         }
@@ -593,11 +593,13 @@ float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
         dynamic_cast<CastReachTargetSpellAction*>(action);
 
     bool const isAvoidAoeOff = dynamic_cast<AvoidAoeAction*>(action) &&
-        (PlayerbotAI::IsTank(bot) || IsHoldingAlythessAggro(bot, GetEncounterBoss()));
+        (PlayerbotAI::IsTank(bot) || IsHoldingAlythessAggro(bot, FindAlythess(bot)));
 
+    // Follow too: a bot that drops its target (a Conflagration target out of sight of the twins)
+    // goes to its non-combat engine, where follow would take it back to the group.
     if (!isReachAction &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
         !IsRepositionAction(bot, action) && !IsKillingSpree(bot, action) && !isAvoidAoeOff)
     {
         return 1.0f;
@@ -624,9 +626,9 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    Unit* sacrolash = FindSacrolash(bot);
     ObjectGuid const conflagTargetGuid =
-        GetEredarTwinsConflagrationTargetGuid(GetEncounterBoss(), sacrolash);
+        GetEredarTwinsConflagrationTargetGuid(FindAlythess(bot), sacrolash);
     if (conflagTargetGuid.IsEmpty())
         return 1.0f;
 
