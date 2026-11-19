@@ -165,8 +165,7 @@ void RequestInterruptForEredarTwinsAlythessTargets(Creature* alythess)
     if (!alythess)
         return;
 
-    ObjectGuid const conflagTargetGuid =
-        GetEredarTwinsConflagrationTargetGuid(alythess->GetInstanceId());
+    ObjectGuid const conflagTargetGuid = GetEredarTwinsConflagrationTargetGuid(alythess, nullptr);
     if (!conflagTargetGuid.IsEmpty())
         RequestInterruptForEredarTwinsBot(ObjectAccessor::GetPlayer(*alythess, conflagTargetGuid));
 
@@ -294,24 +293,6 @@ public:
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(target);
         if (botAI && botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
             botAI->RequestSpellInterrupt();
-    }
-};
-
-class EredarTwinsSpellListenerScript : public AllSpellScript
-{
-public:
-    EredarTwinsSpellListenerScript() : AllSpellScript("EredarTwinsSpellListenerScript") {}
-
-    void OnSpellPrepare(Spell* spell, Unit* caster, SpellInfo const* spellInfo) override
-    {
-        if (!caster || spellInfo->Id != Id(SwpSpells::SPELL_CONFLAGRATION))
-            return;
-
-        Player* target = GetFirstPlayerSpellTarget(spell, caster);
-        if (!target || !FindFirstSunwellCombatBotInGroup(target))
-            return;
-
-        RecordIncomingEredarTwinsConflagrationTarget(target);
     }
 };
 
@@ -490,7 +471,6 @@ void AddSC_SunwellBotScripts()
     // AllSpellScript
     new KalecgosPortalSpellListenerScript();
     new FelmystSpellListenerScript();
-    new EredarTwinsSpellListenerScript();
     new MuruSpellFurySpellListenerScript();
     new KiljaedenDarknessSpellListenerScript();
     // AllCreatureScript

@@ -515,7 +515,7 @@ bool EredarTwinsRangedShouldStackOnBalconyTrigger::IsActiveInEncounter()
     if (!sacrolash || sacrolash->GetVictim() == bot)
         return false;
 
-    return !IsEredarTwinsConflagrationTarget(bot);
+    return !IsEredarTwinsConflagrationTarget(bot, GetEncounterBoss(), sacrolash);
 }
 
 bool EredarTwinsOnlyAlythessRemainsTrigger::IsActiveInEncounter()
@@ -526,7 +526,7 @@ bool EredarTwinsOnlyAlythessRemainsTrigger::IsActiveInEncounter()
     if (FindThreatTarget(bot, "lady sacrolash"))
         return false;
 
-    if (IsEredarTwinsConflagrationTarget(bot))
+    if (IsEredarTwinsConflagrationTarget(bot, GetEncounterBoss(), nullptr))
         return false;
 
     return !IsAlythessTank(bot);
@@ -572,13 +572,11 @@ bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
 
 bool EredarTwinsActiveConflagrationTargetTrigger::IsActiveInEncounter()
 {
-    if (!FindThreatTarget(bot, "lady sacrolash"))
+    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
+    if (!sacrolash)
         return false;
 
-    if (bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot))
-        return false;
-
-    return IsEredarTwinsConflagrationTarget(bot);
+    return IsEredarTwinsConflagrationTarget(bot, GetEncounterBoss(), sacrolash);
 }
 
 bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActiveInEncounter()
@@ -588,7 +586,7 @@ bool EredarTwinsSacrolashVictimHasConflagrationTrigger::IsActiveInEncounter()
         return false;
 
     ObjectGuid const conflagTargetGuid =
-        GetEredarTwinsConflagrationTargetGuid(bot->GetInstanceId());
+        GetEredarTwinsConflagrationTargetGuid(GetEncounterBoss(), sacrolash);
     if (conflagTargetGuid.IsEmpty() || conflagTargetGuid == bot->GetGUID())
         return false;
 

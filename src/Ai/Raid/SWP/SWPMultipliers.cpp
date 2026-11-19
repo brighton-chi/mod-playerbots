@@ -624,21 +624,20 @@ float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
+    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
     ObjectGuid const conflagTargetGuid =
-        GetEredarTwinsConflagrationTargetGuid(bot->GetInstanceId());
+        GetEredarTwinsConflagrationTargetGuid(GetEncounterBoss(), sacrolash);
     if (conflagTargetGuid.IsEmpty())
         return 1.0f;
 
-    // Block movement for bot targeted by Conflagration, unless the target is a Rogue that has
-    // vanished and caused Alythess to drop the target.
+    // Block movement for the bot targeted by Conflagration.
     if (conflagTargetGuid == bot->GetGUID())
-        return bot->getClass() == CLASS_ROGUE && botAI->HasAura("vanish", bot) ? 1.0f : 0.0f;
+        return 0.0f;
 
     if (IsAlythessTank(bot))
         return 1.0f;
 
     // If Sacrolash's victim is targeted by Conflagration, block actions that move toward Sacrolash.
-    Unit* sacrolash = FindThreatTarget(bot, "lady sacrolash");
     if (!sacrolash)
         return 1.0f;
 

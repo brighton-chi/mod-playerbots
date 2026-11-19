@@ -24,13 +24,6 @@ class Unit;
 namespace SwpHelpers
 {
 
-struct EredarTwinsIncomingConflagrationState
-{
-    ObjectGuid targetGuid = ObjectGuid::Empty;
-    uint32 delayMs = 0;
-    uint32 expireMs = 0;
-};
-
 // The twins whose threat cap the bot has reached; empty for a twin it may still attack.
 struct EredarTwinsThreatHolds
 {
@@ -81,10 +74,7 @@ inline constexpr uint32 EREDAR_TWINS_THREAT_HOLDS_CACHE_INTERVAL_MS = 100;
 inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 8.0f;
 inline constexpr float CONFLAGRATION_CLEARANCE = CONFLAGRATION_HAZARD_RADIUS + 2.0f;
 // Bots wait 300ms to react to Conflagration (to make the action look less artificial).
-inline constexpr uint32 CONFLAGRATION_DELAY_MS = 300;
-// Conflagration is a 3.5s cast. The bot needs to hold position through the impact, so some time is
-// added to account for the projectile's travel time.
-inline constexpr uint32 CONFLAGRATION_WINDOW_MS = 5500;
+inline constexpr int32 CONFLAGRATION_DELAY_MS = 300;
 
 inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2 * IN_MILLISECONDS;
@@ -104,8 +94,15 @@ inline std::array const ALYTHESS_TANK_POSITIONS = {
 // The tank's Blaze patch lands where it stops, and the positions are 4.67y apart against a 4.5y
 // clearance, so it must stop on the position, not short of it on the way in.
 inline constexpr float ALYTHESS_TANK_ARRIVAL_DISTANCE = 0.2f;
-// The Alythess tank's landing at the pull, the position nearest the balcony.
-inline constexpr uint8 ALYTHESS_TANK_LANDING_INDEX = 3;
+// The Alythess tank's first position, the one nearest the balcony.
+inline constexpr uint8 ALYTHESS_TANK_FIRST_INDEX = 3;
+
+// Jumps from the balcony land within 13y of the ranged position, as far as a player's jump down
+// the 18y drop carries.
+// The melee, the Sacrolash tanks, and a ranged bot Sacrolash chases land here while she lives.
+inline Position const EREDAR_TWINS_SACROLASH_LANDING_POSITION = { 1808.100f, 616.500f, 33.404f };
+// The Alythess tank lands here, and everyone in phase 2.
+inline Position const EREDAR_TWINS_ALYTHESS_LANDING_POSITION = { 1818.600f, 611.000f, 33.404f };
 
 // Phase 1 positions (ranged up top, melee on Sacrolash).
 // Both Sacrolash tanks stand here. Her tank backs along the line from her spawn, so she ends
@@ -113,8 +110,8 @@ inline constexpr uint8 ALYTHESS_TANK_LANDING_INDEX = 3;
 // from Alythess, out of reach of their area attacks (8y plus her 2.5y reach).
 inline Position const SACROLASH_TANK_POSITION  =             { 1799.000f, 618.900f, 33.404f };
 inline constexpr float SACROLASH_TANK_ARRIVAL_DISTANCE = 1.0f;
-// Melee land at the pull on the line from Sacrolash's spawn to her tanks' position.
-inline Position const EREDAR_TWINS_MELEE_LANDING_POSITION =  { 1807.400f, 622.800f, 33.404f };
+// The Sacrolash tanks wait here at the pull, on that line, until one of them holds her.
+inline Position const SACROLASH_TANK_PULL_POSITION =         { 1807.400f, 622.800f, 33.404f };
 inline Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
 // A ranged bot that pulls aggro on Alythess waits here, out of the stack, so Blaze doesn't hit the
 // ranged stack. The twins are in LoS from only ~10 yd of the balcony edge; this is its east end.
@@ -130,23 +127,25 @@ inline constexpr float EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE = 1.0f;
 // Phase 2: everybody but the Alythess tank in one stack, in her melee range on her far side from
 // Sacrolash, 4.8y from the nearest Alythess tank position, so a Shadow Nova on it reaches the tank.
 inline Position const EREDAR_TWINS_P2_STACK_POSITION =       { 1823.900f, 626.900f, 33.404f };
+// Hunters' shots fail within their melee range of the target, 6.08y from Empowered Alythess's
+// center, so they stand just outside it, 1.8y from the stack and inside the Nova on it.
+inline Position const EREDAR_TWINS_P2_HUNTER_POSITION =      { 1825.430f, 627.790f, 33.404f };
 inline constexpr float EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE = 0.3f;
-// When Sacrolash dies, her melee and tanks reach the stack round the end of Alythess tank
-// position 0, clear of the patches.
-inline std::array const EREDAR_TWINS_PHASE_CHANGE_WAYPOINTS = {
-    Position{ 1816.300f, 639.800f, 33.404f },
-    Position{ 1828.800f, 628.400f, 33.404f },
-};
+// Phase 2 moves to the stack go round the Alythess tank positions, clear of the patches.
+inline Position const EREDAR_TWINS_P2_POSITION_0_WAYPOINT =  { 1816.300f, 639.800f, 33.404f };
+inline Position const EREDAR_TWINS_P2_STACK_WAYPOINT =       { 1828.800f, 628.400f, 33.404f };
+inline Position const EREDAR_TWINS_P2_POSITION_4_WAYPOINT =  { 1827.000f, 618.500f, 33.404f };
 inline constexpr float EREDAR_TWINS_WAYPOINT_ARRIVAL_DISTANCE = 1.0f;
 inline constexpr float EREDAR_TWINS_ROUTE_LEG_TOLERANCE = 0.5f;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
-Position GetEredarTwinsP2StackPosition(Unit* alythess);
+// The stack, or the hunters' position for a hunter.
+Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess);
 // Where a bot holding Alythess waits: on the balcony, or on the floor.
 Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony);
-// The phase 2 stack, or the next waypoint while the straight line to the stack crosses the
+// The bot's phase 2 position, or the next waypoint while the straight line to it crosses the
 // Alythess tank positions.
-Position GetEredarTwinsP2StackRouteTarget(Player* bot, Unit* alythess);
+Position GetEredarTwinsPhase2RouteTarget(Player* bot, Unit* alythess);
 bool UpdateEredarTwinsClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetAlythessTank(Player* bot);
 bool IsAlythessTank(Player* player);
@@ -162,16 +161,15 @@ bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI);
 EredarTwinsThreatHolds FindEredarTwinsThreatHolds(Player* bot);
 std::vector<Position> FindEredarTwinsBlazePositions(Player* bot);
 bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position);
-void RecordIncomingEredarTwinsConflagrationTarget(Player* target);
-// Empty until the reaction delay has passed and after the window has ended.
-ObjectGuid GetEredarTwinsConflagrationTargetGuid(uint32 instanceId);
-bool IsEredarTwinsConflagrationTarget(Player* bot);
+// The target of a twin's Conflagration cast, once the reaction delay has passed; empty otherwise.
+// A Vanish that stops the cast ends it at once.
+ObjectGuid GetEredarTwinsConflagrationTargetGuid(Unit* alythess, Unit* sacrolash);
+bool IsEredarTwinsConflagrationTarget(Player* bot, Unit* alythess, Unit* sacrolash);
 
 // Shared encounter state
 
 struct EredarTwinsEncounterState
 {
-    std::optional<EredarTwinsIncomingConflagrationState> incomingConflagration;
     std::optional<uint32> dpsHoldStartMs;
 };
 

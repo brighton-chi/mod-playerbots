@@ -16,18 +16,15 @@
 using namespace SwpHelpers;
 using namespace EncounterHelpers;
 
-// While Sacrolash lives, everyone lands with her melee, a ranged bot she is chasing included so
-// she comes back to her tanks; the Alythess tank lands on its own position.
+// While Sacrolash lives, everyone lands on her side, a ranged bot she is chasing included so she
+// comes back to her tanks; the Alythess tank lands on Alythess's side, as does everyone in phase 2.
+// Each then moves on to its position.
 bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
 {
-    Unit* alythess = GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
     Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
-
-    Position landingPosition = EREDAR_TWINS_MELEE_LANDING_POSITION;
-    if (!FindThreatTarget(bot, "lady sacrolash"))
-        landingPosition = GetEredarTwinsP2StackPosition(alythess);
-    else if (IsAlythessTank(bot))
-        landingPosition = GetAlythessTankPosition(alythess, ALYTHESS_TANK_LANDING_INDEX);
+    Position const& landingPosition =
+        FindThreatTarget(bot, "lady sacrolash") && !IsAlythessTank(bot) ?
+        EREDAR_TWINS_SACROLASH_LANDING_POSITION : EREDAR_TWINS_ALYTHESS_LANDING_POSITION;
 
     constexpr float arrivalDistance = 2.0f;
     if (bot->GetExactDist2d(jumpPosition) > arrivalDistance)
@@ -126,23 +123,24 @@ bool EredarTwinsPositionSacrolashTanksAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != sacrolash)
         return Attack(sacrolash);
 
-    // Only once a Sacrolash tank holds her in its melee range, so the tank she is hitting draws
-    // her along; the other tank simply joins it.
+    // At the pull the tanks wait on the drag line until one of them holds her in its melee range.
+    // Then the tank she is hitting draws her along it, and the other tank simply joins it.
     Unit* victim = sacrolash->GetVictim();
     Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-    if (!victimPlayer || !IsAnySacrolashTank(victimPlayer) ||
-        !victimPlayer->IsWithinMeleeRange(sacrolash))
-    {
+    bool const isHeldByTank = victimPlayer && IsAnySacrolashTank(victimPlayer) &&
+        victimPlayer->IsWithinMeleeRange(sacrolash);
+    if (!isHeldByTank && !IsEredarTwinsStartHoldActive(botAI))
         return false;
-    }
+
+    Position const& position =
+        isHeldByTank ? SACROLASH_TANK_POSITION : SACROLASH_TANK_PULL_POSITION;
 
     // Backwards only for the tank she is hitting, when the step leads away from her.
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, SACROLASH_TANK_POSITION, SACROLASH_TANK_ARRIVAL_DISTANCE, sacrolash, moveX, moveY,
-            backwards))
+            bot, position, SACROLASH_TANK_ARRIVAL_DISTANCE, sacrolash, moveX, moveY, backwards))
     {
         return false;
     }
@@ -181,7 +179,7 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         return false;
     };
 
-    uint8 index = _alythessTankStep.value_or(ALYTHESS_TANK_LANDING_INDEX);
+    uint8 index = _alythessTankStep.value_or(ALYTHESS_TANK_FIRST_INDEX);
 
     if (!IsAlythessTankPositionSafe(botAI, GetAlythessTankPosition(alythess, index)))
     {
@@ -193,7 +191,9 @@ bool EredarTwinsAlythessTankMoveOutOfBlazeAction::Execute(Event /*event*/)
         _alythessTankStep = index;
     }
 
-    if (alythess->GetVictim() != bot)
+    // From its landing it goes to its first position whether or not it holds her yet, to melee
+    // her for threat; after that it moves only while she is hitting it.
+    if (alythess->GetVictim() != bot && _alythessTankStep)
         return false;
 
     Position const position = GetAlythessTankPosition(alythess, index);
@@ -247,7 +247,7 @@ bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
         return false;
 
     // The route moves on to the next waypoint before the bot is this close to the last one.
-    Position const position = GetEredarTwinsP2StackRouteTarget(bot, alythess);
+    Position const position = GetEredarTwinsPhase2RouteTarget(bot, alythess);
     constexpr float arrivalDist = EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE;
     if (bot->GetExactDist2d(position) <= arrivalDist)
         return false;

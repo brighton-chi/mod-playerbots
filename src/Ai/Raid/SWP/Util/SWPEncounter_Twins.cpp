@@ -13,9 +13,12 @@
 #include "NearestGameObjects.h"
 #include "Playerbots.h"
 #include "SWPInstanceState.h"
+#include "Spell.h"
+#include "SpellInfo.h"
 #include "ThreatHelpers.h"
 #include "ThreatManager.h"
 #include <algorithm>
+#include <initializer_list>
 #include <list>
 #include <unordered_map>
 
@@ -101,9 +104,11 @@ Position GetAlythessTankPosition(Unit* alythess, uint8 index)
     return GetAdjustedPosition(alythess, ALYTHESS_TANK_POSITIONS[index]);
 }
 
-Position GetEredarTwinsP2StackPosition(Unit* alythess)
+Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess)
 {
-    return GetAdjustedPosition(alythess, EREDAR_TWINS_P2_STACK_POSITION);
+    return GetAdjustedPosition(
+        alythess, bot->getClass() == CLASS_HUNTER ?
+            EREDAR_TWINS_P2_HUNTER_POSITION : EREDAR_TWINS_P2_STACK_POSITION);
 }
 
 Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony)
@@ -112,13 +117,17 @@ Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony)
         GetAdjustedPosition(alythess, EREDAR_TWINS_FLOOR_ASIDE_POSITION);
 }
 
-Position GetEredarTwinsP2StackRouteTarget(Player* bot, Unit* alythess)
+// Every waypoint leads to the stack waypoint, from which the straight line to the bot's position is
+// clear. The position 4 waypoint serves the landing and the floor step-aside; from Sacrolash's
+// side its line crosses the tank positions, so bots there go round position 0.
+Position GetEredarTwinsPhase2RouteTarget(Player* bot, Unit* alythess)
 {
-    Position const stack = GetEredarTwinsP2StackPosition(alythess);
-    Position const firstWaypoint =
-        GetAdjustedPosition(alythess, EREDAR_TWINS_PHASE_CHANGE_WAYPOINTS[0]);
-    Position const secondWaypoint =
-        GetAdjustedPosition(alythess, EREDAR_TWINS_PHASE_CHANGE_WAYPOINTS[1]);
+    Position const destination = GetEredarTwinsPhase2Position(bot, alythess);
+    Position const stackWaypoint = GetAdjustedPosition(alythess, EREDAR_TWINS_P2_STACK_WAYPOINT);
+    Position const position0Waypoint =
+        GetAdjustedPosition(alythess, EREDAR_TWINS_P2_POSITION_0_WAYPOINT);
+    Position const position4Waypoint =
+        GetAdjustedPosition(alythess, EREDAR_TWINS_P2_POSITION_4_WAYPOINT);
     constexpr float arrival = EREDAR_TWINS_WAYPOINT_ARRIVAL_DISTANCE;
 
     // A bot on the leg between two route points keeps heading for the second, since the straight
@@ -129,19 +138,24 @@ Position GetEredarTwinsP2StackRouteTarget(Player* bot, Unit* alythess)
             from.GetExactDist2d(to) + EREDAR_TWINS_ROUTE_LEG_TOLERANCE;
     };
 
-    if (IsClearOfAlythessTankPositions(bot, alythess, stack) || isOnLeg(secondWaypoint, stack) ||
-        bot->GetExactDist2d(secondWaypoint) <= arrival)
+    if (IsClearOfAlythessTankPositions(bot, alythess, destination) ||
+        isOnLeg(stackWaypoint, destination) || bot->GetExactDist2d(stackWaypoint) <= arrival)
     {
-        return stack;
+        return destination;
     }
 
-    if (IsClearOfAlythessTankPositions(bot, alythess, secondWaypoint) ||
-        isOnLeg(firstWaypoint, secondWaypoint) || bot->GetExactDist2d(firstWaypoint) <= arrival)
+    if (IsClearOfAlythessTankPositions(bot, alythess, stackWaypoint) ||
+        isOnLeg(position0Waypoint, stackWaypoint) || isOnLeg(position4Waypoint, stackWaypoint) ||
+        bot->GetExactDist2d(position0Waypoint) <= arrival ||
+        bot->GetExactDist2d(position4Waypoint) <= arrival)
     {
-        return secondWaypoint;
+        return stackWaypoint;
     }
 
-    return firstWaypoint;
+    if (IsClearOfAlythessTankPositions(bot, alythess, position4Waypoint))
+        return position4Waypoint;
+
+    return position0Waypoint;
 }
 
 bool UpdateEredarTwinsClassRoleAnnouncement(PlayerbotAI* botAI)
@@ -352,37 +366,26 @@ bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
     return true;
 }
 
-void RecordIncomingEredarTwinsConflagrationTarget(Player* target)
+// Alythess casts Conflagration while Sacrolash lives; Sacrolash casts it if Alythess dies first.
+ObjectGuid GetEredarTwinsConflagrationTargetGuid(Unit* alythess, Unit* sacrolash)
 {
-    if (!target)
-        return;
+    for (Unit* twin : { alythess, sacrolash })
+    {
+        Spell* spell = twin ? twin->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
+        if (spell && spell->m_spellInfo->Id == Id(SwpSpells::SPELL_CONFLAGRATION) &&
+            spell->GetCastTime() - spell->GetCastTimeRemaining() >= CONFLAGRATION_DELAY_MS)
+        {
+            return spell->m_targets.GetUnitTargetGUID();
+        }
+    }
 
-    uint32 const now = getMSTime();
-    std::optional<EredarTwinsIncomingConflagrationState>& incoming =
-        EredarTwinsState(target->GetInstanceId()).incomingConflagration;
-    EredarTwinsIncomingConflagrationState& state = incoming ? *incoming : incoming.emplace();
-    state.targetGuid = target->GetGUID();
-    state.delayMs = now + CONFLAGRATION_DELAY_MS;
-    state.expireMs = now + CONFLAGRATION_WINDOW_MS;
+    return ObjectGuid::Empty;
 }
 
-ObjectGuid GetEredarTwinsConflagrationTargetGuid(uint32 instanceId)
+bool IsEredarTwinsConflagrationTarget(Player* bot, Unit* alythess, Unit* sacrolash)
 {
-    EredarTwinsEncounterState const* twinsState = FindEredarTwinsState(instanceId);
-    if (!twinsState || !twinsState->incomingConflagration)
-        return ObjectGuid::Empty;
-
-    EredarTwinsIncomingConflagrationState const& state = *twinsState->incomingConflagration;
-    uint32 const now = getMSTime();
-    if (state.expireMs <= now || state.delayMs > now)
-        return ObjectGuid::Empty;
-
-    return state.targetGuid;
-}
-
-bool IsEredarTwinsConflagrationTarget(Player* bot)
-{
-    return GetEredarTwinsConflagrationTargetGuid(bot->GetInstanceId()) == bot->GetGUID();
+    ObjectGuid const targetGuid = GetEredarTwinsConflagrationTargetGuid(alythess, sacrolash);
+    return !targetGuid.IsEmpty() && targetGuid == bot->GetGUID();
 }
 
 // Shared encounter state
