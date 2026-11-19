@@ -21,7 +21,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Shared
     triggers.push_back(new TriggerNode("sunwell no encounter in progress",
         { NextAction("sunwell reset encounter states", ACTION_EMERGENCY + 10),
-          NextAction("eredar twins announce class roles", ACTION_EMERGENCY + 8) }));
+          NextAction("eredar twins announce class roles", ACTION_EMERGENCY + 8),
+          NextAction("kil'jaeden announce dragon orb user", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("sunwell class roles should be assigned",
         { NextAction("sunwell assign class roles", ACTION_EMERGENCY + 9) }));
@@ -233,15 +234,12 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("m'uru escape the singularity", ACTION_EMERGENCY + 7) }));
 
     // Kil'jaeden <The Deceiver>
-    triggers.push_back(new TriggerNode("kil'jaeden should coordinate orb use",
-        { NextAction("kil'jaeden announce dragon orb user", ACTION_RAID - 1) }));
-
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active",
         { NextAction("kil'jaeden control hands of the deceiver", ACTION_EMERGENCY),
           NextAction("kil'jaeden mark hand of the deceiver", ACTION_RAID + 1),
           NextAction("kil'jaeden move holy paladin into stun range", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden tanks should hold boss and reflections",
+    triggers.push_back(new TriggerNode("kil'jaeden should be tanked",
         { NextAction("kil'jaeden position and move tanks", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden melee should split into two groups",
@@ -253,7 +251,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden fire bloom on immunity class",
         { NextAction("kil'jaeden remove fire bloom", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden says: Chaos! Destruction! Oblivion!",
+    triggers.push_back(new TriggerNode("kil'jaeden casts darkness of a thousand souls",
         { NextAction("kil'jaeden stack for shield of the blue", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden dragon orb is active",

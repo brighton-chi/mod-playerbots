@@ -158,11 +158,9 @@ bool BigBadWolfChasesRedHoodTrigger::IsActiveInEncounter()
 
 bool BigBadWolfVictimHasRedHoodTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_PRIEST &&
-        bot->getClass() != CLASS_WARRIOR)
-    {
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_PALADIN && botClass != CLASS_PRIEST && botClass != CLASS_WARRIOR)
         return false;
-    }
 
     Unit* wolf = GetOperaActor(bot, "the big bad wolf");
     if (!wolf)

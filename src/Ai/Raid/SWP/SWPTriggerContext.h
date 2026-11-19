@@ -211,14 +211,11 @@ public:
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
 
         // Kil'jaeden <The Deceiver>
-        creators["kil'jaeden should coordinate orb use"] =
-            &RaidSwpTriggerContext::kiljaeden_should_coordinate_orb_use;
-
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSwpTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
 
-        creators["kil'jaeden tanks should hold boss and reflections"] =
-            &RaidSwpTriggerContext::kiljaeden_tanks_should_hold_boss_and_reflections;
+        creators["kil'jaeden should be tanked"] =
+            &RaidSwpTriggerContext::kiljaeden_should_be_tanked;
 
         creators["kil'jaeden melee should split into two groups"] =
             &RaidSwpTriggerContext::kiljaeden_melee_should_split_into_two_groups;
@@ -229,8 +226,8 @@ public:
         creators["kil'jaeden fire bloom on immunity class"] =
             &RaidSwpTriggerContext::kiljaeden_fire_bloom_on_immunity_class;
 
-        creators["kil'jaeden says: Chaos! Destruction! Oblivion!"] =
-            &RaidSwpTriggerContext::kiljaeden_says_chaos_destruction_oblivion;
+        creators["kil'jaeden casts darkness of a thousand souls"] =
+            &RaidSwpTriggerContext::kiljaeden_casts_darkness_of_a_thousand_souls;
 
         creators["kil'jaeden dragon orb is active"] =
             &RaidSwpTriggerContext::kiljaeden_dragon_orb_is_active;
@@ -522,17 +519,13 @@ private:
     }
 
     // Kil'jaeden <The Deceiver>
-    static Trigger* kiljaeden_should_coordinate_orb_use(PlayerbotAI* botAI)
-    {
-        return new KiljaedenShouldCoordinateOrbUseTrigger(botAI);
-    }
     static Trigger* kiljaeden_hands_of_the_deceiver_are_active(PlayerbotAI* botAI)
     {
         return new KiljaedenHandsOfTheDeceiverAreActiveTrigger(botAI);
     }
-    static Trigger* kiljaeden_tanks_should_hold_boss_and_reflections(PlayerbotAI* botAI)
+    static Trigger* kiljaeden_should_be_tanked(PlayerbotAI* botAI)
     {
-        return new KiljaedenTanksShouldHoldBossAndReflectionsTrigger(botAI);
+        return new KiljaedenShouldBeTankedTrigger(botAI);
     }
     static Trigger* kiljaeden_melee_should_split_into_two_groups(PlayerbotAI* botAI)
     {
@@ -546,9 +539,9 @@ private:
     {
         return new KiljaedenFireBloomOnImmunityClassTrigger(botAI);
     }
-    static Trigger* kiljaeden_says_chaos_destruction_oblivion(PlayerbotAI* botAI)
+    static Trigger* kiljaeden_casts_darkness_of_a_thousand_souls(PlayerbotAI* botAI)
     {
-        return new KiljaedenSaysChaosDestructionOblivionTrigger(botAI);
+        return new KiljaedenCastsDarknessOfAThousandSoulsTrigger(botAI);
     }
     static Trigger* kiljaeden_dragon_orb_is_active(PlayerbotAI* botAI)
     {

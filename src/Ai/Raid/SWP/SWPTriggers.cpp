@@ -119,11 +119,9 @@ bool KalecgosRangedShouldSpreadTrigger::IsActiveInEncounter()
 
 bool KalecgosTooManyArcaneBuffetStacksTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN)
-    {
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_ROGUE && botClass != CLASS_MAGE && botClass != CLASS_PALADIN)
         return false;
-    }
 
     if (PlayerbotAI::IsTank(bot))
         return false;
@@ -539,11 +537,9 @@ bool EredarTwinsAlythessTargetsNonTankTrigger::IsActiveInEncounter()
 
 bool EredarTwinsTooManyFlameTouchedStacksTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN)
-    {
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_ROGUE && botClass != CLASS_MAGE && botClass != CLASS_PALADIN)
         return false;
-    }
 
     if (PlayerbotAI::IsTank(bot))
         return false;
@@ -745,30 +741,15 @@ bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
 
 // Kil'jaeden <The Deceiver>
 
-bool KiljaedenShouldCoordinateOrbUseTrigger::IsActiveInEncounter()
-{
-    if (!IsMechanicTrackerBot(bot, SWP_MAP_ID))
-        return false;
-
-    KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());
-    if (state && state->dragonOrbAnnouncementMs)
-        return false;
-
-    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) < HAND_SEARCH_RADIUS)
-        return false;
-
-    return FindThreatTarget(bot, "hand of the deceiver");
-}
-
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActiveInEncounter()
 {
-    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) < HAND_SEARCH_RADIUS)
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > HAND_SEARCH_RADIUS)
         return false;
 
     return FindThreatTarget(bot, "hand of the deceiver");
 }
 
-bool KiljaedenTanksShouldHoldBossAndReflectionsTrigger::IsActiveInEncounter()
+bool KiljaedenShouldBeTankedTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsTank(bot))
         return false;
@@ -822,11 +803,9 @@ bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
 
 bool KiljaedenFireBloomOnImmunityClassTrigger::IsActiveInEncounter()
 {
-    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_PALADIN)
-    {
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_ROGUE && botClass != CLASS_MAGE && botClass != CLASS_PALADIN)
         return false;
-    }
 
     if (PlayerbotAI::IsTank(bot))
         return false;
@@ -834,11 +813,15 @@ bool KiljaedenFireBloomOnImmunityClassTrigger::IsActiveInEncounter()
     if (!bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
         return false;
 
+    // Cloak of Shadows has a short cooldown; Ice Block and Divine Shield are saved for phase 4.
+    if (botClass == CLASS_ROGUE)
+        return true;
+
     Unit* kiljaeden = GetEncounterBoss();
     return kiljaeden && kiljaeden->GetHealthPct() < KILJAEDEN_PHASE4_HP_THRESHOLD;
 }
 
-bool KiljaedenSaysChaosDestructionOblivionTrigger::IsActiveInEncounter()
+bool KiljaedenCastsDarknessOfAThousandSoulsTrigger::IsActiveInEncounter()
 {
     Unit* kiljaeden = GetEncounterBoss();
     if (!kiljaeden)
@@ -896,10 +879,9 @@ bool KiljaedenBotControlsDragonTrigger::IsActiveInEncounter()
 
 bool KiljaedenStaleRootAfterDragonTrigger::IsActiveInEncounter()
 {
-    // Shield of the Blue stuns the drake it is cast from, and that stun is applied to the orb user
-    // bot as well. The drake dies on the last tick of the second Shield of the Blue cast, which
-    // occurs before the aura expires, so the drake dies still stunned, leaving the bot stunned as
-    // well and rooted mid-encounter.
+    // Shield of the Blue stuns the drake it is cast from. The drake dies on the last tick of its
+    // second Shield, before the stun expires, and the possession ends before the stun is removed,
+    // so the unroot is applied to the drake and the orb user bot is left with the root flag set.
     if (!HasUsedKiljaedenDragonOrb(bot) || HasKiljaedenDragonAura(bot))
         return false;
 

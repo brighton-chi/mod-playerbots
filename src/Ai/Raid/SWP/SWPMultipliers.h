@@ -442,8 +442,7 @@ class KiljaedenControlDragonMultiplier : public SunwellEncounterMultiplier
 public:
     KiljaedenControlDragonMultiplier(PlayerbotAI* botAI)
         : SunwellEncounterMultiplier(
-            botAI, "kil'jaeden dragon buff and protect raid",
-            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+            botAI, "kil'jaeden control dragon", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;

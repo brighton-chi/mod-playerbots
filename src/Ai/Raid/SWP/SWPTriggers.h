@@ -760,17 +760,6 @@ protected:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenShouldCoordinateOrbUseTrigger : public SunwellEncounterTrigger
-{
-public:
-    KiljaedenShouldCoordinateOrbUseTrigger(PlayerbotAI* botAI)
-        : SunwellEncounterTrigger(
-            botAI, "kil'jaeden should coordinate orb use", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
-
-protected:
-    bool IsActiveInEncounter() override;
-};
-
 class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public SunwellEncounterTrigger
 {
 public:
@@ -783,13 +772,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenTanksShouldHoldBossAndReflectionsTrigger : public SunwellEncounterTrigger
+class KiljaedenShouldBeTankedTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenTanksShouldHoldBossAndReflectionsTrigger(PlayerbotAI* botAI)
+    KiljaedenShouldBeTankedTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "kil'jaeden tanks should hold boss and reflections",
-            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+            botAI, "kil'jaeden should be tanked", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -831,12 +819,12 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
-class KiljaedenSaysChaosDestructionOblivionTrigger : public SunwellEncounterTrigger
+class KiljaedenCastsDarknessOfAThousandSoulsTrigger : public SunwellEncounterTrigger
 {
 public:
-    KiljaedenSaysChaosDestructionOblivionTrigger(PlayerbotAI* botAI)
+    KiljaedenCastsDarknessOfAThousandSoulsTrigger(PlayerbotAI* botAI)
         : SunwellEncounterTrigger(
-            botAI, "kil'jaeden says: Chaos! Destruction! Oblivion!",
+            botAI, "kil'jaeden casts darkness of a thousand souls",
             SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:

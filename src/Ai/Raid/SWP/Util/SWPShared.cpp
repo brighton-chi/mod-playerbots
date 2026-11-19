@@ -280,6 +280,7 @@ bool SwpResetInstance(uint32 instanceId)
         state.eredarTwins || state.muru || state.kiljaeden;
     SwpInstanceState kept;
     kept.alythessPaladinTank = state.alythessPaladinTank;
+    kept.kiljaedenDragonOrbUser = state.kiljaedenDragonOrbUser;
     state = std::move(kept);
     return wasSet;
 }
@@ -287,9 +288,11 @@ bool SwpResetInstance(uint32 instanceId)
 bool UpdateSwpClassRoles(PlayerbotAI* botAI)
 {
     SwpInstanceState& state = SwpState(botAI->GetBot()->GetInstanceId());
-    return UpdateClassRoleAssignments(botAI, SWP_MAP_ID, {
+    bool const classRolesChanged = UpdateClassRoleAssignments(botAI, SWP_MAP_ID, {
         { ALYTHESS_PALADIN_TANK_ROLE, state.alythessPaladinTank },
     });
+
+    return UpdateKiljaedenDragonOrbUser(botAI) || classRolesChanged;
 }
 
 }

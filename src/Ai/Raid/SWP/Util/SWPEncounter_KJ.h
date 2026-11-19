@@ -35,14 +35,6 @@ struct KiljaedenArmageddon
     float safeDistance = 0.0f;
 };
 
-struct KiljaedenDarknessShieldState
-{
-    bool inDarkness = false;
-    bool shieldCastThisDarkness = false;
-    uint32 darknessStartMs = 0;
-    uint32 lastDarknessCastMsLeft = 0;
-};
-
 inline std::array const KILJAEDEN_DRAGON_ORB_ENTRIES = {
     Id(SwpObjects::GO_DRAGON_ORB_1),
     Id(SwpObjects::GO_DRAGON_ORB_2),
@@ -62,6 +54,21 @@ inline constexpr float KILJAEDEN_PHASE5_HP_THRESHOLD = 25.0f;
 
 inline constexpr uint32 HAND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 DRAGON_ORB_CACHE_INTERVAL_MS = 200;
+
+// The orb user is announced out of combat within this 2D distance of the controller's spawn,
+// which covers the Sunwell room (the orbs are 46-49y from it).
+inline constexpr float KILJAEDEN_ORB_USER_ANNOUNCE_DISTANCE = 60.0f;
+// Beyond this 2D distance the announcement is forgotten, so a raid that returns hears it again.
+inline constexpr float KILJAEDEN_ORB_USER_REARM_DISTANCE = 150.0f;
+
+// Knockback (47115) hits everyone within 9y of his center (3D, no combat reach) every second.
+inline constexpr float KILJAEDEN_KNOCKBACK_RADIUS = 9.0f;
+// Bots go round him on this ring when a straight line would pass through the Knockback.
+inline constexpr float KILJAEDEN_KNOCKBACK_CLEARANCE = KILJAEDEN_KNOCKBACK_RADIUS + 1.5f;
+// A straight line that keeps at least this far from his center is taken as is.
+inline constexpr float KILJAEDEN_ROUTE_LINE_CLEARANCE = KILJAEDEN_KNOCKBACK_RADIUS + 1.0f;
+// How far past its tangent a bot going round him aims along the ring, in radians.
+inline constexpr float KILJAEDEN_ROUTE_LEAD_ANGLE = 0.3f;
 
 inline constexpr float HAND_SEARCH_RADIUS = 80.0f;
 // Hammer of Justice is a single-target spell that counts both combat reaches so its actual range is
@@ -123,7 +130,13 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(Player* bot);
 void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
+int32 GetKiljaedenDarknessTimeLeftMs(Unit* kiljaeden);
+bool GetKiljaedenStepToPosition(
+    Player* bot, Position const& destination, float arrivalDist, float& stepX, float& stepY);
+Position GetKiljaedenFireBloomWaitPosition(Player* bot);
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
+bool UpdateKiljaedenDragonOrbUser(PlayerbotAI* botAI);
+bool UpdateKiljaedenDragonOrbUserAnnouncement(PlayerbotAI* botAI);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 bool HasUsedKiljaedenDragonOrb(Player* bot);
 bool HasKiljaedenDragonAura(Player* bot);
@@ -144,7 +157,6 @@ struct KiljaedenEncounterState
     std::unordered_map<ObjectGuid, uint32> handControlClaims;
     std::unordered_set<ObjectGuid> dragonOrbUsers;
     std::unordered_set<ObjectGuid> trackedArmageddonTargets;
-    uint32 dragonOrbAnnouncementMs = 0;
     uint32 rangedAssignmentRebuildMs = 0;
     uint32 rangedArmageddonRebuildMs = 0;
 };

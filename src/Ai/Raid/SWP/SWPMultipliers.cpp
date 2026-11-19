@@ -210,11 +210,9 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
 float KalecgosWaitToDecurseMultiplier::GetValueInEncounter(Action* action)
 {
-    if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_SHAMAN)
-    {
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_DRUID && botClass != CLASS_MAGE && botClass != CLASS_SHAMAN)
         return 1.0f;
-    }
 
     if (!dynamic_cast<CastRemoveCurseAction*>(action) &&
         !dynamic_cast<CastRemoveCurseOnPartyAction*>(action) &&
