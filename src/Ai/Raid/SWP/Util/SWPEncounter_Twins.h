@@ -60,10 +60,8 @@ inline constexpr uint32 EREDAR_TWINS_BLAZE_CACHE_INTERVAL_MS = 200;
 inline constexpr float BLAZE_HAZARD_RADIUS = 3.0f;
 inline constexpr float BLAZE_CLEARANCE = BLAZE_HAZARD_RADIUS + 1.5f;
 inline constexpr float BLAZE_SEARCH_RADIUS = 30.0f;
-// A bot's avoid-AoE flees a Blaze patch within this distance (the trap's 2.5y, the bot's 1.5y
-// reach, and the object's 0.39y size), so moves to the phase 2 stack keep at least this far from
-// every Alythess tank position.
-inline constexpr float BLAZE_AVOID_AOE_DISTANCE = 4.4f;
+// Moves to the phase 2 stack keep at least this far from every Alythess tank position.
+inline constexpr float BLAZE_ROUTE_CLEARANCE = BLAZE_HAZARD_RADIUS + 1.4f;
 
 // Grace period for the tanks to build threat before the rest of the raid opens fire.
 inline constexpr uint32 EREDAR_TWINS_DPS_HOLD_MS = 8 * IN_MILLISECONDS;

@@ -14,6 +14,7 @@
 #include "HunterActions.h"
 #include "InstanceScript.h"
 #include "MageActions.h"
+#include "PaladinActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -322,8 +323,9 @@ float KalecgosHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
 float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    // Melee positions are all within reach of Brutallus, so melee may reach for him. His victim
-    // may not: reaching would undo the main tank's steps away from him while it places him.
+    // Melee positions are all within reach of Brutallus, so melee can be allowed to use reach
+    // target. The exception is the active tank because it needs to temporarily back out of melee
+    // range to pull Brutallus into the designated position.
     if (dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action))
     {
@@ -334,16 +336,10 @@ float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
         return brutallus && brutallus->GetVictim() == bot ? 0.0f : 1.0f;
     }
 
-    if (!dynamic_cast<FollowAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<FleeAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return 0.0f;
+    return dynamic_cast<FollowAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        IsRepositionAction(bot, action) ? 0.0f : 1.0f;
 }
 
 // Don't use KS if any melee member (other than the Brutallus tanks) has Burn
@@ -537,13 +533,19 @@ float FelmystDisableDotsOnAddsMultiplier::GetValueInEncounter(Action* action)
 
 // Eredar Twins
 
+// The Twins actions pick every bot's target. Drop target would also send a bot whose target died
+// or went out of sight to its non-combat engine (a shadow priest drops Shadowform there). The twins
+// are immune to taunts: the bots' own immunity check stops the others, but Righteous Defense is
+// cast on a friendly, so it would pass and waste its cooldown.
 float EredarTwinsDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
     return dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ? 0.0f : 1.0f;
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
+        dynamic_cast<DropTargetAction*>(action) ||
+        dynamic_cast<CastRighteousDefenseAction*>(action) ? 0.0f : 1.0f;
 }
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
@@ -584,23 +586,30 @@ float EredarTwinsControlThreatMultiplier::GetValueInEncounter(Action* action)
     return GetDpsHoldValue(bot, action);
 }
 
-// Avoid-AoE is off for tanks and for a bot holding Alythess, which stays at its step-aside
-// position in its own Blaze patches.
+// Avoid-AoE is off: the only hazards are the Blaze patches, which land at the Alythess tank and
+// step-aside positions. The tanks and a bot holding Alythess stand in their own patches, and the
+// moves to the stacks pass them outside Burn but inside avoid-AoE's flee distance.
 float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
+    // Killing Spree would carry a Conflagration target back to the group, or a rogue in phase 2
+    // onto the Blaze patches; on Sacrolash it reaches nothing else.
+    if (IsKillingSpree(bot, action))
+    {
+        Unit* sacrolash = FindSacrolash(bot);
+        return !sacrolash || IsEredarTwinsConflagrationTarget(bot, FindAlythess(bot), sacrolash) ?
+            0.0f : 1.0f;
+    }
+
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<CastReachTargetSpellAction*>(action);
 
-    bool const isAvoidAoeOff = dynamic_cast<AvoidAoeAction*>(action) &&
-        (PlayerbotAI::IsTank(bot) || IsHoldingAlythessAggro(bot, FindAlythess(bot)));
-
-    // Follow too: a bot that drops its target (a Conflagration target out of sight of the twins)
-    // goes to its non-combat engine, where follow would take it back to the group.
+    // Follow too: every bot has its own position all fight, and follow would take one in its
+    // non-combat engine back to the group.
     if (!isReachAction &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<FollowAction*>(action) && !dynamic_cast<FleeAction*>(action) &&
-        !IsRepositionAction(bot, action) && !IsKillingSpree(bot, action) && !isAvoidAoeOff)
+        !dynamic_cast<AvoidAoeAction*>(action) && !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
@@ -608,7 +617,9 @@ float EredarTwinsControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (!isReachAction)
         return 0.0f;
 
-    return PlayerbotAI::IsRanged(bot) || IsAlythessTank(bot) ? 0.0f : 1.0f;
+    // In phase 2 the stack is in Alythess's melee range, and a reach or charge at her would cross
+    // the Alythess tank positions.
+    return PlayerbotAI::IsRanged(bot) || IsAlythessTank(bot) || !FindSacrolash(bot) ? 0.0f : 1.0f;
 }
 
 float EredarTwinsIsolateConflagrationMultiplier::GetValueInEncounter(Action* action)
@@ -684,8 +695,7 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
         !dynamic_cast<FollowAction*>(action) &&
         !dynamic_cast<FleeAction*>(action) &&
         !dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<CastDisengageAction*>(action) &&
-        !dynamic_cast<CastBlinkBackAction*>(action))
+        !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
@@ -728,7 +738,7 @@ float MuruControlMovementMultiplier::GetValueInEncounter(Action* action)
     if (isReachTargetSafeFromDarkness(action))
         return 1.0f;
 
-    // In phase 2 the main tank waits for Entropius to come out of a leftover Darkness.
+    // If phase 2 starts during Darkness, the main tank waits for Entropius to move out of it.
     return PlayerbotAI::IsTank(bot) && IsMuruPhaseActive(muru) && !IsMuruDarknessEarly(muru) ?
         1.0f : 0.0f;
 }

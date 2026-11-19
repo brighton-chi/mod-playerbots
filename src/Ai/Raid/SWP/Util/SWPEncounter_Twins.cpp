@@ -61,8 +61,8 @@ Position GetAdjustedPosition(Unit* alythess, Position const& basePosition)
     return { baseX + offsetX, baseY + offsetY, baseZ + offsetZ };
 }
 
-// True if a straight move from the bot to the destination keeps out of avoid-AoE range of a
-// patch at every Alythess tank position.
+// True if a straight move from the bot to the destination keeps clear of a patch at every
+// Alythess tank position.
 bool IsClearOfAlythessTankPositions(Player* bot, Unit* alythess, Position const& destination)
 {
     float const startX = bot->GetPositionX();
@@ -80,7 +80,7 @@ bool IsClearOfAlythessTankPositions(Player* bot, Unit* alythess, Position const&
             std::clamp((toX * deltaX + toY * deltaY) / lengthSq, 0.0f, 1.0f) : 0.0f;
         float const nearX = startX + t * deltaX;
         float const nearY = startY + t * deltaY;
-        if (position.GetExactDist2d(nearX, nearY) < BLAZE_AVOID_AOE_DISTANCE)
+        if (position.GetExactDist2d(nearX, nearY) < BLAZE_ROUTE_CLEARANCE)
             return false;
     }
 

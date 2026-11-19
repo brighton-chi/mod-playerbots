@@ -558,8 +558,9 @@ bool EredarTwinsTooManyFlameTouchedStacksTrigger::IsActiveInEncounter()
 
 bool EredarTwinsShouldFocusDpsTrigger::IsActiveInEncounter()
 {
-    // Healers are included to flip to their combat engines since dps assist is disabled.
-    return !PlayerbotAI::IsTank(bot);
+    // Healers are included to flip to their combat engines since dps assist is disabled. The
+    // Sacrolash tanks join once she is dead.
+    return !PlayerbotAI::IsTank(bot) || (!IsAlythessTank(bot) && !FindSacrolash(bot));
 }
 
 bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
