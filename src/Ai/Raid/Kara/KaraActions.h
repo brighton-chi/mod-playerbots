@@ -426,7 +426,7 @@ private:
         Unit* netherspite, KaraHelpers::KaraInstanceState& state,
         KaraHelpers::NetherspiteBeamData const& data, std::vector<ObjectGuid>& taken);
     Position GetBanishPosition(
-        Unit const& netherspite, KaraHelpers::KaraInstanceState const& state, float angle,
+        Unit& netherspite, KaraHelpers::KaraInstanceState const& state, float angle,
         float startRadius);
     void UpdateBanishSlots(Unit* netherspite, KaraHelpers::KaraInstanceState& state);
     void UpdateVoidZones(KaraHelpers::KaraInstanceState& state);
@@ -577,10 +577,10 @@ public:
 
 private:
     bool UpdateMeleePosition(
-        KaraHelpers::KaraInstanceState& state, Unit const& nightbane,
+        KaraHelpers::KaraInstanceState& state, Unit& nightbane,
         std::vector<Position> const& charredEarths);
     bool UpdateRangedPosition(
-        KaraHelpers::KaraInstanceState& state, Unit const& nightbane,
+        KaraHelpers::KaraInstanceState& state, Unit& nightbane,
         std::vector<Position> const& charredEarths);
 };
 

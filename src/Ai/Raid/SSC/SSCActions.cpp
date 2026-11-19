@@ -1340,8 +1340,8 @@ bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        priority, true, false);
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool MorogrimTidewalkerReturnToBossAction::Execute(Event /*event*/)

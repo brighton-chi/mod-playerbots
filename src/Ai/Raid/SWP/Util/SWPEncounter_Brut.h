@@ -114,8 +114,8 @@ inline Position const BRUTALLUS_CRATE_POSITION = { 1482.8f, 591.4f, 23.4f };
 
 float GetBrutallusMainTankAngle(Unit* brutallus, Player* mainTank);
 float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mainTankAngle);
-Position GetBrutallusPositionAtAngle(Player* bot, Unit const &brutallus, float angle, float radius);
-Position GetBrutallusMainTankDestination(Player* bot, Unit const& brutallus);
+Position GetBrutallusPositionAtAngle(Player* bot, Unit& brutallus, float angle, float radius);
+Position GetBrutallusMainTankDestination(Player* bot, Unit& brutallus);
 bool GetBrutallusMainTankStep(
     Player* bot, Unit* brutallus, Position const& destination, float& stepX, float& stepY,
     float& stepZ, bool& backwards);

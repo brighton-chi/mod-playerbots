@@ -1443,7 +1443,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
 // such position is within 3 yd of a void zone, the position shifts closer to Netherspite. But the
 // bearing never changes, so the slots always stay evenly spread for Netherbreath.
 Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
-    Unit const& netherspite, KaraInstanceState const& state, float angle, float startRadius)
+    Unit& netherspite, KaraInstanceState const& state, float angle, float startRadius)
 {
     constexpr float minRadius = 6.0f;
     constexpr float radiusStep = 1.0f;
@@ -2007,7 +2007,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 // they move to the other flank. If both flanks are covered, melee steps out of range and waits
 // until it is safe to attack again.
 bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
-    KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
+    KaraInstanceState& state, Unit& nightbane, std::vector<Position> const& charredEarths)
 {
     NightbaneMeleePosition const current =
         state.nightbaneMeleePosition.value_or(NightbaneMeleePosition::ClockwiseFlank);
@@ -2044,7 +2044,7 @@ bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
 // move laterally toward the dome to escape the first Charred Earth while keeping LoS. If there are
 // no safe positions at range that are within LoS, ranged will step forward.
 bool NightbaneManageTimersAndTrackersAction::UpdateRangedPosition(
-    KaraInstanceState& state, Unit const& nightbane, std::vector<Position> const& charredEarths)
+    KaraInstanceState& state, Unit& nightbane, std::vector<Position> const& charredEarths)
 {
     std::optional<Position>& position = state.nightbaneRangedPosition;
     bool const isClear = position && IsClearOfCharredEarth(*position, charredEarths);

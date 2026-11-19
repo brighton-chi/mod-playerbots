@@ -417,7 +417,7 @@ uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction)
 // BBW runs straight at the bot, cutting inside any route, so a poor start runs into him. This
 // forecasts the chase for every point and direction and returns the one that keeps BBW furthest
 // away from the bot at his closest approach.
-BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds)
+BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit& wolf, float seconds)
 {
     constexpr float forecastStepSeconds = 0.1f;
     uint32 const steps = static_cast<uint32>(seconds / forecastStepSeconds);
@@ -639,15 +639,14 @@ struct NetherspiteRadiusBand
     float high;
 };
 
-float GetBeamAngle(
-    Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
+float GetBeamAngle(Unit& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
 {
     Position const& portal = *state.netherspiteBeams[Id(beam)].portal;
     return netherspite.GetAngle(portal.GetPositionX(), portal.GetPositionY());
 }
 
 // The arc between the blue and green beams.
-NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState const& state)
+NetherspiteArc GetSideWithoutRed(Unit& netherspite, KaraInstanceState const& state)
 {
     float const red = GetBeamAngle(netherspite, state, NetherspiteBeam::Red);
     float const green = GetBeamAngle(netherspite, state, NetherspiteBeam::Green);
@@ -665,7 +664,7 @@ NetherspiteArc GetSideWithoutRed(Unit const& netherspite, KaraInstanceState cons
 // beam. Healers take the middle of the side instead, to keep the tank in range; a healer picked to
 // block green has about 25s to get there.
 NetherspiteArc GetNetherspiteStandingArc(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state)
+    Player* bot, Unit& netherspite, KaraInstanceState const& state)
 {
     NetherspiteArc const side = GetSideWithoutRed(netherspite, state);
     if (PlayerbotAI::IsHeal(bot))
@@ -693,8 +692,7 @@ NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
     return { 18.0f, 25.0f };
 }
 
-bool CrossesBeam(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+bool CrossesBeam(Player* bot, Unit& netherspite, KaraInstanceState const& state, float x, float y)
 {
     for (NetherspiteBeamState const& beam : state.netherspiteBeams)
     {
@@ -720,7 +718,7 @@ bool CrossesBeam(
 // True if a straight move to the position crosses a beam that will be up by the time the bot
 // arrives. Beams start 10s into a portal phase so a move that ends before 10s never touches a beam.
 bool CrossesBeamAfterStart(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+    Player* bot, Unit& netherspite, KaraInstanceState const& state, float x, float y)
 {
     uint32 const elapsed = state.netherspitePortalPhaseTimer ?
         getMSTimeDiff(*state.netherspitePortalPhaseTimer, getMSTime()) : NETHERSPITE_BEAMS_START_MS;
@@ -940,7 +938,7 @@ void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteB
 // portal (negative behind him). off: distance to the side of the line, positive to his left as he
 // faces the portal.
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
-    Unit const& netherspite, Position const& portal, float x, float y)
+    Unit& netherspite, Position const& portal, float x, float y)
 {
     float const length = netherspite.GetExactDist2d(portal);
     if (length == 0.0f)
@@ -965,8 +963,7 @@ bool IsOnNetherspiteBeam(Unit* netherspite, Position const& portal, Unit* unit)
         std::abs(offset.off) < NETHERSPITE_BEAM_WIDTH;
 }
 
-Position GetPositionOnNetherspiteBeam(
-    Unit const& netherspite, Position const& portal, float distance)
+Position GetPositionOnNetherspiteBeam(Unit& netherspite, Position const& portal, float distance)
 {
     float const length = netherspite.GetExactDist2d(portal);
     return Position(
@@ -982,8 +979,7 @@ Position GetPositionOnNetherspiteBeam(
 // (the beam visual continues to his center, and I think it should be blockable for the whole
 // length). The strategy has bots avoid the beam all the way to his center so it should continue to
 // work even if the AC script is fixed.
-bool IsClearOfNetherspiteBeams(
-    Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+bool IsClearOfNetherspiteBeams(Unit& netherspite, KaraInstanceState const& state, float x, float y)
 {
     for (NetherspiteBeamState const& beam : state.netherspiteBeams)
     {
@@ -1019,8 +1015,7 @@ bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Posit
 // (hunters 25) that is 2.5 yd clear of void zones. If every point searched is in a zone, it's 18
 // (25) anyway (possible only when the portal is too close to Netherspite).
 float FindNetherspiteBeamPositionDistance(
-    Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
-    Player* blocker)
+    Unit& netherspite, Position const& portal, KaraInstanceState const& state, Player* blocker)
 {
     bool const isHunter = blocker->getClass() == CLASS_HUNTER;
     float const preferred =
@@ -1064,7 +1059,7 @@ float FindNetherspiteBeamPositionDistance(
 // The side of the blue or green beam that faces the other one: +1 if that's Netherspite's left as
 // he faces this beam's portal, where off is positive, and -1 if it's his right.
 float GetNetherspiteInnerSide(
-    Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
+    Unit& netherspite, KaraInstanceState const& state, NetherspiteBeam beam)
 {
     float const toOwn = Position::NormalizeOrientation(
         GetBeamAngle(netherspite, state, beam) - GetSideWithoutRed(netherspite, state).start);
@@ -1074,7 +1069,7 @@ float GetNetherspiteInnerSide(
 // Non-tanks that are not blocking will position in the space between the blue and green beams. In
 // that space, healers position closer to Netherspite to be in healing range of the red beam tank.
 bool IsBetweenNetherspiteBeams(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y)
+    Player* bot, Unit& netherspite, KaraInstanceState const& state, float x, float y)
 {
     if (!IsClearOfVoidZones(state, x, y, NETHERSPITE_VZ_CLEARANCE) ||
         !IsClearOfNetherspiteBeams(netherspite, state, x, y))
@@ -1482,7 +1477,7 @@ std::optional<Position> FindMalchezaarTankPosition(
 namespace
 {
 
-bool IsInNightbaneRangedSight(Player const& bot, Position const& from, Position const& to)
+bool IsInNightbaneRangedSight(Player& bot, Position const& from, Position const& to)
 {
     float const eyeHeight = bot.GetCollisionHeight();
     return bot.GetMap()->isInLineOfSight(
@@ -1576,14 +1571,14 @@ bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const
     return true;
 }
 
-bool IsOnNightbaneRangedSide(Position const& position, Unit const& nightbane)
+bool IsOnNightbaneRangedSide(Position const& position, Unit& nightbane)
 {
     return GetTerraceAngle(position) < GetTerraceAngle(nightbane);
 }
 
 std::optional<Position> FindNightbaneRangedPosition(
-    Player const& bot, Unit const& nightbane, Position const& from,
-    std::vector<Position> const& charredEarths, NightbaneRangedTier tier)
+    Player& bot, Unit& nightbane, Position const& from, std::vector<Position> const& charredEarths,
+    NightbaneRangedTier tier)
 {
     constexpr float angleStep = 0.0436f; // 2.5 degrees
     constexpr float maxAngleOffset = 1.0f; // 57 degrees, beyond the ranged band on every ring
@@ -1638,7 +1633,7 @@ std::optional<Position> FindNightbaneRangedPosition(
     return std::nullopt;
 }
 
-Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition position)
+Position GetNightbaneMeleePosition(Unit& nightbane, NightbaneMeleePosition position)
 {
     // Angles from Nightbane's facing. Negative is clockwise.
     float angle = NIGHTBANE_MELEE_HOLD_ANGLE;
@@ -1656,7 +1651,7 @@ Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition
         nightbane.GetPositionY() + dist * std::sin(facing), nightbane.GetPositionZ());
 }
 
-bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit const& nightbane)
+bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit& nightbane)
 {
     Player* bot = botAI->GetBot();
     if (nightbane.GetVictim() == bot || (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)))

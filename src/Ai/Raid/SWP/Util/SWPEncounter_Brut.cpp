@@ -265,7 +265,7 @@ float GetAngleOffset(float angle, float reference)
 
 // Where the main tank stands once Brutallus is on the anchor: on its own bearing from him if
 // that is within tolerance of BRUTALLUS_MAIN_TANK_BEARING, otherwise on the nearer limit.
-Position GetMainTankStandInPosition(Player* bot, Unit const& brutallus)
+Position GetMainTankStandInPosition(Player* bot, Unit& brutallus)
 {
     float const offset = std::clamp(
         GetAngleOffset(brutallus.GetAbsoluteAngle(bot), BRUTALLUS_MAIN_TANK_BEARING),
@@ -330,7 +330,7 @@ float GetBrutallusAssistTankAngle(Unit* brutallus, Player* assistTank, float mai
         mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
 }
 
-Position GetBrutallusPositionAtAngle(Player* bot, Unit const& brutallus, float angle, float radius)
+Position GetBrutallusPositionAtAngle(Player* bot, Unit& brutallus, float angle, float radius)
 {
     float const x = brutallus.GetPositionX() + std::cos(angle) * radius;
     float const y = brutallus.GetPositionY() + std::sin(angle) * radius;
@@ -340,7 +340,7 @@ Position GetBrutallusPositionAtAngle(Player* bot, Unit const& brutallus, float a
 // Where the main tank is heading while it places Brutallus. With him off the anchor, it first
 // lines up on the far side of him from the anchor, then backs out past the anchor so that he
 // follows onto it. With him on the anchor, it stands in.
-Position GetBrutallusMainTankDestination(Player* bot, Unit const& brutallus)
+Position GetBrutallusMainTankDestination(Player* bot, Unit& brutallus)
 {
     Position const& anchor = BRUTALLUS_ANCHOR_POSITION;
     Position destination;

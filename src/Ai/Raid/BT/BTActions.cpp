@@ -598,8 +598,7 @@ float SupremusKiteBossAction::GetCollisionFreeDistance(float angle, float maxDis
 }
 
 float SupremusKiteBossAction::SimulateChase(
-    Unit const& supremus, float timeRemaining, float catchDistance, float angle,
-    float runDistance)
+    Unit& supremus, float timeRemaining, float catchDistance, float angle, float runDistance)
 {
     constexpr float timeStep = 0.25f;
     float const botStep = bot->GetSpeed(MOVE_RUN) * timeStep;
@@ -2257,7 +2256,7 @@ void IllidanStormrageMainTankRepositionBossAction::StartRingLead(
 
 // See comments to ILLIDAN_BACK_OFF_DISTANCE and ILLIDAN_ROUND_STEP_ANGLE in BTHelpers.h.
 void IllidanStormrageMainTankRepositionBossAction::RouteRoundIllidan(
-    Unit const& illidan, Position& position)
+    Unit& illidan, Position& position)
 {
     if (illidan.GetExactDist2d(bot) < ILLIDAN_BACK_OFF_DISTANCE ||
         illidan.GetExactDist2d(position) < ILLIDAN_BACK_OFF_DISTANCE)

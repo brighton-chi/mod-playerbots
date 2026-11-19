@@ -345,7 +345,7 @@ inline Position const SUPREMUS_INITIAL_TANK_POSITION = { 700.678f, 698.270f, 71.
 
 bool IsSupremusKitePhase(Unit* supremus);
 float GetSupremusFixateTimeRemaining(Unit* supremus);
-float GetSupremusCatchDistance(Player* bot, Unit const& supremus);
+float GetSupremusCatchDistance(Player* bot, Unit& supremus);
 bool CanSupremusCatchStandingBot(Player* bot, Unit* supremus);
 bool IsSupremusVolcanoErupting(Unit* volcano);
 std::vector<SupremusHazard> FindSupremusHazards(Player* bot);
@@ -433,8 +433,7 @@ inline Position const GURTOGG_SOAKER_POSITION = { 769.348f, 280.116f, 63.780f };
 Position const& GetGurtoggBloodboilPosition(Player* bot);
 Player* GetGurtoggFelRageTarget(Unit* gurtogg);
 bool IsGurtoggFelRageTarget(Player* player);
-Position GetGurtoggFelRageMeleePosition(
-    Player* bot, Unit const& gurtogg, Unit const& felRageTarget);
+Position GetGurtoggFelRageMeleePosition(Player* bot, Unit& gurtogg, Unit& felRageTarget);
 float FindGurtoggSecondTankThreat(Player* bot);
 bool IsGurtoggThreatHoldActive(PlayerbotAI* botAI, Unit* gurtogg);
 bool IsInGurtoggRectangle(
@@ -881,7 +880,7 @@ std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(ui
 IllidanPhase GetIllidanPhase(Unit* illidan);
 bool IsIllidanSpeechInProgress(Player* bot);
 bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase);
-bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs);
+bool IsIllidanPhaseStartWithin(Unit& illidan, IllidanPhase phase, uint32 durationMs);
 IllidanPhase GetIllidanPhaseBefore(Unit* illidan, IllidanPhase phase);
 bool IsIllidanDemonFormEnding(Unit* illidan, uint32 durationMs);
 IllidanDpsHold GetIllidanHoldWindow(Unit* illidan);
@@ -896,11 +895,11 @@ bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan);
 bool IsIllidanPickupChannelHeld(Player* bot, Unit* illidan, Spell const* channel);
 float GetGrateAngle(Position const& position);
 Position GetRingPoint(float angle, float radius);
-Position GetIllidanSettlePosition(Unit const& illidan);
+Position GetIllidanSettlePosition(Unit& illidan);
 Position GetGrateSlot(size_t index);
-DemonFormLayout GetDemonFormLayout(Unit const& illidan);
-Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase);
-Position GetIllidanRecordedInfectionPosition(Player* bot, Unit const& illidan, IllidanPhase phase);
+DemonFormLayout GetDemonFormLayout(Unit& illidan);
+Position GetIllidanInfectionPosition(Unit& illidan, IllidanPhase phase);
+Position GetIllidanRecordedInfectionPosition(Player* bot, Unit& illidan, IllidanPhase phase);
 std::pair<Unit*, Unit*> GetFlamesOfAzzinoth(Player* bot);
 bool IsWestFlameOfAzzinothTank(Player* player);
 bool IsEastFlameOfAzzinothTank(Player* player);

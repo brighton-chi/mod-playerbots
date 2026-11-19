@@ -300,7 +300,7 @@ inline std::array const BIG_BAD_WOLF_RUN_POSITIONS = {
 
 bool IsLittleRedRidingHood(Player* bot);
 uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction);
-BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit const& wolf, float seconds);
+BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit& wolf, float seconds);
 Player* GetBigBadWolfRedHood(Unit* wolf);
 Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 
@@ -500,21 +500,19 @@ float GetNetherspiteBanishRadius(Player* player);
 void YellNetherspiteBeamText(Player* player, std::string const& key, std::string const& text);
 void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteBeam beam);
 NetherspiteBeamOffset GetNetherspiteBeamOffset(
-    Unit const& netherspite, Position const& portal, float x, float y);
+    Unit& netherspite, Position const& portal, float x, float y);
 bool IsOnNetherspiteBeam(Unit* netherspite, Position const& portal, Unit* unit);
-Position GetPositionOnNetherspiteBeam(
-    Unit const& netherspite, Position const& portal, float distance);
+Position GetPositionOnNetherspiteBeam(Unit& netherspite, Position const& portal, float distance);
 bool IsClearOfNetherspiteBeams(
-    Unit const& netherspite, KaraInstanceState const& state, float x, float y);
+    Unit& netherspite, KaraInstanceState const& state, float x, float y);
 bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float clearance);
 bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to);
 float FindNetherspiteBeamPositionDistance(
-    Unit const& netherspite, Position const& portal, KaraInstanceState const& state,
-    Player* blocker);
+    Unit& netherspite, Position const& portal, KaraInstanceState const& state, Player* blocker);
 float GetNetherspiteInnerSide(
-    Unit const& netherspite, KaraInstanceState const& state, NetherspiteBeam beam);
+    Unit& netherspite, KaraInstanceState const& state, NetherspiteBeam beam);
 bool IsBetweenNetherspiteBeams(
-    Player* bot, Unit const& netherspite, KaraInstanceState const& state, float x, float y);
+    Player* bot, Unit& netherspite, KaraInstanceState const& state, float x, float y);
 bool CanMoveBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, float x, float y);
 std::optional<Position> FindPositionBetweenNetherspiteBeams(
@@ -644,12 +642,12 @@ std::optional<Position> FindNightbaneStackPosition(
     float startAngle, std::vector<Position> const& charredEarths, Position const* rainCenter);
 std::vector<Position> GetCharredEarths(PlayerbotAI* botAI);
 bool IsClearOfCharredEarth(Position const& position, std::vector<Position> const& charredEarths);
-bool IsOnNightbaneRangedSide(Position const& position, Unit const& nightbane);
+bool IsOnNightbaneRangedSide(Position const& position, Unit& nightbane);
 std::optional<Position> FindNightbaneRangedPosition(
-    Player const& bot, Unit const& nightbane, Position const& from,
-    std::vector<Position> const& charredEarths, NightbaneRangedTier tier);
-Position GetNightbaneMeleePosition(Unit const& nightbane, NightbaneMeleePosition position);
-bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit const& nightbane);
+    Player& bot, Unit& nightbane, Position const& from, std::vector<Position> const& charredEarths,
+    NightbaneRangedTier tier);
+Position GetNightbaneMeleePosition(Unit& nightbane, NightbaneMeleePosition position);
+bool HoldsNightbaneGroundPosition(PlayerbotAI* botAI, Unit& nightbane);
 bool IsOutsideNightbaneTerrace(Unit* unit);
 bool IsNightbaneFlying(Unit* nightbane);
 bool IsNightbaneFlightPhaseActive(Unit* nightbane);

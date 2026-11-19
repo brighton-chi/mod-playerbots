@@ -384,7 +384,7 @@ namespace
 // Where a standard reach toward the target stops, worked out the way ReachCombatTo does it: range
 // plus both combat reaches from the target. The reach action doesn't expose that position, and the
 // void zone hold needs it before the reach runs.
-Position GetNetherspiteReachEndPosition(Unit const& bot, Unit const& target, float range)
+Position GetNetherspiteReachEndPosition(Unit& bot, Unit& target, float range)
 {
     float const distance = bot.GetExactDist2d(target);
     float const end = range + bot.GetCombatReach() + target.GetCombatReach();

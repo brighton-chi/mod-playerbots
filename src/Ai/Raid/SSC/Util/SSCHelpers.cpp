@@ -987,7 +987,7 @@ Unit* GetSharkkisPet(Player* bot)
 
 // Morogrim Tidewalker
 
-Position GetTidewalkerStackPoint(Player const& bot, Unit const& tidewalker)
+Position GetTidewalkerStackPoint(Player& bot, Unit& tidewalker)
 {
     Unit* victim = tidewalker.GetVictim();
     float const behindAngle = (victim ? tidewalker.GetAngle(victim) :
@@ -2359,7 +2359,7 @@ bool GetStepToBringTankedUnitTo(
     return GetStepToPosition(bot, destination, arrivalDistance, add, stepX, stepY, backwards);
 }
 
-Position const& GetVashjStriderHoldPosition(Unit const& strider)
+Position const& GetVashjStriderHoldPosition(Unit& strider)
 {
     return *std::min_element(
         VASHJ_STRIDER_HOLD_POSITIONS.begin(), VASHJ_STRIDER_HOLD_POSITIONS.end(),
@@ -2369,7 +2369,7 @@ Position const& GetVashjStriderHoldPosition(Unit const& strider)
         });
 }
 
-Position const& GetVashjEliteTankPosition(Unit const& elite)
+Position const& GetVashjEliteTankPosition(Unit& elite)
 {
     return *std::min_element(
         VASHJ_ELITE_TANK_POSITIONS.begin(), VASHJ_ELITE_TANK_POSITIONS.end(),

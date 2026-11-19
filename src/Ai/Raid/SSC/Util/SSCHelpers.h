@@ -407,7 +407,7 @@ inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, 
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
 
 // The stack point is directly across Tidewalker from his tank to keep it stable.
-Position GetTidewalkerStackPoint(Player const& bot, Unit const& tidewalker);
+Position GetTidewalkerStackPoint(Player& bot, Unit& tidewalker);
 
 // Lady Vashj <Coilfang Matron>
 
@@ -715,8 +715,8 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase);
 bool GetStepToBringTankedUnitTo(
     Player* bot, Unit* add, Position const& spot, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards);
-Position const& GetVashjStriderHoldPosition(Unit const& strider);
-Position const& GetVashjEliteTankPosition(Unit const& elite);
+Position const& GetVashjStriderHoldPosition(Unit& strider);
+Position const& GetVashjEliteTankPosition(Unit& elite);
 bool ShouldPositionVashjStrider(Player* bot, Unit* strider, Unit* vashj, int8 phase);
 bool IsTankedStriderInStepInReach(Player* bot, Unit* unit);
 // Pets skip targets they're useless on: Vashj while she's immune in Phase 2, Striders (Panic fears

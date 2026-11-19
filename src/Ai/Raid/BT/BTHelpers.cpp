@@ -674,7 +674,7 @@ float GetSupremusFixateTimeRemaining(Unit* supremus)
     return static_cast<float>(remaining);
 }
 
-float GetSupremusCatchDistance(Player* bot, Unit const& supremus)
+float GetSupremusCatchDistance(Player* bot, Unit& supremus)
 {
     return supremus.GetMeleeRange(bot) + SUPREMUS_KITE_SAFETY_MARGIN;
 }
@@ -1023,8 +1023,7 @@ bool IsGurtoggFelRageTarget(Player* player)
     return player && player->HasAura(Id(BtSpells::SPELL_PLAYER_FEL_RAGE));
 }
 
-Position GetGurtoggFelRageMeleePosition(
-    Player* bot, Unit const& gurtogg, Unit const& felRageTarget)
+Position GetGurtoggFelRageMeleePosition(Player* bot, Unit& gurtogg, Unit& felRageTarget)
 {
     float const axisAngle = gurtogg.GetAngle(&felRageTarget);
     float relativeAngle = Position::NormalizeOrientation(gurtogg.GetAngle(bot) - axisAngle);
@@ -1229,7 +1228,7 @@ float GetCircleInterruptRange(Player* bot)
     return bot->getClass() == CLASS_MAGE ? COUNTERSPELL_RANGE : WIND_SHEAR_RANGE;
 }
 
-float GetMalandeInterruptRingRadius(Player* bot, Unit const& malande)
+float GetMalandeInterruptRingRadius(Player* bot, Unit& malande)
 {
     return GetCircleInterruptRange(bot) + bot->GetCombatReach() + malande.GetCombatReach() -
         CIRCLE_INTERRUPTER_RANGE_MARGIN;
@@ -1860,7 +1859,7 @@ bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase)
     return true;
 }
 
-bool IsIllidanPhaseStartWithin(Unit const& illidan, IllidanPhase phase, uint32 durationMs)
+bool IsIllidanPhaseStartWithin(Unit& illidan, IllidanPhase phase, uint32 durationMs)
 {
     BtInstanceState const* state = FindBtState(illidan.GetInstanceId());
     return !state || state->illidanLastPhase != phase || !state->illidanPhaseStartTime ||
@@ -2123,7 +2122,7 @@ Position GetRingPoint(float angle, float radius)
         ILLIDAN_GRATE_CENTER.GetPositionZ());
 }
 
-Position GetIllidanSettlePosition(Unit const& illidan)
+Position GetIllidanSettlePosition(Unit& illidan)
 {
     float const radius = ILLIDAN_GRATE_CENTER.GetExactDist2d(&illidan) + ILLIDAN_TANK_OFFSET;
     return GetRingPoint(GetGrateAngle(illidan), radius);
@@ -2151,7 +2150,7 @@ Position GetGrateSlot(size_t index)
     return GetRingPoint(angle, ILLIDAN_GRATE_OUTER_RADIUS);
 }
 
-DemonFormLayout GetDemonFormLayout(Unit const& illidan)
+DemonFormLayout GetDemonFormLayout(Unit& illidan)
 {
     constexpr float degree = static_cast<float>(M_PI) / 180.0f;
     // Float values for the arrays are exact 2D distances from Illidan.
@@ -2212,7 +2211,7 @@ DemonFormLayout GetDemonFormLayout(Unit const& illidan)
     return layout;
 }
 
-Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
+Position GetIllidanInfectionPosition(Unit& illidan, IllidanPhase phase)
 {
     if (phase == IllidanPhase::Demon)
     {
@@ -2229,7 +2228,7 @@ Position GetIllidanInfectionPosition(Unit const& illidan, IllidanPhase phase)
 // Every recorded infection shares one position, fixed when the first was recorded, so an infection
 // remaining as of a phase change keeps its position into the new phase. If none are recorded, this
 // returns the position an infection would be recorded at now.
-Position GetIllidanRecordedInfectionPosition(Player* bot, Unit const& illidan, IllidanPhase phase)
+Position GetIllidanRecordedInfectionPosition(Player* bot, Unit& illidan, IllidanPhase phase)
 {
     auto const* infections = FindIllidanInfections(bot->GetInstanceId());
     if (infections && !infections->empty())
