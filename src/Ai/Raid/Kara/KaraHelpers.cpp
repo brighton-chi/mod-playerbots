@@ -1303,23 +1303,37 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
 // just out of Shadow Nova from Malchezaar, and in range of their target. Melee: just inside melee
 // range of their target. A line that passes no infernal comes first, then any straight line.
 std::optional<Position> FindPositionInRangeOfTarget(
-    PlayerbotAI* botAI, Unit const& malchezaar, std::vector<Position> const& infernals)
+    PlayerbotAI* botAI, Unit* malchezaar, std::vector<Position> const& infernals)
 {
+    if (!malchezaar)
+        return std::nullopt;
+
     Player* bot = botAI->GetBot();
     bool const isRanged = PlayerbotAI::IsRanged(bot);
     bool const isHealer = PlayerbotAI::IsHeal(bot);
-    Unit const* target = botAI->GetAiObjectContext()
+    Unit* target = botAI->GetAiObjectContext()
         ->GetValue<Unit*>(isHealer ? "party member to heal" : "current target")->Get();
     if (!target)
-        target = &malchezaar;
+        target = malchezaar;
+
+    // How far from the target's center the bot can stand and still reach it. Spell range is edge to
+    // edge, so both reaches are added.
+    float reach;
+    if (isRanged)
+    {
+        float const spellRange = botAI->GetRange(isHealer ? "heal" : "spell");
+        reach = spellRange + bot->GetCombatReach() + target->GetCombatReach();
+    }
+    else
+        reach = bot->GetMeleeRange(target);
 
     constexpr float rangeInset = 1.0f;
-    float const reach = (isRanged ?
-        botAI->GetRange(isHealer ? "heal" : "spell") + bot->GetCombatReach() +
-            target->GetCombatReach() : bot->GetMeleeRange(target)) - rangeInset;
+    reach -= rangeInset;
 
-    Unit const* anchor = isRanged ? &malchezaar : target;
-    float const anchorDist = isRanged ? MALC_SHADOW_NOVA_CLEARANCE : reach;
+    // Candidates lie on a ring: around Malchezaar just out of Shadow Nova for ranged, around the
+    // target at reach for melee.
+    Unit* ringCenter = isRanged ? malchezaar : target;
+    float const ringRadius = isRanged ? MALC_SHADOW_NOVA_CLEARANCE : reach;
     Position const origin = bot->GetPosition();
 
     constexpr uint8 angleCount = 72;
@@ -1328,16 +1342,15 @@ std::optional<Position> FindPositionInRangeOfTarget(
     {
         float const angle = 2.0f * static_cast<float>(M_PI) * i / angleCount;
         Position const candidate(
-            anchor->GetPositionX() + anchorDist * std::cos(angle),
-            anchor->GetPositionY() + anchorDist * std::sin(angle), origin.GetPositionZ());
+            ringCenter->GetPositionX() + ringRadius * std::cos(angle),
+            ringCenter->GetPositionY() + ringRadius * std::sin(angle), origin.GetPositionZ());
 
-        if (IsClearOfInfernals(candidate, infernals, MALC_HELLFIRE_CLEARANCE) &&
-            (target == anchor || target->GetExactDist2d(candidate) <= reach))
-        {
+        bool const isInReach = ringCenter == target || target->GetExactDist2d(candidate) <= reach;
+        if (isInReach && IsClearOfInfernals(candidate, infernals, MALC_HELLFIRE_CLEARANCE))
             candidates.emplace_back(origin.GetExactDist2d(candidate), candidate);
-        }
     }
 
+    // Nearest first.
     std::stable_sort(candidates.begin(), candidates.end(), [](auto const& a, auto const& b)
     {
         return a.first < b.first;
@@ -1414,7 +1427,7 @@ std::optional<Position> FindMalchezaarClearPosition(
     if (malchezaar)
     {
         std::optional<Position> const position =
-            FindPositionInRangeOfTarget(botAI, *malchezaar, infernals);
+            FindPositionInRangeOfTarget(botAI, malchezaar, infernals);
         if (position)
             return position;
     }
