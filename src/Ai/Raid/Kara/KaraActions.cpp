@@ -887,7 +887,8 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 
 // Netherspite
 
-// The red beam dance (5 seconds in, 5 seconds out).
+// The red beam dance (5 seconds in, 5 seconds out). This allows a single tank to block the beam for
+// an entire phase by reducing the number of stacks accumulated.
 bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
@@ -1140,8 +1141,8 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 // Red: tanks only. No stack limit.
 // Blue: mana DPS, then non-mana DPS.
 // Green: non-mana DPS (no stack limit), then healers, then mana DPS.
-// The current blocker stays a candidate up to the stack limit. Any other bot cannot be a candidate
-// unless it is under the stack limit.
+// The current blocker stays a candidate until it surpasses the stack limit. Any other bot cannot be
+// a candidate unless it is under the stack limit.
 std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates(
     NetherspiteBeamData const& data, NetherspiteBeamState const& beamState,
     std::vector<ObjectGuid> const& taken)
@@ -1486,9 +1487,9 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
         if (!group)
             return;
 
-        // Hunter bots choose first because they have an extra constraint: they cannot get into
-        // Netherspite's melee range (20.8 yd), or they cannot shoot, so their slots are 25 yd out.
-        // Then, in group order, everyone else takes the free bearing nearest them.
+        // Hunter bots choose their slot first and pick the bearing with the most room before a wall
+        // since they are the only class with a minimum distance to attack. Then, in group order,
+        // everyone else takes the free bearing closest to them.
         std::vector<Player*> tiers[3];
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -1517,10 +1518,12 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
 
         for (Player* member : members)
         {
-            float const radius = GetNetherspiteBanishRadius(member);
+            bool const isHunter = member->getClass() == CLASS_HUNTER;
+            float const radius =
+                isHunter ? NETHERSPITE_HUNTER_BANISH_SLOT_RADIUS : NETHERSPITE_BANISH_SLOT_RADIUS;
             bool const isInKara = member->GetMapId() == KARA_MAP_ID;
-            bool const isHunterBot =
-                member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member) && isInKara;
+            bool const isHunterBot = isHunter && GET_PLAYERBOT_AI(member) && isInKara;
+
             auto best = angles.begin();
             float bestScore = std::numeric_limits<float>::lowest();
             for (auto angle = angles.begin(); angle != angles.end() && isInKara; ++angle)

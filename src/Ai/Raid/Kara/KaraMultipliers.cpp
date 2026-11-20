@@ -400,9 +400,7 @@ Position GetNetherspiteReachEndPosition(Unit& bot, Unit& target, float range)
 } // end anonymous namespace (Netherspite)
 
 // Positioning in and around the beams decides the outcome of the fight, and a tight formation is
-// kept during the Banish phase, so reactive and unpredictable movement is blocked. Blue and green
-// blockers themselves and those up next are further blocked from reaching targets, as their primary
-// purpose is to maintain position in or along the beam, even at the expense of DPS or healing.
+// kept during the Banish phase, so reactive and unpredictable movement is blocked.
 float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isReactiveMovement =
@@ -421,6 +419,11 @@ float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
     if (!state || state->netherspiteBeams[Id(NetherspiteBeam::Red)].blocker == bot->GetGUID())
         return 1.0f;
 
+    // Active blue and green blockers and those up next are blocked from reaching targets. Their
+    // primary purpose is to keep blocking (or remain ready to block) a beam, so they need to
+    // maintain their position along the beam while also staying alive (i.e., out of void zones),
+    // which means the ability to DPS or heal might have to be sacrificed at times. The red blocker
+    // does not have this constraint since it does not avoid void zones.
     if (IsNetherspiteBlockerOrNext(*state, bot->GetGUID()))
         return 0.0f;
 

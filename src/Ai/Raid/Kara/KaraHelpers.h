@@ -446,33 +446,38 @@ inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5
 // No reach added.
 inline constexpr float NETHERSPITE_VZ_HAZARD_RADIUS = 2.0f;
 inline constexpr float NETHERSPITE_VZ_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 1.0f;
+// This clearance is 0.5 yd short of the ordinary 3 yd void zone clearance because the standard
+// blocking position is 18 yd from Netherspite, and 21 yd would be out of melee range (20.5 is not).
 inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 0.5f;
 inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = NETHERSPITE_VZ_CLEARANCE + 0.5f;
 // Tried when neither side of the void zone is clear at the normal step-around distance.
 inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROUND_DISTANCE + 2.0f;
 inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
+inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS = 20.0f;
+inline constexpr float NETHERSPITE_HUNTER_BANISH_SLOT_RADIUS = 25.0f;
 inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
     static_cast<float>(M_PI) * 6.0f / 180.0f;
-// A bot more than this far away from its banish slot moves back in. Netherbreath knocks a bot about
-// 25 yd out along its bearing.
+// A bot whose distance to its slot is more than this far away than the bot's distance to
+// Netherspite moves back in. Netherbreath knocks a bot about 25 yd out along its bearing.
 inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
 // Beams start 10s into a portal phase. Between 0 and 5s, all non-tanks hold DPS. Between 5s and
 // 10s, non-tanks hold DPS unless a tank is the victim. After beams spawn, nobody holds DPS.
 inline constexpr uint32 NETHERSPITE_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 NETHERSPITE_BEAMS_START_MS = 10 * IN_MILLISECONDS;
-// The portal phase lasts for one minute. For the final 3s, no beam swaps occur. With a 25-stack
-// limit, the second blocker can exceed the limit just before the end of the phase. In that case, it
-// should just take a couple more stacks instead of forcing a late swap that puts exhaustion on a
-// bot that may be needed for the next portal phase.
-inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 56 * IN_MILLISECONDS;
+// The portal phase lasts for 60s, but beam swaps are blocked for the final 5s. With a 25-stack
+// limit, the second blocker can exceed the limit just before the end of the phase, if a mid-phase
+// swap proceeds flawlessly. In that case, the second blocker holds out instead of forcing a late
+// swap that would waste exhaustion on another bot that may be needed for the next portal phase.
+inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 55 * IN_MILLISECONDS;
+// The active blue or mana-user green blocker leaves a beam at 25 stacks, while the next blocker
+// moves onto the beam at 24 stacks to give it a second to arrive (and finish a cast).
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
-// At this many stacks on the blocker, the next blocker moves onto the beam and takes over. One
-// stack under the limit gives it a second to arrive or finish a cast.
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
 inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
 inline constexpr float NETHERSPITE_BLOCKER_MIN_DISTANCE = 17.0f;
 inline constexpr float NETHERSPITE_HUNTER_BLOCKER_DISTANCE = 25.0f;
+// The perpendicular distance from the beam that the next blocker must stay within (min/max).
 inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
 inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
 inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
@@ -496,7 +501,6 @@ Position const* FindNetherspiteBlockerPosition(KaraInstanceState const& state, O
 Position const* FindNetherspiteNextPosition(KaraInstanceState const& state, ObjectGuid guid);
 NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
     KaraInstanceState const& state, ObjectGuid guid);
-float GetNetherspiteBanishRadius(Player* player);
 void YellNetherspiteBeamText(Player* player, std::string const& key, std::string const& text);
 void YellNetherspiteBeamHandover(Player* leaving, Player* blocking, NetherspiteBeam beam);
 NetherspiteBeamOffset GetNetherspiteBeamOffset(

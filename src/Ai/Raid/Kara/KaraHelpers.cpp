@@ -659,10 +659,10 @@ NetherspiteArc GetSideWithoutRed(Unit& netherspite, KaraInstanceState const& sta
     return { green, greenToBlue };
 }
 
-// Blue and green blockers only. Within 60 degrees of the beam the bot would block, between the blue
-// and green beams. The wedge is under 180 degrees, so a straight move inside it can't cross a
-// beam. Healers take the middle of the side instead, to keep the tank in range; a healer picked to
-// block green has about 25s to get there.
+// For bots that are neither blocking a beam nor next up to block a beam. The standing arc is within
+// 60 degrees of the beam the bot may eventually need to block (based on its role), between the blue
+// and green beams. The wedge is under 180 degrees, so a straight move inside it can't cross a beam.
+// Healers occupy the middle of the side instead, to keep the tank in range.
 NetherspiteArc GetNetherspiteStandingArc(
     Player* bot, Unit& netherspite, KaraInstanceState const& state)
 {
@@ -819,7 +819,9 @@ bool HasNetherspiteBeamStackLimit(Player* player, NetherspiteBeam beam)
     if (beam == NetherspiteBeam::Red)
         return false;
 
-    return beam == NetherspiteBeam::Blue || IsManaUser(player) || PlayerbotAI::IsHeal(player);
+    // Non-mana users on the green beam have no stack limit because the debuff has no impact on
+    // them (it reduces a blocker's maximum mana).
+    return beam == NetherspiteBeam::Blue || IsManaUser(player);
 }
 
 uint8 GetNetherspiteBeamStacks(Player* player, NetherspiteBeamData const& data)
@@ -877,13 +879,6 @@ NetherspiteBanishSlot const* FindNetherspiteBanishSlot(
     }
 
     return nullptr;
-}
-
-float GetNetherspiteBanishRadius(Player* player)
-{
-    constexpr float radius = 20.0f;
-    constexpr float hunterRadius = 25.0f;
-    return player->getClass() == CLASS_HUNTER ? hunterRadius : radius;
 }
 
 void YellNetherspiteBeamText(Player* player, std::string const& key, std::string const& text)
@@ -1005,7 +1000,8 @@ bool IsClearOfVoidZones(KaraInstanceState const& state, float x, float y, float 
         [x, y, clearance](Position const& zone) { return zone.GetExactDist2d(x, y) < clearance; });
 }
 
-// True if the straight line passes within 3 yd of a void zone (except one the bot is already in).
+// True if the straight line passes within 3 yd of a void zone. The actual hazard radius is 2 yd,
+// and a bot already between 2 and 3 yd of a void zone may pass it but not enter it.
 bool CrossesVoidZone(KaraInstanceState const& state, Position const& from, Position const& to)
 {
     return FindFirstVoidZoneOnPath(state, from, to);
@@ -1048,8 +1044,6 @@ float FindNetherspiteBeamPositionDistance(
     };
 
     search(low);
-    // A destination in a void zone is never reached, and blocking matters more than shooting, so
-    // a hunter with no safe blocking position in shooting range blocks from inside its dead zone.
     if (isHunter && bestGap == std::numeric_limits<float>::max())
         search(NETHERSPITE_BLOCKER_MIN_DISTANCE);
 
@@ -1067,7 +1061,7 @@ float GetNetherspiteInnerSide(
 }
 
 // Non-tanks that are not blocking will position in the space between the blue and green beams. In
-// that space, healers position closer to Netherspite to be in healing range of the red beam tank.
+// that space, healers position in the middle of the side, within 38 yd of the red beam tank.
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit& netherspite, KaraInstanceState const& state, float x, float y)
 {
