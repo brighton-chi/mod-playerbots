@@ -146,6 +146,7 @@ bool IsMeleeBlockedByKiljaedenKnockback(Position const& from, Position const& ta
 bool GetKiljaedenStepToPosition(
     Player* bot, Position const& destination, float arrivalDist, float& stepX, float& stepY);
 Position GetKiljaedenFireBloomWaitPosition(Player* bot);
+bool CanClearKiljaedenFireBloomWithImmunity(Player* bot, Unit* kiljaeden);
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot);
 bool UpdateKiljaedenDragonOrbUser(PlayerbotAI* botAI);
 bool UpdateKiljaedenDragonOrbUserAnnouncement(PlayerbotAI* botAI);

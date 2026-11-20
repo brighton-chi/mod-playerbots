@@ -831,7 +831,8 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action
 
 float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValueInEncounter(Action* action)
 {
-    if (!dynamic_cast<MovementAction*>(action))
+    // Killing Spree carries the rogue out of the Shield, so it is held like movement.
+    if (!dynamic_cast<MovementAction*>(action) && !IsKillingSpree(bot, action))
         return 1.0f;
 
     if (dynamic_cast<AttackAction*>(action))

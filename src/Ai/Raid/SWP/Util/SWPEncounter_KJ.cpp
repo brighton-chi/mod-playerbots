@@ -13,6 +13,7 @@
 #include "SWPShared.h"
 #include "Spell.h"
 #include "SpellInfo.h"
+#include "SpellMgr.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -668,6 +669,32 @@ Position GetKiljaedenFireBloomWaitPosition(Player* bot)
     return Position(
         stack.GetPositionX() + std::cos(angle) * FIRE_BLOOM_STANDOFF,
         stack.GetPositionY() + std::sin(angle) * FIRE_BLOOM_STANDOFF, bot->GetPositionZ());
+}
+
+// Whether the bot clears Fire Bloom with its immunity (Cloak of Shadows, Ice Block, or Divine
+// Shield) as soon as the global cooldown allows, so it need not move away with it. Cloak of Shadows
+// has a short cooldown; Ice Block and Divine Shield are saved for phase 4. The global cooldown is
+// left out on purpose: all three spells are on it, and a bot that waits out the rest of it should
+// not set off for its Fire Bloom position meanwhile.
+bool CanClearKiljaedenFireBloomWithImmunity(Player* bot, Unit* kiljaeden)
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+
+    uint32 const spellId = GetSelfImmunitySpell(bot);
+    if (!spellId || !bot->HasSpell(spellId) || bot->HasSpellCooldown(spellId))
+        return false;
+
+    if (bot->getClass() != CLASS_ROGUE &&
+        (!kiljaeden || kiljaeden->GetHealthPct() >= KILJAEDEN_PHASE4_HP_THRESHOLD))
+    {
+        return false;
+    }
+
+    // Forbearance blocks Divine Shield, and Hypothermia Ice Block.
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    return spellInfo &&
+        !(spellInfo->ExcludeCasterAuraSpell && bot->HasAura(spellInfo->ExcludeCasterAuraSpell));
 }
 
 GuidVector FindKiljaedenDragonOrbGuids(Player* bot)
