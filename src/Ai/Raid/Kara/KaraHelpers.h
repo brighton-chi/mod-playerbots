@@ -372,7 +372,7 @@ inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20 * IN_MILLISECONDS
 inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
 inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
 
-// Aran blinks here before each super spell. Blizzard patches circle around it, so this is used to
+// Aran blinks here before each super spell. His Blizzard circles around it, so this is used to
 // calculate the Blizzard escape position.
 inline Position const ARAN_ROOM_CENTER = { -11164.8f, -1912.0f, 232.1f };
 
@@ -421,7 +421,7 @@ struct NetherspiteBanishSlot
 };
 
 // The tracker assigns blockers in this order. An unblocked green beam heals Netherspite 4000 a
-// second per stack, so green gets its blocker before blue.
+// second per stack, so if there is a tie, the green beam gets priority.
 inline constexpr std::array NETHERSPITE_BEAMS = {
     NetherspiteBeamData{
         NetherspiteBeam::Red, KaraNpcs::NPC_RED_PORTAL, KaraSpells::SPELL_RED_BEAM_DEBUFF,
@@ -437,29 +437,14 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
     },
 };
 
-// The script gives a beam to a player within 1.5 yd of the line only if they are closer to the
-// portal than Netherspite, with both combat reaches taken off. His reach is 18 yd and a player's
-// 1.5, so blocking starts 16.5 yd from his center.
+// A player blocks a beam within 1.5 yd of the beam and more than 16.5 yd from Netherspite's center.
+// The script compares distances to the portal with combat reach subtracted, so Netherspite's reach
+// of 18 yd minus a player's 1.5 means the first 16.5 yd of the beam cannot be blocked.
 inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
-// No reach added.
-inline constexpr float NETHERSPITE_VZ_HAZARD_RADIUS = 2.0f;
-inline constexpr float NETHERSPITE_VZ_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 1.0f;
-// This clearance is 0.5 yd short of the ordinary 3 yd void zone clearance because the standard
-// blocking position is 18 yd from Netherspite, and 21 yd would be out of melee range (20.5 is not).
-inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 0.5f;
-inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = NETHERSPITE_VZ_CLEARANCE + 0.5f;
-// Tried when neither side of the void zone is clear at the normal step-around distance.
-inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROUND_DISTANCE + 2.0f;
-inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
-inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS = 20.0f;
-inline constexpr float NETHERSPITE_HUNTER_BANISH_SLOT_RADIUS = 25.0f;
-inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
-    static_cast<float>(M_PI) * 6.0f / 180.0f;
-// A bot whose distance to its slot is more than this far away than the bot's distance to
-// Netherspite moves back in. Netherbreath knocks a bot about 25 yd out along its bearing.
-inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
+// The red beam dance moves the tank 3 yd sideways.
+inline constexpr float NETHERSPITE_RED_DANCE_STEP = 3.0f;
 // Beams start 10s into a portal phase. Between 0 and 5s, all non-tanks hold DPS. Between 5s and
 // 10s, non-tanks hold DPS unless a tank is the victim. After beams spawn, nobody holds DPS.
 inline constexpr uint32 NETHERSPITE_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
@@ -473,22 +458,56 @@ inline constexpr uint32 NETHERSPITE_LAST_SWAP_MS = 55 * IN_MILLISECONDS;
 // moves onto the beam at 24 stacks to give it a second to arrive (and finish a cast).
 inline constexpr uint8 NETHERSPITE_BEAM_STACK_LIMIT = 25;
 inline constexpr uint8 NETHERSPITE_NEXT_STEPS_ON_AT_STACKS = 24;
+// Random positions a search tries per tick before giving up until the next tick.
 inline constexpr uint8 NETHERSPITE_POSITION_TRIES = 12;
+// Blue and green blockers stand 18 yd from Netherspite (hunters 25), moving along the beam if in
+// a void zone, but never closer than 17 yd. The red blocker always stands at 18 yd.
 inline constexpr float NETHERSPITE_BLOCKER_DISTANCE = 18.0f;
 inline constexpr float NETHERSPITE_BLOCKER_MIN_DISTANCE = 17.0f;
 inline constexpr float NETHERSPITE_HUNTER_BLOCKER_DISTANCE = 25.0f;
-// The perpendicular distance from the beam that the next blocker must stay within (min/max).
-inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE = 3.5f;
-inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 6.0f;
+// The next blocker waits 3.5-7 yd to the side of its beam: outside the beam's clearance even if it
+// stops short by the tolerance, but close enough to step into the beam's width in less than 1s.
+inline constexpr float NETHERSPITE_BEAM_POSITION_TOLERANCE = 0.5f;
+inline constexpr float NETHERSPITE_NEXT_MIN_OFF_LINE =
+    NETHERSPITE_BEAM_CLEARANCE + NETHERSPITE_BEAM_POSITION_TOLERANCE;
+inline constexpr float NETHERSPITE_NEXT_MAX_OFF_LINE = 7.0f;
+// The next blocker's waiting position is 17-19.5 yd from Netherspite along its beam (hunters
+// 25-27.5), close to the distance it will block from.
 inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
-// How far the next blocker's waiting position can move along the beam to get clear of a void zone.
+// To get clear of a void zone, the waiting position can move up to this far past either end of
+// NETHERSPITE_NEXT_ALONG_RANGE (but hunters only away from Netherspite).
 inline constexpr float NETHERSPITE_NEXT_SHIFT_RANGE = 4.0f;
-inline constexpr float NETHERSPITE_MAX_OWN_LINE_ARC = static_cast<float>(M_PI) * 60.0f / 180.0f;
-inline constexpr float NETHERSPITE_MAX_HEALER_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
+// See GetNetherspiteStandingArc.
+inline constexpr float NETHERSPITE_MAX_STANDING_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
+// Heals reach 43 yd center to center. NETHERSPITE_RED_DANCE_STEP is 3 yd, so 38 yd accounts for
+// that movement plus 2 yd of margin.
 inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
 // Standard player run speed, used to determine if a bot can pass between a portal and Netherspite
 // at the beginning of a portal phase before the beam spawns (CrossesBeamAfterStart).
 inline constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
+
+// No reach added.
+inline constexpr float NETHERSPITE_VZ_HAZARD_RADIUS = 2.0f;
+inline constexpr float NETHERSPITE_VZ_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 1.0f;
+// This clearance is 0.5 yd short of the ordinary 3 yd void zone clearance because the standard
+// blocking position is 18 yd from Netherspite, and 21 yd would be out of melee range (20.8 yd).
+inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 0.5f;
+inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = NETHERSPITE_VZ_CLEARANCE + 0.5f;
+// Tried when neither side of the void zone is clear at the normal step-around distance.
+inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROUND_DISTANCE + 2.0f;
+
+// Banish slots: every group member gets a bearing from Netherspite, spread evenly so each
+// Netherbreath (a 45° cone) hits only one bot. Slots are 20 yd out (inside his melee range of
+// 20.8 yd), except 25 yd for hunters (outside melee range, or Auto Shot fails).
+inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS = 20.0f;
+inline constexpr float NETHERSPITE_HUNTER_BANISH_SLOT_RADIUS = 25.0f;
+// A bot more than this far off its slot's bearing moves back. Ten slots are 36° apart, and the cone
+// reaches 22.5° each side, so two neighbors each 6° off toward each other are still clear.
+inline constexpr float NETHERSPITE_BANISH_SLOT_TOLERANCE =
+    static_cast<float>(M_PI) * 6.0f / 180.0f;
+// A bot more than 5 yd farther from Netherspite than its slot moves back in. Netherbreath knocks
+// a bot about 25 yd out along its bearing, potentially out of healing range.
+inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS_TOLERANCE = 5.0f;
 
 bool IsBanishPhase(Unit* netherspite);
 bool IsManaUser(Player* player);
@@ -627,9 +646,9 @@ inline constexpr float NIGHTBANE_FLIGHT_STACK_HOME_ANGLE = 2.0944f;
 // Cleave, and Tail Sweep. A Charred Earth on the tank, who stands 3.9-10 yd in front of him, misses
 // both flanks. When other patches cover both flanks, melee wait at the hold, outside his melee
 // range on his counterclockwise side.
-inline constexpr float NIGHTBANE_MELEE_FLANK_ANGLE = 1.8850f; // 108 degrees
+inline constexpr float NIGHTBANE_MELEE_FLANK_ANGLE = 1.8850f; // 108°
 inline constexpr float NIGHTBANE_MELEE_FLANK_DIST = 10.5f;
-inline constexpr float NIGHTBANE_MELEE_HOLD_ANGLE = 1.7453f; // 100 degrees
+inline constexpr float NIGHTBANE_MELEE_HOLD_ANGLE = 1.7453f; // 100°
 inline constexpr float NIGHTBANE_MELEE_HOLD_DIST = 23.0f;
 // Ranged distances are calculated to keep melee safe from a Charred Earth that lands on ranged
 // positions, while allowing heals (43 yd range) to reach melee on Nightbane's far flank.

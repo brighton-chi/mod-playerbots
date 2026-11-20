@@ -928,13 +928,15 @@ bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
     float y = beam.blockerPosition.GetPositionY();
     if (_lastBeamMoveSideways)
     {
-        constexpr float sideDistance = 3.0f;
         float const length = netherspite->GetExactDist2d(*beam.portal);
         if (length == 0.0f)
             return false;
 
-        x -= (beam.portal->GetPositionY() - netherspite->GetPositionY()) / length * sideDistance;
-        y += (beam.portal->GetPositionX() - netherspite->GetPositionX()) / length * sideDistance;
+        // A unit vector to the left of the line, as Netherspite faces the portal.
+        float const leftX = (netherspite->GetPositionY() - beam.portal->GetPositionY()) / length;
+        float const leftY = (beam.portal->GetPositionX() - netherspite->GetPositionX()) / length;
+        x += leftX * NETHERSPITE_RED_DANCE_STEP;
+        y += leftY * NETHERSPITE_RED_DANCE_STEP;
     }
 
     // The position is 18 yd from Netherspite toward the portal, so it shifts as he moves. Thus, the
@@ -1440,9 +1442,9 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
     }
 }
 
-// A banish slot's position on its bearing from Netherspite, 20 yd from him (25 for Hunters). If
-// such position is within 3 yd of a void zone, the position shifts closer to Netherspite. But the
-// bearing never changes, so the slots always stay evenly spread for Netherbreath.
+// A banish slot's position on its bearing, moved in toward Netherspite 1 yd at a time until it's
+// short of any wall and 3 yd clear of void zones. The bearing never changes, so the necessary
+// spacing to prevent Netherbreath from hitting more than one bot at a time is maintained.
 Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
     Unit& netherspite, KaraInstanceState const& state, float angle, float startRadius)
 {
@@ -1474,9 +1476,7 @@ Position NetherspiteManageTimersAndTrackersAction::GetBanishPosition(
     return Position(x, y, z);
 }
 
-// Spread out for Netherbreath, a 45-degree cone (22.5 degrees either side of its target). Every
-// group member gets a slot, so they are 36 degrees apart in a full 10-player raid, meaning only
-// one player gets hit by each Netherbreath.
+// Gives every group member a slot on its own bearing, spread evenly around Netherspite.
 void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
     Unit* netherspite, KaraInstanceState& state)
 {

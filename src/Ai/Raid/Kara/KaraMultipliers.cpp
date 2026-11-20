@@ -427,11 +427,14 @@ float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
     if (IsNetherspiteBlockerOrNext(*state, bot->GetGUID()))
         return 0.0f;
 
+    // Other bots' reach and charge are blocked if they would go through a void zone, since the
+    // standard actions don't avoid them.
     Unit* target = action->GetTarget();
     if (!target)
         return 1.0f;
 
-    float range = 0.0f;
+    // A void zone past where the move stops, between that point and the target, doesn't count.
+    float range = 0.0f; // Charges go all the way to the target.
     if (dynamic_cast<ReachMeleeAction*>(action))
         range = sPlayerbotAIConfig.MeleeDistance;
     else if (dynamic_cast<ReachPartyMemberToHealAction*>(action))

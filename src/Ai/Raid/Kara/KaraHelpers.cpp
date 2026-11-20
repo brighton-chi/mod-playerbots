@@ -659,28 +659,17 @@ NetherspiteArc GetSideWithoutRed(Unit& netherspite, KaraInstanceState const& sta
     return { green, greenToBlue };
 }
 
-// For bots that are neither blocking a beam nor next up to block a beam. The standing arc is within
-// 60 degrees of the beam the bot may eventually need to block (based on its role), between the blue
-// and green beams. The wedge is under 180 degrees, so a straight move inside it can't cross a beam.
-// Healers occupy the middle of the side instead, to keep the tank in range.
-NetherspiteArc GetNetherspiteStandingArc(
-    Player* bot, Unit& netherspite, KaraInstanceState const& state)
+// The arc between the blue and green beams, or its central 170° if it's wider. Under 180°, a
+// straight move from inside it to the next blocker's position can't cross a beam.
+NetherspiteArc GetNetherspiteStandingArc(Unit& netherspite, KaraInstanceState const& state)
 {
     NetherspiteArc const side = GetSideWithoutRed(netherspite, state);
-    if (PlayerbotAI::IsHeal(bot))
-    {
-        float const width = std::min(side.width, NETHERSPITE_MAX_HEALER_ARC);
-        return { side.start + (side.width - width) / 2.0f, width };
-    }
-
-    NetherspiteBeam const ownBeam =
-        IsManaUser(bot) ? NetherspiteBeam::Blue : NetherspiteBeam::Green;
-    float const width = std::min(side.width, NETHERSPITE_MAX_OWN_LINE_ARC);
-    float const own = GetBeamAngle(netherspite, state, ownBeam);
-    bool const isStart = GetNetherspiteInnerSide(netherspite, state, ownBeam) > 0.0f;
-    return { isStart ? own : own - width, width };
+    float const width = std::min(side.width, NETHERSPITE_MAX_STANDING_ARC);
+    return { side.start + (side.width - width) / 2.0f, width };
 }
 
+// How far from Netherspite's center bots stand between the blue and green beams. Melee stay inside
+// his melee range (20.8 yd). Hunters stay outside it, or Auto Shot fails.
 NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
 {
     if (PlayerbotAI::IsHeal(bot))
@@ -1060,8 +1049,9 @@ float GetNetherspiteInnerSide(
     return std::min(toOwn, 2.0f * static_cast<float>(M_PI) - toOwn) < 0.001f ? 1.0f : -1.0f;
 }
 
-// Non-tanks that are not blocking will position in the space between the blue and green beams. In
-// that space, healers position in the middle of the side, within 38 yd of the red beam tank.
+// Where a bot that is neither blocking nor next to block may stand: in the standing arc, at its
+// role's distance, and clear of void zones and beams. Healers also stay within 38 yd of the red
+// beam tank. Melee, including tanks other than the red beam tank, stand behind Netherspite.
 bool IsBetweenNetherspiteBeams(
     Player* bot, Unit& netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1071,15 +1061,12 @@ bool IsBetweenNetherspiteBeams(
         return false;
     }
 
-    if (PlayerbotAI::IsTank(bot))
-        return true;
-
     NetherspiteRadiusBand const band = GetNetherspiteRadiusBand(bot);
     float const radius = netherspite.GetExactDist2d(x, y);
     if (radius < band.low || radius > band.high)
         return false;
 
-    NetherspiteArc const arc = GetNetherspiteStandingArc(bot, netherspite, state);
+    NetherspiteArc const arc = GetNetherspiteStandingArc(netherspite, state);
     float const angle = netherspite.GetAngle(x, y);
     if (Position::NormalizeOrientation(angle - arc.start) > arc.width)
         return false;
@@ -1113,8 +1100,7 @@ bool CanMoveBetweenNetherspiteBeams(
 }
 
 // A random position the bot may stand in, or, failing that, the nearest safe position if the bot is
-// in danger. None if it's safe where the bot is. Tanks don't block green or blue beams, so they
-// only step out of danger.
+// in danger. None if it's safe where the bot is.
 std::optional<Position> FindPositionBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state)
 {
@@ -1122,21 +1108,18 @@ std::optional<Position> FindPositionBetweenNetherspiteBeams(
         return std::nullopt;
 
     float z = bot->GetPositionZ();
-    if (!PlayerbotAI::IsTank(bot))
+    NetherspiteArc const arc = GetNetherspiteStandingArc(*netherspite, state);
+    NetherspiteRadiusBand const band = GetNetherspiteRadiusBand(bot);
+    for (uint8 i = 0; i < NETHERSPITE_POSITION_TRIES; ++i)
     {
-        NetherspiteArc const arc = GetNetherspiteStandingArc(bot, *netherspite, state);
-        NetherspiteRadiusBand const band = GetNetherspiteRadiusBand(bot);
-        for (uint8 i = 0; i < NETHERSPITE_POSITION_TRIES; ++i)
+        float const angle = arc.start + frand(0.0f, arc.width);
+        float const radius = frand(band.low, band.high);
+        float const x = netherspite->GetPositionX() + std::cos(angle) * radius;
+        float const y = netherspite->GetPositionY() + std::sin(angle) * radius;
+        if (CanMoveBetweenNetherspiteBeams(bot, netherspite, state, x, y) &&
+            GetFloorAt(bot, x, y, z))
         {
-            float const angle = arc.start + frand(0.0f, arc.width);
-            float const radius = frand(band.low, band.high);
-            float const x = netherspite->GetPositionX() + std::cos(angle) * radius;
-            float const y = netherspite->GetPositionY() + std::sin(angle) * radius;
-            if (CanMoveBetweenNetherspiteBeams(bot, netherspite, state, x, y) &&
-                GetFloorAt(bot, x, y, z))
-            {
-                return Position(x, y, z);
-            }
+            return Position(x, y, z);
         }
     }
 
@@ -1512,13 +1495,13 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
         from.GetPositionZ());
 }
 
-// Searches the terrace's inner lane outward from startAngle in 2.5 degree steps, alternating sides,
+// Searches the terrace's inner lane outward from startAngle in 2.5° steps, alternating sides,
 // clockwise first. Returns the nearest flight stack position clear of Charred Earth and outside
 // any Rain of Bones.
 std::optional<Position> FindNightbaneStackPosition(
     float startAngle, std::vector<Position> const& charredEarths, Position const* rainCenter)
 {
-    constexpr float angleStep = 0.0436f; // 2.5 degrees, or 1.7 yd
+    constexpr float angleStep = 0.0436f; // 2.5°, or 1.7 yd
 
     for (uint8 i = 0;
          i * angleStep <= NIGHTBANE_FLIGHT_STACK_MAX_ANGLE - NIGHTBANE_FLIGHT_STACK_MIN_ANGLE; ++i)
@@ -1574,8 +1557,8 @@ std::optional<Position> FindNightbaneRangedPosition(
     Player& bot, Unit& nightbane, Position const& from, std::vector<Position> const& charredEarths,
     NightbaneRangedTier tier)
 {
-    constexpr float angleStep = 0.0436f; // 2.5 degrees
-    constexpr float maxAngleOffset = 1.0f; // 57 degrees, beyond the ranged band on every ring
+    constexpr float angleStep = 0.0436f; // 2.5°
+    constexpr float maxAngleOffset = 1.0f; // 57°, beyond the ranged band on every ring
     constexpr uint8 ringCount = 9;
     constexpr float ringStep =
         (TERRACE_FLOOR_OUTER_RADIUS - TERRACE_FLOOR_INNER_RADIUS) / (ringCount - 1);
