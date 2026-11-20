@@ -17,16 +17,12 @@
 #include "Spell.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
-#include <cmath>
-#include <initializer_list>
 #include <limits>
 #include <list>
 #include <map>
 #include <mutex>
-#include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 using namespace EncounterHelpers;
 
@@ -1486,8 +1482,8 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
         std::max(from.GetExactDist2d(TERRACE_DOME_CENTER), TERRACE_INNER_LANE_DIST);
     float const fromAngle = GetTerraceAngle(from);
     float const angleLeft = GetTerraceAngle(destination) - fromAngle;
-    float const angle =
-        fromAngle + std::copysign(std::min(stepDist / radius, std::fabs(angleLeft)), angleLeft);
+    float const maxStepAngle = stepDist / radius;
+    float const angle = fromAngle + std::clamp(angleLeft, -maxStepAngle, maxStepAngle);
 
     return Position(
         TERRACE_DOME_CENTER.GetPositionX() + radius * std::cos(angle),

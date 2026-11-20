@@ -16,7 +16,6 @@
 #include <cmath>
 #include <limits>
 #include <list>
-#include <optional>
 
 using namespace KaraHelpers;
 using namespace EncounterHelpers;

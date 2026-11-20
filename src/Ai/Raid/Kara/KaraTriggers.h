@@ -10,6 +10,7 @@
 #include "EncounterHelpers.h"
 #include "KaraHelpers.h"
 #include "Trigger.h"
+#include <string>
 
 // Shared
 
