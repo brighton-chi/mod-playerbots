@@ -831,7 +831,7 @@ Position const& GetFelmystGroupPosition(FelmystAirEnd end, uint8 demonicVaporCou
     return positions[std::min<size_t>(demonicVaporCount, positions.size() - 1)];
 }
 
-std::span<Position const> GetFelmystDemonicVaporRoute(FelmystAirEnd end, uint8 demonicVaporCount)
+std::vector<Position> const& GetFelmystDemonicVaporRoute(FelmystAirEnd end, uint8 demonicVaporCount)
 {
     bool const second = demonicVaporCount >= 2;
     if (end == FelmystAirEnd::West)

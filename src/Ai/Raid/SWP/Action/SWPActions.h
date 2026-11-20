@@ -16,7 +16,6 @@
 #include "SWPShared.h"
 #include <limits>
 #include <optional>
-#include <span>
 #include <string>
 #include <vector>
 
@@ -339,7 +338,7 @@ public:
 
 private:
     ObjectGuid _demonicVaporGuid;
-    std::span<Position const> _route;
+    std::vector<Position> const* _route = nullptr;
     size_t _routePointIndex = 0;
     // G1, which the first vapor's target passes through if the second vapor picks it again
     Position const* _throughPosition = nullptr;

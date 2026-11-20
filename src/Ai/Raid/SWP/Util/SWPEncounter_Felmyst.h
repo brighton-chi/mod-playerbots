@@ -12,7 +12,6 @@
 #include "SWPShared.h"
 #include <array>
 #include <limits>
-#include <span>
 #include <vector>
 
 class Creature;
@@ -222,7 +221,7 @@ inline std::array const FELMYST_EAST_GROUP_POSITIONS = {
 
 // The routes vapor targets follow: the first vapor's loops north, the second's south, both toward
 // the near end. The last point is far enough away that the beam always ends first.
-inline std::array const FELMYST_WEST_FIRST_VAPOR_ROUTE = {
+inline std::vector<Position> const FELMYST_WEST_FIRST_VAPOR_ROUTE = {
     Position{ 1484.9f, 653.9f, 21.6f },
     Position{ 1488.5f, 657.5f, 21.7f },
     Position{ 1494.5f, 660.8f, 22.5f },
@@ -233,7 +232,7 @@ inline std::array const FELMYST_WEST_FIRST_VAPOR_ROUTE = {
     Position{ 1502.0f, 638.1f, 25.3f },
     Position{ 1483.4f, 621.5f, 23.8f },
 };
-inline std::array const FELMYST_WEST_SECOND_VAPOR_ROUTE = {
+inline std::vector<Position> const FELMYST_WEST_SECOND_VAPOR_ROUTE = {
     Position{ 1475.1f, 638.9f, 21.7f },
     Position{ 1471.5f, 642.5f, 21.4f },
     Position{ 1465.7f, 645.8f, 20.4f },
@@ -244,7 +243,7 @@ inline std::array const FELMYST_WEST_SECOND_VAPOR_ROUTE = {
     Position{ 1453.1f, 624.1f, 19.7f },
     Position{ 1465.6f, 602.4f, 23.0f },
 };
-inline std::array const FELMYST_EAST_FIRST_VAPOR_ROUTE = {
+inline std::vector<Position> const FELMYST_EAST_FIRST_VAPOR_ROUTE = {
     Position{ 1477.9f, 577.1f, 23.3f },
     Position{ 1481.5f, 573.5f, 23.6f },
     Position{ 1487.5f, 570.2f, 23.7f },
@@ -255,7 +254,7 @@ inline std::array const FELMYST_EAST_FIRST_VAPOR_ROUTE = {
     Position{ 1495.0f, 592.9f, 24.9f },
     Position{ 1476.4f, 609.5f, 23.9f },
 };
-inline std::array const FELMYST_EAST_SECOND_VAPOR_ROUTE = {
+inline std::vector<Position> const FELMYST_EAST_SECOND_VAPOR_ROUTE = {
     Position{ 1468.1f, 592.1f, 22.4f },
     Position{ 1464.5f, 588.5f, 21.8f },
     Position{ 1458.5f, 585.2f, 21.5f },
@@ -283,7 +282,8 @@ void RecordFelmystDemonicVaporSummon(Player* target);
 void AdvanceFelmystEncounterState(Unit* felmyst);
 FelmystAirEnd GetNearestFelmystAirEnd(Unit* felmyst);
 Position const& GetFelmystGroupPosition(FelmystAirEnd end, uint8 demonicVaporCount);
-std::span<Position const> GetFelmystDemonicVaporRoute(FelmystAirEnd end, uint8 demonicVaporCount);
+std::vector<Position> const& GetFelmystDemonicVaporRoute(
+    FelmystAirEnd end, uint8 demonicVaporCount);
 bool TryGetFelmystAirGroupPosition(Unit* felmyst, Position& position);
 bool IsFelmystAirGroupMoveActive(Player* bot, Unit* felmyst);
 bool IsFelmystEarlyMoveDue(Player* bot, Unit* felmyst);
