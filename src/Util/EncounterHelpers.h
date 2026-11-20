@@ -9,6 +9,7 @@
 
 #include "Common.h"
 #include "ObjectGuid.h"
+#include "Player.h"
 #include "Position.h"
 #include <initializer_list>
 #include <optional>
@@ -17,7 +18,6 @@
 
 class Action;
 class Creature;
-class Player;
 class PlayerbotAI;
 class Unit;
 enum ReactStates : uint8;
@@ -42,11 +42,14 @@ inline constexpr float BOSS_BURN_HEALTH_PCT = 10.0f;
 // banished, or else when the last Spellbinder dies, not when his Spellbinders are pulled). In any
 // case, the boss script must be consulted to determine viability.
 bool IsEncounterInProgress(Player* bot, uint32 mapId);
+
 // Encounters from the instance script. Boss ids follow DungeonEncounter.dbc's order, so they are
 // right only if the instance script numbers its bosses in that same order. Each returns false or
-// nullopt when the bot isn't on mapId.
+// nullopt when the bot (or object) isn't on mapId.
+
 // One boss's state, unlike IsEncounterInProgress, which is true with any boss in progress on mapId.
-bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId);
+// It takes any object, so script hooks can gate on a creature.
+bool IsBossInProgress(WorldObject* object, uint32 mapId, uint32 bossId);
 // The lowest boss id that is IN_PROGRESS, if any.
 std::optional<uint32> GetBossInProgress(Player* bot, uint32 mapId);
 

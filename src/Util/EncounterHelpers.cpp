@@ -57,12 +57,12 @@ bool IsEncounterInProgress(Player* bot, uint32 mapId)
     return instance && instance->IsEncounterInProgress();
 }
 
-bool IsBossInProgress(Player* bot, uint32 mapId, uint32 bossId)
+bool IsBossInProgress(WorldObject* object, uint32 mapId, uint32 bossId)
 {
-    if (bot->GetMapId() != mapId)
+    if (!object || object->GetMapId() != mapId)
         return false;
 
-    InstanceScript* instance = bot->GetInstanceScript();
+    InstanceScript* instance = object->GetInstanceScript();
     return instance && instance->GetBossState(bossId) == IN_PROGRESS;
 }
 
