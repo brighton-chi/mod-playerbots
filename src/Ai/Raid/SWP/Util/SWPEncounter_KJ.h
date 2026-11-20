@@ -116,7 +116,7 @@ inline Position const SUNWELL_CENTER_POSITION =     { 1698.450f, 628.030f, 28.19
 inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
 inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
 inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
-inline Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
+inline Position const KILJAEDEN_DARKNESS_POSITION = { 1706.417f, 636.323f, 27.849f };
 
 GuidVector FindKiljaedenHandGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);

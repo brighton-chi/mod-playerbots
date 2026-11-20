@@ -566,13 +566,26 @@ bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteDuringDarknessOfAThousandSo
         return false;
 
     if (darknessTimeLeftMs < SHIELD_OF_THE_BLUE_CAST_WINDOW_MS)
-        return CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
-    else if (CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE)))
-        return true;
-    else if (CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE)))
-        return true;
+    {
+        // The Shield is centered on the drake, so it is cast from the stack position itself.
+        // The breaths are cast from short of it so that their cones cover the stacked raid.
+        constexpr float shieldDistanceFromStack = 1.0f;
+        if (distanceToStack <= shieldDistanceFromStack)
+            return CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_SHIELD_OF_THE_BLUE));
 
-    return false;
+        if (dragon->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE ||
+            !dragon->isMoving())
+        {
+            dragon->GetMotionMaster()->MovePoint(
+                0, stackPosition.GetPositionX(), stackPosition.GetPositionY(),
+                stackPosition.GetPositionZ());
+        }
+
+        return true;
+    }
+
+    return CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_HASTE)) ||
+        CastKiljaedenDragonSpell(dragon, Id(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE));
 }
 
 bool KiljaedenDragonBuffAndProtectRaidAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon)
