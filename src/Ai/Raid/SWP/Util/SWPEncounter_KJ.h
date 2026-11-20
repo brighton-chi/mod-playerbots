@@ -96,7 +96,8 @@ inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
 // Only up to two ranged bots may share a slot when an Armageddon forces a reshuffle.
 inline constexpr uint8 KILJAEDEN_MAX_BOTS_PER_RANGED_SLOT = 2;
 inline constexpr uint32 ARMAGEDDON_HAZARD_DURATION_MS = 10 * IN_MILLISECONDS;
-inline constexpr float ARMAGEDDON_SAFE_DISTANCE = 11.0f;
+inline constexpr float ARMAGEDDON_HAZARD_RADIUS = 9.0f; // no combat reaches added
+inline constexpr float ARMAGEDDON_CLEARANCE = ARMAGEDDON_HAZARD_RADIUS + 2.0f;
 
 inline constexpr float KILJAEDEN_REFLECTION_SEARCH_RADIUS = 100.0f;
 inline constexpr float DRAGON_ORB_SEARCH_RADIUS = 200.0f;

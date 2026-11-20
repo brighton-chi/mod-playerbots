@@ -456,7 +456,7 @@ public:
                     continue;
                 }
 
-                if (creature->GetExactDist2d(player) > ARMAGEDDON_SAFE_DISTANCE)
+                if (creature->GetExactDist2d(player) > ARMAGEDDON_CLEARANCE)
                     continue;
 
                 botsToInterrupt.push_back(botAI);
@@ -471,7 +471,7 @@ public:
 
         AddKiljaedenArmageddon(
             creature->GetInstanceId(), creature->GetPosition(),
-            ARMAGEDDON_HAZARD_DURATION_MS, ARMAGEDDON_SAFE_DISTANCE);
+            ARMAGEDDON_HAZARD_DURATION_MS, ARMAGEDDON_CLEARANCE);
 
         for (PlayerbotAI* botAI : botsToInterrupt)
             botAI->RequestSpellInterrupt();
