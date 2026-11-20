@@ -19,6 +19,7 @@
 #include <list>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 
@@ -45,9 +46,39 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char c
     return botAI->GetAiObjectContext()->GetValue<std::vector<Position>>(value)->RefGet();
 }
 
+constexpr std::string_view BossName(SscBosses boss)
+{
+    switch (boss)
+    {
+        case SscBosses::DATA_HYDROSS_THE_UNSTABLE:
+            return "hydross the unstable";
+        case SscBosses::DATA_THE_LURKER_BELOW:
+            return "the lurker below";
+        case SscBosses::DATA_LEOTHERAS_THE_BLIND:
+            return "leotheras the blind";
+        case SscBosses::DATA_MOROGRIM_TIDEWALKER:
+            return "morogrim tidewalker";
+        case SscBosses::DATA_LADY_VASHJ:
+            return "lady vashj";
+        default:
+            return {};
+    }
+}
+
 } // end anonymous namespace
 
 // Shared
+
+Unit* GetSscBoss(Player* bot, SscBosses boss)
+{
+    if (boss == SscBosses::DATA_FATHOM_LORD_KARATHRESS)
+        return GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_LORD_KARATHRESS);
+
+    if (!IsBossInProgress(bot, SSC_MAP_ID, Id(boss)))
+        return nullptr;
+
+    return FindThreatTarget(bot, BossName(boss));
+}
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
@@ -299,6 +330,11 @@ HydrossDpsHoldWindow GetHydrossDpsHoldWindow(Unit* hydross)
     return HydrossDpsHoldWindow::None;
 }
 
+bool IsHydrossPetHoldActive(Unit* hydross)
+{
+    return hydross && GetHydrossDpsHoldWindow(hydross) != HydrossDpsHoldWindow::None;
+}
+
 Position GetHydrossHandoffPosition(bool frostTank)
 {
     Position const& own = frostTank ? HYDROSS_FROST_TANK_POSITION : HYDROSS_NATURE_TANK_POSITION;
@@ -494,7 +530,7 @@ GuidVector FindLurkerGuardianTankGuids(Player* bot)
 {
     std::array const tanks = {
         GetGroupMainTank(bot), GetGroupAssistTank(bot, 0), GetGroupAssistTank(bot, 1) };
-    static_assert(std::tuple_size_v<decltype(tanks)> == LURKER_GUARDIAN_TANK_COUNT);
+    static_assert(tanks.size() == LURKER_GUARDIAN_TANK_COUNT);
 
     GuidVector guids;
     for (Player* tank : tanks)
@@ -814,26 +850,31 @@ Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 
 // Fathom-Lord Karathress
 
-ObjectGuid FindSpitfireTotemGuid(Player* bot)
+namespace
 {
-    Creature* totem =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), SPITFIRE_TOTEM_SEARCH_DISTANCE);
-    return totem ? totem->GetGUID() : ObjectGuid::Empty;
+
+bool IsSharkkisPet(uint32 entry)
+{
+    return entry == Id(SscNpcs::NPC_FATHOM_LURKER) || entry == Id(SscNpcs::NPC_FATHOM_SPOREBAT);
 }
 
-Creature* GetSpitfireTotem(PlayerbotAI* botAI)
+// The cached grid search, or null if Karathress is not in progress.
+GuidVector const* GetKarathressUnitGuids(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(botAI, "ssc spitfire totem");
+    if (!botAI ||
+        !IsBossInProgress(botAI->GetBot(), SSC_MAP_ID, Id(SscBosses::DATA_FATHOM_LORD_KARATHRESS)))
+    {
+        return nullptr;
+    }
+
+    return &botAI->GetAiObjectContext()->GetValue<GuidVector>("ssc karathress units")->RefGet();
 }
 
-bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
+Creature* GetLivingKarathressUnit(PlayerbotAI* botAI, ObjectGuid guid)
 {
-    return totem && (PlayerbotAI::IsMelee(bot) ||
-        bot->GetDistance(totem) < SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE);
+    Creature* unit = botAI->GetCreature(guid);
+    return unit && unit->IsAlive() && unit->IsInWorld() ? unit : nullptr;
 }
-
-namespace // Karathress
-{
 
 // GetGroupAssistTank does not allow dead tanks to be indexed, so this helper serves that purpose.
 Player* GetCouncilTank(Player* bot, int8 assistTankIndex)
@@ -867,7 +908,7 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
             PlayerbotAI::IsMainTank(tank) :
             PlayerbotAI::IsAssistTankOfIndex(tank, assignment.assistTankIndex, false);
         if (assigned)
-            return FindThreatTarget(tank, assignment.name);
+            return GetKarathressCouncilMember(tank, assignment.npc);
     }
 
     return nullptr;
@@ -875,12 +916,69 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 
 } // end anonymous namespace (Karathress)
 
+GuidVector FindKarathressUnitGuids(Player* bot)
+{
+    std::vector<uint32> entries = {
+        Id(SscNpcs::NPC_FATHOM_LURKER),
+        Id(SscNpcs::NPC_FATHOM_SPOREBAT),
+    };
+    for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
+        entries.push_back(Id(assignment.npc));
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(creatures, entries, KARATHRESS_UNIT_SEARCH_RADIUS);
+
+    GuidVector guids;
+    for (Creature* creature : creatures)
+    {
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end());
+    return guids;
+}
+
+Unit* GetKarathressCouncilMember(Player* bot, SscNpcs npc)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    GuidVector const* guids = GetKarathressUnitGuids(botAI);
+    if (!guids)
+        return nullptr;
+
+    for (ObjectGuid const& guid : *guids)
+    {
+        if (guid.GetEntry() == Id(npc))
+            return GetLivingKarathressUnit(botAI, guid);
+    }
+
+    return nullptr;
+}
+
+ObjectGuid FindSpitfireTotemGuid(Player* bot)
+{
+    Creature* totem =
+        bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), SPITFIRE_TOTEM_SEARCH_DISTANCE);
+    return totem ? totem->GetGUID() : ObjectGuid::Empty;
+}
+
+Creature* GetSpitfireTotem(PlayerbotAI* botAI)
+{
+    return GetCachedCreature(botAI, "ssc spitfire totem");
+}
+
+bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
+{
+    return totem && (PlayerbotAI::IsMelee(bot) ||
+        bot->GetDistance(totem) < SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE);
+}
+
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget)
 {
     Player* bot = botAI->GetBot();
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
-        Unit* member = FindThreatTarget(bot, assignment.name);
+        Unit* member = GetKarathressCouncilMember(bot, assignment.npc);
         if (!member || member == ownTarget || member->GetVictim() != bot)
             continue;
 
@@ -898,7 +996,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     Unit* ownMember = GetAssignedCouncilMember(botAI);
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
     {
-        Unit* member = FindThreatTarget(bot, assignment.name);
+        Unit* member = GetKarathressCouncilMember(bot, assignment.npc);
         if (member && member != ownMember && bot->GetDistance(member) < range)
             return true;
     }
@@ -909,19 +1007,22 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
-    Unit* sharkkis = FindThreatTarget(bot, "fathom-guard sharkkis");
+    Unit* sharkkis = GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_SHARKKIS);
     if (sharkkis && sharkkis->GetVictim() != bot)
         return sharkkis;
 
+    GuidVector const* guids = GetKarathressUnitGuids(botAI);
+    if (!guids)
+        return sharkkis;
+
     Unit* heldPet = nullptr;
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    for (ObjectGuid const& guid : *guids)
     {
-        Unit* pet = ref->GetOwner();
-        if (!pet || !pet->IsAlive())
+        if (!IsSharkkisPet(guid.GetEntry()))
             continue;
 
-        uint32 const entry = pet->GetEntry();
-        if (entry != Id(SscNpcs::NPC_FATHOM_LURKER) && entry != Id(SscNpcs::NPC_FATHOM_SPOREBAT))
+        Creature* pet = GetLivingKarathressUnit(botAI, guid);
+        if (!pet)
             continue;
 
         if (pet->GetVictim() != bot)
@@ -944,11 +1045,11 @@ bool IsKarathressBlessingHoldActive(Player* bot)
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
-    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
     if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
         return false;
 
-    return FindThreatTarget(bot, "fathom-guard caribdis");
+    return GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_CARIBDIS);
 }
 
 bool IsKarathressStartDpsHoldActive(Player* bot)
@@ -956,7 +1057,7 @@ bool IsKarathressStartDpsHoldActive(Player* bot)
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* karathress = FindThreatTarget(bot, "fathom-lord karathress");
+    Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
     if (!karathress)
         return false;
 
@@ -967,22 +1068,51 @@ bool IsKarathressStartDpsHoldActive(Player* bot)
 
 Unit* GetSharkkisPet(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    GuidVector const* guids = GetKarathressUnitGuids(botAI);
+    if (!guids)
+        return nullptr;
+
     Unit* lurker = nullptr;
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    for (ObjectGuid const& guid : *guids)
     {
-        Unit* pet = ref->GetOwner();
-        if (!pet || !pet->IsAlive())
+        uint32 const entry = guid.GetEntry();
+        if (!IsSharkkisPet(entry))
             continue;
 
-        uint32 const entry = pet->GetEntry();
+        Creature* pet = GetLivingKarathressUnit(botAI, guid);
+        if (!pet)
+            continue;
+
         if (entry == Id(SscNpcs::NPC_FATHOM_SPOREBAT))
             return pet;
 
-        if (entry == Id(SscNpcs::NPC_FATHOM_LURKER))
+        if (!lurker)
             lurker = pet;
     }
 
     return lurker;
+}
+
+Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet)
+{
+    Player* bot = botAI->GetBot();
+    if (!pet || IsKarathressStartDpsHoldActive(bot))
+        return nullptr;
+
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !pet->IsValidAttackTarget(target))
+        return nullptr;
+
+    if (target->GetEntry() == Id(SscNpcs::NPC_FATHOM_LORD_KARATHRESS) &&
+        target->GetHealthPct() <= KARATHRESS_BLESSING_HOLD_HEALTH_PCT &&
+        GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_CARIBDIS))
+    {
+        return nullptr;
+    }
+
+    return target;
 }
 
 // Morogrim Tidewalker
@@ -1003,7 +1133,7 @@ Position GetTidewalkerStackPoint(Player& bot, Unit& tidewalker)
 
 // Lady Vashj <Coilfang Matron>
 
-namespace // Vashj
+namespace
 {
 
 // Even-odd ray cast in 2D.
@@ -1249,7 +1379,7 @@ bool IsVashjCoreThrowInSight(
 bool FindVashjGeneratorUseSpot(GameObject* generator, uint32 phaseMask, float angle, Position& spot)
 {
     constexpr float useSpotMargin = 0.5f;
-    float const useRange = generator->GetInteractionDistance() - useSpotMargin; // 4.5y
+    float const useRange = generator->GetInteractionDistance() - useSpotMargin; // 4.5 yd
     constexpr float stepLength = 0.25f;
     constexpr int steps = 48;
 
@@ -1463,7 +1593,9 @@ void SetVashjCoreCatcher(VashjCoreCatcher& catcher, Player* player)
     catcher.bot = player ? player->GetGUID() : ObjectGuid::Empty;
     catcher.prepositions = !player || !GetTaintedElementalToKill(player);
     catcher.releaseTime = getMSTime();
-    catcher.readyDelay = urand(1000, 2000);
+    constexpr uint32 minDelayMs = 1000;
+    constexpr uint32 maxDelayMs = 2000;
+    catcher.readyDelay = urand(minDelayMs, maxDelayMs);
     catcher.arrived = false;
 }
 
@@ -1786,7 +1918,7 @@ bool FindVashjTankBreakoutSpot(
     constexpr uint8 directions = 24;
     constexpr uint8 rings = 7;
     constexpr float ringSpacing = 5.0f;
-    // 1y through a pool backwards takes about 0.7s, dealing 2775-3225 nature damage per second.
+    // 1 yd through a pool backwards takes about 0.7s, dealing 2775-3225 nature damage per second.
     constexpr float poolYardCost = 3.0f;
 
     Position const from = bot->GetPosition();
@@ -2340,8 +2472,8 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase)
 }
 
 bool GetStepToBringTankedUnitTo(
-    Player* bot, Unit* add, Position const& spot, float arrivalDistance, float& stepX,
-    float& stepY, bool& backwards)
+    Player* bot, Unit* add, Position const& spot, float arrivalDistance, float& stepX, float& stepY,
+    bool& backwards)
 {
     if (!add)
         return false;
@@ -2422,7 +2554,7 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 
     AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && target->IsAlive())
+    if (target && target->IsAlive() && pet->IsValidAttackTarget(target))
     {
         uint32 const entry = target->GetEntry();
         bool const useless = (target == vashj && phase == 2) ||
@@ -2437,7 +2569,7 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
     for (ObjectGuid const& guid : adds.enchanted)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() &&
+        if (unit && unit->IsAlive() && pet->IsValidAttackTarget(unit) &&
             (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted)))
         {
             enchanted = unit;
@@ -2447,7 +2579,7 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
     if (enchanted)
         return enchanted;
 
-    return phase == 3 ? vashj : nullptr;
+    return phase == 3 && pet->IsValidAttackTarget(vashj) ? vashj : nullptr;
 }
 
 bool ShouldVashjPetsBePassive(PlayerbotAI* botAI, Unit* vashj)

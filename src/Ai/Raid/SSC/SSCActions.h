@@ -42,12 +42,12 @@ class SscMisdirectToMainTankAction : public Action
 {
 public:
     SscMisdirectToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, SscHelpers::SscBosses boss)
+        : Action(botAI, name), _boss(boss) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    SscHelpers::SscBosses const _boss;
 };
 
 // Used for Hydross the Unstable and Leotheras the Blind.
@@ -69,7 +69,8 @@ public:
 };
 
 // Select the target that dps assist would select, without attacking it. Used for Hydross the
-// Unstable and Leotheras the Blind.
+// Unstable, Leotheras the Blind, and Fathom-Lord Karathress (for healers, as everyone else gets a
+// target from the dps priority action).
 class SscSelectTargetForHoldAction : public Action
 {
 public:
@@ -156,6 +157,18 @@ public:
     HydrossTheUnstableManagePhaseTimersAction(PlayerbotAI* botAI)
         : Action(botAI, "hydross the unstable manage phase timers") {}
     bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableSetPetStanceAction : public Action
+{
+public:
+    HydrossTheUnstableSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "hydross the unstable set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
 };
 
 // The Lurker Below
@@ -368,6 +381,14 @@ public:
 
 private:
     std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
+class FathomLordKarathressCommandPetTargetAction : public Action
+{
+public:
+    FathomLordKarathressCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "fathom-lord karathress command pet target") {}
+    bool Execute(Event event) override;
 };
 
 class FathomLordKarathressDropToGroundAfterCycloneAction : public MovementAction

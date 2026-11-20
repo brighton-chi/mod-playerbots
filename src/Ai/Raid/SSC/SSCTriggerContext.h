@@ -48,6 +48,9 @@ public:
         creators["hydross the unstable should manage phase timers"] =
             &RaidSscTriggerContext::hydross_the_unstable_should_manage_phase_timers;
 
+        creators["hydross the unstable should manage pet aggression"] =
+            &RaidSscTriggerContext::hydross_the_unstable_should_manage_pet_aggression;
+
         // The Lurker Below
         creators["the lurker below spout is active"] =
             &RaidSscTriggerContext::the_lurker_below_spout_is_active;
@@ -116,6 +119,12 @@ public:
 
         creators["fathom-lord karathress should manage pet aggression"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_pet_aggression;
+
+        creators["fathom-lord karathress pet should switch target"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_pet_should_switch_target;
+
+        creators["fathom-lord karathress dps hold is active"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_dps_hold_is_active;
 
         creators["fathom-lord karathress should manage dps timer"] =
             &RaidSscTriggerContext::fathom_lord_karathress_should_manage_dps_timer;
@@ -272,6 +281,10 @@ private:
     {
         return new HydrossTheUnstableShouldManagePhaseTimersTrigger(botAI);
     }
+    static Trigger* hydross_the_unstable_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new HydrossTheUnstableShouldManagePetAggressionTrigger(botAI);
+    }
 
     // The Lurker Below
     static Trigger* the_lurker_below_spout_is_active(PlayerbotAI* botAI)
@@ -357,7 +370,8 @@ private:
     static Trigger* fathom_lord_karathress_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SscHunterShouldMisdirectTrigger(
-            botAI, "fathom-lord karathress hunter should misdirect", "fathom-guard tidalvess");
+            botAI, "fathom-lord karathress hunter should misdirect",
+            SscHelpers::SscBosses::DATA_FATHOM_LORD_KARATHRESS);
     }
     static Trigger* fathom_lord_karathress_should_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -366,6 +380,14 @@ private:
     static Trigger* fathom_lord_karathress_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressShouldManagePetAggressionTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressPetShouldSwitchTargetTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_dps_hold_is_active(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressDpsHoldIsActiveTrigger(botAI);
     }
     static Trigger* fathom_lord_karathress_should_manage_dps_timer(PlayerbotAI* botAI)
     {
@@ -396,7 +418,8 @@ private:
     static Trigger* morogrim_tidewalker_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SscHunterShouldMisdirectTrigger(
-            botAI, "morogrim tidewalker hunter should misdirect", "morogrim tidewalker");
+            botAI, "morogrim tidewalker hunter should misdirect",
+            SscHelpers::SscBosses::DATA_MOROGRIM_TIDEWALKER);
     }
 
     // Lady Vashj <Coilfang Matron>
@@ -439,7 +462,7 @@ private:
     static Trigger* lady_vashj_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new SscHunterShouldMisdirectTrigger(
-            botAI, "lady vashj hunter should misdirect", "lady vashj");
+            botAI, "lady vashj hunter should misdirect", SscHelpers::SscBosses::DATA_LADY_VASHJ);
     }
     static Trigger* lady_vashj_should_assign_target_priority(PlayerbotAI* botAI)
     {

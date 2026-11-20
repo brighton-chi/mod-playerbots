@@ -91,6 +91,17 @@ protected:
     ObjectGuid Calculate() override { return SscHelpers::FindShadowOfLeotherasGuid(bot); }
 };
 
+class SscKarathressUnitsValue : public CalculatedValue<GuidVector>
+{
+public:
+    SscKarathressUnitsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "ssc karathress units", SscHelpers::KARATHRESS_UNIT_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return SscHelpers::FindKarathressUnitGuids(bot); }
+};
+
 class SscSpitfireTotemValue : public CalculatedValue<ObjectGuid>
 {
 public:
@@ -127,6 +138,7 @@ public:
         creators["ssc lurker guardian tanks"] = &RaidSscValueContext::ssc_lurker_guardian_tanks;
         creators["ssc leotheras"] = &RaidSscValueContext::ssc_leotheras;
         creators["ssc shadow of leotheras"] = &RaidSscValueContext::ssc_shadow_of_leotheras;
+        creators["ssc karathress units"] = &RaidSscValueContext::ssc_karathress_units;
         creators["ssc spitfire totem"] = &RaidSscValueContext::ssc_spitfire_totem;
         creators["ssc toxic spores"] = &RaidSscValueContext::ssc_toxic_spores;
         creators["ssc vashj adds"] = &RaidSscValueContext::ssc_vashj_adds;
@@ -158,6 +170,10 @@ private:
     static UntypedValue* ssc_shadow_of_leotheras(PlayerbotAI* botAI)
     {
         return new SscShadowOfLeotherasValue(botAI);
+    }
+    static UntypedValue* ssc_karathress_units(PlayerbotAI* botAI)
+    {
+        return new SscKarathressUnitsValue(botAI);
     }
     static UntypedValue* ssc_spitfire_totem(PlayerbotAI* botAI)
     {

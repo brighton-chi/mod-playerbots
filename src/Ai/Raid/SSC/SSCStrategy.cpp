@@ -9,7 +9,6 @@
 #include "Playerbots.h"
 #include "SSCHelpers.h"
 #include "SSCMultipliers.h"
-#include "ThreatHelpers.h"
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;
@@ -50,6 +49,9 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("hydross the unstable should manage phase timers",
         { NextAction("hydross the unstable manage phase timers", ACTION_EMERGENCY + 10) }));
+
+    triggers.push_back(new TriggerNode("hydross the unstable should manage pet aggression",
+        { NextAction("hydross the unstable set pet stance", ACTION_RAID + 4) }));
 
     // The Lurker Below
     triggers.push_back(new TriggerNode("the lurker below spout is active",
@@ -119,8 +121,14 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fathom-lord karathress should assign dps priority",
         { NextAction("fathom-lord karathress assign dps priority", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("fathom-lord karathress dps hold is active",
+        { NextAction("fathom-lord karathress select target for hold", ACTION_RAID - 1) }));
+
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage pet aggression",
         { NextAction("fathom-lord karathress set pet stance", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("fathom-lord karathress pet should switch target",
+        { NextAction("fathom-lord karathress command pet target", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("fathom-lord karathress should manage dps timer",
         { NextAction("fathom-lord karathress manage dps timer", ACTION_EMERGENCY + 10) }));
@@ -305,7 +313,7 @@ void AppendMorogrimTidewalkerMurlocExclusions(
 
         if (!tidewalker)
         {
-            tidewalker = FindThreatTarget(botAI->GetBot(), "morogrim tidewalker");
+            tidewalker = GetSscBoss(botAI->GetBot(), SscBosses::DATA_MOROGRIM_TIDEWALKER);
             if (!tidewalker)
                 return;
         }
@@ -318,7 +326,7 @@ void AppendMorogrimTidewalkerMurlocExclusions(
 
 void AppendLadyVashjGeneratorPhaseExclusions(Player* bot, GuidSet& exclusions)
 {
-    Unit* vashj = FindThreatTarget(bot, "lady vashj");
+    Unit* vashj = GetSscBoss(bot, SscBosses::DATA_LADY_VASHJ);
     if (vashj && vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
         exclusions.insert(vashj->GetGUID());
 }
@@ -328,10 +336,12 @@ void AppendLadyVashjGeneratorPhaseExclusions(Player* bot, GuidSet& exclusions)
 void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
 {
     Player* bot = botAI->GetBot();
-    if (!IsEncounterInProgress(bot, SSC_MAP_ID))
-        return;
+    if (IsBossInProgress(bot, SSC_MAP_ID, Id(SscBosses::DATA_MOROGRIM_TIDEWALKER)))
+    {
+        AppendMorogrimTidewalkerMurlocExclusions(
+            botAI, botAI->GetAiObjectContext(), exclusions);
+    }
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    AppendMorogrimTidewalkerMurlocExclusions(botAI, context, exclusions);
-    AppendLadyVashjGeneratorPhaseExclusions(bot, exclusions);
+    if (IsBossInProgress(bot, SSC_MAP_ID, Id(SscBosses::DATA_LADY_VASHJ)))
+        AppendLadyVashjGeneratorPhaseExclusions(bot, exclusions);
 }

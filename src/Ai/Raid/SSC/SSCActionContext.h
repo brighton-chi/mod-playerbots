@@ -50,6 +50,9 @@ public:
         creators["hydross the unstable manage phase timers"] =
             &RaidSscActionContext::hydross_the_unstable_manage_phase_timers;
 
+        creators["hydross the unstable set pet stance"] =
+            &RaidSscActionContext::hydross_the_unstable_set_pet_stance;
+
         // The Lurker Below
         creators["the lurker below run around behind boss"] =
             &RaidSscActionContext::the_lurker_below_run_around_behind_boss;
@@ -122,8 +125,14 @@ public:
         creators["fathom-lord karathress assign dps priority"] =
             &RaidSscActionContext::fathom_lord_karathress_assign_dps_priority;
 
+        creators["fathom-lord karathress select target for hold"] =
+            &RaidSscActionContext::fathom_lord_karathress_select_target_for_hold;
+
         creators["fathom-lord karathress set pet stance"] =
             &RaidSscActionContext::fathom_lord_karathress_set_pet_stance;
+
+        creators["fathom-lord karathress command pet target"] =
+            &RaidSscActionContext::fathom_lord_karathress_command_pet_target;
 
         creators["fathom-lord karathress manage dps timer"] =
             &RaidSscActionContext::fathom_lord_karathress_manage_dps_timer;
@@ -287,6 +296,10 @@ private:
     {
         return new HydrossTheUnstableManagePhaseTimersAction(botAI);
     }
+    static Action* hydross_the_unstable_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new HydrossTheUnstableSetPetStanceAction(botAI);
+    }
 
     // The Lurker Below
     static Action* the_lurker_below_run_around_behind_boss(PlayerbotAI* botAI)
@@ -387,9 +400,18 @@ private:
     {
         return new FathomLordKarathressAssignDpsPriorityAction(botAI);
     }
+    static Action* fathom_lord_karathress_select_target_for_hold(PlayerbotAI* botAI)
+    {
+        return new SscSelectTargetForHoldAction(
+            botAI, "fathom-lord karathress select target for hold");
+    }
     static Action* fathom_lord_karathress_set_pet_stance(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressSetPetStanceAction(botAI);
+    }
+    static Action* fathom_lord_karathress_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressCommandPetTargetAction(botAI);
     }
     static Action* fathom_lord_karathress_manage_dps_timer(PlayerbotAI* botAI)
     {
@@ -422,7 +444,8 @@ private:
     static Action* morogrim_tidewalker_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SscMisdirectToMainTankAction(
-            botAI, "morogrim tidewalker misdirect to main tank", "morogrim tidewalker");
+            botAI, "morogrim tidewalker misdirect to main tank",
+            SscHelpers::SscBosses::DATA_MOROGRIM_TIDEWALKER);
     }
 
     // Lady Vashj <Coilfang Matron>
@@ -465,7 +488,8 @@ private:
     static Action* lady_vashj_misdirect_to_main_tank(PlayerbotAI* botAI)
     {
         return new SscMisdirectToMainTankAction(
-            botAI, "lady vashj misdirect to main tank", "lady vashj");
+            botAI, "lady vashj misdirect to main tank",
+            SscHelpers::SscBosses::DATA_LADY_VASHJ);
     }
     static Action* lady_vashj_assign_target_priority(PlayerbotAI* botAI)
     {
