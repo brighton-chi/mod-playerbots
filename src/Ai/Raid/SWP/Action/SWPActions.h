@@ -688,6 +688,23 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenStartDpsHoldTimerAction : public Action
+{
+public:
+    KiljaedenStartDpsHoldTimerAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden start dps hold timer") {}
+    bool Execute(Event event) override;
+};
+
+class KiljaedenSelectTargetForHoldAction : public Action
+{
+public:
+    KiljaedenSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden select target for hold") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 class KiljaedenPositionAndMoveTanksAction : public AttackAction
 {
 public:
@@ -697,6 +714,7 @@ public:
 
 private:
     bool PickUpSinisterReflections(Creature* reflection);
+    bool MoveAroundKiljaedenToReflection();
 };
 
 class KiljaedenPositionMeleeAndAvoidArmageddonsAction : public MovementAction
