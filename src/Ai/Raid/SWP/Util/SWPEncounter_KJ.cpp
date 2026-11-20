@@ -66,7 +66,7 @@ float GetRangedSlotAngle(uint8 slotIndex)
         position.GetPositionX() - SUNWELL_CENTER_POSITION.GetPositionX()));
 }
 
-bool IsRangedSlotSafeFromArmageddons(
+bool IsOutsideArmageddons(
     Position const& position, std::vector<KiljaedenArmageddon> const& armageddons)
 {
     for (KiljaedenArmageddon const& armageddon : armageddons)
@@ -255,31 +255,11 @@ void AddKiljaedenArmageddon(
     KiljaedenState(instanceId).armageddons.push_back(armageddon);
 }
 
-bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon)
+// Callers prune expired Armageddons first (PruneExpiredKiljaedenArmageddons).
+bool IsOutsideKiljaedenArmageddons(uint32 instanceId, Position const& position)
 {
-    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
-    KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());
-    if (!state)
-        return false;
-
-    bool foundArmageddon = false;
-    float bestDistance = std::numeric_limits<float>::max();
-
-    for (KiljaedenArmageddon const& candidate : state->armageddons)
-    {
-        float const distance = bot->GetExactDist2d(candidate.destination);
-        if (distance >= candidate.safeDistance)
-            continue;
-
-        if (distance < bestDistance)
-        {
-            armageddon = candidate;
-            bestDistance = distance;
-            foundArmageddon = true;
-        }
-    }
-
-    return foundArmageddon;
+    KiljaedenEncounterState const* state = FindKiljaedenState(instanceId);
+    return !state || IsOutsideArmageddons(position, state->armageddons);
 }
 
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
@@ -499,7 +479,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
         if (!TryGetKiljaedenRangedSlotPosition(slotIndex, slotPosition))
             continue;
 
-        safeSlots[slotIndex] = IsRangedSlotSafeFromArmageddons(slotPosition, armageddons);
+        safeSlots[slotIndex] = IsOutsideArmageddons(slotPosition, armageddons);
         slotAngles[slotIndex] = GetRangedSlotAngle(slotIndex);
         nearestArmageddonDistances[slotIndex] =
             GetNearestArmageddonDistance(slotPosition, armageddons);

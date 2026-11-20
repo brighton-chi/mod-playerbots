@@ -236,6 +236,8 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
 
 bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::Execute(Event /*event*/)
 {
+    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
+
     Position position;
     if (!TryGetMeleePosition(position))
         return false;
@@ -259,6 +261,13 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Positi
     Group* group = bot->GetGroup();
     if (!group)
         return false;
+
+    if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)) &&
+        IsOutsideKiljaedenArmageddons(bot->GetInstanceId(), KILJAEDEN_MELEE_BACK_POSITION))
+    {
+        position = KILJAEDEN_MELEE_BACK_POSITION;
+        return true;
+    }
 
     size_t meleeIndex = 0;
     bool foundAssignment = false;
@@ -291,7 +300,6 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryGetMeleePosition(Positi
 bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddon(
     Position& position)
 {
-    PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     KiljaedenEncounterState const* state = FindKiljaedenState(bot->GetInstanceId());
     if (!state || state->armageddons.empty())
         return true;
@@ -303,42 +311,24 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::TryAdjustMeleeForArmageddo
         return true;
     }
 
-    Position const assignedPosition = position;
-    bool const isSouthPosition =
-        assignedPosition.GetExactDist2d(KILJAEDEN_S_MELEE_POSITION) < 1.0f;
-    Position const swapPosition =
+    uint32 const instanceId = bot->GetInstanceId();
+    if (IsOutsideKiljaedenArmageddons(instanceId, position))
+        return true;
+
+    bool const isSouthPosition = position.GetExactDist2d(KILJAEDEN_S_MELEE_POSITION) < 1.0f;
+    Position const& swapPosition =
         isSouthPosition ? KILJAEDEN_E_MELEE_POSITION : KILJAEDEN_S_MELEE_POSITION;
-
-    auto const isSafePosition = [&](Position const& pos)
-    {
-        for (KiljaedenArmageddon const& armageddon : state->armageddons)
-        {
-            if (pos.GetExactDist2d(
-                    armageddon.destination.GetPositionX(),
-                    armageddon.destination.GetPositionY()) < armageddon.safeDistance)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    };
-
-    if (isSafePosition(assignedPosition))
-        return true;
-
-    if (isSafePosition(swapPosition))
+    if (IsOutsideKiljaedenArmageddons(instanceId, swapPosition))
     {
         position = swapPosition;
         return true;
     }
 
-    KiljaedenArmageddon armageddon;
-    if (!TryGetKiljaedenNearestArmageddon(bot, armageddon))
+    if (!IsOutsideKiljaedenArmageddons(instanceId, KILJAEDEN_MELEE_BACK_POSITION))
         return false;
 
-    position = BestPositionForMeleeToFlee(armageddon.destination, armageddon.safeDistance);
-    return position != Position();
+    position = KILJAEDEN_MELEE_BACK_POSITION;
+    return true;
 }
 
 bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)

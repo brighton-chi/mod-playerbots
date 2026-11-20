@@ -112,11 +112,14 @@ inline constexpr float KILJAEDEN_DRAGON_STANDOFF_TOLERANCE = 1.0f;
 inline constexpr float KILJAEDEN_DRAGON_CLUSTER_RADIUS = 6.0f;
 inline constexpr uint8 KILJAEDEN_DRAGON_MIN_CLUSTER_SIZE = 3;
 
-inline Position const SUNWELL_CENTER_POSITION =     { 1698.450f, 628.030f, 28.199f };
-inline Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
-inline Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
-inline Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
-inline Position const KILJAEDEN_DARKNESS_POSITION = { 1706.417f, 636.323f, 27.849f };
+inline Position const SUNWELL_CENTER_POSITION =       { 1698.450f, 628.030f, 28.199f };
+inline Position const KILJAEDEN_TANK_POSITION =       { 1704.729f, 634.891f, 27.787f };
+inline Position const KILJAEDEN_S_MELEE_POSITION =    { 1688.102f, 629.810f, 27.848f };
+inline Position const KILJAEDEN_E_MELEE_POSITION =    { 1701.138f, 617.880f, 27.838f };
+inline Position const KILJAEDEN_DARKNESS_POSITION =   { 1706.417f, 636.323f, 27.849f };
+// Melee with Fire Bloom wait here so that their group isn't splashed, and melee go here when
+// Armageddons fall on both melee positions.
+inline Position const KILJAEDEN_MELEE_BACK_POSITION = { 1687.648f, 616.227f, 27.447f };
 
 GuidVector FindKiljaedenHandGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
@@ -124,7 +127,7 @@ bool IsKiljaedenHandControlClaimed(Unit* hand);
 void ClaimKiljaedenHandControl(Unit* hand);
 void AddKiljaedenArmageddon(
     uint32 instanceId, Position const& destination, uint32 durationMs, float safeDistance);
-bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
+bool IsOutsideKiljaedenArmageddons(uint32 instanceId, Position const& position);
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
 void EnsureKiljaedenRangedAssignments(Player* bot);
