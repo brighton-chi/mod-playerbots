@@ -153,8 +153,8 @@ inline constexpr float FELMYST_CHARMED_TARGET_RANGE = 30.0f;
 inline constexpr uint32 FELMYST_GROUNDED_DPS_WAIT_MS = 3 * IN_MILLISECONDS;
 // How close Felmyst must be to a specified position to be considered there.
 inline constexpr float FELMYST_LOCATION_MATCH_DISTANCE = 2.0f;
-// How far a fog destination must be from any vapor. Vapor has a 3y radius and no real buffer is
-// needed since this distance is for a non-moving bot, but the visual looks much wider than 3y
+// How far a fog destination must be from any vapor. Vapor has a 3 yd radius and no real buffer is
+// needed since this distance is for a non-moving bot, but the visual looks much wider than 3 yd
 // so a bit of leeway allows for some more realism as players would not stand so close.
 inline constexpr float FOG_DESTINATION_VAPOR_CLEARANCE = 8.0f;
 inline constexpr uint8 TOTAL_FOG_LANES = 3;
