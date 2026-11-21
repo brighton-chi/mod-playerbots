@@ -426,16 +426,23 @@ void AppendMuruTankExclusions(
     }
 }
 
+// Shield Orbs fly out of melee reach. Ranged skip the ones they cannot hit from where they stand,
+// since they cannot leave their positions to reach them.
 void AppendKiljaedenShieldOrbExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
-        return;
+    Player* bot = botAI->GetBot();
+    bool const isMelee = PlayerbotAI::IsMelee(bot);
+    // The same test as the standard "enemy out of spell range" trigger
+    float const spellRange = botAI->GetRange("spell") + CONTACT_DISTANCE;
 
     for (auto const& guid : context->GetValue<GuidVector>("attackers")->RefGet())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == Id(SwpNpcs::NPC_SHIELD_ORB))
+        if (!attacker || attacker->GetEntry() != Id(SwpNpcs::NPC_SHIELD_ORB))
+            continue;
+
+        if (isMelee || !bot->IsWithinCombatRange(attacker, spellRange))
             exclusions.insert(guid);
     }
 }
