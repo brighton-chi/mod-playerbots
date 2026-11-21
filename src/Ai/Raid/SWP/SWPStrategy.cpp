@@ -252,7 +252,7 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden melee should split into two groups",
         { NextAction("kil'jaeden position melee and avoid armageddons", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden ranged should spread in two arcs",
+    triggers.push_back(new TriggerNode("kil'jaeden ranged should keep formation",
         { NextAction("kil'jaeden position ranged and avoid armageddons", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden fire bloom on immunity class",

@@ -800,7 +800,7 @@ bool KiljaedenMeleeShouldSplitIntoTwoGroupsTrigger::IsActiveInEncounter()
     return !IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden);
 }
 
-bool KiljaedenRangedShouldSpreadInTwoArcsTrigger::IsActiveInEncounter()
+bool KiljaedenRangedShouldKeepFormationTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsRanged(bot))
         return false;
