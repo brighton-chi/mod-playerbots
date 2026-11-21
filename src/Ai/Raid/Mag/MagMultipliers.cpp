@@ -38,7 +38,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
     if (!IsCubeClicker(bot))
         return 1.0f;
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 
@@ -54,7 +54,7 @@ float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (!IsDpsHoldCandidate(bot, action))
         return 1.0f;
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!IsMagtheridonDpsHoldActive(bot, magtheridon))
         return 1.0f;
 
@@ -81,7 +81,7 @@ float MagtheridonKeepInCombatBeforeReleaseMultiplier::GetValueInEncounter(Action
             return 1.0f;
     }
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     return IsMagtheridonReleasePending(bot, magtheridon) ? 0.0f : 1.0f;
 }
 
@@ -103,7 +103,7 @@ float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon)
         return 1.0f;
 
@@ -136,7 +136,7 @@ float MagtheridonAvoidDebrisDangerMultiplier::GetValueInEncounter(Action* action
     if (!IsCeilingCollapsed(bot))
         return 1.0f;
 
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return 1.0f;
 

@@ -20,8 +20,9 @@ public:
 
     float GetValue(Action* action) final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, MagHelpers::MAG_MAP_ID) ?
-            GetValueInEncounter(action) : 1.0f;
+        bool const inProgress = EncounterHelpers::IsBossInProgress(
+            bot, MagHelpers::MAG_MAP_ID, MagHelpers::Id(MagHelpers::MagBosses::DATA_MAGTHERIDON));
+        return inProgress ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:

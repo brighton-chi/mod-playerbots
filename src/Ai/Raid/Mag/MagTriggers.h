@@ -20,8 +20,9 @@ public:
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, MagHelpers::MAG_MAP_ID) &&
-            IsActiveInEncounter();
+        return EncounterHelpers::IsBossInProgress(
+            bot, MagHelpers::MAG_MAP_ID,
+            MagHelpers::Id(MagHelpers::MagBosses::DATA_MAGTHERIDON)) && IsActiveInEncounter();
     }
 
 protected:

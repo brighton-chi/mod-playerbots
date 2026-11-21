@@ -166,7 +166,7 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool MagtheridonSelectTargetForHoldAction::Execute(Event /*event*/)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     return SelectTarget(botAI, magtheridon);
 }
 
@@ -230,7 +230,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
 
 bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon)
         return false;
 
@@ -261,7 +261,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon)
         return false;
 
@@ -281,7 +281,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 
 bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon)
         return false;
 
@@ -508,7 +508,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
 
 bool MagtheridonUpdateTimersAndAssignmentsAction::Execute(Event /*event*/)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    Unit* magtheridon = GetMagtheridon(bot);
     if (!magtheridon || !IsMagtheridonActive(magtheridon))
         return false;
 

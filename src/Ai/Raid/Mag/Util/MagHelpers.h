@@ -31,6 +31,12 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// DungeonEncounter.dbc encounterIndex, map 544
+enum class MagBosses : uint32
+{
+    DATA_MAGTHERIDON        = 0,
+};
+
 enum class MagSpells : uint32
 {
     // Magtheridon
@@ -100,6 +106,7 @@ inline Position const NW_CHANNELER_TANK_POSITION =       { -11.764f,  30.818f, -
 inline Position const NE_CHANNELER_TANK_POSITION =       { -12.490f, -26.211f, -0.411f,   0.0f };
 
 extern std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS;
+Unit* GetMagtheridon(Player* bot);
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 GuidVector FindBurningAbyssalGuids(Player* bot);

@@ -10,6 +10,7 @@
 #include "GameObject.h"
 #include "Map.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <list>
 #include <mutex>
@@ -28,6 +29,14 @@ std::unordered_map<uint32, MagInstanceState> magStates;
 }
 
 std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
+
+Unit* GetMagtheridon(Player* bot)
+{
+    if (!IsBossInProgress(bot, MAG_MAP_ID, Id(MagBosses::DATA_MAGTHERIDON)))
+        return nullptr;
+
+    return FindThreatTarget(bot, "magtheridon");
+}
 
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids)
 {
