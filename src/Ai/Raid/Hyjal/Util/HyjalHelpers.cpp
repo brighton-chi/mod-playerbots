@@ -23,6 +23,8 @@ using namespace EncounterHelpers;
 namespace HyjalHelpers
 {
 
+// Shared
+
 namespace
 {
 
@@ -227,9 +229,7 @@ constexpr std::string_view BossName(HyjalBosses boss)
     }
 }
 
-} // end anonymous namespace
-
-// Shared
+} // end anonymous namespace (Shared)
 
 Unit* GetHyjalBoss(Player* bot, HyjalBosses boss)
 {

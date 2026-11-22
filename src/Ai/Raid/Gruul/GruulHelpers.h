@@ -69,8 +69,8 @@ enum class GruulBosses : uint32
     DATA_GRUUL_THE_DRAGONKILLER     = 1,
 };
 
-// Null unless the boss is in progress. Maulgar comes from the council's grid search (see
-// GetMaulgarCouncilMember) and Gruul from the bot's threat list.
+// The ogre council members are found with a grid search (see GetMaulgarCouncilMember) and Gruul
+// with the bot's threat list.
 Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss);
 
 // High King Maulgar

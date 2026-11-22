@@ -113,7 +113,6 @@ inline constexpr float HAZARD_SEARCH_MARGIN = 2.0f;
 // bot just out of reach.
 inline constexpr float MELEE_RANGE_INSET = 1.0f;
 
-// Null unless the boss is in progress.
 Unit* GetHyjalBoss(Player* bot, HyjalBosses boss);
 bool GetMeleeHazardManeuverStep(
     Player* bot, Unit* boss, std::vector<Position> const& hazards, float hazardRadius,
@@ -126,8 +125,8 @@ bool GetRangedRingStep(
 
 // Rage Winterchill
 
-// 20y radius + 1.95y max player CombatReach (1.5y increased by 30% during Bloodlust). Range should
-// not be increased by CombatReach, but the range of persistent ground-based AoEs is bugged in AC.
+// 2 yd radius + 1.95 yd max player CombatReach (1.5 yd * 1.3 during Bloodlust). Range should not
+// be increased by CombatReach, but the range of persistent ground-based AoEs is bugged in AC.
 inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
 // Out to this distance, movement is controlled only by the avoidance action.
 inline constexpr float DEATH_AND_DECAY_CONTROL_RADIUS =
@@ -143,13 +142,13 @@ bool IsNearDeathAndDecay(PlayerbotAI* botAI, float radius);
 bool IsInDeathAndDecay(PlayerbotAI* botAI);
 
 // Anetheron
-// Towering Infernal's CombatReach is 4y
+// Towering Infernal's CombatReach is 4 yd
 
 inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 // Longer than the hazard interval because this is a creature grid search.
 inline constexpr uint32 INFERNAL_CACHE_INTERVAL = 200;
-// A landing Infernal stuns everybody within 10y for 2s (31302) and then burns everything within
-// 10y of itself for as long as it lives with Immolation (31304 triggering 31303).
+// A landing Infernal stuns everybody within 10 yd for 2s (31302) and then burns everything within
+// 10 yd of itself for as long as it lives with Immolation (31304 triggering 31303).
 inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;
 inline constexpr float INFERNAL_ESCAPE_DISTANCE = INFERNAL_DANGER_RADIUS + 2.0f;
 // Past this, ranged stay on the boss rather than switching to the Infernal. Arbitrary, but near
@@ -181,7 +180,7 @@ Player* GetInfernalTank(Player* bot);
 // Kaz'rogal
 // CombatReach is 7.875 yards
 
-// War Stomp is 12y + up to 1.95y CombatReach.
+// War Stomp is 12 yd + up to 1.95 yd CombatReach.
 inline constexpr float KAZROGAL_RANGED_ARC_RADIUS = 15.0f;
 // For keeping extra distance during the pull to avoid War Stomp.
 inline constexpr float KAZROGAL_RANGED_ARC_APPROACH_RADIUS = 25.0f;
@@ -202,7 +201,7 @@ inline constexpr uint32 MARK_REJOIN_MANA = 4000;
 // Life Tap is instead forced to emergency+ priority at the below level, and the requirement for
 // a minimum health threshold (which applies to the class strategies) is removed.
 inline constexpr uint32 MARK_LIFE_TAP_MANA = 5000;
-// The radius of the Mark of Kaz'rogal explosion (31463) is 15y, with a 1y buffer added.
+// The radius of the Mark of Kaz'rogal explosion (31463) is 15 yd, with a 1 yd buffer added.
 inline constexpr float MARK_ESCAPE_DISTANCE = 16.0f;
 
 // Near the gate, so the raid can get started immediately to beat the soft enrage due to Marks.
@@ -217,14 +216,14 @@ bool HasMarkOfKazrogal(Player* bot);
 // CombatReach is 8.8 yards
 // Doomguard CombatReach is 3.75 yards
 
-// 15y radius + 1.95y max player CombatReach. Like for D&D, the addition of CombatReach to the
+// 15 yd radius + 1.95 yd max player CombatReach. Like for D&D, the addition of CombatReach to the
 // range is due to an AC bug.
 inline constexpr float RAIN_OF_FIRE_RADIUS = 17.0f;
 // Out to this distance, movement is controlled only by the avoidance action.
 inline constexpr float RAIN_OF_FIRE_CONTROL_RADIUS = RAIN_OF_FIRE_RADIUS + HAZARD_CONTROL_MARGIN;
 inline constexpr float RAIN_OF_FIRE_SEARCH_RADIUS =
     RAIN_OF_FIRE_CONTROL_RADIUS + HAZARD_SEARCH_MARGIN;
-// Cleave chains from Azgalor's victim to up to 4 more players within 12y inside his frontal arc.
+// Cleave chains from Azgalor's victim to up to 4 more players within 12 yd inside his frontal arc.
 inline constexpr float CLEAVE_CHAIN_RADIUS = 12.0f;
 inline constexpr float CLEAVE_DANGER_ARC = 200.0f * static_cast<float>(M_PI) / 180.0f;
 
@@ -263,7 +262,7 @@ struct AirBurstData
 
 inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
 // The actual damaging radius of Doomfire (31495), which is a 1s periodic that drops a
-// Doomfire (31943) pool, which has a persistent area aura of 6y (plus 1.95y max CombatReach).
+// Doomfire (31943) pool, which has a persistent area aura of 6 yd (plus 1.95 yd max CombatReach).
 inline constexpr float DOOMFIRE_BURN_RADIUS = 8.0f;
 // How far from Doomfires will avoidance place the bot.
 inline constexpr float DOOMFIRE_DANGER_RADIUS = DOOMFIRE_BURN_RADIUS + 2.0f;
@@ -272,7 +271,7 @@ inline constexpr float DOOMFIRE_CONTROL_RADIUS = DOOMFIRE_DANGER_RADIUS + 2.0f;
 // The maximum distance away from the bot at which a Doomfire affects the escape direction.
 inline constexpr float DOOMFIRE_FIELD_RADIUS = 18.0f;
 inline constexpr float DOOMFIRE_SEARCH_RADIUS =
-    DOOMFIRE_FIELD_RADIUS + DOOMFIRE_DANGER_RADIUS + HAZARD_SEARCH_MARGIN; // 30y
+    DOOMFIRE_FIELD_RADIUS + DOOMFIRE_DANGER_RADIUS + HAZARD_SEARCH_MARGIN; // 30 yd
 // General spread to prevent clumping due to the risk of Air Burst.
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 

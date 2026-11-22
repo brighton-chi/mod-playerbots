@@ -169,8 +169,8 @@ enum class SscBosses : uint32
     DATA_LADY_VASHJ                 = 5,
 };
 
-// Null unless the boss is in progress. Karathress, being a council encounter, gets the bosses from
-// a grid search (see GetKarathressCouncilMember), while others read the bot's threat list.
+// Karathress, being a council encounter, finds the bosses from a grid search (see
+// GetKarathressCouncilMember), while others read the bot's threat list.
 Unit* GetSscBoss(Player* bot, SscBosses boss);
 
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
