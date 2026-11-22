@@ -8,9 +8,12 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "TKKaelthasBossAI.h"
+#include "ThreatHelpers.h"
+#include <algorithm>
 #include <limits>
 #include <list>
 #include <mutex>
+#include <string_view>
 #include <unordered_map>
 
 using namespace EncounterHelpers;
@@ -18,36 +21,95 @@ using namespace EncounterHelpers;
 namespace TkHelpers
 {
 
+// Shared
+
 namespace
 {
 
 std::mutex tkStateMutex;
 std::unordered_map<uint32, TkInstanceState> tkStates;
 
+constexpr std::string_view BossName(TkBosses boss)
+{
+    switch (boss)
+    {
+        case TkBosses::DATA_ALAR:
+            return "al'ar";
+        case TkBosses::DATA_VOID_REAVER:
+            return "void reaver";
+        case TkBosses::DATA_HIGH_ASTROMANCER_SOLARIAN:
+            return "high astromancer solarian";
+        case TkBosses::DATA_KAELTHAS_SUNSTRIDER:
+            return "kael'thas sunstrider";
+        default:
+            return {};
+    }
 }
 
-// Shared
+} // end anonymous namespace (Shared)
 
-std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry)
+Unit* GetTkBoss(Player* bot, TkBosses boss)
 {
-    Unit* lowest = nullptr;
-    Unit* highest = nullptr;
+    if (!IsBossInProgress(bot, TK_MAP_ID, Id(boss)))
+        return nullptr;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    for (ObjectGuid const targetGuid : AI_VALUE(GuidVector, "attackers"))
+    return FindThreatTarget(bot, BossName(boss));
+}
+
+GuidVector FindTkAddGuids(Player* bot)
+{
+    std::vector<uint32> const entries = {
+        Id(TkNpcs::NPC_EMBER_OF_ALAR),
+        Id(TkNpcs::NPC_SOLARIUM_PRIEST),
+        Id(TkNpcs::NPC_SOLARIUM_AGENT),
+        Id(TkNpcs::NPC_PHOENIX),
+    };
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(creatures, entries, TK_ADD_SEARCH_RADIUS);
+
+    GuidVector guids;
+    guids.reserve(creatures.size());
+    for (Creature* creature : creatures)
     {
-        Unit* unit = botAI->GetUnit(targetGuid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-        {
-            if (!lowest || unit->GetGUID().GetRawValue() < lowest->GetGUID().GetRawValue())
-                lowest = unit;
-
-            if (!highest || unit->GetGUID().GetRawValue() > highest->GetGUID().GetRawValue())
-                highest = unit;
-        }
+        if (creature && creature->IsAlive())
+            guids.push_back(creature->GetGUID());
     }
 
-    return {lowest, highest};
+    std::sort(guids.begin(), guids.end(), [](ObjectGuid const& first, ObjectGuid const& second)
+    {
+        return first.GetCounter() < second.GetCounter();
+    });
+
+    return guids;
+}
+
+std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("tk adds")->RefGet();
+
+    std::vector<Unit*> adds;
+    for (ObjectGuid const& guid : guids)
+    {
+        if (guid.GetEntry() != Id(npc))
+            continue;
+
+        Unit* add = botAI->GetUnit(guid);
+        if (add && add->IsAlive() && add->IsInWorld())
+            adds.push_back(add);
+    }
+
+    return adds;
+}
+
+std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, TkNpcs npc)
+{
+    std::vector<Unit*> const adds = GetTkAdds(botAI, npc);
+    if (adds.empty())
+        return {nullptr, nullptr};
+
+    return {adds.front(), adds.back()};
 }
 
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
@@ -375,21 +437,14 @@ bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
     }
 
     Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    if (IsAdvisorActive(context->GetValue<Unit*>("find target", "lord sanguinar")->Get()))
+    if (IsAdvisorActive(FindThreatTarget(bot, "lord sanguinar")))
         return !PlayerbotAI::IsMainTank(bot);
 
-    if (IsAdvisorActive(
-        context->GetValue<Unit*>("find target", "grand astromancer capernian")->Get()))
-    {
+    if (IsAdvisorActive(FindThreatTarget(bot, "grand astromancer capernian")))
         return !IsCapernianTank(bot);
-    }
 
-    if (IsAdvisorActive(
-        context->GetValue<Unit*>("find target", "master engineer telonicus")->Get()))
-    {
+    if (IsAdvisorActive(FindThreatTarget(bot, "master engineer telonicus")))
         return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
-    }
 
     return false;
 }
@@ -546,6 +601,22 @@ Creature* GetPhoenixEgg(Player* bot)
 {
     constexpr float searchRadius = 75.0f;
     return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius);
+}
+
+// When it "dies" and reverts to an egg, the Phoenix becomes invisible but remains alive on top of
+// the egg with 1 HP. The aura check is the most consistent as flags (like NON_ATTACKABLE) are not
+// changed until 2s after Rebirth.
+std::vector<Unit*> GetActivePhoenixes(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> phoenixes = GetTkAdds(botAI, TkNpcs::NPC_PHOENIX);
+    phoenixes.erase(
+        std::remove_if(phoenixes.begin(), phoenixes.end(), [](Unit* phoenix)
+        {
+            return phoenix->HasAura(Id(TkSpells::SPELL_EMBER_BLAST));
+        }),
+        phoenixes.end());
+
+    return phoenixes;
 }
 
 // Shared encounter state

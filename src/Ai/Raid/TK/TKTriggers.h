@@ -17,17 +17,22 @@
 class TempestKeepEncounterTrigger : public Trigger
 {
 public:
-    TempestKeepEncounterTrigger(PlayerbotAI* botAI, std::string const name)
-        : Trigger(botAI, name) {}
+    TempestKeepEncounterTrigger(
+        PlayerbotAI* botAI, std::string const name, TkHelpers::TkBosses boss)
+        : Trigger(botAI, name), _boss(boss) {}
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, TkHelpers::TK_MAP_ID) &&
-            IsActiveInEncounter();
+        return EncounterHelpers::IsBossInProgress(
+            bot, TkHelpers::TK_MAP_ID, TkHelpers::Id(_boss)) && IsActiveInEncounter();
     }
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
+    Unit* GetEncounterBoss() { return TkHelpers::GetTkBoss(bot, _boss); }
+
+private:
+    TkHelpers::TkBosses const _boss;
 };
 
 class TempestKeepNoEncounterInProgressTrigger : public Trigger
@@ -71,7 +76,9 @@ class AlarHunterShouldMisdirectTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar hunter should misdirect") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar hunter should misdirect",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -81,7 +88,9 @@ class AlarFliesBetweenPlatformsTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarFliesBetweenPlatformsTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar flies between platforms") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar flies between platforms",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -91,7 +100,9 @@ class AlarEmbersShouldBeTankedTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarEmbersShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar embers should be tanked") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar embers should be tanked",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -101,7 +112,9 @@ class AlarShouldAssignNonTankTargetTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarShouldAssignNonTankTargetTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar should assign non-tank target") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar should assign non-tank target",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -111,7 +124,9 @@ class AlarIncomingFlameQuillsTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarIncomingFlameQuillsTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar incoming flame quills") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar incoming flame quills",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -121,7 +136,9 @@ class AlarRisingFromTheAshesTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarRisingFromTheAshesTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar rising from the ashes") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar rising from the ashes",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -131,7 +148,9 @@ class AlarInPhase2Trigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarInPhase2Trigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar in phase 2") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar in phase 2",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -141,7 +160,9 @@ class AlarShouldManagePhaseTrackerTrigger : public TempestKeepEncounterTrigger
 {
 public:
     AlarShouldManagePhaseTrackerTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "al'ar should manage phase tracker") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "al'ar should manage phase tracker",
+            TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -153,7 +174,9 @@ class VoidReaverShouldBeTankedTrigger : public TempestKeepEncounterTrigger
 {
 public:
     VoidReaverShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "void reaver should be tanked") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "void reaver should be tanked",
+            TkHelpers::TkBosses::DATA_VOID_REAVER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -163,7 +186,9 @@ class VoidReaverKnockAwayPullsAggroToNonTanksTrigger : public TempestKeepEncount
 {
 public:
     VoidReaverKnockAwayPullsAggroToNonTanksTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "void reaver knock away pulls aggro to non-tanks") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "void reaver knock away pulls aggro to non-tanks",
+            TkHelpers::TkBosses::DATA_VOID_REAVER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -173,7 +198,9 @@ class VoidReaverRangedShouldStandBackTrigger : public TempestKeepEncounterTrigge
 {
 public:
     VoidReaverRangedShouldStandBackTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "void reaver ranged should stand back") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "void reaver ranged should stand back",
+            TkHelpers::TkBosses::DATA_VOID_REAVER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -183,7 +210,9 @@ class VoidReaverArcaneOrbIsIncomingTrigger : public TempestKeepEncounterTrigger
 {
 public:
     VoidReaverArcaneOrbIsIncomingTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "void reaver arcane orb is incoming") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "void reaver arcane orb is incoming",
+            TkHelpers::TkBosses::DATA_VOID_REAVER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -195,7 +224,9 @@ class HighAstromancerSolarianShouldBeTankedTrigger : public TempestKeepEncounter
 {
 public:
     HighAstromancerSolarianShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "high astromancer solarian should be tanked") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "high astromancer solarian should be tanked",
+            TkHelpers::TkBosses::DATA_HIGH_ASTROMANCER_SOLARIAN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -206,7 +237,8 @@ class HighAstromancerSolarianWrathOfTheAstromancerTrigger : public TempestKeepEn
 public:
     HighAstromancerSolarianWrathOfTheAstromancerTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "high astromancer solarian wrath of the astromancer") {}
+            botAI, "high astromancer solarian wrath of the astromancer",
+            TkHelpers::TkBosses::DATA_HIGH_ASTROMANCER_SOLARIAN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -217,7 +249,8 @@ class HighAstromancerSolarianSolariumPriestsSpawnedTrigger : public TempestKeepE
 public:
     HighAstromancerSolarianSolariumPriestsSpawnedTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "high astromancer solarian solarium priests spawned") {}
+            botAI, "high astromancer solarian solarium priests spawned",
+            TkHelpers::TkBosses::DATA_HIGH_ASTROMANCER_SOLARIAN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -229,7 +262,9 @@ class KaelthasSunstriderChasedByThaladredTrigger : public TempestKeepEncounterTr
 {
 public:
     KaelthasSunstriderChasedByThaladredTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider chased by thaladred") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider chased by thaladred",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -240,7 +275,8 @@ class KaelthasSunstriderHunterShouldMisdirectAdvisorsTrigger : public TempestKee
 public:
     KaelthasSunstriderHunterShouldMisdirectAdvisorsTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider hunter should misdirect advisors") {}
+            botAI, "kael'thas sunstrider hunter should misdirect advisors",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -252,7 +288,8 @@ class KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger
 public:
     KaelthasSunstriderSanguinarOrTelonicusShouldBeTankedTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider sanguinar or telonicus should be tanked") {}
+            botAI, "kael'thas sunstrider sanguinar or telonicus should be tanked",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -263,7 +300,8 @@ class KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger : public Tempest
 public:
     KaelthasSunstriderCapernianShouldBeTankedByWarlockTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider capernian should be tanked by warlock") {}
+            botAI, "kael'thas sunstrider capernian should be tanked by warlock",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -274,7 +312,8 @@ class KaelthasSunstriderShouldStandBackFromCapernianTrigger : public TempestKeep
 public:
     KaelthasSunstriderShouldStandBackFromCapernianTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider should stand back from capernian") {}
+            botAI, "kael'thas sunstrider should stand back from capernian",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -285,7 +324,8 @@ class KaelthasSunstriderShouldHoldPhase3PositionsTrigger : public TempestKeepEnc
 public:
     KaelthasSunstriderShouldHoldPhase3PositionsTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider should hold phase 3 positions") {}
+            botAI, "kael'thas sunstrider should hold phase 3 positions",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -296,7 +336,8 @@ class KaelthasSunstriderShouldAssignAdvisorDpsPriorityTrigger : public TempestKe
 public:
     KaelthasSunstriderShouldAssignAdvisorDpsPriorityTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider should assign advisor dps priority") {}
+            botAI, "kael'thas sunstrider should assign advisor dps priority",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -307,7 +348,8 @@ class KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger : public TempestKeepE
 public:
     KaelthasSunstriderShouldManageAdvisorDpsTimerTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider should manage advisor dps timer") {}
+            botAI, "kael'thas sunstrider should manage advisor dps timer",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -317,7 +359,9 @@ class KaelthasSunstriderLegendaryWeaponsAreAliveTrigger : public TempestKeepEnco
 {
 public:
     KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider legendary weapons are alive") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider legendary weapons are alive",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -328,7 +372,8 @@ class KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger : public TempestKeepEn
 public:
     KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider legendary axe casts whirlwind") {}
+            botAI, "kael'thas sunstrider legendary axe casts whirlwind",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -338,7 +383,9 @@ class KaelthasSunstriderLegendaryWeaponsAreDeadTrigger : public TempestKeepEncou
 {
 public:
     KaelthasSunstriderLegendaryWeaponsAreDeadTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider legendary weapons are dead") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider legendary weapons are dead",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -349,7 +396,8 @@ class KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger : public TempestKeepE
 public:
     KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider legendary weapons are equipped") {}
+            botAI, "kael'thas sunstrider legendary weapons are equipped",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -367,7 +415,9 @@ class KaelthasSunstriderHasEnteredTheFightTrigger : public TempestKeepEncounterT
 {
 public:
     KaelthasSunstriderHasEnteredTheFightTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider has entered the fight") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider has entered the fight",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -378,7 +428,8 @@ class KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger : public TempestKeep
 public:
     KaelthasSunstriderShouldAssignFinalPhaseTargetTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-              botAI, "kael'thas sunstrider should assign final phase target") {}
+            botAI, "kael'thas sunstrider should assign final phase target",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -389,7 +440,8 @@ class KaelthasSunstriderRaidMemberIsMindControlledTrigger : public TempestKeepEn
 public:
     KaelthasSunstriderRaidMemberIsMindControlledTrigger(PlayerbotAI* botAI)
         : TempestKeepEncounterTrigger(
-            botAI, "kael'thas sunstrider raid member is mind controlled") {}
+            botAI, "kael'thas sunstrider raid member is mind controlled",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -399,7 +451,9 @@ class KaelthasSunstriderInGravityLapsePhaseTrigger : public TempestKeepEncounter
 {
 public:
     KaelthasSunstriderInGravityLapsePhaseTrigger(PlayerbotAI* botAI)
-        : TempestKeepEncounterTrigger(botAI, "kael'thas sunstrider in gravity lapse phase") {}
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider in gravity lapse phase",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:
     bool IsActiveInEncounter() override;

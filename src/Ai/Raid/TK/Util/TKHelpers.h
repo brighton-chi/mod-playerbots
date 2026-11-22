@@ -33,6 +33,15 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// Boss ids from the_eye.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class TkBosses : uint32
+{
+    DATA_ALAR                       = 0,
+    DATA_VOID_REAVER                = 1,
+    DATA_HIGH_ASTROMANCER_SOLARIAN  = 2,
+    DATA_KAELTHAS_SUNSTRIDER        = 3,
+};
+
 enum class TkSpells : uint32
 {
     // Crimson Hand Centurion
@@ -76,6 +85,7 @@ enum class TkNpcs : uint32
 
     // High Astromancer Solarian
     NPC_SOLARIUM_PRIEST             = 18806,
+    NPC_SOLARIUM_AGENT              = 18925,
 
     // Kael'thas Sunstrider
     NPC_KAELTHAS_SUNSTRIDER         = 19622,
@@ -114,8 +124,16 @@ enum class TkItems : uint32
 
 inline constexpr uint32 TK_MAP_ID = 550;
 inline constexpr uint32 TK_CACHE_INTERVAL_MS = 200;
+// Al'ar's platforms are up to 121 yd apart; 125 yd also reaches across Kael's room.
+inline constexpr float TK_ADD_SEARCH_RADIUS = 125.0f;
 
-std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, uint32 entry);
+Unit* GetTkBoss(Player* bot, TkBosses boss);
+// Living Embers of Al'ar, Solarium Priests and Agents, and Phoenixes, oldest first.
+GuidVector FindTkAddGuids(Player* bot);
+// Living adds of one entry, oldest first, read through the "tk adds" value.
+std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc);
+// The oldest and newest living adds of one entry (the same unit if only one is up).
+std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, TkNpcs npc);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
 // Trash
@@ -213,7 +231,7 @@ struct ArcaneOrbData
 
 inline constexpr uint32 ARCANE_ORB_DURATION_MS = 7000;
 inline constexpr float ARCANE_ORB_HAZARD_RADIUS = 20.0f;
-inline constexpr float ARCANE_ORB_SAFE_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 2.0f;
+inline constexpr float ARCANE_ORB_CLEARANCE = ARCANE_ORB_HAZARD_RADIUS + 2.0f;
 inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 10.0f;
 
 // Center of the room
@@ -241,7 +259,6 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-inline constexpr uint32 KAELTHAS_DB_GUID = 158218;
 // 125 yards is about the exact distance from Kael to the entrances to his room.
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 ADVISOR_DPS_HOLD_NOT_STARTED = 0;
@@ -298,6 +315,7 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);
 Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius);
 Creature* GetPhoenixEgg(Player* bot);
+std::vector<Unit*> GetActivePhoenixes(PlayerbotAI* botAI);
 
 // Shared encounter state
 

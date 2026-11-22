@@ -33,6 +33,16 @@ protected:
     GuidVector Calculate() override { return TkHelpers::FindLegendaryWeaponGuids(bot); }
 };
 
+class TKAddsValue : public CalculatedValue<GuidVector>
+{
+public:
+    TKAddsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(botAI, "tk adds", TkHelpers::TK_CACHE_INTERVAL_MS) {}
+
+protected:
+    GuidVector Calculate() override { return TkHelpers::FindTkAddGuids(bot); }
+};
+
 class RaidTempestKeepValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -40,6 +50,7 @@ public:
     {
         creators["tk flame patches"] = &RaidTempestKeepValueContext::tk_flame_patches;
         creators["tk legendary weapons"] = &RaidTempestKeepValueContext::tk_legendary_weapons;
+        creators["tk adds"] = &RaidTempestKeepValueContext::tk_adds;
     }
 
 private:
@@ -50,6 +61,10 @@ private:
     static UntypedValue* tk_legendary_weapons(PlayerbotAI* botAI)
     {
         return new TKLegendaryWeaponsValue(botAI);
+    }
+    static UntypedValue* tk_adds(PlayerbotAI* botAI)
+    {
+        return new TKAddsValue(botAI);
     }
 };
 
