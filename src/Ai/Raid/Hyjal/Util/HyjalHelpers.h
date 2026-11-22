@@ -73,6 +73,7 @@ enum class HyjalNpcs : uint32
 
     // Azgalor
     NPC_AZGALOR           = 17842,
+    NPC_LESSER_DOOMGUARD  = 17864,
 
     // Archimonde
     NPC_ARCHIMONDE        = 17968,
@@ -89,6 +90,17 @@ struct BlockedArc
 // Shared
 
 inline constexpr uint32 HYJAL_MAP_ID = 534;
+
+// DungeonEncounter.dbc encounterIndex, map 534
+enum class HyjalBosses : uint32
+{
+    DATA_RAGE_WINTERCHILL           = 0,
+    DATA_ANETHERON                  = 1,
+    DATA_KAZROGAL                   = 2,
+    DATA_AZGALOR                    = 3,
+    DATA_ARCHIMONDE                 = 4,
+};
+
 // The interval matches the default Playerbots.ReactDelay.
 inline constexpr uint32 HAZARD_CACHE_INTERVAL = 100;
 // The additional distance beyond a hazard's edge in which movement is still suppressed by a
@@ -101,6 +113,8 @@ inline constexpr float HAZARD_SEARCH_MARGIN = 2.0f;
 // bot just out of reach.
 inline constexpr float MELEE_RANGE_INSET = 1.0f;
 
+// Null unless the boss is in progress.
+Unit* GetHyjalBoss(Player* bot, HyjalBosses boss);
 bool GetMeleeHazardManeuverStep(
     Player* bot, Unit* boss, std::vector<Position> const& hazards, float hazardRadius,
     std::vector<BlockedArc> const& extraBlocked, float& stepX, float& stepY, float& stepZ,
@@ -218,6 +232,10 @@ inline constexpr float CLEAVE_DANGER_ARC = 200.0f * static_cast<float>(M_PI) / 1
 inline Position const AZGALOR_TANK_POSITION      = { 5494.594f, -2747.069f, 1487.800f };
 // On top of Thrall's starting position, in order to get Thrall to aggro as soon as he is hit.
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
+// Doomguards spawn where Doomed players die, and Doomed bots go to the Doomguard position, about
+// 50 yd from Azgalor's tank position; 100 yd provides a buffer.
+inline constexpr float DOOMGUARD_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 DOOMGUARD_CACHE_INTERVAL = 200;
 
 bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y);
 // Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time.
@@ -230,6 +248,10 @@ bool IsDoomed(Player* bot);
 // tank takes over.
 bool IsDoomguardTank(Player* bot);
 bool AnyGroupMemberHasDoom(Player* bot);
+// Every living Lesser Doomguard, oldest first, read through the "hyjal lesser doomguards" value.
+GuidVector FindLesserDoomguardGuids(Player* bot);
+// The oldest living Lesser Doomguard, so every bot picks the same one.
+Unit* GetLesserDoomguard(PlayerbotAI* botAI);
 
 // Archimonde
 

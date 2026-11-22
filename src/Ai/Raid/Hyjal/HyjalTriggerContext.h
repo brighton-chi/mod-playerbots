@@ -143,12 +143,14 @@ private:
     static Trigger* rage_winterchill_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new HyjalHunterShouldMisdirectTrigger(
-            botAI, "rage winterchill hunter should misdirect", "rage winterchill");
+            botAI, "rage winterchill hunter should misdirect",
+            HyjalHelpers::HyjalBosses::DATA_RAGE_WINTERCHILL);
     }
     static Trigger* rage_winterchill_should_be_tanked(PlayerbotAI* botAI)
     {
         return new HyjalBossShouldBeTankedTrigger(
-            botAI, "rage winterchill should be tanked", "rage winterchill", 0.0f, false);
+            botAI, "rage winterchill should be tanked",
+            HyjalHelpers::HyjalBosses::DATA_RAGE_WINTERCHILL, 0.0f, false);
     }
     static Trigger* rage_winterchill_ranged_should_spread(PlayerbotAI* botAI)
     {
@@ -171,7 +173,8 @@ private:
     static Trigger* anetheron_should_be_tanked(PlayerbotAI* botAI)
     {
         return new HyjalBossShouldBeTankedTrigger(
-            botAI, "anetheron should be tanked", "anetheron");
+            botAI, "anetheron should be tanked",
+            HyjalHelpers::HyjalBosses::DATA_ANETHERON);
     }
     static Trigger* anetheron_ranged_should_spread(PlayerbotAI* botAI)
     {
@@ -202,12 +205,14 @@ private:
     static Trigger* kazrogal_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new HyjalHunterShouldMisdirectTrigger(
-            botAI, "kaz'rogal hunter should misdirect", "kaz'rogal");
+            botAI, "kaz'rogal hunter should misdirect",
+            HyjalHelpers::HyjalBosses::DATA_KAZROGAL);
     }
     static Trigger* kazrogal_should_be_tanked(PlayerbotAI* botAI)
     {
         return new HyjalBossShouldBeTankedTrigger(
-            botAI, "kaz'rogal should be tanked", "kaz'rogal");
+            botAI, "kaz'rogal should be tanked",
+            HyjalHelpers::HyjalBosses::DATA_KAZROGAL);
     }
     static Trigger* kazrogal_can_split_malevolent_cleave_damage(PlayerbotAI* botAI)
     {
@@ -242,12 +247,14 @@ private:
     static Trigger* azgalor_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new HyjalHunterShouldMisdirectTrigger(
-            botAI, "azgalor hunter should misdirect", "azgalor");
+            botAI, "azgalor hunter should misdirect",
+            HyjalHelpers::HyjalBosses::DATA_AZGALOR);
     }
     static Trigger* azgalor_should_be_tanked(PlayerbotAI* botAI)
     {
         return new HyjalBossShouldBeTankedTrigger(
-            botAI, "azgalor should be tanked", "azgalor");
+            botAI, "azgalor should be tanked",
+            HyjalHelpers::HyjalBosses::DATA_AZGALOR);
     }
     static Trigger* azgalor_ranged_should_spread(PlayerbotAI* botAI)
     {
@@ -278,12 +285,14 @@ private:
     static Trigger* archimonde_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new HyjalHunterShouldMisdirectTrigger(
-            botAI, "archimonde hunter should misdirect", "archimonde");
+            botAI, "archimonde hunter should misdirect",
+            HyjalHelpers::HyjalBosses::DATA_ARCHIMONDE);
     }
     static Trigger* archimonde_should_be_tanked(PlayerbotAI* botAI)
     {
         return new HyjalBossShouldBeTankedTrigger(
-            botAI, "archimonde should be tanked", "archimonde",
+            botAI, "archimonde should be tanked",
+            HyjalHelpers::HyjalBosses::DATA_ARCHIMONDE,
             EncounterHelpers::BOSS_ENGAGED_HEALTH_PCT, false);
     }
     static Trigger* archimonde_shaman_should_protect_against_fear(PlayerbotAI* botAI)

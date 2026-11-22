@@ -9,6 +9,7 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "HyjalHelpers.h"
 #include "MovementActions.h"
 #include "Position.h"
 #include <string>
@@ -27,12 +28,12 @@ class HyjalMisdirectBossToMainTankAction : public Action
 {
 public:
     HyjalMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, HyjalHelpers::HyjalBosses boss)
+        : Action(botAI, name), _boss(boss) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    HyjalHelpers::HyjalBosses const _boss;
 };
 
 // For all five bosses. _bailBelowHealthPct is the tank's hp, below which it stops moving the boss.
@@ -40,14 +41,14 @@ class HyjalMainTankPositionBossAction : public AttackAction
 {
 public:
     HyjalMainTankPositionBossAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
+        PlayerbotAI* botAI, std::string const& name, HyjalHelpers::HyjalBosses boss,
         Position const& position, float bailBelowHealthPct = 0.0f)
-        : AttackAction(botAI, name), _bossName(bossName), _position(position),
+        : AttackAction(botAI, name), _boss(boss), _position(position),
           _bailBelowHealthPct(bailBelowHealthPct) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    HyjalHelpers::HyjalBosses const _boss;
     Position const _position;
     float const _bailBelowHealthPct;
 };

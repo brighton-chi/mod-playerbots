@@ -25,8 +25,19 @@ protected:
     GuidVector Calculate() override { return HyjalHelpers::FindInfernalGuids(bot); }
 };
 
-// A latch so the gap between MARK_DANGER_MANA and MARK_REJOIN_MANA does not have bots running
-// back and forth to/from the group.
+class HyjalLesserDoomguardsValue : public CalculatedValue<GuidVector>
+{
+public:
+    HyjalLesserDoomguardsValue(PlayerbotAI* botAI)
+        : CalculatedValue<GuidVector>(
+              botAI, "hyjal lesser doomguards", HyjalHelpers::DOOMGUARD_CACHE_INTERVAL) {}
+
+protected:
+    GuidVector Calculate() override { return HyjalHelpers::FindLesserDoomguardGuids(bot); }
+};
+
+// A latch so the gap between MARK_DANGER_MANA and MARK_REJOIN_MANA does not make bots run back and
+// forth to/from the group.
 class KazrogalBelowManaThresholdValue : public ManualSetValue<bool>
 {
 public:
@@ -60,6 +71,7 @@ public:
     RaidHyjalValueContext()
     {
         creators["hyjal infernals"] = &RaidHyjalValueContext::hyjal_infernals;
+        creators["hyjal lesser doomguards"] = &RaidHyjalValueContext::hyjal_lesser_doomguards;
         creators["hyjal death and decay"] = &RaidHyjalValueContext::hyjal_death_and_decay;
         creators["hyjal rain of fire"] = &RaidHyjalValueContext::hyjal_rain_of_fire;
         creators["hyjal doomfire trail"] = &RaidHyjalValueContext::hyjal_doomfire_trail;
@@ -71,6 +83,10 @@ private:
     static UntypedValue* hyjal_infernals(PlayerbotAI* botAI)
     {
         return new HyjalInfernalsValue(botAI);
+    }
+    static UntypedValue* hyjal_lesser_doomguards(PlayerbotAI* botAI)
+    {
+        return new HyjalLesserDoomguardsValue(botAI);
     }
     static UntypedValue* kazrogal_below_mana_threshold(PlayerbotAI* botAI)
     {

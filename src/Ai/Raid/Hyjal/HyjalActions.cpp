@@ -50,7 +50,7 @@ bool HyjalResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool HyjalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetHyjalBoss(bot, _boss);
     if (!boss)
         return false;
 
@@ -69,7 +69,7 @@ bool HyjalMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
 bool HyjalMainTankPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetHyjalBoss(bot, _boss);
     if (!boss)
         return false;
 
@@ -142,7 +142,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 // the hazard and waits it out.
 bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*event*/)
 {
-    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+    Unit* winterchill = GetHyjalBoss(bot, HyjalBosses::DATA_RAGE_WINTERCHILL);
     if (!winterchill)
         return false;
 
@@ -168,7 +168,7 @@ bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*eve
 
 bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
 {
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    Unit* anetheron = GetHyjalBoss(bot, HyjalBosses::DATA_ANETHERON);
     if (!anetheron)
         return false;
 
@@ -233,7 +233,7 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
 // starts the bot clear of the immolation aura the Infernal carries afterwards
 bool AnetheronMoveAwayFromInfernoTargetAction::Execute(Event /*event*/)
 {
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    Unit* anetheron = GetHyjalBoss(bot, HyjalBosses::DATA_ANETHERON);
     if (!anetheron)
         return false;
 
@@ -295,7 +295,7 @@ bool AnetheronGetOutOfImmolationAction::Execute(Event /*event*/)
 // Melee stay on Anetheron throughout. Ranged attack Infernals if they are reasonably nearby.
 bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
+    Unit* anetheron = GetHyjalBoss(bot, HyjalBosses::DATA_ANETHERON);
     if (!anetheron)
         return false;
 
@@ -346,7 +346,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
     size_t const count = rangedMembers.size();
     size_t const botIndex = std::distance(rangedMembers.begin(), findIt);
 
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    Unit* kazrogal = GetHyjalBoss(bot, HyjalBosses::DATA_KAZROGAL);
     if (!kazrogal)
         return false;
 
@@ -388,7 +388,7 @@ bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
 
     // Away from whoever is nearest. This combination of away from Kaz'rogal and nearest player
     // gets the bots a distance away from the boss before spreading sideways.
-    Unit* kazrogal = AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    Unit* kazrogal = GetHyjalBoss(bot, HyjalBosses::DATA_KAZROGAL);
     if (kazrogal && nearestPlayer->GetExactDist2d(kazrogal) > bot->GetExactDist2d(kazrogal))
         return MoveAway(kazrogal, step);
 
@@ -430,7 +430,7 @@ bool KazrogalWarlockManageManaAction::Execute(Event /*event*/)
 
 bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 {
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    Unit* azgalor = GetHyjalBoss(bot, HyjalBosses::DATA_AZGALOR);
     if (!azgalor)
         return false;
 
@@ -443,7 +443,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
         return true;
     }
 
-    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    Unit* doomguard = GetLesserDoomguard(botAI);
     constexpr float safeDistFromDoomguard = 10.0f; // War Stomp is 10 yards center-to-center
 
     if (doomguard && bot->GetExactDist2d(doomguard) < safeDistFromDoomguard)
@@ -463,7 +463,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 // active at a time, and escape cannot take the bot into Azgalor's frontal arc due to the Cleave.
 bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
 {
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    Unit* azgalor = GetHyjalBoss(bot, HyjalBosses::DATA_AZGALOR);
     if (!azgalor)
         return false;
 
@@ -527,7 +527,7 @@ bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
     Position const& position = AZGALOR_DOOMGUARD_POSITION;
     constexpr float arrivalDist = 3.0f;
 
-    Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+    Unit* doomguard = GetLesserDoomguard(botAI);
     if (doomguard)
     {
         if (AI_VALUE(Unit*, "current target") != doomguard)
@@ -559,7 +559,7 @@ bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
 // to get to the Doomguard or just wasting time).
 bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
 {
-    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    Unit* azgalor = GetHyjalBoss(bot, HyjalBosses::DATA_AZGALOR);
     if (!azgalor)
         return false;
 
@@ -574,7 +574,7 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
     else
     {
         constexpr float doomguardEngageDist = 70.0f;
-        Unit* doomguard = AI_VALUE2(Unit*, "find target", "lesser doomguard");
+        Unit* doomguard = GetLesserDoomguard(botAI);
         if (doomguard && bot->GetExactDist2d(doomguard) < doomguardEngageDist)
             target = doomguard;
         else
@@ -600,7 +600,7 @@ bool ArchimondeSetTremorTotemAction::Execute(Event /*event*/)
 // when nobody is left in melee range. Thus, the avoidance is to get away from the tank.
 bool ArchimondeKeepAirBurstAwayFromTankAction::Execute(Event /*event*/)
 {
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    Unit* archimonde = GetHyjalBoss(bot, HyjalBosses::DATA_ARCHIMONDE);
     if (!archimonde)
         return false;
 
@@ -714,7 +714,7 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         moveDist = norm;
     }
 
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    Unit* archimonde = GetHyjalBoss(bot, HyjalBosses::DATA_ARCHIMONDE);
     if (!archimonde)
         return false;
 

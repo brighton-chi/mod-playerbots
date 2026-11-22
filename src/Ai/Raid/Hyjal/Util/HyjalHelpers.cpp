@@ -7,12 +7,14 @@
 #include "HyjalHelpers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <list>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 
@@ -206,9 +208,36 @@ std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, RangedGroups co
     return {index, vec.size()};
 }
 
+constexpr std::string_view BossName(HyjalBosses boss)
+{
+    switch (boss)
+    {
+        case HyjalBosses::DATA_RAGE_WINTERCHILL:
+            return "rage winterchill";
+        case HyjalBosses::DATA_ANETHERON:
+            return "anetheron";
+        case HyjalBosses::DATA_KAZROGAL:
+            return "kaz'rogal";
+        case HyjalBosses::DATA_AZGALOR:
+            return "azgalor";
+        case HyjalBosses::DATA_ARCHIMONDE:
+            return "archimonde";
+        default:
+            return {};
+    }
+}
+
 } // end anonymous namespace
 
 // Shared
+
+Unit* GetHyjalBoss(Player* bot, HyjalBosses boss)
+{
+    if (!IsBossInProgress(bot, HYJAL_MAP_ID, Id(boss)))
+        return nullptr;
+
+    return FindThreatTarget(bot, BossName(boss));
+}
 
 bool GetMeleeHazardManeuverStep(
     Player* bot, Unit* boss, std::vector<Position> const& hazards, float hazardRadius,
@@ -618,6 +647,42 @@ bool AnyGroupMemberHasDoom(Player* bot)
     }
 
     return false;
+}
+
+GuidVector FindLesserDoomguardGuids(Player* bot)
+{
+    std::list<Creature*> doomguards;
+    bot->GetCreatureListWithEntryInGrid(
+        doomguards, Id(HyjalNpcs::NPC_LESSER_DOOMGUARD), DOOMGUARD_SEARCH_RADIUS);
+
+    GuidVector guids;
+    guids.reserve(doomguards.size());
+    for (Creature* doomguard : doomguards)
+    {
+        if (doomguard && doomguard->IsAlive())
+            guids.push_back(doomguard->GetGUID());
+    }
+
+    std::sort(guids.begin(), guids.end(), [](ObjectGuid const& first, ObjectGuid const& second)
+    {
+        return first.GetCounter() < second.GetCounter();
+    });
+
+    return guids;
+}
+
+Unit* GetLesserDoomguard(PlayerbotAI* botAI)
+{
+    GuidVector const& guids =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("hyjal lesser doomguards")->RefGet();
+    for (ObjectGuid const& guid : guids)
+    {
+        Unit* doomguard = botAI->GetUnit(guid);
+        if (doomguard && doomguard->IsAlive() && doomguard->IsInWorld())
+            return doomguard;
+    }
+
+    return nullptr;
 }
 
 // Archimonde

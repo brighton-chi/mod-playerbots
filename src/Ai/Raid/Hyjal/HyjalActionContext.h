@@ -145,12 +145,14 @@ private:
     static Action* rage_winterchill_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new HyjalMisdirectBossToMainTankAction(
-            botAI, "rage winterchill misdirect boss to main tank", "rage winterchill");
+            botAI, "rage winterchill misdirect boss to main tank",
+            HyjalHelpers::HyjalBosses::DATA_RAGE_WINTERCHILL);
     }
     static Action* rage_winterchill_main_tank_position_boss(PlayerbotAI* botAI)
     {
         return new HyjalMainTankPositionBossAction(
-            botAI, "rage winterchill main tank position boss", "rage winterchill",
+            botAI, "rage winterchill main tank position boss",
+            HyjalHelpers::HyjalBosses::DATA_RAGE_WINTERCHILL,
             HyjalHelpers::WINTERCHILL_TANK_POSITION);
     }
     static Action* rage_winterchill_spread_ranged_in_circle(PlayerbotAI* botAI)
@@ -174,7 +176,8 @@ private:
     static Action* anetheron_main_tank_position_boss(PlayerbotAI* botAI)
     {
         return new HyjalMainTankPositionBossAction(
-            botAI, "anetheron main tank position boss", "anetheron",
+            botAI, "anetheron main tank position boss",
+            HyjalHelpers::HyjalBosses::DATA_ANETHERON,
             HyjalHelpers::ANETHERON_TANK_POSITION);
     }
     static Action* anetheron_spread_ranged_in_circle(PlayerbotAI* botAI)
@@ -206,12 +209,14 @@ private:
     static Action* kazrogal_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new HyjalMisdirectBossToMainTankAction(
-            botAI, "kaz'rogal misdirect boss to main tank", "kaz'rogal");
+            botAI, "kaz'rogal misdirect boss to main tank",
+            HyjalHelpers::HyjalBosses::DATA_KAZROGAL);
     }
     static Action* kazrogal_main_tank_position_boss(PlayerbotAI* botAI)
     {
         return new HyjalMainTankPositionBossAction(
-            botAI, "kaz'rogal main tank position boss", "kaz'rogal",
+            botAI, "kaz'rogal main tank position boss",
+            HyjalHelpers::HyjalBosses::DATA_KAZROGAL,
             HyjalHelpers::KAZROGAL_TANK_POSITION);
     }
     static Action* kazrogal_assist_tanks_move_in_front(PlayerbotAI* botAI)
@@ -243,12 +248,14 @@ private:
     static Action* azgalor_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new HyjalMisdirectBossToMainTankAction(
-            botAI, "azgalor misdirect boss to main tank", "azgalor");
+            botAI, "azgalor misdirect boss to main tank",
+            HyjalHelpers::HyjalBosses::DATA_AZGALOR);
     }
     static Action* azgalor_main_tank_position_boss(PlayerbotAI* botAI)
     {
         return new HyjalMainTankPositionBossAction(
-            botAI, "azgalor main tank position boss", "azgalor",
+            botAI, "azgalor main tank position boss",
+            HyjalHelpers::HyjalBosses::DATA_AZGALOR,
             HyjalHelpers::AZGALOR_TANK_POSITION, 60.0f);
     }
     static Action* azgalor_disperse_ranged(PlayerbotAI* botAI)
@@ -280,12 +287,14 @@ private:
     static Action* archimonde_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new HyjalMisdirectBossToMainTankAction(
-            botAI, "archimonde misdirect boss to main tank", "archimonde");
+            botAI, "archimonde misdirect boss to main tank",
+            HyjalHelpers::HyjalBosses::DATA_ARCHIMONDE);
     }
     static Action* archimonde_move_boss_to_initial_position(PlayerbotAI* botAI)
     {
         return new HyjalMainTankPositionBossAction(
-            botAI, "archimonde move boss to initial position", "archimonde",
+            botAI, "archimonde move boss to initial position",
+            HyjalHelpers::HyjalBosses::DATA_ARCHIMONDE,
             HyjalHelpers::ARCHIMONDE_INITIAL_POSITION, 60.0f);
     }
     static Action* archimonde_set_tremor_totem(PlayerbotAI* botAI)
