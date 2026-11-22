@@ -125,16 +125,18 @@ private:
     static Action* akilzon_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new ZulAmanMisdirectBossToMainTankAction(
-            botAI, "akil'zon misdirect boss to main tank", "akil'zon");
+            botAI, "akil'zon misdirect boss to main tank", ZaHelpers::ZaBosses::DATA_AKILZON);
     }
     static Action* akilzon_tanks_position_boss(PlayerbotAI* botAI)
     {
         return new ZulAmanTanksPositionBossAction(
-            botAI, "akil'zon tanks position boss", "akil'zon", ZaHelpers::AKILZON_TANK_POSITION);
+            botAI, "akil'zon tanks position boss",
+            ZaHelpers::ZaBosses::DATA_AKILZON, ZaHelpers::AKILZON_TANK_POSITION);
     }
     static Action* akilzon_spread_ranged(PlayerbotAI* botAI)
     {
-        return new ZulAmanSpreadRangedAction(botAI, "akil'zon spread ranged", 13.0f);
+        return new ZulAmanSpreadRangedAction(
+            botAI, "akil'zon spread ranged", AKILZON_RANGED_SPREAD_DISTANCE);
     }
     static Action* akilzon_move_to_eye_of_the_storm(PlayerbotAI* botAI)
     {
@@ -149,7 +151,7 @@ private:
     static Action* nalorakk_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new ZulAmanMisdirectBossToMainTankAction(
-            botAI, "nalorakk misdirect boss to main tank", "nalorakk");
+            botAI, "nalorakk misdirect boss to main tank", ZaHelpers::ZaBosses::DATA_NALORAKK);
     }
     static Action* nalorakk_tanks_position_boss(PlayerbotAI* botAI)
     {
@@ -157,20 +159,21 @@ private:
     }
     static Action* nalorakk_spread_ranged(PlayerbotAI* botAI)
     {
-        return new ZulAmanSpreadRangedAction(botAI, "nalorakk spread ranged", 11.0f);
+        return new ZulAmanSpreadRangedAction(
+            botAI, "nalorakk spread ranged", NALORAKK_RANGED_SPREAD_DISTANCE);
     }
 
     // Jan'alai <Dragonhawk Avatar>
     static Action* janalai_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new ZulAmanMisdirectBossToMainTankAction(
-            botAI, "jan'alai misdirect boss to main tank", "jan'alai");
+            botAI, "jan'alai misdirect boss to main tank", ZaHelpers::ZaBosses::DATA_JANALAI);
     }
     static Action* janalai_tanks_position_boss(PlayerbotAI* botAI)
     {
         return new ZulAmanTanksPositionBossAction(
-            botAI, "jan'alai tanks position boss", "jan'alai",
-            ZaHelpers::JANALAI_TANK_POSITION);
+            botAI, "jan'alai tanks position boss",
+            ZaHelpers::ZaBosses::DATA_JANALAI, ZaHelpers::JANALAI_TANK_POSITION);
     }
     static Action* janalai_spread_ranged_in_circle(PlayerbotAI* botAI)
     {
@@ -189,12 +192,13 @@ private:
     static Action* halazzi_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new ZulAmanMisdirectBossToMainTankAction(
-            botAI, "halazzi misdirect boss to main tank", "halazzi");
+            botAI, "halazzi misdirect boss to main tank", ZaHelpers::ZaBosses::DATA_HALAZZI);
     }
     static Action* halazzi_main_tank_position_boss(PlayerbotAI* botAI)
     {
         return new ZulAmanTanksPositionBossAction(
-            botAI, "halazzi main tank position boss", "halazzi", ZaHelpers::HALAZZI_TANK_POSITION);
+            botAI, "halazzi main tank position boss",
+            ZaHelpers::ZaBosses::DATA_HALAZZI, ZaHelpers::HALAZZI_TANK_POSITION);
     }
     static Action* halazzi_first_assist_tank_attack_spirit_lynx(PlayerbotAI* botAI)
     {
@@ -209,7 +213,8 @@ private:
     static Action* hex_lord_malacrass_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new ZulAmanMisdirectBossToMainTankAction(
-            botAI, "hex lord malacrass misdirect boss to main tank", "hex lord malacrass");
+            botAI, "hex lord malacrass misdirect boss to main tank",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS);
     }
     static Action* hex_lord_malacrass_assign_dps_priority(PlayerbotAI* botAI)
     {
@@ -218,7 +223,8 @@ private:
     static Action* hex_lord_malacrass_run_away_from_whirlwind(PlayerbotAI* botAI)
     {
         return new ZulAmanRunAwayFromWhirlwindAction(
-            botAI, "hex lord malacrass run away from whirlwind", "hex lord malacrass");
+            botAI, "hex lord malacrass run away from whirlwind",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS);
     }
     static Action* hex_lord_malacrass_move_away_from_freezing_trap(PlayerbotAI* botAI)
     {
@@ -229,21 +235,23 @@ private:
     static Action* zuljin_misdirect_boss_to_main_tank(PlayerbotAI* botAI)
     {
         return new ZulAmanMisdirectBossToMainTankAction(
-            botAI, "zul'jin misdirect boss to main tank", "zul'jin");
+            botAI, "zul'jin misdirect boss to main tank", ZaHelpers::ZaBosses::DATA_ZULJIN);
     }
     static Action* zuljin_tanks_position_boss(PlayerbotAI* botAI)
     {
         return new ZulAmanTanksPositionBossAction(
-            botAI, "zul'jin tanks position boss", "zul'jin", ZaHelpers::ZULJIN_TANK_POSITION);
+            botAI, "zul'jin tanks position boss",
+            ZaHelpers::ZaBosses::DATA_ZULJIN, ZaHelpers::ZULJIN_TANK_POSITION);
     }
     static Action* zuljin_spread_ranged(PlayerbotAI* botAI)
     {
-        return new ZulAmanSpreadRangedAction(botAI, "zul'jin spread ranged", 6.0f);
+        return new ZulAmanSpreadRangedAction(
+            botAI, "zul'jin spread ranged", ZULJIN_DRAGONHAWK_RANGED_SPREAD_DISTANCE);
     }
     static Action* zuljin_run_away_from_whirlwind(PlayerbotAI* botAI)
     {
         return new ZulAmanRunAwayFromWhirlwindAction(
-            botAI, "zul'jin run away from whirlwind", "zul'jin");
+            botAI, "zul'jin run away from whirlwind", ZaHelpers::ZaBosses::DATA_ZULJIN);
     }
     static Action* zuljin_mass_dispel_creeping_paralysis(PlayerbotAI* botAI)
     {

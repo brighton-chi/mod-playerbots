@@ -17,10 +17,10 @@
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "ThreatManager.h"
 #include "WarriorActions.h"
 #include "ZAActions.h"
 #include "ZAHelpers.h"
+#include <utility>
 
 using namespace ZaHelpers;
 using namespace EncounterHelpers;
@@ -46,24 +46,15 @@ bool IsHazardousMovement(Action* action)
         dynamic_cast<CastDisengageAction*>(action);
 }
 
-bool IsZulAmanBoss(uint32 entry)
+// The boss in progress, with null for the unit if the bot can't find it.
+std::pair<Unit*, ZaBosses> GetZulAmanBoss(Player* bot)
 {
-    return entry == Id(ZaNpcs::NPC_AKILZON) || entry == Id(ZaNpcs::NPC_NALORAKK) ||
-        entry == Id(ZaNpcs::NPC_JANALAI) || entry == Id(ZaNpcs::NPC_HALAZZI) ||
-        entry == Id(ZaNpcs::NPC_HALAZZI_TROLL) || entry == Id(ZaNpcs::NPC_HEX_LORD_MALACRASS) ||
-        entry == Id(ZaNpcs::NPC_ZULJIN);
-}
+    std::optional<uint32> const bossId = GetBossInProgress(bot, ZA_MAP_ID);
+    if (!bossId)
+        return { nullptr, ZaBosses::DATA_AKILZON };
 
-Unit* GetZulAmanBoss(Player* bot)
-{
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
-    {
-        Unit* unit = ref->GetOwner();
-        if (unit && IsZulAmanBoss(unit->GetEntry()))
-            return unit;
-    }
-
-    return nullptr;
+    ZaBosses const boss = static_cast<ZaBosses>(*bossId);
+    return { GetZaBoss(bot, boss), boss };
 }
 
 }
@@ -78,11 +69,10 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    Unit* boss = GetZulAmanBoss(bot);
-    if (!boss)
-        return 1.0f;
-
-    if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+    // If the boss cannot be found but the encounter is in progress, it is probably because the bot
+    // was rezzed and zone combat hasn't reapplied, so block cooldowns.
+    auto const [boss, bossKey] = GetZulAmanBoss(bot);
+    if (!boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
 
     // Further restrictions on Bloodlust for Zul'jin and Jan'alai.
@@ -96,7 +86,7 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     }
 
     // Zul'jin: hold until Phase 3 (or later).
-    if (boss->GetEntry() == Id(ZaNpcs::NPC_ZULJIN))
+    if (bossKey == ZaBosses::DATA_ZULJIN)
     {
         return (boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ||
             boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_LYNX)) ||
@@ -104,7 +94,7 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     }
 
     // Jan'alai: hold until time to burn Hatchlings (see comments to the constants in ZAHelpers.h).
-    if (boss->GetEntry() == Id(ZaNpcs::NPC_JANALAI))
+    if (bossKey == ZaBosses::DATA_JANALAI)
     {
         if (boss->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
             return 1.0f;
@@ -124,12 +114,12 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
 
     Unit* boss = nullptr;
     uint32 whirlwind = 0;
-    if (Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin"))
+    if (Unit* zuljin = GetZaBoss(bot, ZaBosses::DATA_ZULJIN))
     {
         boss = zuljin;
         whirlwind = Id(ZaSpells::SPELL_ZULJIN_WHIRLWIND);
     }
-    else if (Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
+    else if (Unit* malacrass = GetZaBoss(bot, ZaBosses::DATA_HEX_LORD_MALACRASS))
     {
         boss = malacrass;
         whirlwind = Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND);
@@ -162,15 +152,13 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     if (!isTankFace && !isTankAssist && !isTaunt)
         return 1.0f;
 
-    Unit* boss = GetZulAmanBoss(bot);
+    auto const [boss, bossKey] = GetZulAmanBoss(bot);
     if (!boss)
         return 1.0f;
 
-    uint32 const bossEntry = boss->GetEntry();
-
     // Nalorakk: A tank swap is used by form, so only the tank assigned to the current form may
     // taunt. Same as NalorakkTanksPositionBossAction: main tank gets bear, assist tank gets troll.
-    if (bossEntry == Id(ZaNpcs::NPC_NALORAKK))
+    if (bossKey == ZaBosses::DATA_NALORAKK)
     {
         if (!isTaunt)
             return 0.0f;
@@ -182,7 +170,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     }
 
     // Halazzi: The assist tank picks up the lynx so disable the main tank from taunting it.
-    if (bossEntry == Id(ZaNpcs::NPC_HALAZZI) || bossEntry == Id(ZaNpcs::NPC_HALAZZI_TROLL))
+    if (bossKey == ZaBosses::DATA_HALAZZI)
     {
         if (!isTaunt)
             return 0.0f;
@@ -198,7 +186,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     // Zul'jin: Allow tank face in Phase 5 for the tank to turn him away from the raid.
-    if (bossEntry == Id(ZaNpcs::NPC_ZULJIN))
+    if (bossKey == ZaBosses::DATA_ZULJIN)
     {
         return isTankFace &&
             !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 0.0f : 1.0f;
@@ -207,7 +195,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     // Jan'alai: Allow tank assist for the assist tank to pick up the Hatchlings. Tank face is
     // already disabled as part of ZulAmanDisableCombatFormationMoveMultiplier so the addition here
     // is just belt-and-suspenders for no cost.
-    if (bossEntry == Id(ZaNpcs::NPC_JANALAI))
+    if (bossKey == ZaBosses::DATA_JANALAI)
         return isTankFace || PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 
     // Akil'zon disables only tank face action, and that is already handled by
@@ -227,33 +215,28 @@ float ZulAmanControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
     if (!dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
         return 1.0f;
 
-    return AI_VALUE2(Unit*, "find target", "nalorakk") ||
-        AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
+    return IsBossInProgress(bot, ZA_MAP_ID, Id(ZaBosses::DATA_NALORAKK)) ||
+        IsBossInProgress(bot, ZA_MAP_ID, Id(ZaBosses::DATA_HALAZZI)) ? 0.0f : 1.0f;
 }
 
 // CombatFormationMoveAction is the action for the "disperse" command. It is also the parent class
 // for SetBehindTargetAction and TankFaceAction.
 float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    Unit* boss = GetZulAmanBoss(bot);
+    auto const [boss, bossKey] = GetZulAmanBoss(bot);
     if (!boss)
         return 1.0f;
 
-    uint32 const bossEntry = boss->GetEntry();
-    if (bossEntry == Id(ZaNpcs::NPC_ZULJIN))
+    if (bossKey == ZaBosses::DATA_ZULJIN)
         return boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
 
-    return bossEntry == Id(ZaNpcs::NPC_JANALAI) || bossEntry == Id(ZaNpcs::NPC_AKILZON) ?
-        0.0f : 1.0f;
+    return bossKey == ZaBosses::DATA_JANALAI || bossKey == ZaBosses::DATA_AKILZON ? 0.0f : 1.0f;
 }
 
 // Akil'zon <Eagle Avatar>
@@ -261,10 +244,6 @@ float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* a
 float AkilzonStayInEyeOfTheStormMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsHazardousMovement(action))
-        return 1.0f;
-
-    Unit* akilzon = AI_VALUE2(Unit*, "find target", "akil'zon");
-    if (!akilzon)
         return 1.0f;
 
     if (dynamic_cast<AkilzonMoveToEyeOfTheStormAction*>(action))
@@ -291,7 +270,7 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValueInEncounter(Action* action
     if (dynamic_cast<JanalaiAvoidFireBombsAction*>(action))
         return 1.0f;
 
-    Unit* janalai = AI_VALUE2(Unit*, "find target", "jan'alai");
+    Unit* janalai = GetEncounterBoss();
     if (!janalai)
         return 1.0f;
 
@@ -300,9 +279,6 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValueInEncounter(Action* action
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CastCrowdControlSpellAction*>(action))
         return 1.0f;
 
@@ -320,13 +296,8 @@ float HalazziDisableAutoDpsTargetingMultiplier::GetValueInEncounter(Action* acti
     if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action) &&
-        !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return AI_VALUE2(Unit*, "find target", "halazzi") ? 0.0f : 1.0f;
+    return dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Hex Lord Malacrass
@@ -334,39 +305,34 @@ float HalazziDisableAutoDpsTargetingMultiplier::GetValueInEncounter(Action* acti
 // Weirdly, Unstable Affliction is considered a magic effect, not a curse.
 float HexLordMalacrassUnstableAfflictionMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (bot->getClass() == CLASS_PRIEST)
+    switch (bot->getClass())
     {
-        if (!dynamic_cast<CastDispelMagicOnPartyAction*>(action) &&
-            !dynamic_cast<CastDispelMagicAction*>(action) &&
-            !dynamic_cast<CastMassDispelAction*>(action))
+        case CLASS_PRIEST:
         {
-            return 1.0f;
+            if (!dynamic_cast<CastDispelMagicOnPartyAction*>(action) &&
+                !dynamic_cast<CastDispelMagicAction*>(action) &&
+                !dynamic_cast<CastMassDispelAction*>(action))
+            {
+                return 1.0f;
+            }
+            break;
         }
-    }
-    else if (bot->getClass() == CLASS_PALADIN)
-    {
-        if (!dynamic_cast<CastCleanseMagicOnPartyAction*>(action) &&
-            !dynamic_cast<CastCleanseMagicAction*>(action))
+        case CLASS_PALADIN:
         {
-            return 1.0f;
+            if (!dynamic_cast<CastCleanseMagicOnPartyAction*>(action) &&
+                !dynamic_cast<CastCleanseMagicAction*>(action))
+            {
+                return 1.0f;
+            }
+            break;
         }
+        default:
+            return 1.0f;
     }
-    else
-    {
-        return 1.0f;
-    }
-
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass)
-        return 1.0f;
 
     // The party action's pick is limited by its spell's range; the plain value is not.
-    Unit* target = dynamic_cast<CurePartyMemberAction*>(action)
-                       ? action->GetTarget()
-                       : AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
+    Unit* target = dynamic_cast<CurePartyMemberAction*>(action) ?
+        action->GetTarget() : AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC);
     return target && target->HasAura(Id(ZaSpells::SPELL_UNSTABLE_AFFLICTION)) ? 0.0f : 1.0f;
 }
 
@@ -381,7 +347,7 @@ float HexLordMalacrassSpellReflectionMultiplier::GetValueInEncounter(Action* act
     if (!dynamic_cast<CastSpellAction*>(action))
         return 1.0f;
 
-    Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
+    Unit* malacrass = GetEncounterBoss();
     if (!malacrass)
         return 1.0f;
 
@@ -410,7 +376,7 @@ float ZuljinNoAttackingDuringPhaseChangeMultiplier::GetValueInEncounter(Action* 
         return 1.0f;
 
     // Above 80% is Phase 1.
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    Unit* zuljin = GetEncounterBoss();
     if (!zuljin || zuljin->GetHealthPct() > 80.0f)
         return 1.0f;
 
@@ -426,13 +392,10 @@ float ZuljinNoAttackingDuringPhaseChangeMultiplier::GetValueInEncounter(Action* 
 
 float ZuljinEagleDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<AvoidAoeAction*>(action))
         return 1.0f;
 
-    Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
+    Unit* zuljin = GetEncounterBoss();
     if (!zuljin)
         return 1.0f;
 

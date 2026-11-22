@@ -53,7 +53,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("jan'alai spread for flame breath",
         { NextAction("jan'alai spread ranged in circle", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("jan'alai is fire bombing",
+    triggers.push_back(new TriggerNode("jan'alai fire bombing",
         { NextAction("jan'alai avoid fire bombs", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("jan'alai amani'shi hatchers spawned",

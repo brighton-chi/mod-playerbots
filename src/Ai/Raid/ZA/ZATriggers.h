@@ -17,16 +17,22 @@
 class ZulAmanEncounterTrigger : public Trigger
 {
 public:
-    ZulAmanEncounterTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
+    ZulAmanEncounterTrigger(
+        PlayerbotAI* botAI, std::string const name, ZaHelpers::ZaBosses boss)
+        : Trigger(botAI, name), _boss(boss) {}
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, ZaHelpers::ZA_MAP_ID) &&
-            IsActiveInEncounter();
+        return EncounterHelpers::IsBossInProgress(
+            bot, ZaHelpers::ZA_MAP_ID, ZaHelpers::Id(_boss)) && IsActiveInEncounter();
     }
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
+    Unit* GetEncounterBoss() { return ZaHelpers::GetZaBoss(bot, _boss); }
+
+private:
+    ZaHelpers::ZaBosses const _boss;
 };
 
 // Shared
@@ -54,14 +60,11 @@ class ZulAmanHunterShouldMisdirectTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZulAmanHunterShouldMisdirectTrigger(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : ZulAmanEncounterTrigger(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, ZaHelpers::ZaBosses boss)
+        : ZulAmanEncounterTrigger(botAI, name, boss) {}
 
 protected:
     bool IsActiveInEncounter() override;
-
-private:
-    std::string const _bossName;
 };
 
 // Akil'zon <Eagle Avatar>
@@ -70,7 +73,8 @@ class AkilzonShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "akil'zon should be tanked") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "akil'zon should be tanked", ZaHelpers::ZaBosses::DATA_AKILZON) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -80,7 +84,8 @@ class AkilzonSpreadForStaticDisruptionTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonSpreadForStaticDisruptionTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "akil'zon spread for static disruption") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "akil'zon spread for static disruption", ZaHelpers::ZaBosses::DATA_AKILZON) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -90,7 +95,8 @@ class AkilzonElectricalStormIncomingTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonElectricalStormIncomingTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "akil'zon electrical storm incoming") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "akil'zon electrical storm incoming", ZaHelpers::ZaBosses::DATA_AKILZON) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -100,7 +106,8 @@ class AkilzonShouldTrackElectricalStormTrigger : public ZulAmanEncounterTrigger
 {
 public:
     AkilzonShouldTrackElectricalStormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "akil'zon should track electrical storm") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "akil'zon should track electrical storm", ZaHelpers::ZaBosses::DATA_AKILZON) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -112,7 +119,8 @@ class NalorakkBothFormsShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     NalorakkBothFormsShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "nalorakk both forms should be tanked") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "nalorakk both forms should be tanked", ZaHelpers::ZaBosses::DATA_NALORAKK) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -122,7 +130,8 @@ class NalorakkSpreadForSurgeTrigger : public ZulAmanEncounterTrigger
 {
 public:
     NalorakkSpreadForSurgeTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "nalorakk spread for surge") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "nalorakk spread for surge", ZaHelpers::ZaBosses::DATA_NALORAKK) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -134,7 +143,8 @@ class JanalaiShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "jan'alai should be tanked") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "jan'alai should be tanked", ZaHelpers::ZaBosses::DATA_JANALAI) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -144,17 +154,19 @@ class JanalaiSpreadForFlameBreathTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiSpreadForFlameBreathTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "jan'alai spread for flame breath") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "jan'alai spread for flame breath", ZaHelpers::ZaBosses::DATA_JANALAI) {}
 
 protected:
     bool IsActiveInEncounter() override;
 };
 
-class JanalaiIsFireBombingTrigger : public ZulAmanEncounterTrigger
+class JanalaiFireBombingTrigger : public ZulAmanEncounterTrigger
 {
 public:
-    JanalaiIsFireBombingTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "jan'alai is fire bombing") {}
+    JanalaiFireBombingTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(
+            botAI, "jan'alai fire bombing", ZaHelpers::ZaBosses::DATA_JANALAI) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -164,7 +176,8 @@ class JanalaiAmanishiHatchersSpawnedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     JanalaiAmanishiHatchersSpawnedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "jan'alai amani'shi hatchers spawned") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "jan'alai amani'shi hatchers spawned", ZaHelpers::ZaBosses::DATA_JANALAI) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -176,7 +189,8 @@ class HalazziShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HalazziShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "halazzi should be tanked") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "halazzi should be tanked", ZaHelpers::ZaBosses::DATA_HALAZZI) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -186,7 +200,8 @@ class HalazziSpiritLynxHasAppearedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HalazziSpiritLynxHasAppearedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "halazzi spirit lynx has appeared") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "halazzi spirit lynx has appeared", ZaHelpers::ZaBosses::DATA_HALAZZI) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -196,7 +211,8 @@ class HalazziShouldFocusDpsTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HalazziShouldFocusDpsTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "halazzi should focus dps") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "halazzi should focus dps", ZaHelpers::ZaBosses::DATA_HALAZZI) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -208,7 +224,9 @@ class HexLordMalacrassShouldPrioritizeAddsTrigger : public ZulAmanEncounterTrigg
 {
 public:
     HexLordMalacrassShouldPrioritizeAddsTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass should prioritize adds") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "hex lord malacrass should prioritize adds",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -218,7 +236,9 @@ class HexLordMalacrassChannelingWhirlwindTrigger : public ZulAmanEncounterTrigge
 {
 public:
     HexLordMalacrassChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass channeling whirlwind") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "hex lord malacrass channeling whirlwind",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -228,7 +248,9 @@ class HexLordMalacrassFreezingTrapPlacedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     HexLordMalacrassFreezingTrapPlacedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "hex lord malacrass freezing trap placed") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "hex lord malacrass freezing trap placed",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -240,7 +262,8 @@ class ZuljinShouldBeTankedTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin should be tanked") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin should be tanked", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -250,7 +273,9 @@ class ZuljinChannelingWhirlwindInTrollFormTrigger : public ZulAmanEncounterTrigg
 {
 public:
     ZuljinChannelingWhirlwindInTrollFormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin channeling whirlwind in troll form") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin channeling whirlwind in troll form",
+            ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -260,7 +285,8 @@ class ZuljinCreepingParalysisInBearFormTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinCreepingParalysisInBearFormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin creeping paralysis in bear form") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin creeping paralysis in bear form", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -270,7 +296,8 @@ class ZuljinSummoningCyclonesInEagleFormTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinSummoningCyclonesInEagleFormTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin summoning cyclones in eagle form") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin summoning cyclones in eagle form", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -280,7 +307,8 @@ class ZuljinSpreadForDragonhawkAoeTrigger : public ZulAmanEncounterTrigger
 {
 public:
     ZuljinSpreadForDragonhawkAoeTrigger(PlayerbotAI* botAI)
-        : ZulAmanEncounterTrigger(botAI, "zul'jin spread for dragonhawk aoe") {}
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin spread for dragonhawk aoe", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     bool IsActiveInEncounter() override;

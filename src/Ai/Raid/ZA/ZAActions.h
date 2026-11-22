@@ -10,6 +10,7 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "ZAHelpers.h"
 #include <string>
 
 // Shared
@@ -26,25 +27,25 @@ class ZulAmanMisdirectBossToMainTankAction : public Action
 {
 public:
     ZulAmanMisdirectBossToMainTankAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : Action(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, ZaHelpers::ZaBosses boss)
+        : Action(botAI, name), _boss(boss) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    ZaHelpers::ZaBosses const _boss;
 };
 
 class ZulAmanTanksPositionBossAction : public AttackAction
 {
 public:
     ZulAmanTanksPositionBossAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName,
+        PlayerbotAI* botAI, std::string const& name, ZaHelpers::ZaBosses boss,
         Position const& position)
-        : AttackAction(botAI, name), _bossName(bossName), _position(position) {}
+        : AttackAction(botAI, name), _boss(boss), _position(position) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    ZaHelpers::ZaBosses const _boss;
     Position const _position;
 };
 
@@ -64,12 +65,12 @@ class ZulAmanRunAwayFromWhirlwindAction : public MovementAction
 {
 public:
     ZulAmanRunAwayFromWhirlwindAction(
-        PlayerbotAI* botAI, std::string const& name, std::string const& bossName)
-        : MovementAction(botAI, name), _bossName(bossName) {}
+        PlayerbotAI* botAI, std::string const& name, ZaHelpers::ZaBosses boss)
+        : MovementAction(botAI, name), _boss(boss) {}
     bool Execute(Event event) override;
 
 private:
-    std::string const _bossName;
+    ZaHelpers::ZaBosses const _boss;
 };
 
 // Trash

@@ -8,9 +8,9 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
+#include "ThreatHelpers.h"
 #include "ZAHelpers.h"
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <iterator>
 #include <vector>
@@ -41,7 +41,7 @@ bool ZulAmanResetEncounterStatesAction::Execute(Event /*event*/)
 
 bool ZulAmanMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetZaBoss(bot, _boss);
     if (!boss)
         return false;
 
@@ -60,7 +60,7 @@ bool ZulAmanMisdirectBossToMainTankAction::Execute(Event /*event*/)
 
 bool ZulAmanTanksPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetZaBoss(bot, _boss);
     if (!boss)
         return false;
 
@@ -90,16 +90,16 @@ bool ZulAmanSpreadRangedAction::Execute(Event /*event*/)
 
 bool ZulAmanRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", _bossName);
+    Unit* boss = GetZaBoss(bot, _boss);
     if (!boss)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(boss);
-    if (currentDistance >= ZA_WHIRLWIND_SAFE_DISTANCE)
+    if (currentDistance >= ZA_WHIRLWIND_CLEARANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(boss, ZA_WHIRLWIND_SAFE_DISTANCE - currentDistance);
+    return MoveAway(boss, ZA_WHIRLWIND_CLEARANCE - currentDistance);
 }
 
 // Trash
@@ -143,7 +143,7 @@ bool AkilzonStartElectricalStormTimerAction::Execute(Event /*event*/)
 
 bool NalorakkTanksPositionBossAction::Execute(Event event)
 {
-    Unit* nalorakk = AI_VALUE2(Unit*, "find target", "nalorakk");
+    Unit* nalorakk = GetZaBoss(bot, ZaBosses::DATA_NALORAKK);
     if (!nalorakk)
         return false;
 
@@ -234,7 +234,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
     bool inDanger = false;
     for (Unit* bomb : bombs)
     {
-        if (bot->GetExactDist2d(bomb) < JANALAI_FIRE_BOMB_SAFE_DISTANCE)
+        if (bot->GetExactDist2d(bomb) < JANALAI_FIRE_BOMB_CLEARANCE)
         {
             inDanger = true;
             break;
@@ -254,7 +254,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
     float stepZ;
     if (!FindSafeStepInJanalaiZone(
             bot, bombs, JANALAI_SAFE_ZONE, JANALAI_FIRE_BOMB_SAFE_SPOT_SEARCH_RADIUS,
-            JANALAI_FIRE_BOMB_SAFE_DISTANCE, moveDist, stepX, stepY, stepZ))
+            JANALAI_FIRE_BOMB_CLEARANCE, moveDist, stepX, stepY, stepZ))
     {
         return false;
     }
@@ -278,7 +278,7 @@ bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 
 bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 {
-    if (Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
+    if (Unit* lynx = FindThreatTarget(bot, "spirit of the lynx"))
     {
         if (AI_VALUE(Unit*, "current target") != lynx)
             return Attack(lynx);
@@ -312,7 +312,7 @@ bool HalazziDpsAttackTotemAndBossAction::Execute(Event /*event*/)
     }
 
     // Target priority 2: Halazzi
-    if (Unit* halazzi = AI_VALUE2(Unit*, "find target", "halazzi"))
+    if (Unit* halazzi = GetZaBoss(bot, ZaBosses::DATA_HALAZZI))
         return AI_VALUE(Unit*, "current target") != halazzi && Attack(halazzi);
 
     // Don't attack the Lynx.
@@ -323,28 +323,18 @@ bool HalazziDpsAttackTotemAndBossAction::Execute(Event /*event*/)
 
 bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
 {
-    static constexpr std::array hexLordAdds = {
-        Id(ZaNpcs::NPC_LORD_RAADAN),
-        Id(ZaNpcs::NPC_ALYSON_ANTILLE),
-        Id(ZaNpcs::NPC_KORAGG),
-        Id(ZaNpcs::NPC_DARKHEART),
-        Id(ZaNpcs::NPC_FENSTALKER),
-        Id(ZaNpcs::NPC_GAZAKROTH),
-        Id(ZaNpcs::NPC_THURG),
-        Id(ZaNpcs::NPC_SLITHER),
-        Id(ZaNpcs::NPC_HEX_LORD_MALACRASS)
-    };
-
+    auto const& priority = HEX_LORD_MALACRASS_DPS_PRIORITY;
     Unit* priorityTarget = nullptr;
-    size_t bestRank = hexLordAdds.size();
-    for (auto const& guid : AI_VALUE(GuidVector, "possible targets no los"))
+    size_t bestRank = priority.size();
+    for (ObjectGuid const& guid : AI_VALUE_REF(GuidVector, "hex lord malacrass dps targets"))
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive())
+        if (!unit || !unit->IsAlive() || !unit->IsInWorld())
             continue;
 
-        auto const it = std::find(hexLordAdds.begin(), hexLordAdds.end(), unit->GetEntry());
-        size_t const rank = std::distance(hexLordAdds.begin(), it);
+        auto const it =
+            std::find(priority.begin(), priority.end(), static_cast<ZaNpcs>(unit->GetEntry()));
+        size_t const rank = std::distance(priority.begin(), it);
         if (rank < bestRank)
         {
             bestRank = rank;
@@ -362,11 +352,11 @@ bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(trap);
-    if (currentDistance >= ZA_FREEZING_TRAP_SAFE_DISTANCE)
+    if (currentDistance >= ZA_FREEZING_TRAP_CLEARANCE)
         return false;
 
     constexpr uint32 minInterval = 0;
-    return FleePosition(trap->GetPosition(), ZA_FREEZING_TRAP_SAFE_DISTANCE, minInterval);
+    return FleePosition(trap->GetPosition(), ZA_FREEZING_TRAP_CLEARANCE, minInterval);
 }
 
 // Zul'jin

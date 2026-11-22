@@ -10,6 +10,7 @@
 #include "EncounterHelpers.h"
 #include "Multiplier.h"
 #include "ZAHelpers.h"
+#include <optional>
 #include <string>
 
 class ZulAmanEncounterMultiplier : public Multiplier
@@ -18,14 +19,28 @@ public:
     ZulAmanEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
         : Multiplier(botAI, name) {}
 
+    ZulAmanEncounterMultiplier(
+        PlayerbotAI* botAI, std::string const name, ZaHelpers::ZaBosses boss)
+        : Multiplier(botAI, name), _boss(boss) {}
+
     float GetValue(Action* action) final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, ZaHelpers::ZA_MAP_ID) ?
-            GetValueInEncounter(action) : 1.0f;
+        bool const inProgress = _boss ?
+            EncounterHelpers::IsBossInProgress(
+                bot, ZaHelpers::ZA_MAP_ID, ZaHelpers::Id(*_boss)) :
+            EncounterHelpers::IsEncounterInProgress(bot, ZaHelpers::ZA_MAP_ID);
+        return inProgress ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
+    Unit* GetEncounterBoss()
+    {
+        return _boss ? ZaHelpers::GetZaBoss(bot, *_boss) : nullptr;
+    }
+
+private:
+    std::optional<ZaHelpers::ZaBosses> const _boss;
 };
 
 // Shared
@@ -86,7 +101,8 @@ class AkilzonStayInEyeOfTheStormMultiplier : public ZulAmanEncounterMultiplier
 {
 public:
     AkilzonStayInEyeOfTheStormMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "akil'zon stay in eye of the storm") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "akil'zon stay in eye of the storm", ZaHelpers::ZaBosses::DATA_AKILZON) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -101,7 +117,8 @@ class JanalaiStayAwayFromFireBombsMultiplier : public ZulAmanEncounterMultiplier
 {
 public:
     JanalaiStayAwayFromFireBombsMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "jan'alai stay away from fire bombs") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "jan'alai stay away from fire bombs", ZaHelpers::ZaBosses::DATA_JANALAI) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -111,7 +128,8 @@ class JanalaiDoNotCrowdControlHatchersMultiplier : public ZulAmanEncounterMultip
 {
 public:
     JanalaiDoNotCrowdControlHatchersMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "jan'alai do not crowd control hatchers") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "jan'alai do not crowd control hatchers", ZaHelpers::ZaBosses::DATA_JANALAI) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -123,7 +141,8 @@ class HalazziDisableAutoDpsTargetingMultiplier : public ZulAmanEncounterMultipli
 {
 public:
     HalazziDisableAutoDpsTargetingMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "halazzi disable auto dps targeting") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "halazzi disable auto dps targeting", ZaHelpers::ZaBosses::DATA_HALAZZI) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -135,7 +154,9 @@ class HexLordMalacrassUnstableAfflictionMultiplier : public ZulAmanEncounterMult
 {
 public:
     HexLordMalacrassUnstableAfflictionMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "hex lord malacrass unstable affliction") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "hex lord malacrass unstable affliction",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -145,7 +166,9 @@ class HexLordMalacrassSpellReflectionMultiplier : public ZulAmanEncounterMultipl
 {
 public:
     HexLordMalacrassSpellReflectionMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "hex lord malacrass spell reflection") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "hex lord malacrass spell reflection",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -155,7 +178,9 @@ class HexLordMalacrassStayAwayFromFreezingTrapMultiplier : public ZulAmanEncount
 {
 public:
     HexLordMalacrassStayAwayFromFreezingTrapMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "hex lord malacrass stay away from freezing trap") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "hex lord malacrass stay away from freezing trap",
+            ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -167,7 +192,9 @@ class ZuljinNoAttackingDuringPhaseChangeMultiplier : public ZulAmanEncounterMult
 {
 public:
     ZuljinNoAttackingDuringPhaseChangeMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "zul'jin no attacking during phase change") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "zul'jin no attacking during phase change",
+            ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -177,7 +204,8 @@ class ZuljinEagleDisableAvoidAoeMultiplier : public ZulAmanEncounterMultiplier
 {
 public:
     ZuljinEagleDisableAvoidAoeMultiplier(PlayerbotAI* botAI)
-        : ZulAmanEncounterMultiplier(botAI, "zul'jin eagle disable avoid aoe") {}
+        : ZulAmanEncounterMultiplier(
+            botAI, "zul'jin eagle disable avoid aoe", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
