@@ -28,6 +28,8 @@ using namespace EncounterHelpers;
 namespace SscHelpers
 {
 
+// Shared
+
 namespace
 {
 
@@ -65,9 +67,7 @@ constexpr std::string_view BossName(SscBosses boss)
     }
 }
 
-} // end anonymous namespace
-
-// Shared
+} // end anonymous namespace (Shared)
 
 Unit* GetSscBoss(Player* bot, SscBosses boss)
 {

@@ -18,6 +18,8 @@ using namespace EncounterHelpers;
 namespace GruulHelpers
 {
 
+// Shared
+
 namespace
 {
 

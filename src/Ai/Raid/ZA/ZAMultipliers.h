@@ -13,6 +13,7 @@
 #include <optional>
 #include <string>
 
+// Without a boss, gated on any ZA encounter in progress (for the shared multipliers).
 class ZulAmanEncounterMultiplier : public Multiplier
 {
 public:
