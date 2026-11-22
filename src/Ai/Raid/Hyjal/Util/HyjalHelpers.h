@@ -28,6 +28,16 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// Boss ids from hyjal.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class HyjalBosses : uint32
+{
+    DATA_RAGE_WINTERCHILL = 0,
+    DATA_ANETHERON        = 1,
+    DATA_KAZROGAL         = 2,
+    DATA_AZGALOR          = 3,
+    DATA_ARCHIMONDE       = 4,
+};
+
 enum class HyjalSpells : uint32
 {
     // Rage Winterchill
@@ -44,7 +54,7 @@ enum class HyjalSpells : uint32
     SPELL_DOOM                = 31347,
 
     // Archimonde
-    SPELL_DOOMFIRE_TRAIL      = 31943, // 6y persistent area aura dropped along the trail, lasts 18s
+    SPELL_DOOMFIRE_TRAIL      = 31943, // 6 yd persistent area aura along the trail, lasts 18s
     SPELL_DOOMFIRE            = 31944, // Damaging part of trail
     SPELL_DOOMFIRE_DOT        = 31969, // DoT after exiting trail
     SPELL_AIR_BURST           = 32014,
@@ -80,6 +90,8 @@ enum class HyjalNpcs : uint32
     NPC_DOOMFIRE          = 18095,
 };
 
+// Shared
+
 // A span of headings around a ring that is unavailable.
 struct BlockedArc
 {
@@ -87,22 +99,8 @@ struct BlockedArc
     float halfWidth;
 };
 
-// Shared
-
 inline constexpr uint32 HYJAL_MAP_ID = 534;
-
-// DungeonEncounter.dbc encounterIndex, map 534
-enum class HyjalBosses : uint32
-{
-    DATA_RAGE_WINTERCHILL           = 0,
-    DATA_ANETHERON                  = 1,
-    DATA_KAZROGAL                   = 2,
-    DATA_AZGALOR                    = 3,
-    DATA_ARCHIMONDE                 = 4,
-};
-
-// The interval matches the default Playerbots.ReactDelay.
-inline constexpr uint32 HAZARD_CACHE_INTERVAL = 100;
+inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 // The additional distance beyond a hazard's edge in which movement is still suppressed by a
 // multiplier relating to such hazard. Used for Winterchill D&D and Azgalor RoF.
 inline constexpr float HAZARD_CONTROL_MARGIN = 5.0f;
@@ -231,8 +229,8 @@ inline constexpr float CLEAVE_DANGER_ARC = 200.0f * static_cast<float>(M_PI) / 1
 inline Position const AZGALOR_TANK_POSITION      = { 5494.594f, -2747.069f, 1487.800f };
 // On top of Thrall's starting position, in order to get Thrall to aggro as soon as he is hit.
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
-// Doomguards spawn where Doomed players die, and Doomed bots go to the Doomguard position, about
-// 50 yd from Azgalor's tank position; 100 yd provides a buffer.
+// The Doomguard position is about 50 yd from Azgalor's tank position. 100 yd provides a buffer
+// (including for if a player tank positions differently).
 inline constexpr float DOOMGUARD_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 DOOMGUARD_CACHE_INTERVAL = 200;
 
@@ -247,7 +245,6 @@ bool IsDoomed(Player* bot);
 // tank takes over.
 bool IsDoomguardTank(Player* bot);
 bool AnyGroupMemberHasDoom(Player* bot);
-// Every living Lesser Doomguard, oldest first, read through the "hyjal lesser doomguards" value.
 GuidVector FindLesserDoomguardGuids(Player* bot);
 // The oldest living Lesser Doomguard, so every bot picks the same one.
 Unit* GetLesserDoomguard(PlayerbotAI* botAI);
@@ -260,7 +257,7 @@ struct AirBurstData
     uint32 castTime = 0;
 };
 
-inline constexpr float AIR_BURST_SAFE_DISTANCE = 15.0f;
+inline constexpr float AIR_BURST_CLEARANCE = 15.0f;
 // The actual damaging radius of Doomfire (31495), which is a 1s periodic that drops a
 // Doomfire (31943) pool, which has a persistent area aura of 6 yd (plus 1.95 yd max CombatReach).
 inline constexpr float DOOMFIRE_BURN_RADIUS = 8.0f;

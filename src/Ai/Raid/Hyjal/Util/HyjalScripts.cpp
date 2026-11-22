@@ -40,7 +40,7 @@ bool ShouldInterruptForArchimondeAirBurst(Player* bot, Unit* caster, Player* tar
         return false;
 
     float const distanceToActiveTank = bot->GetExactDist2d(activeTank);
-    return distanceToActiveTank < AIR_BURST_SAFE_DISTANCE;
+    return distanceToActiveTank < AIR_BURST_CLEARANCE;
 }
 
 } // end anonymous namespace
@@ -69,7 +69,7 @@ public:
     }
 };
 
-// Air Burst is a 2s cast that hits all players within 13y of the target.
+// Air Burst is a 2s cast that hits all players within 13 yd of the target.
 class ArchimondeAirBurstSpellListenerScript : public AllSpellScript
 {
 public:
@@ -107,7 +107,7 @@ public:
     }
 };
 
-// Doomfire's mechanic is pretty interesting. A Doomfire Spirit trigger NPC teleports up to 8y
+// Doomfire's mechanic is pretty interesting. A Doomfire Spirit trigger NPC teleports up to 8 yd
 // every 1.6s, and a Doomfire trigger NPC follows it after each teleport and drops the hazards.
 // This hook reads the Doomfire NPC since it accompanies the visual fire trail. Real players cannot
 // see the spirit so keying off of that would be a cheat.

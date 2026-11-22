@@ -616,10 +616,10 @@ bool ArchimondeKeepAirBurstAwayFromTankAction::Execute(Event /*event*/)
         return false;
 
     float const distanceToActiveTank = bot->GetExactDist2d(activeTank);
-    if (distanceToActiveTank >= AIR_BURST_SAFE_DISTANCE)
+    if (distanceToActiveTank >= AIR_BURST_CLEARANCE)
         return false;
 
-    return MoveAway(activeTank, AIR_BURST_SAFE_DISTANCE - distanceToActiveTank);
+    return MoveAway(activeTank, AIR_BURST_CLEARANCE - distanceToActiveTank);
 }
 
 bool ArchimondeSpreadRangedAction::Execute(Event /*event*/)

@@ -31,10 +31,10 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
-// DungeonEncounter.dbc encounterIndex, map 544
+// Boss id from magtheridons_lair.h, matching DungeonEncounter.dbc's encounterIndex.
 enum class MagBosses : uint32
 {
-    DATA_MAGTHERIDON        = 0,
+    DATA_MAGTHERIDON = 0,
 };
 
 enum class MagSpells : uint32
@@ -53,13 +53,13 @@ enum class MagSpells : uint32
 
 enum class MagNpcs : uint32
 {
-    NPC_HELLFIRE_CHANNELER  = 17256,
-    NPC_BURNING_ABYSSAL     = 17454,
+    NPC_HELLFIRE_CHANNELER = 17256,
+    NPC_BURNING_ABYSSAL    = 17454,
 };
 
 enum class MagObjects : uint32
 {
-    GO_BLAZE                = 181832,
+    GO_BLAZE = 181832,
 };
 
 struct CubeInfo
@@ -69,13 +69,14 @@ struct CubeInfo
 };
 
 // Magtheridon's CombatReach is 12 yards.
-inline constexpr uint32 MAG_MAP_ID                   = 544;
-inline constexpr uint32 SOUTH_CHANNELER_DB_GUID      = 90978;
-inline constexpr uint32 WEST_CHANNELER_DB_GUID       = 90979;
-inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID  = 90980;
-inline constexpr uint32 EAST_CHANNELER_DB_GUID       = 90982;
-inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID  = 90981;
-inline constexpr uint32 MAG_CACHE_INTERVAL_MS        = 200;
+inline constexpr uint32 MAG_MAP_ID = 544;
+inline constexpr uint32 MAG_CACHE_INTERVAL_MS = 200;
+
+inline constexpr uint32 SOUTH_CHANNELER_DB_GUID     = 90978;
+inline constexpr uint32 WEST_CHANNELER_DB_GUID      = 90979;
+inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID = 90980;
+inline constexpr uint32 EAST_CHANNELER_DB_GUID      = 90982;
+inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID = 90981;
 
 // Hold dps for this long after Magtheridon first becomes attackable.
 inline constexpr float MAG_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
@@ -93,7 +94,7 @@ inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
 // Quake is cast 28.3s after Magtheridon joins the fight and is repeated every 56.3-64.3s. Each
 // cast delays Blast Nova by (essentially) 7s.
 inline constexpr float QUAKE_DELAY_MS = 6999;
-// At 30% HP, Magtheridon causes the ceiling to fall on players, dealing 5,250+ damage & a 2s stun.
+// At 30% HP, Magtheridon causes the ceiling to fall on players, dealing 5,250+ damage and 2s stun.
 inline constexpr float CEILING_COLLAPSE_HP_PCT = 30.0f;
 // The ceiling collapse delays Quake and Blast Nova by 18s.
 inline constexpr uint32 CEILING_COLLAPSE_DELAY_MS = 18 * IN_MILLISECONDS;

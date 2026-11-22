@@ -12,7 +12,6 @@
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
 #include "Position.h"
-#include "SharedDefines.h"
 #include <array>
 #include <cmath>
 #include <optional>
@@ -39,6 +38,20 @@ constexpr uint32 Id(T value)
 {
     return static_cast<uint32>(value);
 }
+
+// Boss ids from black_temple.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class BtBosses : uint32
+{
+    DATA_HIGH_WARLORD_NAJENTUS = 0,
+    DATA_SUPREMUS              = 1,
+    DATA_SHADE_OF_AKAMA        = 2,
+    DATA_TERON_GOREFIEND       = 3,
+    DATA_GURTOGG_BLOODBOIL     = 4,
+    DATA_RELIQUARY_OF_SOULS    = 5,
+    DATA_MOTHER_SHAHRAZ        = 6,
+    DATA_ILLIDARI_COUNCIL      = 7,
+    DATA_ILLIDAN_STORMRAGE     = 8,
+};
 
 enum class BtSpells : uint32
 {
@@ -118,24 +131,24 @@ enum class BtSpells : uint32
     SPELL_TREE_OF_LIFE              = 33891,
 
     // Hunter
-    SPELL_FEIGN_DEATH               =  5384,
+    SPELL_FEIGN_DEATH               = 5384,
     SPELL_FROST_TRAP                = 13809,
     SPELL_FROST_TRAP_AURA           = 13810,
     SPELL_MISDIRECTION              = 34477,
     SPELL_MISDIRECTION_AURA         = 35079, // the aura on the hunter
 
     // Mage
-    SPELL_COUNTERSPELL              =  2139,
+    SPELL_COUNTERSPELL              = 2139,
     SPELL_SPELLSTEAL                = 30449,
 
     // Paladin
-    SPELL_DIVINE_SHIELD             =   642,
+    SPELL_DIVINE_SHIELD             = 642,
 
     // Priest
     SPELL_DISPERSION                = 47585,
 
     // Rogue
-    SPELL_KICK                      =  1766,
+    SPELL_KICK                      = 1766,
 
     // Shaman
     SPELL_TOTEMIC_RECALL            = 36936,
@@ -146,9 +159,9 @@ enum class BtSpells : uint32
     SPELL_SPELL_LOCK_2              = 19647,
 
     // Warrior
-    SPELL_SHIELD_BASH               =    72,
-    SPELL_BERSERKER_STANCE          =  2458,
-    SPELL_PUMMEL                    =  6552,
+    SPELL_SHIELD_BASH               = 72,
+    SPELL_BERSERKER_STANCE          = 2458,
+    SPELL_PUMMEL                    = 6552,
     SPELL_SPELL_REFLECTION          = 23920,
     SPELL_VIGILANCE                 = 50720,
 };
@@ -156,81 +169,66 @@ enum class BtSpells : uint32
 enum class BtNpcs : uint32
 {
     // Trash
-    NPC_SISTER_OF_PAIN              = 22956,
-    NPC_SISTER_OF_PLEASURE          = 22964,
-    NPC_SHADOWMOON_REAVER           = 22879,
+    NPC_SISTER_OF_PAIN            = 22956,
+    NPC_SISTER_OF_PLEASURE        = 22964,
+    NPC_SHADOWMOON_REAVER         = 22879,
 
     // Supremus
-    NPC_SUPREMUS_VOLCANO            = 23085,
+    NPC_SUPREMUS_VOLCANO          = 23085,
 
     // Shade of Akama
-    NPC_SHADE_OF_AKAMA              = 22841,
-    NPC_ASHTONGUE_CHANNELER         = 23421,
-    NPC_ASHTONGUE_SORCERER          = 23215,
+    NPC_SHADE_OF_AKAMA            = 22841,
+    NPC_ASHTONGUE_CHANNELER       = 23421,
+    NPC_ASHTONGUE_SORCERER        = 23215,
 
     // Teron Gorefiend
-    NPC_SHADOWY_CONSTRUCT           = 23111,
+    NPC_SHADOWY_CONSTRUCT         = 23111,
 
     // Gurtogg Bloodboil
-    NPC_GURTOGG_BLOODBOIL           = 22948,
+    NPC_GURTOGG_BLOODBOIL         = 22948,
 
     // Reliquary of Souls
-    NPC_ESSENCE_OF_DESIRE           = 23419,
+    NPC_ESSENCE_OF_DESIRE         = 23419,
 
     // Illidari Council
-    NPC_GATHIOS_THE_SHATTERER       = 22949,
-    NPC_HIGH_NETHERMANCER_ZEREVOR   = 22950,
-    NPC_LADY_MALANDE                = 22951,
+    NPC_GATHIOS_THE_SHATTERER     = 22949,
+    NPC_HIGH_NETHERMANCER_ZEREVOR = 22950,
+    NPC_LADY_MALANDE              = 22951,
 
     // Illidan Stormrage <The Betrayer>
-    NPC_ILLIDAN_STORMRAGE           = 22917,
-    NPC_FLAME_OF_AZZINOTH           = 22997,
-    NPC_DEMON_FIRE                  = 23069,
-    NPC_ILLIDAN_DB_TARGET           = 23070,
-    NPC_BLAZE                       = 23259,
-    NPC_FLAME_CRASH                 = 23336,
-    NPC_SHADOW_DEMON                = 23375,
-    NPC_PARASITIC_SHADOWFIEND       = 23498,
+    NPC_ILLIDAN_STORMRAGE         = 22917,
+    NPC_FLAME_OF_AZZINOTH         = 22997,
+    NPC_DEMON_FIRE                = 23069,
+    NPC_ILLIDAN_DB_TARGET         = 23070,
+    NPC_BLAZE                     = 23259,
+    NPC_FLAME_CRASH               = 23336,
+    NPC_SHADOW_DEMON              = 23375,
+    NPC_PARASITIC_SHADOWFIEND     = 23498,
 };
 
 enum class BtItems : uint32
 {
     // High Warlord Naj'entus
-    ITEM_NAJENTUS_SPINE             = 32408,
+    ITEM_NAJENTUS_SPINE = 32408,
 };
 
 enum class BtObjects : uint32
 {
     // High Warlord Naj'entus
-    GO_NAJENTUS_SPINE               = 185584,
+    GO_NAJENTUS_SPINE = 185584,
 
     // Hunter
-    GO_FROST_TRAP                   = 164639, // dropped by 13809, despawns once sprung
+    GO_FROST_TRAP     = 164639, // dropped by 13809, despawns once sprung
 };
+
+// Shared
 
 inline constexpr uint32 BT_MAP_ID = 564;
-
-// DungeonEncounter.dbc encounterIndex, map 564
-enum class BtBosses : uint32
-{
-    DATA_HIGH_WARLORD_NAJENTUS      = 0,
-    DATA_SUPREMUS                   = 1,
-    DATA_SHADE_OF_AKAMA             = 2,
-    DATA_TERON_GOREFIEND            = 3,
-    DATA_GURTOGG_BLOODBOIL          = 4,
-    DATA_RELIQUARY_OF_SOULS         = 5,
-    DATA_MOTHER_SHAHRAZ             = 6,
-    DATA_ILLIDARI_COUNCIL           = 7,
-    DATA_ILLIDAN_STORMRAGE          = 8,
-};
-
-Unit* GetBtBoss(Player* bot, BtBosses boss);
-
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
-// How close to its assigned spot a bot has to stand to count as arrived.
 inline constexpr float BT_ARRIVAL_DISTANCE = 2.0f;
 inline constexpr float SPELLSTEAL_RANGE = 30.0f;
 
+Unit* GetBtBoss(Player* bot, BtBosses boss);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 GuidVector FindAttackerGuidsWithEntry(PlayerbotAI* botAI, uint32 entry);
 uint32 GetAuraElapsedMs(Aura const* aura);

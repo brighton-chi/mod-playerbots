@@ -33,6 +33,17 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// Boss ids from serpent_shrine.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class SscBosses : uint32
+{
+    DATA_HYDROSS_THE_UNSTABLE   = 0,
+    DATA_THE_LURKER_BELOW       = 1,
+    DATA_LEOTHERAS_THE_BLIND    = 2,
+    DATA_FATHOM_LORD_KARATHRESS = 3,
+    DATA_MOROGRIM_TIDEWALKER    = 4,
+    DATA_LADY_VASHJ             = 5,
+};
+
 enum class SscSpells : uint32
 {
     // Trash
@@ -68,7 +79,7 @@ enum class SscSpells : uint32
     SPELL_CYCLONE                = 38517, // 4 yd feather fall + knockback every 1s, 5s aura
 
     // Lady Vashj <Coilfang Matron>
-    SPELL_FEAR_WARD              =  6346,
+    SPELL_FEAR_WARD              = 6346,
     SPELL_MAGIC_BARRIER          = 38112,
     SPELL_TAINTED_CORE_PARALYZE  = 38132,
     SPELL_STATIC_CHARGE          = 38280,
@@ -85,8 +96,8 @@ enum class SscSpells : uint32
     SPELL_MISDIRECTION_AURA      = 35079, // the aura on the hunter
 
     // Paladin
-    SPELL_DIVINE_SHIELD          =   642,
-    SPELL_HAND_OF_FREEDOM        =  1044,
+    SPELL_DIVINE_SHIELD          = 642,
+    SPELL_HAND_OF_FREEDOM        = 1044,
     SPELL_AVENGING_WRATH         = 31884,
 
     // Priest
@@ -96,7 +107,7 @@ enum class SscSpells : uint32
     SPELL_CLOAK_OF_SHADOWS       = 31224,
 
     // Shaman
-    SPELL_GROUNDING_TOTEM_EFFECT =  8178,
+    SPELL_GROUNDING_TOTEM_EFFECT = 8178,
 
     // Warrior
     SPELL_VIGILANCE              = 50720,
@@ -140,8 +151,8 @@ enum class SscNpcs : uint32
     NPC_TOXIC_SPOREBAT           = 22140,
 
     // Pets that PetAI keeps at spell range while they have mana to cast
-    NPC_IMP                      =   416,
-    NPC_WATER_ELEMENTAL          =   510,
+    NPC_IMP                      = 416,
+    NPC_WATER_ELEMENTAL          = 510,
     NPC_WATER_ELEMENTAL_PERM     = 37994,
 };
 
@@ -158,21 +169,9 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
-// Boss ids from the instance script (serpent_shrine.h), which follow DungeonEncounter.dbc's order.
-enum class SscBosses : uint32
-{
-    DATA_HYDROSS_THE_UNSTABLE       = 0,
-    DATA_THE_LURKER_BELOW           = 1,
-    DATA_LEOTHERAS_THE_BLIND        = 2,
-    DATA_FATHOM_LORD_KARATHRESS     = 3,
-    DATA_MOROGRIM_TIDEWALKER        = 4,
-    DATA_LADY_VASHJ                 = 5,
-};
-
 // Karathress, being a council encounter, finds the bosses from a grid search (see
 // GetKarathressCouncilMember), while others read the bot's threat list.
 Unit* GetSscBoss(Player* bot, SscBosses boss);
-
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
@@ -183,7 +182,7 @@ std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);
 
 // Trash
 
-// 25y radius + ~2y player CombatReach
+// 25 yd radius + 1.95 yd player CombatReach
 inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 27.0f;
 inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f;
 inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f;
@@ -239,16 +238,16 @@ bool HasNoMarkOfCorruption(Player* bot);
 // The Lurker Below
 
 inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
-inline constexpr float LURKER_RANGED_SAFE_DISTANCE = LURKER_WHIRL_RADIUS + 2.0f;
+inline constexpr float LURKER_RANGED_CLEARANCE = LURKER_WHIRL_RADIUS + 2.0f;
 // Melee returning to Lurker from an islet stop this far from Lurker, on the walkway.
 inline constexpr float LURKER_WALKWAY_RADIUS = 21.0f;
 // A melee bot farther than this from Lurker is out on an islet. The Ambushers' islets are
 // 45-55 yd from Lurker, and the Guardians spawn on land 25-30 yd from Lurker.
 inline constexpr float LURKER_ISLET_DISTANCE = 40.0f;
 
-// Spout: each bot runs on its own radius 20-22y from Lurker (main tank 20y), close to Lurker but
-// mostly on dry land, and spread so it looks less artificial. Bots in the 120° cone behind Lurker
-// are safe and wait out the wind-up until the spin direction is known.
+// Spout: each bot runs on its own radius 20-22 yd from Lurker (main tank 20 yd), close to Lurker
+// but mostly on dry land, and spread so it looks less artificial. Bots in the 120° cone behind
+// Lurker are safe and wait out the wind-up until the spin direction is known.
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MIN = 20.0f;
 inline constexpr float LURKER_SPOUT_RUN_RADIUS_MAX = 22.0f;
 inline constexpr float LURKER_SPOUT_RUN_ARC_HALF_WIDTH = static_cast<float>(M_PI) / 3.0f;
@@ -303,13 +302,13 @@ inline constexpr uint32 LEOTHERAS_FINAL_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
 inline constexpr float LEOTHERAS_WHIRLWIND_HAZARD_RADIUS = 10.0f;
 // Ranged stay this distance from Leo during Humanoid phase until Whirlwind begins.
-inline constexpr float LEOTHERAS_RANGED_SAFE_DISTANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
+inline constexpr float LEOTHERAS_RANGED_CLEARANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
 // While Whirlwind is channeling, all non-tanks move to this distance from Leo as he is very fast.
-inline constexpr float LEOTHERAS_WHIRLWIND_SAFE_DISTANCE =
+inline constexpr float LEOTHERAS_WHIRLWIND_CLEARANCE =
     LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 15.0f;
 inline constexpr float LEOTHERAS_RANGED_SPREAD_DISTANCE = 4.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS = 8.0f;
-inline constexpr float LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE =
+inline constexpr float LEOTHERAS_CHAOS_BLAST_CLEARANCE =
     LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
 
@@ -379,7 +378,7 @@ inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
 inline constexpr float CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS = 10.0f;
-inline constexpr float CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE =
+inline constexpr float CARIBDIS_TIDAL_SURGE_CLEARANCE =
     CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS + 2.0f;
 // Bots move toward Caribdis until she's in sight, and stop once within this distance of her.
 inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
@@ -474,7 +473,7 @@ bool IsOnVashjDais(float x, float y, float margin, float rockClearance);
 // Vashj: Static Charge, Entangle and Shock Blast
 
 inline constexpr float VASHJ_STATIC_CHARGE_HAZARD_RADIUS = 10.0f;
-inline constexpr float VASHJ_STATIC_CHARGE_SAFE_DISTANCE = VASHJ_STATIC_CHARGE_HAZARD_RADIUS + 1.0f;
+inline constexpr float VASHJ_STATIC_CHARGE_CLEARANCE = VASHJ_STATIC_CHARGE_HAZARD_RADIUS + 1.0f;
 // Vashj's Entangle has a 15 yd range, so ranged bots stay at least this far back from her.
 inline constexpr float VASHJ_PHASE_3_RANGED_DISTANCE = 15.0f;
 // A step toward Vashj to get her in sight stops here, not at RANGED_DISTANCE. Path steps end a
@@ -823,12 +822,12 @@ inline constexpr float VASHJ_CORE_LOOTER_OFFSET = 6.0f;
 // Line of sight is checked from each player's collision height, 1.21 (Gnome) to 2.64 (female
 // Tauren). Plans assume everybody is a Gnome.
 inline constexpr float VASHJ_CORE_PLAN_EYE_HEIGHT = 1.2f;
-// Upon spawn, Elites and Striders move toward Vashj and attack the first player found within 20y
-// of them. To keep bots from being donked, the goal is to keep non-tanks more than 20y away from
+// Upon spawn, Elites and Striders move toward Vashj and attack the first player found within 20 yd
+// of them. To keep bots from being donked, the goal is to keep non-tanks more than 20 yd away from
 // the lanes from spawn to Vashj.
 inline constexpr float VASHJ_CORE_SPOT_SPAWN_CLEARANCE = 22.0f;
 // The generators have display id 7265 at size 2.1. The widest point of the generator's base,
-// measured from its bounding box, is about 3.2y. I don't know the exact collision radius.
+// measured from its bounding box, is about 3.2 yd. I don't know the exact collision radius.
 inline constexpr float VASHJ_CORE_SPOT_GENERATOR_CLEARANCE = 5.0f;
 // Five players should be able to get from every Tainted Elemental spawn position to every
 // generator while following the passing rules (e.g., collision, distance from add lanes).
@@ -845,7 +844,7 @@ inline constexpr std::array VASHJ_SHIELD_GENERATOR_SPAWN_IDS = {
 };
 
 // The locations of the four triggers that spawn Elites and Striders. Each is just inside the dais
-// edge (they range from 54-56.5y from the center).
+// edge (they range from 54-56.5 yd from the center).
 inline std::array const VASHJ_ADD_SPAWN_POSITIONS = {
     Position{  43.329f, -869.731f, 41.2f },
     Position{ -22.597f, -900.382f, 41.2f },

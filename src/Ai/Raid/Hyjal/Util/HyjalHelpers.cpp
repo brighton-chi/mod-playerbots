@@ -38,8 +38,8 @@ std::vector<Position> const& GetCachedHazardPositions(PlayerbotAI* botAI, char c
 
 // The span of a ring that a circular ground hazard covers.
 bool GetHazardBlockedArc(
-    Position const& ringCenter, float ringRadius, Position const& hazard,
-    float hazardRadius, BlockedArc& arc)
+    Position const& ringCenter, float ringRadius, Position const& hazard, float hazardRadius,
+    BlockedArc& arc)
 {
     float const centerToHazard =
         hazard.GetExactDist2d(ringCenter.GetPositionX(), ringCenter.GetPositionY());

@@ -27,7 +27,7 @@ public:
         {
             Player* player = it->GetSource();
             if (!player || !player->IsAlive() || HasInnerDemon(player) ||
-                caster->GetExactDist2d(player) >= LEOTHERAS_WHIRLWIND_SAFE_DISTANCE)
+                caster->GetExactDist2d(player) >= LEOTHERAS_WHIRLWIND_CLEARANCE)
             {
                 continue;
             }

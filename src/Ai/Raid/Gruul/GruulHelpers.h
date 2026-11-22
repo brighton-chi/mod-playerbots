@@ -12,7 +12,6 @@
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
 #include "Position.h"
-#include "SharedDefines.h"
 #include <type_traits>
 #include <vector>
 
@@ -28,13 +27,18 @@ constexpr uint32 Id(T value)
     return static_cast<uint32>(value);
 }
 
+// Boss ids from gruuls_lair.h, matching DungeonEncounter.dbc's encounterIndex.
+enum class GruulBosses : uint32
+{
+    DATA_HIGH_KING_MAULGAR      = 0,
+    DATA_GRUUL_THE_DRAGONKILLER = 1,
+};
+
 enum class GruulSpells : uint32
 {
     // High King Maulgar <Lord of the Ogres>
-    SPELL_WHIRLWIND         = 33238,
-
-    // Krosh Firehand
-    SPELL_SPELL_SHIELD      = 33054,
+    SPELL_WHIRLWIND         = 33238, // Maulgar
+    SPELL_SPELL_SHIELD      = 33054, // Krosh Firehand
 
     // Hunter
     SPELL_MISDIRECTION      = 34477,
@@ -60,14 +64,9 @@ enum class GruulNpcs : uint32
     NPC_WILD_FEL_STALKER   = 18847,
 };
 
-inline constexpr uint32 GRUUL_MAP_ID = 565;
+// Shared
 
-// DungeonEncounter.dbc encounterIndex, map 565
-enum class GruulBosses : uint32
-{
-    DATA_HIGH_KING_MAULGAR          = 0,
-    DATA_GRUUL_THE_DRAGONKILLER     = 1,
-};
+inline constexpr uint32 GRUUL_MAP_ID = 565;
 
 // The ogre council members are found with a grid search (see GetMaulgarCouncilMember) and Gruul
 // with the bot's threat list.
@@ -111,8 +110,7 @@ inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = MAULGAR_WHIRLWIND_HAZAR
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
-// The ogres' tank positions and Maulgar's spawn are within 60 yd of each other; 100 yd provides a
-// buffer.
+// The ogres' tank and spawn positions are within 60 yd of each other; 100 yd covers the room.
 inline constexpr float MAULGAR_COUNCIL_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 MAULGAR_COUNCIL_CACHE_INTERVAL_MS = 200;
 
@@ -135,7 +133,6 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI);
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot);
 std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI);
 GuidVector FindMaulgarCouncilGuids(Player* bot);
-// A living ogre, or null if it is dead or Maulgar is not in progress.
 Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc);
 
 // Gruul the Dragonkiller

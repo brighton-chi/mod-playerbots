@@ -254,8 +254,8 @@ bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
     uint32 const instanceId = hydross->GetInstanceId();
     uint32 const now = getMSTime();
 
-    // Measure the phase based on the Hydross tank (measuring on the bot itself, who is the
-    // mechanic tracker, may be unreliable if the bot died and was resurrected).
+    // Measure the phase based on the Hydross tank (measuring on the bot itself, who is the mechanic
+    // tracker, may be unreliable if the bot died and was resurrected).
     Unit* victim = hydross->GetVictim();
     Player* marked = victim && victim->IsPlayer() ? victim->ToPlayer() : bot;
 
@@ -488,15 +488,15 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     if (!_hasRangedPosition)
     {
         constexpr float arcSpan = 2.0f * M_PI / 3.0f;
-        constexpr float arcCenter = 5.592f; // M<easured in game to be across from the main tank.
+        constexpr float arcCenter = 5.592f; // Measured in game to be across from the main tank.
         float angle;
         if (!GetRangedArcAngle(bot, arcCenter, arcSpan, angle))
             return false;
 
         float const targetX =
-            lurker->GetPositionX() + LURKER_RANGED_SAFE_DISTANCE * std::cos(angle);
+            lurker->GetPositionX() + LURKER_RANGED_CLEARANCE * std::cos(angle);
         float const targetY =
-            lurker->GetPositionY() + LURKER_RANGED_SAFE_DISTANCE * std::sin(angle);
+            lurker->GetPositionY() + LURKER_RANGED_CLEARANCE * std::sin(angle);
 
         _rangedPosition = Position(targetX, targetY, lurker->GetPositionZ());
         _hasRangedPosition = true;
@@ -507,11 +507,8 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(
-            bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
-    {
+    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
         return false;
-    }
 
     // Incremental movement does not work if the bot is in the water (there is no walkable height
     // and MoveTo returns false). Therefore, this block calls a path directly to the final position.
@@ -678,7 +675,7 @@ bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
     if (Creature* leotherasHumanoid = GetLeotherasHumanoidToAvoid(botAI))
     {
         if (FleePosition(
-                leotherasHumanoid->GetPosition(), LEOTHERAS_RANGED_SAFE_DISTANCE, minInterval))
+                leotherasHumanoid->GetPosition(), LEOTHERAS_RANGED_CLEARANCE, minInterval))
         {
             return true;
         }
@@ -686,7 +683,7 @@ bool LeotherasTheBlindRangedKeepDistanceAction::Execute(Event /*event*/)
 
     Unit* blastTarget = GetChaosBlastTargetToAvoid(botAI);
     return blastTarget && FleePosition(
-        blastTarget->GetPosition(), LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE, minInterval);
+        blastTarget->GetPosition(), LEOTHERAS_CHAOS_BLAST_CLEARANCE, minInterval);
 }
 
 bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
@@ -696,11 +693,11 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(leotherasHumanoid);
-    if (currentDistance >= LEOTHERAS_WHIRLWIND_SAFE_DISTANCE)
+    if (currentDistance >= LEOTHERAS_WHIRLWIND_CLEARANCE)
         return false;
 
     bot->CastStop();
-    return MoveAway(leotherasHumanoid, LEOTHERAS_WHIRLWIND_SAFE_DISTANCE - currentDistance);
+    return MoveAway(leotherasHumanoid, LEOTHERAS_WHIRLWIND_CLEARANCE - currentDistance);
 }
 
 bool LeotherasTheBlindMeleeRunFromChaosBlastAction::Execute(Event /*event*/)
@@ -717,7 +714,7 @@ bool LeotherasTheBlindMeleeRunFromChaosBlastAction::Execute(Event /*event*/)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(demonVictim);
-    return MoveAway(demonVictim, LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE - currentDistance);
+    return MoveAway(demonVictim,  - currentDistance);
 }
 
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
@@ -1042,11 +1039,8 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(
-            bot, position, arrivalDist, target, moveX, moveY, backwards))
-    {
+    if (!GetStepToPosition(bot, position, arrivalDist, target, moveX, moveY, backwards))
         return false;
-    }
 
     return MoveTo(
         SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -1197,12 +1191,12 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
         if (MarkTargetWithCross(bot, caribdis))
             return true;
 
-        if (bot->GetExactDist(caribdis) >= CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE)
+        if (bot->GetExactDist(caribdis) >= CARIBDIS_TIDAL_SURGE_CLEARANCE)
             return false;
 
         constexpr uint32 minInterval = 0;
         return FleePosition(
-            caribdis->GetPosition(), CARIBDIS_TIDAL_SURGE_SAFE_DISTANCE, minInterval);
+            caribdis->GetPosition(), CARIBDIS_TIDAL_SURGE_CLEARANCE, minInterval);
     }
 
     return (!totem || target == totem) && MarkTargetWithSkull(bot, target);
@@ -1423,8 +1417,7 @@ bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, VASHJ_PLATFORM_CENTER_POSITION, arrivalDistance,
-            vashj, moveX, moveY, backwards))
+            bot, VASHJ_PLATFORM_CENTER_POSITION, arrivalDistance, vashj, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1999,8 +1992,8 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderToHoldPosition(Unit* str
     float stepY;
     bool backwards;
     if (!GetStepToBringTankedUnitTo(
-            bot, strider, GetVashjStriderHoldPosition(*strider),
-            VASHJ_ADD_TANK_ARRIVAL_DISTANCE, stepX, stepY, backwards))
+            bot, strider, GetVashjStriderHoldPosition(*strider), VASHJ_ADD_TANK_ARRIVAL_DISTANCE,
+            stepX, stepY, backwards))
     {
         return false;
     }

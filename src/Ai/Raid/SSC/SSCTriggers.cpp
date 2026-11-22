@@ -279,7 +279,7 @@ bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
     if (HasInnerDemon(bot))
         return false;
 
-    return bot->GetExactDist2d(leotheras) < LEOTHERAS_WHIRLWIND_SAFE_DISTANCE;
+    return bot->GetExactDist2d(leotheras) < LEOTHERAS_WHIRLWIND_CLEARANCE;
 }
 
 bool LeotherasTheBlindTooManyChaosBlastStacksTrigger::IsActiveInEncounter()

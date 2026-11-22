@@ -694,7 +694,7 @@ Creature* GetLeotherasHumanoidToAvoid(PlayerbotAI* botAI)
 
     Creature* leotherasHumanoid = GetActiveLeotherasHumanoid(botAI);
     if (!leotherasHumanoid || leotherasHumanoid->GetVictim() == bot ||
-        bot->GetExactDist2d(leotherasHumanoid) >= LEOTHERAS_RANGED_SAFE_DISTANCE)
+        bot->GetExactDist2d(leotherasHumanoid) >= LEOTHERAS_RANGED_CLEARANCE)
     {
         return nullptr;
     }
@@ -709,7 +709,7 @@ Unit* GetDemonTargetToAvoid(Player* bot, Unit* demon)
 
     Unit* demonVictim = demon->GetVictim();
     if (!demonVictim || demonVictim == bot ||
-        bot->GetExactDist2d(demonVictim) >= LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE)
+        bot->GetExactDist2d(demonVictim) >= LEOTHERAS_CHAOS_BLAST_CLEARANCE)
     {
         return nullptr;
     }
@@ -729,7 +729,7 @@ Unit* GetChaosBlastTargetToAvoid(PlayerbotAI* botAI)
 
     Player* warlockTank = GetLeotherasWarlockTank(bot);
     if (warlockTank && warlockTank != bot &&
-        bot->GetExactDist2d(warlockTank) < LEOTHERAS_CHAOS_BLAST_SAFE_DISTANCE)
+        bot->GetExactDist2d(warlockTank) < LEOTHERAS_CHAOS_BLAST_CLEARANCE)
     {
         return warlockTank;
     }
@@ -1728,9 +1728,9 @@ bool IsInVashjStaticChargeReach(Player* bot, Unit* vashj)
         return false;
 
     if (HasVashjStaticCharge(bot))
-        return GetNearestPlayerInRadius(bot, VASHJ_STATIC_CHARGE_SAFE_DISTANCE);
+        return GetNearestPlayerInRadius(bot, VASHJ_STATIC_CHARGE_CLEARANCE);
 
-    return bot->GetExactDist2d(vashj->GetVictim()) < VASHJ_STATIC_CHARGE_SAFE_DISTANCE;
+    return bot->GetExactDist2d(vashj->GetVictim()) < VASHJ_STATIC_CHARGE_CLEARANCE;
 }
 
 Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj)

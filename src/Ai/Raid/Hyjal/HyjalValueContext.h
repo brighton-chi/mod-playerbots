@@ -51,7 +51,7 @@ public:
     HyjalHazardPositionsValue(
         PlayerbotAI* botAI, std::string const& name, uint32 spellId, float searchRadius)
         : CalculatedValue<std::vector<Position>>(
-              botAI, name, HyjalHelpers::HAZARD_CACHE_INTERVAL),
+              botAI, name, HyjalHelpers::HAZARD_CACHE_INTERVAL_MS),
           _spellId(spellId), _searchRadius(searchRadius) {}
 
 protected:
