@@ -29,50 +29,48 @@ bool GruulsLairClassRolesShouldBeAssignedTrigger::IsActive()
 bool HighKingMaulgarThreeOgresNeedMeleeTanksTrigger::IsActiveInEncounter()
 {
     if (IsBlindeyeTank(bot))
-        return AI_VALUE2(Unit*, "find target", "blindeye the seer");
+        return GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
 
     if (IsOlmTank(bot))
-        return AI_VALUE2(Unit*, "find target", "olm the summoner");
+        return GetMaulgarCouncilMember(bot, GruulNpcs::NPC_OLM_THE_SUMMONER);
 
-    return IsMaulgarTank(bot) && AI_VALUE2(Unit*, "find target", "high king maulgar");
+    return IsMaulgarTank(bot);
 }
 
 bool HighKingMaulgarKroshNeedsMageTankTrigger::IsActiveInEncounter()
 {
-    return IsKroshMageTank(botAI) && AI_VALUE2(Unit*, "find target", "krosh firehand");
+    return IsKroshMageTank(botAI) && GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND);
 }
 
 bool HighKingMaulgarKigglerNeedsMoonkinTankTrigger::IsActiveInEncounter()
 {
-    return IsKigglerMoonkinTank(botAI) && AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    return IsKigglerMoonkinTank(botAI) &&
+        GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED);
 }
 
 bool HighKingMaulgarShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
-    if (!AI_VALUE2(Unit*, "find target", "high king maulgar"))
-        return false;
-
     if (IsMaulgarTank(bot))
         return false;
 
     if (IsOlmTank(bot))
-        return !AI_VALUE2(Unit*, "find target", "olm the summoner");
+        return !GetMaulgarCouncilMember(bot, GruulNpcs::NPC_OLM_THE_SUMMONER);
 
     if (IsBlindeyeTank(bot))
-        return !AI_VALUE2(Unit*, "find target", "blindeye the seer");
+        return !GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
 
     if (IsKroshMageTank(botAI))
-        return !AI_VALUE2(Unit*, "find target", "krosh firehand");
+        return !GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND);
 
     if (IsKigglerMoonkinTank(botAI))
-        return !AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+        return !GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED);
 
     return true;
 }
 
 bool HighKingMaulgarChannelingWhirlwindTrigger::IsActiveInEncounter()
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* maulgar = GetEncounterBoss();
     if (!maulgar || !maulgar->HasAura(Id(GruulSpells::SPELL_WHIRLWIND)))
         return false;
 
@@ -84,7 +82,7 @@ bool HighKingMaulgarShouldStandBackFromKroshTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot) || IsKroshMageTank(botAI))
         return false;
 
-    return AI_VALUE2(Unit*, "find target", "krosh firehand");
+    return GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND);
 }
 
 bool HighKingMaulgarWildFelStalkerSpawnedTrigger::IsActiveInEncounter()
@@ -97,7 +95,7 @@ bool HighKingMaulgarHunterShouldMisdirectTrigger::IsActiveInEncounter()
     if (bot->getClass() != CLASS_HUNTER)
         return false;
 
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
     return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT;
 }
 
@@ -105,22 +103,21 @@ bool HighKingMaulgarHunterShouldMisdirectTrigger::IsActiveInEncounter()
 
 bool GruulTheDragonkillerShouldBeTankedTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    return PlayerbotAI::IsTank(bot);
 }
 
 bool GruulTheDragonkillerRangedShouldSpreadTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsRanged(bot) && AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    return PlayerbotAI::IsRanged(bot);
 }
 
 bool GruulTheDragonkillerBotInCaveInTrigger::IsActiveInEncounter()
 {
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = GetEncounterBoss();
     if (!gruul)
         return false;
 
-    // The tank holding Gruul eats it. Moving him messes up the spread and puts other bots in
-    // danger.
+    // The tank holding Gruul eats cave in. Moving him messes up the spread.
     if (gruul->GetVictim() == bot)
         return false;
 

@@ -58,17 +58,17 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
     Position position;
     if (IsMaulgarTank(bot))
     {
-        target = AI_VALUE2(Unit*, "find target", "high king maulgar");
+        target = GetGruulsLairBoss(bot, GruulBosses::DATA_HIGH_KING_MAULGAR);
         position = MAULGAR_TANK_POSITION;
     }
     else if (IsOlmTank(bot))
     {
-        target = AI_VALUE2(Unit*, "find target", "olm the summoner");
+        target = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_OLM_THE_SUMMONER);
         position = OLM_TANK_POSITION;
     }
     else if (IsBlindeyeTank(bot))
     {
-        target = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+        target = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
         position = BLINDEYE_TANK_POSITION;
     }
 
@@ -95,7 +95,7 @@ bool HighKingMaulgarMeleeTanksPositionBossesAction::Execute(Event /*event*/)
 
 bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
 {
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    Unit* krosh = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND);
     if (!krosh)
         return false;
 
@@ -154,7 +154,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh
 // The moonkin tank has no tank position, but usually Kiggler remains close to where he starts.
 bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 {
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* kiggler = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED);
     if (!kiggler)
         return false;
 
@@ -176,24 +176,24 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
     Unit* krosh = nullptr;
-    if (Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer"))
+    if (Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER))
     {
         target = blindeye;
     }
-    else if (Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner"))
+    else if (Unit* olm = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_OLM_THE_SUMMONER))
     {
         target = olm;
     }
     else if (PlayerbotAI::IsRanged(bot) &&
-        (krosh = AI_VALUE2(Unit*, "find target", "krosh firehand")))
+        (krosh = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND)))
     {
         target = krosh;
     }
-    else if (Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed"))
+    else if (Unit* kiggler = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED))
     {
         target = kiggler;
     }
-    else if (Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar"))
+    else if (Unit* maulgar = GetGruulsLairBoss(bot, GruulBosses::DATA_HIGH_KING_MAULGAR))
     {
         target = maulgar;
     }
@@ -216,7 +216,7 @@ bool HighKingMaulgarAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* maulgar = GetGruulsLairBoss(bot, GruulBosses::DATA_HIGH_KING_MAULGAR);
     if (!maulgar)
         return false;
 
@@ -230,7 +230,7 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 
 bool HighKingMaulgarBackAwayFromKroshAction::Execute(Event /*event*/)
 {
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
+    Unit* krosh = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND);
     if (!krosh)
         return false;
 
@@ -314,22 +314,22 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     Player* tank = nullptr;
     if (hunterIndex == 0)
     {
-        ogre = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+        ogre = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
         tank = GetGroupAssistTank(bot, 1);
     }
     else if (hunterIndex == 1)
     {
-        ogre = AI_VALUE2(Unit*, "find target", "olm the summoner");
+        ogre = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_OLM_THE_SUMMONER);
         tank = GetGroupAssistTank(bot, 0);
     }
     else if (hunterIndex == 2)
     {
-        ogre = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+        ogre = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED);
         tank = GetKigglerMoonkinTank(botAI);
     }
     else if (hunterIndex == 3)
     {
-        ogre = AI_VALUE2(Unit*, "find target", "krosh firehand");
+        ogre = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND);
         tank = GetKroshMageTank(botAI);
     }
 
@@ -354,7 +354,7 @@ bool HighKingMaulgarAnnounceClassRolesAction::Execute(Event /*event*/)
 
 bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
 {
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
+    Unit* gruul = GetGruulsLairBoss(bot, GruulBosses::DATA_GRUUL_THE_DRAGONKILLER);
     if (!gruul)
         return false;
 

@@ -62,6 +62,17 @@ enum class GruulNpcs : uint32
 
 inline constexpr uint32 GRUUL_MAP_ID = 565;
 
+// DungeonEncounter.dbc encounterIndex, map 565
+enum class GruulBosses : uint32
+{
+    DATA_HIGH_KING_MAULGAR          = 0,
+    DATA_GRUUL_THE_DRAGONKILLER     = 1,
+};
+
+// Null unless the boss is in progress. Maulgar comes from the council's grid search (see
+// GetMaulgarCouncilMember) and Gruul from the bot's threat list.
+Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss);
+
 // High King Maulgar
 
 // Ogre combat reaches:
@@ -100,6 +111,10 @@ inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = MAULGAR_WHIRLWIND_HAZAR
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
+// The ogres' tank positions and Maulgar's spawn are within 60 yd of each other; 100 yd provides a
+// buffer.
+inline constexpr float MAULGAR_COUNCIL_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 MAULGAR_COUNCIL_CACHE_INTERVAL_MS = 200;
 
 inline Position const MAULGAR_SPAWN_POSITION = { 145.786f, 190.979f, -11.542f };
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
@@ -119,6 +134,9 @@ Player* GetKigglerMoonkinTank(PlayerbotAI* botAI);
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI);
 GuidVector FindNearbyWildFelStalkerGuids(Player* bot);
 std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI);
+GuidVector FindMaulgarCouncilGuids(Player* bot);
+// A living ogre, or null if it is dead or Maulgar is not in progress.
+Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc);
 
 // Gruul the Dragonkiller
 

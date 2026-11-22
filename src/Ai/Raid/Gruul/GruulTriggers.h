@@ -17,16 +17,22 @@
 class GruulsLairEncounterTrigger : public Trigger
 {
 public:
-    GruulsLairEncounterTrigger(PlayerbotAI* botAI, std::string const name) : Trigger(botAI, name) {}
+    GruulsLairEncounterTrigger(
+        PlayerbotAI* botAI, std::string const name, GruulHelpers::GruulBosses boss)
+        : Trigger(botAI, name), _boss(boss) {}
 
     bool IsActive() final
     {
-        return EncounterHelpers::IsEncounterInProgress(bot, GruulHelpers::GRUUL_MAP_ID) &&
-            IsActiveInEncounter();
+        return EncounterHelpers::IsBossInProgress(
+            bot, GruulHelpers::GRUUL_MAP_ID, GruulHelpers::Id(_boss)) && IsActiveInEncounter();
     }
 
 protected:
     virtual bool IsActiveInEncounter() = 0;
+    Unit* GetEncounterBoss() { return GruulHelpers::GetGruulsLairBoss(bot, _boss); }
+
+private:
+    GruulHelpers::GruulBosses const _boss;
 };
 
 class GruulsLairNoEncounterInProgressTrigger : public Trigger
@@ -51,7 +57,9 @@ class HighKingMaulgarThreeOgresNeedMeleeTanksTrigger : public GruulsLairEncounte
 {
 public:
     HighKingMaulgarThreeOgresNeedMeleeTanksTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar three ogres need melee tanks") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar three ogres need melee tanks",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -61,7 +69,9 @@ class HighKingMaulgarKroshNeedsMageTankTrigger : public GruulsLairEncounterTrigg
 {
 public:
     HighKingMaulgarKroshNeedsMageTankTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar krosh needs mage tank") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar krosh needs mage tank",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -71,7 +81,9 @@ class HighKingMaulgarKigglerNeedsMoonkinTankTrigger : public GruulsLairEncounter
 {
 public:
     HighKingMaulgarKigglerNeedsMoonkinTankTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar kiggler needs moonkin tank") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar kiggler needs moonkin tank",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -81,7 +93,9 @@ class HighKingMaulgarShouldAssignDpsPriorityTrigger : public GruulsLairEncounter
 {
 public:
     HighKingMaulgarShouldAssignDpsPriorityTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar should assign dps priority") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar should assign dps priority",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -91,7 +105,9 @@ class HighKingMaulgarChannelingWhirlwindTrigger : public GruulsLairEncounterTrig
 {
 public:
     HighKingMaulgarChannelingWhirlwindTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar channeling whirlwind") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar channeling whirlwind",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -101,7 +117,9 @@ class HighKingMaulgarShouldStandBackFromKroshTrigger : public GruulsLairEncounte
 {
 public:
     HighKingMaulgarShouldStandBackFromKroshTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar should stand back from krosh") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar should stand back from krosh",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -111,7 +129,9 @@ class HighKingMaulgarWildFelStalkerSpawnedTrigger : public GruulsLairEncounterTr
 {
 public:
     HighKingMaulgarWildFelStalkerSpawnedTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar wild fel stalker spawned") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar wild fel stalker spawned",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -121,7 +141,9 @@ class HighKingMaulgarHunterShouldMisdirectTrigger : public GruulsLairEncounterTr
 {
 public:
     HighKingMaulgarHunterShouldMisdirectTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "high king maulgar hunter should misdirect") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar hunter should misdirect",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -133,7 +155,9 @@ class GruulTheDragonkillerShouldBeTankedTrigger : public GruulsLairEncounterTrig
 {
 public:
     GruulTheDragonkillerShouldBeTankedTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller should be tanked") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "gruul the dragonkiller should be tanked",
+            GruulHelpers::GruulBosses::DATA_GRUUL_THE_DRAGONKILLER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -143,7 +167,9 @@ class GruulTheDragonkillerRangedShouldSpreadTrigger : public GruulsLairEncounter
 {
 public:
     GruulTheDragonkillerRangedShouldSpreadTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller ranged should spread") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "gruul the dragonkiller ranged should spread",
+            GruulHelpers::GruulBosses::DATA_GRUUL_THE_DRAGONKILLER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -153,7 +179,9 @@ class GruulTheDragonkillerBotInCaveInTrigger : public GruulsLairEncounterTrigger
 {
 public:
     GruulTheDragonkillerBotInCaveInTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller bot in cave in") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "gruul the dragonkiller bot in cave in",
+            GruulHelpers::GruulBosses::DATA_GRUUL_THE_DRAGONKILLER) {}
 
 protected:
     bool IsActiveInEncounter() override;
@@ -163,7 +191,9 @@ class GruulTheDragonkillerIncomingShatterTrigger : public GruulsLairEncounterTri
 {
 public:
     GruulTheDragonkillerIncomingShatterTrigger(PlayerbotAI* botAI)
-        : GruulsLairEncounterTrigger(botAI, "gruul the dragonkiller incoming shatter") {}
+        : GruulsLairEncounterTrigger(
+            botAI, "gruul the dragonkiller incoming shatter",
+            GruulHelpers::GruulBosses::DATA_GRUUL_THE_DRAGONKILLER) {}
 
 protected:
     bool IsActiveInEncounter() override;

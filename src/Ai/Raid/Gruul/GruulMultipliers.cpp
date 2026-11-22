@@ -28,12 +28,25 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (gruul && gruul->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-        return 0.0f;
+    std::optional<uint32> const bossId = GetBossInProgress(bot, GRUUL_MAP_ID);
+    if (!bossId)
+        return 1.0f;
 
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+    switch (static_cast<GruulBosses>(*bossId))
+    {
+        case GruulBosses::DATA_HIGH_KING_MAULGAR:
+        {
+            Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
+            return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        case GruulBosses::DATA_GRUUL_THE_DRAGONKILLER:
+        {
+            Unit* gruul = GetGruulsLairBoss(bot, GruulBosses::DATA_GRUUL_THE_DRAGONKILLER);
+            return !gruul || gruul->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        default:
+            return 1.0f;
+    }
 }
 
 // High King Maulgar <Lord of the Ogres>
@@ -46,13 +59,8 @@ float HighKingMaulgarControlTankActionsMultiplier::GetValueInEncounter(Action* a
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CombatFormationMoveAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
+    return dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarRestrictTauntingMultiplier::GetValueInEncounter(Action* action)
@@ -73,13 +81,13 @@ float HighKingMaulgarRestrictTauntingMultiplier::GetValueInEncounter(Action* act
 
     // Blindeye and Olm are tanked next to each other by separate tanks; until Blindeye is dead,
     // don't use AoE threat abilities.
-    if (isAoeThreat && AI_VALUE2(Unit*, "find target", "blindeye the seer"))
+    if (isAoeThreat && GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER))
         return 0.0f;
 
     // Kiggler is the only ogre for which taunting is a problem because he is the only one that is
     // both (1) tanked by a non-traditional-tank and (2) directed to be attacked by traditional
     // tanks (the Blindeye and Olm tanks after both are down).
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
+    Unit* kiggler = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED);
     if (!kiggler)
         return 1.0f;
 
@@ -97,10 +105,7 @@ float HighKingMaulgarDisableDpsAssistMultiplier::GetValueInEncounter(Action* act
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<DpsAssistAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "high king maulgar") ? 0.0f : 1.0f;
+    return dynamic_cast<DpsAssistAction*>(action) ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
@@ -111,13 +116,13 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<HighKingMaulgarRunAwayFromWhirlwindAction*>(action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<HighKingMaulgarRunAwayFromWhirlwindAction*>(action))
-        return 1.0f;
-
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
+    Unit* maulgar = GetEncounterBoss();
     if (!maulgar || !maulgar->HasAura(Id(GruulSpells::SPELL_WHIRLWIND)))
         return 1.0f;
 
@@ -129,9 +134,6 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValueInEncounter(Action* actio
 
 float HighKingMaulgarLetMageTankStealSpellShieldMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_SHAMAN)
         return 1.0f;
 
@@ -147,9 +149,6 @@ float HighKingMaulgarLetMageTankStealSpellShieldMultiplier::GetValueInEncounter(
 
 float HighKingMaulgarControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -158,15 +157,12 @@ float HighKingMaulgarControlMisdirectionMultiplier::GetValueInEncounter(Action* 
 
     // Krosh/Kiggler will be the last to die before Maulgar.
     // When only Maulgar is left, the standard Misdirection strategy is fine.
-    return AI_VALUE2(Unit*, "find target", "krosh firehand") ||
-        AI_VALUE2(Unit*, "find target", "kiggler the crazed") ? 0.0f : 1.0f;
+    return GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND) ||
+        GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KIGGLER_THE_CRAZED) ? 0.0f : 1.0f;
 }
 
 float HighKingMaulgarControlMageTankActionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (bot->getClass() != CLASS_MAGE)
         return 1.0f;
 
@@ -177,29 +173,21 @@ float HighKingMaulgarControlMageTankActionsMultiplier::GetValueInEncounter(Actio
         return 1.0f;
     }
 
-    if (!AI_VALUE2(Unit*, "find target", "krosh firehand"))
+    if (!IsKroshMageTank(botAI))
         return 1.0f;
 
-    return GetKroshMageTank(botAI) == bot ? 0.0f : 1.0f;
+    return GetMaulgarCouncilMember(bot, GruulNpcs::NPC_KROSH_FIREHAND) ? 0.0f : 1.0f;
 }
 
 // Gruul the Dragonkiller
 
 float GruulTheDragonkillerControlTankMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (!dynamic_cast<CombatFormationMoveAction*>(action) &&
-        !dynamic_cast<AvoidAoeAction*>(action))
-    {
-        return 1.0f;
-    }
-
-    return AI_VALUE2(Unit*, "find target", "gruul the dragonkiller") ? 0.0f : 1.0f;
+    return dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action) ? 0.0f : 1.0f;
 }
 
 float GruulTheDragonkillerStaySpreadForShatterMultiplier::GetValueInEncounter(Action* action)
@@ -242,11 +230,8 @@ float GruulTheDragonkillerControlAvoidanceMultiplier::GetValueInEncounter(Action
     if (HasGroundSlam(bot))
         return 1.0f;
 
-    Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (!gruul)
-        return 1.0f;
-
-    if (gruul->GetVictim() == bot)
+    Unit* gruul = GetEncounterBoss();
+    if (!gruul || gruul->GetVictim() == bot)
         return 1.0f;
 
     return IsNearCaveIn(botAI, CAVE_IN_CONTROL_RADIUS) ? 0.0f : 1.0f;
@@ -260,8 +245,5 @@ float GruulTheDragonkillerHoldWhileSnaredMultiplier::GetValueInEncounter(Action*
     if (bot->GetSpeed(MOVE_RUN) > 0.0f)
         return 1.0f;
 
-    if (!dynamic_cast<MovementAction*>(action))
-        return 1.0f;
-
-    return AI_VALUE2(Unit*, "find target", "gruul the dragonkiller") ? 0.0f : 1.0f;
+    return dynamic_cast<MovementAction*>(action) ? 0.0f : 1.0f;
 }
