@@ -13,7 +13,6 @@
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
 #include "Position.h"
-#include "SharedDefines.h"
 #include <array>
 #include <limits>
 #include <optional>

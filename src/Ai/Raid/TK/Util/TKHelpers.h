@@ -12,7 +12,6 @@
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
 #include "Position.h"
-#include "SharedDefines.h"
 #include <array>
 #include <optional>
 #include <type_traits>

@@ -136,7 +136,7 @@ private:
     static Action* akilzon_spread_ranged(PlayerbotAI* botAI)
     {
         return new ZulAmanSpreadRangedAction(
-            botAI, "akil'zon spread ranged", AKILZON_RANGED_SPREAD_DISTANCE);
+            botAI, "akil'zon spread ranged", ZaHelpers::AKILZON_RANGED_SPREAD_DISTANCE);
     }
     static Action* akilzon_move_to_eye_of_the_storm(PlayerbotAI* botAI)
     {
@@ -160,7 +160,7 @@ private:
     static Action* nalorakk_spread_ranged(PlayerbotAI* botAI)
     {
         return new ZulAmanSpreadRangedAction(
-            botAI, "nalorakk spread ranged", NALORAKK_RANGED_SPREAD_DISTANCE);
+            botAI, "nalorakk spread ranged", ZaHelpers::NALORAKK_RANGED_SPREAD_DISTANCE);
     }
 
     // Jan'alai <Dragonhawk Avatar>
@@ -246,7 +246,7 @@ private:
     static Action* zuljin_spread_ranged(PlayerbotAI* botAI)
     {
         return new ZulAmanSpreadRangedAction(
-            botAI, "zul'jin spread ranged", ZULJIN_DRAGONHAWK_RANGED_SPREAD_DISTANCE);
+            botAI, "zul'jin spread ranged", ZaHelpers::ZULJIN_DRAGONHAWK_RANGED_SPREAD_DISTANCE);
     }
     static Action* zuljin_run_away_from_whirlwind(PlayerbotAI* botAI)
     {
