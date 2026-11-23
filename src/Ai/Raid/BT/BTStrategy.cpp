@@ -376,12 +376,12 @@ void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, GuidSet& exclusio
     if (PlayerbotAI::IsDps(bot) && (bot->getClass() == CLASS_PRIEST || PlayerbotAI::IsMelee(bot)))
         return;
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& addGuids = context->GetValue<GuidVector>("shade of akama adds")->RefGet();
+    auto const& addGuids = GetShadeOfAkamaAdds(bot);
     if (addGuids.empty())
         return;
 
-    for (auto const& attackerGuids : context->GetValue<GuidVector>("attackers")->RefGet())
+    for (auto const& attackerGuids :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->RefGet())
     {
         if (std::find(addGuids.begin(), addGuids.end(), attackerGuids) == addGuids.end())
         {
@@ -414,9 +414,11 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
     // Skip Shadowfiends with standard targeting. IllidanStormrageAssignTargetPriorityAction directs
     // melee to attack them if under 50% HP and in melee range.
-    auto const& shadowfiendGuids = botAI->GetAiObjectContext()
-        ->GetValue<GuidVector>("illidan stormrage parasitic shadowfiends")->RefGet();
-    exclusions.insert(shadowfiendGuids.begin(), shadowfiendGuids.end());
+    for (ObjectGuid const& guid : GetIllidanUnits(bot))
+    {
+        if (guid.GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND))
+            exclusions.insert(guid);
+    }
 
     if (GetIllidanPhase(illidan) != IllidanPhase::Demon)
         return;

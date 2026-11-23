@@ -314,7 +314,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    std::vector<Unit*> GetConstructs(Unit* gorefiend) const;
+    std::vector<Unit*> GetConstructs() const;
     Unit* GetLeadConstruct(Unit* gorefiend, std::vector<Unit*> const& constructs) const;
     Unit* GetLanceTarget(Unit* gorefiend, std::vector<Unit*> const& constructs) const;
 };

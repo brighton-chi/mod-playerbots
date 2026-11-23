@@ -57,19 +57,6 @@ protected:
     }
 };
 
-// Shade of Akama
-
-class ShadeOfAkamaAddsValue : public CalculatedValue<GuidVector>
-{
-public:
-    ShadeOfAkamaAddsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(
-            botAI, "shade of akama adds", BtHelpers::SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS) {}
-
-protected:
-    GuidVector Calculate() override { return BtHelpers::FindShadeOfAkamaAddGuids(bot); }
-};
-
 // Teron Gorefiend
 
 class TeronGorefiendShadowyConstructsValue : public CalculatedValue<GuidVector>
@@ -104,18 +91,6 @@ protected:
 
 // Illidan Stormrage <The Betrayer>
 
-class IllidanStormrageSpeechInProgressValue : public BoolCalculatedValue
-{
-public:
-    IllidanStormrageSpeechInProgressValue(PlayerbotAI* botAI)
-        : BoolCalculatedValue(
-            botAI, "illidan stormrage speech in progress",
-            BtHelpers::ILLIDAN_SPEECH_CACHE_INTERVAL_MS) {}
-
-protected:
-    bool Calculate() override { return BtHelpers::IsIllidanSpeechInProgress(bot); }
-};
-
 class IllidanStormrageInfectedPlayersValue : public CalculatedValue<GuidVector>
 {
 public:
@@ -143,34 +118,6 @@ protected:
     GuidVector Calculate() override { return BtHelpers::FindIllidanTrapHunterGuids(bot); }
 };
 
-class IllidanStormrageParasiticShadowfiendsValue : public CalculatedValue<GuidVector>
-{
-public:
-    IllidanStormrageParasiticShadowfiendsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(
-            botAI, "illidan stormrage parasitic shadowfiends",
-            BtHelpers::ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS) {}
-
-protected:
-    GuidVector Calculate() override { return BtHelpers::FindParasiticShadowfiendGuids(bot); }
-};
-
-class IllidanStormrageShadowDemonsValue
-    : public CalculatedValue<std::vector<BtHelpers::ShadowDemon>>
-{
-public:
-    IllidanStormrageShadowDemonsValue(PlayerbotAI* botAI)
-        : CalculatedValue<std::vector<BtHelpers::ShadowDemon>>(
-            botAI, "illidan stormrage shadow demons",
-            BtHelpers::ILLIDAN_SHADOW_DEMON_CACHE_INTERVAL_MS) {}
-
-protected:
-    std::vector<BtHelpers::ShadowDemon> Calculate() override
-    {
-        return BtHelpers::FindShadowDemons(bot);
-    }
-};
-
 class RaidBlackTempleValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
@@ -179,21 +126,14 @@ public:
         creators["sisters of pleasure"] = &RaidBlackTempleValueContext::sisters_of_pleasure;
         creators["shadowmoon reavers"] = &RaidBlackTempleValueContext::shadowmoon_reavers;
         creators["supremus hazards"] = &RaidBlackTempleValueContext::supremus_hazards;
-        creators["shade of akama adds"] = &RaidBlackTempleValueContext::shade_of_akama_adds;
         creators["teron gorefiend shadowy constructs"] =
             &RaidBlackTempleValueContext::teron_gorefiend_shadowy_constructs;
         creators["gurtogg bloodboil second tank threat"] =
             &RaidBlackTempleValueContext::gurtogg_bloodboil_second_tank_threat;
-        creators["illidan stormrage speech in progress"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_speech_in_progress;
         creators["illidan stormrage infected players"] =
             &RaidBlackTempleValueContext::illidan_stormrage_infected_players;
         creators["illidan stormrage trap hunters"] =
             &RaidBlackTempleValueContext::illidan_stormrage_trap_hunters;
-        creators["illidan stormrage parasitic shadowfiends"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_parasitic_shadowfiends;
-        creators["illidan stormrage shadow demons"] =
-            &RaidBlackTempleValueContext::illidan_stormrage_shadow_demons;
     }
 
 private:
@@ -209,10 +149,6 @@ private:
     {
         return new SupremusHazardsValue(botAI);
     }
-    static UntypedValue* shade_of_akama_adds(PlayerbotAI* botAI)
-    {
-        return new ShadeOfAkamaAddsValue(botAI);
-    }
     static UntypedValue* teron_gorefiend_shadowy_constructs(PlayerbotAI* botAI)
     {
         return new TeronGorefiendShadowyConstructsValue(botAI);
@@ -221,10 +157,6 @@ private:
     {
         return new GurtoggBloodboilSecondTankThreatValue(botAI);
     }
-    static UntypedValue* illidan_stormrage_speech_in_progress(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageSpeechInProgressValue(botAI);
-    }
     static UntypedValue* illidan_stormrage_infected_players(PlayerbotAI* botAI)
     {
         return new IllidanStormrageInfectedPlayersValue(botAI);
@@ -232,14 +164,6 @@ private:
     static UntypedValue* illidan_stormrage_trap_hunters(PlayerbotAI* botAI)
     {
         return new IllidanStormrageTrapHuntersValue(botAI);
-    }
-    static UntypedValue* illidan_stormrage_parasitic_shadowfiends(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageParasiticShadowfiendsValue(botAI);
-    }
-    static UntypedValue* illidan_stormrage_shadow_demons(PlayerbotAI* botAI)
-    {
-        return new IllidanStormrageShadowDemonsValue(botAI);
     }
 };
 

@@ -951,7 +951,7 @@ bool TeronGorefiendDestroyShadowyConstructsAction::Execute(Event /*event*/)
     if (!spirit)
         return false;
 
-    std::vector<Unit*> const constructs = GetConstructs(gorefiend);
+    std::vector<Unit*> const constructs = GetConstructs();
     Unit* leadConstruct = GetLeadConstruct(gorefiend, constructs);
     if (!leadConstruct)
     {
@@ -1006,18 +1006,14 @@ bool TeronGorefiendDestroyShadowyConstructsAction::Execute(Event /*event*/)
 // A grid search is used because when a player controls the spirit, its body stays alive where the
 // spirit spawned. The player does not have LoS to Teron from the corner, so a standard 'attackers'
 // search, which is centered on the player and not the spirit, loses constructs near Teron.
-std::vector<Unit*> TeronGorefiendDestroyShadowyConstructsAction::GetConstructs(
-    Unit* gorefiend) const
+std::vector<Unit*> TeronGorefiendDestroyShadowyConstructsAction::GetConstructs() const
 {
-    std::list<Creature*> creatures;
-    gorefiend->GetCreatureListWithEntryInGrid(
-        creatures, Id(BtNpcs::NPC_SHADOWY_CONSTRUCT), GOREFIEND_CONSTRUCT_SEARCH_RADIUS);
-
     std::vector<Unit*> constructs;
-    for (Creature* creature : creatures)
+    for (ObjectGuid const& guid : GetShadowyConstructGuids(bot))
     {
-        if (creature->IsAlive())
-            constructs.push_back(creature);
+        Unit* construct = botAI->GetUnit(guid);
+        if (construct && construct->IsAlive())
+            constructs.push_back(construct);
     }
 
     return constructs;
@@ -1937,9 +1933,7 @@ bool IllidanStormragePositionOnGrateDuringSpeechAction::Execute(Event /*event*/)
     Position const& position = ILLIDAN_PULL_TANK_POSITION;
     if (bot->GetExactDist2d(position) <= ILLIDAN_POSITION_TOLERANCE)
     {
-        Creature* illidan = bot->FindNearestCreature(
-            Id(BtNpcs::NPC_ILLIDAN_STORMRAGE), ILLIDAN_SPEECH_SEARCH_RADIUS);
-        FaceUnit(bot, illidan);
+        FaceUnit(bot, GetLivingIllidanUnit(bot, BtNpcs::NPC_ILLIDAN_STORMRAGE));
         return false;
     }
 
@@ -2928,8 +2922,7 @@ bool IllidanStormrageSeedShadowDemonsAction::Execute(Event /*event*/)
 // Demon. Each must be in spell range and not already seeded by the bot.
 Unit* IllidanStormrageSeedShadowDemonsAction::FindSeedTarget()
 {
-    auto const& shadowDemons =
-        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
+    auto const& shadowDemons = GetShadowDemons(bot);
     uint32 const seed = AI_VALUE2(uint32, "spell id", "seed of corruption");
     float const range = botAI->GetRange("spell");
     auto const canSeed = [this, seed, range](Unit* demon)
@@ -3091,12 +3084,12 @@ bool IllidanStormrageManageDpsTimersAction::Execute(Event /*event*/)
     {
         if (!state.eastFlameGuid || !state.westFlameGuid)
         {
-            std::list<Creature*> flames;
-            bot->GetCreatureListWithEntryInGrid(
-                flames, Id(BtNpcs::NPC_FLAME_OF_AZZINOTH), ILLIDAN_ADD_SEARCH_RADIUS);
-
-            for (Creature* flame : flames)
+            for (ObjectGuid const& guid : GetIllidanUnits(bot))
             {
+                if (guid.GetEntry() != Id(BtNpcs::NPC_FLAME_OF_AZZINOTH))
+                    continue;
+
+                Creature* flame = botAI->GetCreature(guid);
                 if (!flame || !flame->IsAlive())
                     continue;
 
@@ -3133,12 +3126,11 @@ bool IllidanStormrageClearHazardsAction::Execute(Event /*event*/)
         Id(BtNpcs::NPC_DEMON_FIRE),
         Id(BtNpcs::NPC_BLAZE),
     };
-    std::list<Creature*> hazards;
-    bot->GetCreatureListWithEntryInGrid(hazards, entries, ILLIDAN_ADD_SEARCH_RADIUS);
-
     bool isCleared = false;
-    for (Creature* creature : hazards)
+    for (ObjectGuid const& guid :
+         FindCreatureGuidsAround(bot, ILLIDAN_GRATE_CENTER, ILLIDAN_ADD_SEARCH_RADIUS, entries))
     {
+        Creature* creature = botAI->GetCreature(guid);
         if (creature && creature->IsAlive())
         {
             creature->Kill(bot, creature);

@@ -584,11 +584,11 @@ bool IllidariCouncilShouldManageDpsTimerTrigger::IsActiveInEncounter()
 
 // Illidan Stormrage <The Betrayer>
 
-// Not gated on the encounter, which starts as the speech ends, so throttled to once per second.
+// Not gated on the encounter, which starts as the speech ends.
 bool IllidanStormrageShouldPositionForPullTrigger::IsActive()
 {
     // You are not prepared!
-    return AI_VALUE(bool, "illidan stormrage speech in progress");
+    return IsIllidanSpeechInProgress(bot);
 }
 
 bool IllidanStormrageHunterShouldMisdirectTrigger::IsActiveInEncounter()
@@ -973,9 +973,7 @@ bool IllidanStormrageWarlockShouldSeedShadowDemonsTrigger::IsActiveInEncounter()
     if (IsIllidanPhaseStartWithin(*illidan, IllidanPhase::Demon, ILLIDAN_SHADOW_DEMON_SPAWN_MS))
         return false;
 
-    auto const& shadowDemons =
-        context->GetValue<std::vector<ShadowDemon>>("illidan stormrage shadow demons")->RefGet();
-    if (shadowDemons.size() < 2)
+    if (GetShadowDemons(bot).size() < 2)
         return false;
 
     return !IsNearNewParasiticShadowfiend(botAI);

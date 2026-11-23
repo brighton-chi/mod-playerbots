@@ -365,11 +365,15 @@ inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_X = 406.8f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_X = 564.0f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_Y = 327.9f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
-// 150 yd reaches every channeler from anywhere in the room, so every bot gets the same kill order.
-inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 150.0f;
+// Around SHADE_OF_AKAMA_SPAWN_POSITION. The room's far corners are 136 yd away.
+inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 140.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
 
+inline Position const SHADE_OF_AKAMA_SPAWN_POSITION = { 449.595f, 401.194f, 118.621f };
+
 GuidVector FindShadeOfAkamaAddGuids(Player* bot);
+// Empty while the bot is outside Shade's room.
+GuidVector const& GetShadeOfAkamaAdds(Player* bot);
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
 
 // Teron Gorefiend
@@ -382,6 +386,7 @@ inline constexpr float GOREFIEND_SPIRIT_AOE_DISTANCE = 10.0f;
 // Spirit Lance's lowest damage. Constructs within one Lance of the highest health count as even.
 inline constexpr uint32 GOREFIEND_SPIRIT_LANCE_MIN_DAMAGE = 6175;
 inline constexpr uint32 GOREFIEND_CONSTRUCT_CACHE_INTERVAL_MS = 1000;
+inline constexpr uint32 GOREFIEND_SPIRIT_CONSTRUCT_CACHE_INTERVAL_MS = 200;
 // From Gorefiend's tank position, about 90 yd reaches the far corners.
 inline constexpr float GOREFIEND_CONSTRUCT_SEARCH_RADIUS = 100.0f;
 
@@ -389,6 +394,8 @@ inline Position const GOREFIEND_TANK_POSITION  = { 597.653f, 402.284f, 187.090f 
 inline Position const GOREFIEND_DEATH_POSITION = { 525.709f, 377.177f, 193.203f };
 
 bool CastVengefulSpiritSpell(Unit* spirit, Unit* target, uint32 spellId);
+GuidVector FindShadowyConstructGuids(Player* bot);
+GuidVector const& GetShadowyConstructGuids(Player* bot);
 
 // Gurtogg Bloodboil
 
@@ -637,6 +644,13 @@ struct ShadowDemon
     ObjectGuid targetGuid = ObjectGuid::Empty;
 };
 
+// EncounterHelpers::InstanceCreatureList for Shadow Demons, which are kept with their targets.
+struct ShadowDemonList
+{
+    std::optional<uint32> refreshedAt;
+    std::vector<ShadowDemon> demons;
+};
+
 // One Shadowfiend infection, recorded by the mechanic tracker. Once the trap is assigned, hunter is
 // empty if a Frost Trap already covered the position, or once the hunter has laid its trap.
 struct IllidanInfection
@@ -660,14 +674,15 @@ inline constexpr float ILLIDAN_STAIRWELL_Z = 341.0f;
 // 175 yd rearm distance matches the Council's because Illidan's XY position is nearly identical.
 inline constexpr float ILLIDAN_CLASS_ROLE_REARM_DISTANCE = 175.0f;
 
+inline constexpr uint32 ILLIDAN_UNIT_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_PARASITIC_SHADOWFIEND_CACHE_INTERVAL_MS = 200;
 inline constexpr uint32 ILLIDAN_TRAP_HUNTER_CACHE_INTERVAL_MS = 1000;
-inline constexpr uint32 ILLIDAN_SPEECH_CACHE_INTERVAL_MS = 1000;
 inline constexpr uint32 ILLIDAN_SHADOW_DEMON_CACHE_INTERVAL_MS = 200;
 
 inline constexpr float ILLIDAN_PHASE_2_HEALTH_PCT = 65.0f;
 inline constexpr float ILLIDAN_PHASE_5_HEALTH_PCT = 30.0f;
 inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
+// Around ILLIDAN_GRATE_CENTER, except for the Frost Trap search around the bot.
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_POSITION_TOLERANCE = 0.5f;
@@ -875,6 +890,10 @@ inline std::array const ILLIDAN_W_GLAIVE_TANK_POSITIONS = {
 };
 
 std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId);
+// Illidan, the Flames of Azzinoth, the Parasitic Shadowfiends, and the Eye Blast trigger.
+GuidVector FindIllidanUnitGuids(Player* bot);
+GuidVector const& GetIllidanUnits(Player* bot);
+Creature* GetLivingIllidanUnit(Player* bot, BtNpcs npc);
 IllidanPhase GetIllidanPhase(Unit* illidan);
 bool IsIllidanSpeechInProgress(Player* bot);
 bool RecordIllidanPhase(uint32 instanceId, IllidanPhase phase);
@@ -921,11 +940,11 @@ int32 GetIllidanGrateIndex(Player* bot, Unit* illidan);
 int32 GetIllidanGrateStackIndex(Player* bot);
 Aura* GetParasiticShadowfiendAura(Player* player);
 bool HasParasiticShadowfiend(Player* player);
-GuidVector FindParasiticShadowfiendGuids(Player* bot);
 Unit* GetNearestParasiticShadowfiend(PlayerbotAI* botAI, Unit* unit);
 bool IsNearNewParasiticShadowfiend(PlayerbotAI* botAI);
 GuidVector FindInfectedPlayerGuids(Player* bot);
 std::vector<ShadowDemon> FindShadowDemons(Player* bot);
+std::vector<ShadowDemon> const& GetShadowDemons(Player* bot);
 Unit* GetShadowDemonForRangedToAttack(PlayerbotAI* botAI, Unit* from);
 Unit* GetShadowDemonMovingToWarlockTank(PlayerbotAI* botAI);
 Unit* GetShadowDemonForMeleeToAttack(PlayerbotAI* botAI, Unit* from);
@@ -945,6 +964,8 @@ struct BtInstanceState
     std::optional<std::vector<NajentusSpineAssignment>> najentusSpineAssignments;
     std::optional<ObjectGuid> najentusSpineThrower;
     std::optional<uint32> najentusSpineThrowTime;
+    EncounterHelpers::InstanceCreatureList shadeOfAkamaAdds;
+    EncounterHelpers::InstanceCreatureList gorefiendConstructs;
     std::optional<uint32> councilDpsWaitTimer;
     std::optional<IllidanPhase> illidanLastPhase;
     std::optional<IllidanPhase> illidanPreviousPhase;
@@ -954,6 +975,8 @@ struct BtInstanceState
     std::optional<ObjectGuid> westFlameGuid;
     std::optional<IllidanPhase> illidanTankAggroPhase;
     std::optional<std::unordered_map<ObjectGuid, IllidanInfection>> illidanInfections;
+    EncounterHelpers::InstanceCreatureList illidanUnits;
+    ShadowDemonList illidanShadowDemons;
     EncounterHelpers::ClassRoleAssignment zerevorMageTank;
     EncounterHelpers::ClassRoleAssignment illidanWarlockTank;
 };
