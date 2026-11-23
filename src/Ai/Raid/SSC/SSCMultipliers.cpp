@@ -304,7 +304,7 @@ float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
 
     // Add tanks stay off Hydross but keep tanking adds.
     if (IsHydrossAddTank(bot))
-        return action->GetTarget() == hydross ? GetDpsHoldValue(bot, action) : 1.0f;
+        return action && action->GetTarget() == hydross ? GetDpsHoldValue(bot, action) : 1.0f;
 
     return PlayerbotAI::IsTank(bot) ? 1.0f : GetDpsHoldValue(bot, action);
 }
