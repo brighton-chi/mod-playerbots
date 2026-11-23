@@ -9,6 +9,7 @@
 #include "DynamicObjectScript.h"
 #include "MagHelpers.h"
 #include "Playerbots.h"
+#include <optional>
 
 using namespace MagHelpers;
 

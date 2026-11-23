@@ -11,7 +11,6 @@
 #include "SWPEncounter_Twins.h"
 #include "SWPShared.h"
 #include "ThreatHelpers.h"
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

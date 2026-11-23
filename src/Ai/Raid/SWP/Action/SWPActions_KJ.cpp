@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

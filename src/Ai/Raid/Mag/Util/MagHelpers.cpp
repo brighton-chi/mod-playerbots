@@ -12,6 +12,7 @@
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
+#include <initializer_list>
 #include <list>
 #include <mutex>
 

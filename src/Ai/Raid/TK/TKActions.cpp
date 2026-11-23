@@ -22,6 +22,7 @@
 #include <cmath>
 #include <iterator>
 #include <limits>
+#include <optional>
 
 using namespace TkHelpers;
 using namespace EncounterHelpers;

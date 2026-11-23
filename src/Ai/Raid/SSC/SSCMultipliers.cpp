@@ -30,6 +30,7 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include <algorithm>
+#include <initializer_list>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;

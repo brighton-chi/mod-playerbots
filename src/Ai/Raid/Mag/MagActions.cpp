@@ -13,6 +13,7 @@
 #include "RtiTargetValue.h"
 #include <cmath>
 #include <limits>
+#include <optional>
 #include <vector>
 
 using namespace MagHelpers;
@@ -396,7 +397,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(CubeInfo const& cubeI
     // from the cube.
     constexpr float safeWaitDistance = 10.0f;
     bool const onRing =
-        fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f;
+        std::fabs(bot->GetDistance2d(cubeInfo.x, cubeInfo.y) - safeWaitDistance) <= 1.0f;
     bool const inHazard =
         IsPositionInActiveDebris(botAI, bot->GetPositionX(), bot->GetPositionY()) ||
         IsPositionInActiveConflagration(botAI, bot->GetPositionX(), bot->GetPositionY());

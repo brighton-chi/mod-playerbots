@@ -10,6 +10,7 @@
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "Position.h"
+#include <cmath>
 #include <functional>
 #include <optional>
 #include <type_traits>

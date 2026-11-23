@@ -14,6 +14,7 @@
 #include "SSCActions.h"
 #include "SSCHelpers.h"
 #include "ThreatHelpers.h"
+#include <optional>
 
 using namespace SscHelpers;
 using namespace EncounterHelpers;

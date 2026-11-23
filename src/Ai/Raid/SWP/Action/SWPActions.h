@@ -14,7 +14,6 @@
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPShared.h"
-#include <limits>
 #include <optional>
 #include <string>
 #include <vector>

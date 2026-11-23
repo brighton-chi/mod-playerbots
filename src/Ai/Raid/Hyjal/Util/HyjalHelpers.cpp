@@ -9,11 +9,10 @@
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
-#include <cmath>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <mutex>
-#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>

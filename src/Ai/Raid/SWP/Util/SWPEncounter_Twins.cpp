@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <initializer_list>
 #include <list>
-#include <unordered_map>
 
 using namespace EncounterHelpers;
 

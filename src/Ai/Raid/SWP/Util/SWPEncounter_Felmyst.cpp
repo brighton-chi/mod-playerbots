@@ -11,6 +11,7 @@
 #include "SWPShared.h"
 #include <algorithm>
 #include <cmath>
+#include <initializer_list>
 #include <list>
 #include <optional>
 

@@ -9,7 +9,6 @@
 #include "Playerbots.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPShared.h"
-#include <vector>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

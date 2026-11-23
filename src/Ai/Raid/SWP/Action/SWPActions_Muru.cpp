@@ -14,7 +14,7 @@
 #include <array>
 #include <cmath>
 #include <iterator>
-#include <vector>
+#include <utility>
 
 using namespace SwpHelpers;
 using namespace EncounterHelpers;

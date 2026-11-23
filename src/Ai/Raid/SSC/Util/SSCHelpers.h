@@ -14,6 +14,7 @@
 #include "PlayerbotAI.h"
 #include "Position.h"
 #include <array>
+#include <cmath>
 #include <limits>
 #include <optional>
 #include <type_traits>

@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include "ZAHelpers.h"
+#include <optional>
 
 using namespace ZaHelpers;
 using namespace EncounterHelpers;

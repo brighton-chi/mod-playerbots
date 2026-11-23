@@ -108,11 +108,11 @@ inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = KROSH_BLAST_WAVE_HAZARD_
 inline constexpr float MAULGAR_WHIRLWIND_HAZARD_RADIUS = 8.0f;
 inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = MAULGAR_WHIRLWIND_HAZARD_RADIUS + 4.0f;
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
-inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
-inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = 50.0f;
 // The ogres' tank and spawn positions are within 60 yd of each other; 100 yd covers the room.
 inline constexpr float MAULGAR_COUNCIL_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 MAULGAR_COUNCIL_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
+inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = MAULGAR_COUNCIL_SEARCH_RADIUS;
 
 inline Position const MAULGAR_SPAWN_POSITION = { 145.786f, 190.979f, -11.542f };
 inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };

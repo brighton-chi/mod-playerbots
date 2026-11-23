@@ -13,10 +13,12 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <initializer_list>
 #include <iterator>
 #include <limits>
 #include <list>
 #include <optional>
+#include <utility>
 
 using namespace BtHelpers;
 using namespace EncounterHelpers;

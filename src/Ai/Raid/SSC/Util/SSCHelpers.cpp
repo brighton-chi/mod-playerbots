@@ -15,10 +15,9 @@
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
-#include <cmath>
+#include <initializer_list>
 #include <list>
 #include <mutex>
-#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
@@ -1137,11 +1136,11 @@ namespace
 {
 
 // Even-odd ray cast in 2D.
-template <std::size_t N>
+template <size_t N>
 bool IsInPolygon(float x, float y, std::array<Position, N> const& polygon)
 {
     bool inside = false;
-    for (std::size_t i = 0, j = N - 1; i < N; j = i++)
+    for (size_t i = 0, j = N - 1; i < N; j = i++)
     {
         float const xi = polygon[i].GetPositionX();
         float const yi = polygon[i].GetPositionY();
@@ -1154,11 +1153,11 @@ bool IsInPolygon(float x, float y, std::array<Position, N> const& polygon)
     return inside;
 }
 
-template <std::size_t N>
+template <size_t N>
 float DistanceToPolygonOutline(float x, float y, std::array<Position, N> const& polygon)
 {
     float closest = std::numeric_limits<float>::max();
-    for (std::size_t i = 0, j = N - 1; i < N; j = i++)
+    for (size_t i = 0, j = N - 1; i < N; j = i++)
     {
         float const ax = polygon[j].GetPositionX();
         float const ay = polygon[j].GetPositionY();
@@ -1227,7 +1226,7 @@ float GetVashjEdgeNormalDistance(float x, float y)
     return std::hypot(dx, dy) * std::cos(offset);
 }
 
-template <std::size_t N>
+template <size_t N>
 bool SegmentCrossesPolygon(
     Position const& a, Position const& b, std::array<Position, N> const& polygon)
 {
@@ -1238,7 +1237,7 @@ bool SegmentCrossesPolygon(
             (q.GetPositionY() - p.GetPositionY()) * (r.GetPositionX() - p.GetPositionX());
     };
 
-    for (std::size_t i = 0, j = N - 1; i < N; j = i++)
+    for (size_t i = 0, j = N - 1; i < N; j = i++)
     {
         Position const& c = polygon[j];
         Position const& d = polygon[i];

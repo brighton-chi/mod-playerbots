@@ -15,6 +15,7 @@
 #include "MovementActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
+#include <optional>
 
 using namespace MagHelpers;
 using namespace EncounterHelpers;
