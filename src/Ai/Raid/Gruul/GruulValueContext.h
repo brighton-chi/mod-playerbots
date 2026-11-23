@@ -45,8 +45,7 @@ class GruulTheDragonkillerCaveInValue : public CalculatedValue<std::vector<Posit
 public:
     GruulTheDragonkillerCaveInValue(PlayerbotAI* botAI)
         : CalculatedValue<std::vector<Position>>(
-              botAI, "gruul the dragonkiller cave in",
-              GruulHelpers::CAVE_IN_CACHE_INTERVAL_MS) {}
+              botAI, "gruul the dragonkiller cave in", GruulHelpers::CAVE_IN_CACHE_INTERVAL_MS) {}
 
 protected:
     std::vector<Position> Calculate() override
@@ -75,12 +74,10 @@ private:
     {
         return new HighKingMaulgarWildFelStalkersValue(botAI);
     }
-
     static UntypedValue* high_king_maulgar_council(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarCouncilValue(botAI);
     }
-
     static UntypedValue* gruul_the_dragonkiller_cave_in(PlayerbotAI* botAI)
     {
         return new GruulTheDragonkillerCaveInValue(botAI);

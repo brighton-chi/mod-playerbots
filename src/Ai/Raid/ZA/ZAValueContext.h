@@ -76,17 +76,14 @@ private:
     {
         return new JanalaiFireBombsValue(botAI);
     }
-
     static UntypedValue* janalai_adds(PlayerbotAI* botAI)
     {
         return new JanalaiAddsValue(botAI);
     }
-
     static UntypedValue* hex_lord_malacrass_freezing_trap(PlayerbotAI* botAI)
     {
         return new HexLordMalacrassFreezingTrapValue(botAI);
     }
-
     static UntypedValue* hex_lord_malacrass_dps_targets(PlayerbotAI* botAI)
     {
         return new HexLordMalacrassDpsTargetsValue(botAI);
