@@ -9,11 +9,11 @@
 #include "EncounterHelpers.h"
 #include "GameObject.h"
 #include "Map.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <initializer_list>
-#include <list>
 #include <mutex>
 
 using namespace EncounterHelpers;
@@ -87,33 +87,25 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
 // Sorted by GUID so every warlock indexes the same abyssal.
 GuidVector FindBurningAbyssalGuids(Player* bot)
 {
-    constexpr float searchRadius = 100.0f;
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(MagNpcs::NPC_BURNING_ABYSSAL), searchRadius);
-
-    GuidVector guids;
-    guids.reserve(creatureList.size());
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
+    GuidVector guids = FindCreatureGuidsAround(
+        bot, MAGTHERIDON_SPAWN_POSITION, BURNING_ABYSSAL_SEARCH_RADIUS,
+        { Id(MagNpcs::NPC_BURNING_ABYSSAL) });
 
     std::sort(guids.begin(), guids.end());
     return guids;
 }
 
-std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI)
+std::vector<Unit*> GetBurningAbyssals(Player* bot)
 {
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("mag burning abyssals")->RefGet();
+    GuidVector const& guids = GetInstanceCreatureList(
+        MagState(bot->GetInstanceId()).burningAbyssals, MAG_CACHE_INTERVAL_MS, bot,
+        FindBurningAbyssalGuids);
 
     std::vector<Unit*> abyssals;
     abyssals.reserve(guids.size());
     for (ObjectGuid const guid : guids)
     {
-        Unit* abyssal = botAI->GetUnit(guid);
+        Creature* abyssal = ObjectAccessor::GetCreature(*bot, guid);
         if (abyssal && abyssal->IsAlive())
             abyssals.push_back(abyssal);
     }
@@ -194,7 +186,7 @@ std::vector<GameObject*> GetActiveConflagrations(PlayerbotAI* botAI)
 {
     std::vector<GameObject*> blazes;
     auto const& gameObjects =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->RefGet();
     for (auto const& goGuid : gameObjects)
     {
         GameObject* go = botAI->GetGameObject(goGuid);
@@ -240,7 +232,8 @@ bool MagResetInstance(uint32 instanceId)
 
     MagInstanceState const& state = it->second;
     bool const wasSet = state.magDpsHoldTimer || state.blastNovaTimer || state.lastBlastNovaState ||
-        state.ceilingCollapseApplied || !state.botToCubeAssignments.empty();
+        state.ceilingCollapseApplied || !state.botToCubeAssignments.empty() ||
+        state.burningAbyssals.refreshedAt;
 
     magStates.erase(it);
     return wasSet;

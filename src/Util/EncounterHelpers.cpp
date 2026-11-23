@@ -304,6 +304,69 @@ bool IsClassRolePlayer(Player* bot, ClassRoleAssignment const& assignment)
     return !guid.IsEmpty() && guid == bot->GetGUID();
 }
 
+// Instance Creature Lists
+
+GuidVector const& GetInstanceCreatureList(
+    InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*))
+{
+    uint32 const now = getMSTime();
+    if (!list.refreshedAt || getMSTimeDiff(*list.refreshedAt, now) >= intervalMs)
+    {
+        list.guids = search(bot);
+        list.refreshedAt = now;
+    }
+
+    return list.guids;
+}
+
+bool ResetInstanceCreatureList(InstanceCreatureList& list)
+{
+    list.guids.clear();
+    return ResetIfSet(list.refreshedAt);
+}
+
+namespace
+{
+
+class CreatureEntriesAroundCheck
+{
+public:
+    CreatureEntriesAroundCheck(
+        Position const& center, float radius, std::vector<uint32> const& entries)
+        : _center(center), _radius(radius), _entries(entries) {}
+
+    bool operator()(Creature* creature) const
+    {
+        return std::find(_entries.begin(), _entries.end(), creature->GetEntry()) !=
+            _entries.end() && creature->IsAlive() &&
+            creature->GetExactDist2d(_center) <= _radius;
+    }
+
+private:
+    Position const& _center;
+    float const _radius;
+    std::vector<uint32> const& _entries;
+};
+
+} // end anonymous namespace (Instance Creature Lists)
+
+GuidVector FindCreatureGuidsAround(
+    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries)
+{
+    std::list<Creature*> creatures;
+    CreatureEntriesAroundCheck check(center, radius, entries);
+    Acore::CreatureListSearcher<CreatureEntriesAroundCheck> searcher(bot, creatures, check);
+    Cell::VisitObjects(
+        center.GetPositionX(), center.GetPositionY(), bot->GetMap(), searcher, radius);
+
+    GuidVector guids;
+    guids.reserve(creatures.size());
+    for (Creature* creature : creatures)
+        guids.push_back(creature->GetGUID());
+
+    return guids;
+}
+
 // Raid Target Icons (RTI)
 
 bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)

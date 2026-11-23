@@ -64,7 +64,7 @@ bool MagtheridonDpsHoldIsActiveTrigger::IsActiveInEncounter()
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_WARLOCK && !GetBurningAbyssals(botAI).empty();
+    return bot->getClass() == CLASS_WARLOCK && !GetBurningAbyssals(bot).empty();
 }
 
 bool MagtheridonShouldBeTankedTrigger::IsActiveInEncounter()

@@ -8,6 +8,7 @@
 #define PLAYERBOTS_MAGHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <optional>
@@ -99,6 +100,10 @@ inline constexpr float CEILING_COLLAPSE_HP_PCT = 30.0f;
 // The ceiling collapse delays Quake and Blast Nova by 18s.
 inline constexpr uint32 CEILING_COLLAPSE_DELAY_MS = 18 * IN_MILLISECONDS;
 
+// Around Magtheridon's spawn. The Channelers are within about 40 yd of it; 100 yd covers the room.
+inline constexpr float BURNING_ABYSSAL_SEARCH_RADIUS = 100.0f;
+
+inline Position const MAGTHERIDON_SPAWN_POSITION =       { -18.701f,   2.241f, -0.321f,   0.0f };
 // The waiting position is SE-ish of Magtheridon.
 inline Position const WAITING_FOR_MAGTHERIDON_POSITION = { -31.962f,  -8.514f, -0.304f, 0.657f };
 // The tank position is up against the Eastern wall.
@@ -111,7 +116,7 @@ Unit* GetMagtheridon(Player* bot);
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids);
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 GuidVector FindBurningAbyssalGuids(Player* bot);
-std::vector<Unit*> GetBurningAbyssals(PlayerbotAI* botAI);
+std::vector<Unit*> GetBurningAbyssals(Player* bot);
 bool IsMagtheridonActive(Unit* magtheridon);
 bool IsAnyChannelerAlive(Player* bot);
 // Magtheridon is released when the last Channeler dies, but he stays caged and unselectable for 3s.
@@ -137,6 +142,7 @@ struct MagInstanceState
     std::optional<bool> lastBlastNovaState;
     bool ceilingCollapseApplied = false;
     std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignments;
+    EncounterHelpers::InstanceCreatureList burningAbyssals;
 };
 
 MagInstanceState& MagState(uint32 instanceId);

@@ -179,7 +179,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    std::vector<Unit*> const abyssals = GetBurningAbyssals(botAI);
+    std::vector<Unit*> const abyssals = GetBurningAbyssals(bot);
 
     std::vector<Player*> warlocks;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())

@@ -9,21 +9,9 @@
 
 #include "MagHelpers.h"
 #include "NamedObjectContext.h"
-#include "ObjectGuid.h"
 #include "Position.h"
 #include "Value.h"
 #include <vector>
-
-class MagBurningAbyssalsValue : public CalculatedValue<GuidVector>
-{
-public:
-    MagBurningAbyssalsValue(PlayerbotAI* botAI)
-        : CalculatedValue<GuidVector>(
-            botAI, "mag burning abyssals", MagHelpers::MAG_CACHE_INTERVAL_MS) {}
-
-protected:
-    GuidVector Calculate() override { return MagHelpers::FindBurningAbyssalGuids(bot); }
-};
 
 class MagDebrisPositionsValue : public CalculatedValue<std::vector<Position>>
 {
@@ -41,15 +29,10 @@ class RaidMagtheridonValueContext : public NamedObjectContext<UntypedValue>
 public:
     RaidMagtheridonValueContext()
     {
-        creators["mag burning abyssals"] = &RaidMagtheridonValueContext::mag_burning_abyssals;
         creators["mag debris positions"] = &RaidMagtheridonValueContext::mag_debris_positions;
     }
 
 private:
-    static UntypedValue* mag_burning_abyssals(PlayerbotAI* botAI)
-    {
-        return new MagBurningAbyssalsValue(botAI);
-    }
     static UntypedValue* mag_debris_positions(PlayerbotAI* botAI)
     {
         return new MagDebrisPositionsValue(botAI);

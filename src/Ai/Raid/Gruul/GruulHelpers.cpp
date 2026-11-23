@@ -5,11 +5,11 @@
  */
 
 #include "GruulHelpers.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <limits>
-#include <list>
 #include <mutex>
 #include <unordered_map>
 
@@ -115,22 +115,14 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI)
     return state && IsClassRolePlayer(bot, state->kigglerMoonkinTank);
 }
 
-GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
+GuidVector FindWildFelStalkerGuids(Player* bot)
 {
     if (bot->GetMapId() != GRUUL_MAP_ID)
         return {};
 
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(GruulNpcs::NPC_WILD_FEL_STALKER), WILD_FEL_STALKER_SEARCH_RADIUS);
-
-    GuidVector guids;
-    guids.reserve(creatureList.size());
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
+    GuidVector guids = FindCreatureGuidsAround(
+        bot, MAULGAR_SPAWN_POSITION, WILD_FEL_STALKER_SEARCH_RADIUS,
+        { Id(GruulNpcs::NPC_WILD_FEL_STALKER) });
 
     std::sort(guids.begin(), guids.end(), [](ObjectGuid const& lhs, ObjectGuid const& rhs)
     {
@@ -140,16 +132,17 @@ GuidVector FindNearbyWildFelStalkerGuids(Player* bot)
     return guids;
 }
 
-std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI)
+std::vector<Unit*> GetWildFelStalkers(Player* bot)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    auto const& guids = AI_VALUE_REF(GuidVector, "high king maulgar wild fel stalkers");
+    GuidVector const& guids = GetInstanceCreatureList(
+        GruulState(bot->GetInstanceId()).wildFelStalkers, WILD_FEL_STALKER_CACHE_INTERVAL_MS, bot,
+        FindWildFelStalkerGuids);
 
     std::vector<Unit*> felStalkers;
     felStalkers.reserve(guids.size());
     for (ObjectGuid const& guid : guids)
     {
-        Unit* felStalker = botAI->GetUnit(guid);
+        Creature* felStalker = ObjectAccessor::GetCreature(*bot, guid);
         if (felStalker && felStalker->IsAlive())
             felStalkers.push_back(felStalker);
     }
@@ -167,33 +160,24 @@ GuidVector FindMaulgarCouncilGuids(Player* bot)
         Id(GruulNpcs::NPC_BLINDEYE_THE_SEER),
     };
 
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(creatures, entries, MAULGAR_COUNCIL_SEARCH_RADIUS);
-
-    GuidVector guids;
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
-    return guids;
+    return FindCreatureGuidsAround(
+        bot, MAULGAR_SPAWN_POSITION, MAULGAR_COUNCIL_SEARCH_RADIUS, entries);
 }
 
 Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    if (!botAI || !IsBossInProgress(bot, GRUUL_MAP_ID, Id(GruulBosses::DATA_HIGH_KING_MAULGAR)))
+    if (!IsBossInProgress(bot, GRUUL_MAP_ID, Id(GruulBosses::DATA_HIGH_KING_MAULGAR)))
         return nullptr;
 
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("high king maulgar council")->RefGet();
+    GuidVector const& guids = GetInstanceCreatureList(
+        GruulState(bot->GetInstanceId()).maulgarCouncil, MAULGAR_COUNCIL_CACHE_INTERVAL_MS, bot,
+        FindMaulgarCouncilGuids);
     for (ObjectGuid const& guid : guids)
     {
         if (guid.GetEntry() != Id(npc))
             continue;
 
-        Creature* member = botAI->GetCreature(guid);
+        Creature* member = ObjectAccessor::GetCreature(*bot, guid);
         return member && member->IsAlive() && member->IsInWorld() ? member : nullptr;
     }
 
@@ -266,6 +250,17 @@ GruulInstanceState* FindGruulState(uint32 instanceId)
     std::lock_guard lock(gruulStateMutex);
     auto it = gruulStates.find(instanceId);
     return it != gruulStates.end() ? &it->second : nullptr;
+}
+
+bool GruulResetInstance(uint32 instanceId)
+{
+    GruulInstanceState* state = FindGruulState(instanceId);
+    if (!state)
+        return false;
+
+    bool reset = ResetInstanceCreatureList(state->maulgarCouncil);
+    reset |= ResetInstanceCreatureList(state->wildFelStalkers);
+    return reset;
 }
 
 }

@@ -40,6 +40,7 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
         });
         reset |= ClearStrategyTargetIcon(
             bot, RtiTargetValue::crossIndex, { Id(GruulNpcs::NPC_KROSH_FIREHAND) });
+        reset |= GruulResetInstance(bot->GetInstanceId());
     }
 
     return reset;
@@ -249,7 +250,7 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
         return false;
 
     // Ordered by GUID so that every bot warlock indexes the same list.
-    std::vector<Unit*> const felStalkers = GetNearbyWildFelStalkers(botAI);
+    std::vector<Unit*> const felStalkers = GetWildFelStalkers(bot);
     std::vector<Player*> warlocks;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {

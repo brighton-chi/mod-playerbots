@@ -87,7 +87,7 @@ bool HighKingMaulgarShouldStandBackFromKroshTrigger::IsActiveInEncounter()
 
 bool HighKingMaulgarWildFelStalkerSpawnedTrigger::IsActiveInEncounter()
 {
-    return bot->getClass() == CLASS_WARLOCK && !GetNearbyWildFelStalkers(botAI).empty();
+    return bot->getClass() == CLASS_WARLOCK && !GetWildFelStalkers(bot).empty();
 }
 
 bool HighKingMaulgarHunterShouldMisdirectTrigger::IsActiveInEncounter()

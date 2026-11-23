@@ -140,6 +140,28 @@ bool ResetIfSet(std::optional<T>& field)
     return wasSet;
 }
 
+// Instance Creature Lists
+
+// A creature search kept in a raid's instance state, so that one search serves every bot. The
+// search must give the same list whichever bot runs it: no per-bot filter, and a fixed center (see
+// FindCreatureGuidsAround).
+struct InstanceCreatureList
+{
+    std::optional<uint32> refreshedAt;
+    GuidVector guids;
+};
+
+// Runs search(bot) if the list is older than intervalMs, then returns it. A GUID can be up to
+// intervalMs old, so resolve each one and check that it is alive.
+GuidVector const& GetInstanceCreatureList(
+    InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*));
+// Clears the list. Returns true if it had been searched.
+bool ResetInstanceCreatureList(InstanceCreatureList& list);
+// Living creatures of the entries within 2D radius of a fixed center, on the bot's map. Unlike a
+// search centered on the bot, the result is the same whichever bot runs it.
+GuidVector FindCreatureGuidsAround(
+    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries);
+
 // Raid Target Icons (RTI)
 
 // These marking functions do not allow the player to change the icon during the encounter.

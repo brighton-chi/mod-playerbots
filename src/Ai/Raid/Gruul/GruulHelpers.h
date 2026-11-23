@@ -108,9 +108,12 @@ inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = KROSH_BLAST_WAVE_HAZARD_
 inline constexpr float MAULGAR_WHIRLWIND_HAZARD_RADIUS = 8.0f;
 inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = MAULGAR_WHIRLWIND_HAZARD_RADIUS + 4.0f;
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
-// The ogres' tank and spawn positions are within 60 yd of each other; 100 yd covers the room.
+// Around Maulgar's spawn. The ogres' tank positions are within about 60 yd of it; 100 yd covers the
+// room.
 inline constexpr float MAULGAR_COUNCIL_SEARCH_RADIUS = 100.0f;
-inline constexpr uint32 MAULGAR_COUNCIL_CACHE_INTERVAL_MS = 200;
+inline constexpr uint32 MAULGAR_COUNCIL_CACHE_INTERVAL_MS = 1000;
+// Olm summons a Wild Fel Stalker every 48.5s (practically, that means you're not going to see more
+// than 1 or 2).
 inline constexpr uint32 WILD_FEL_STALKER_CACHE_INTERVAL_MS = 1000;
 inline constexpr float WILD_FEL_STALKER_SEARCH_RADIUS = MAULGAR_COUNCIL_SEARCH_RADIUS;
 
@@ -130,8 +133,8 @@ Player* GetKroshMageTank(PlayerbotAI* botAI);
 bool IsKroshMageTank(PlayerbotAI* botAI);
 Player* GetKigglerMoonkinTank(PlayerbotAI* botAI);
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI);
-GuidVector FindNearbyWildFelStalkerGuids(Player* bot);
-std::vector<Unit*> GetNearbyWildFelStalkers(PlayerbotAI* botAI);
+GuidVector FindWildFelStalkerGuids(Player* bot);
+std::vector<Unit*> GetWildFelStalkers(Player* bot);
 GuidVector FindMaulgarCouncilGuids(Player* bot);
 Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc);
 
@@ -159,10 +162,14 @@ struct GruulInstanceState
 {
     EncounterHelpers::ClassRoleAssignment kroshMageTank;
     EncounterHelpers::ClassRoleAssignment kigglerMoonkinTank;
+    EncounterHelpers::InstanceCreatureList maulgarCouncil;
+    EncounterHelpers::InstanceCreatureList wildFelStalkers;
 };
 
 GruulInstanceState& GruulState(uint32 instanceId);
 GruulInstanceState* FindGruulState(uint32 instanceId);
+// Keeps the class roles (see ClassRoleAssignment).
+bool GruulResetInstance(uint32 instanceId);
 
 }
 
