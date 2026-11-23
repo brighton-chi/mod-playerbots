@@ -72,16 +72,15 @@ bool IsMeleeReachSpell(Player* bot, Action* action)
 
 bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
 {
-    auto const& adds =
-        botAI->GetAiObjectContext()->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
-    for (GuidVector const* guids : { &adds.elites, &adds.striders })
+    for (ObjectGuid const& guid : GetVashjAdds(botAI->GetBot()))
     {
-        for (ObjectGuid const& guid : *guids)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && !IsVashjAddHeldByTank(unit))
-                return true;
-        }
+        uint32 const entry = guid.GetEntry();
+        if (entry != Id(SscNpcs::NPC_COILFANG_ELITE) && entry != Id(SscNpcs::NPC_COILFANG_STRIDER))
+            continue;
+
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && !IsVashjAddHeldByTank(unit))
+            return true;
     }
 
     return false;

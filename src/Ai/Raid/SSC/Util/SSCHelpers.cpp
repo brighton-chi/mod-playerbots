@@ -16,7 +16,6 @@
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <initializer_list>
-#include <list>
 #include <mutex>
 #include <string_view>
 #include <unordered_map>
@@ -493,29 +492,22 @@ int8 GetLurkerSpoutSpin(Unit* lurker)
 
 GuidVector FindLurkerGuardianGuids(Player* bot)
 {
-    GuidVector guids;
-
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(
-        creatures, Id(SscNpcs::NPC_COILFANG_GUARDIAN), LURKER_GUARDIAN_SEARCH_RADIUS);
-
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
+    GuidVector guids = FindCreatureGuidsAround(
+        bot, LURKER_SPAWN_POSITION, LURKER_GUARDIAN_SEARCH_RADIUS,
+        { Id(SscNpcs::NPC_COILFANG_GUARDIAN) });
     std::sort(guids.begin(), guids.end());
-
     return guids;
 }
 
 std::vector<Unit*> GetLurkerGuardians(PlayerbotAI* botAI)
 {
-    std::vector<Unit*> guardians;
+    Player* bot = botAI->GetBot();
+    GuidVector const& guids = GetInstanceCreatureList(
+        SscState(bot->GetInstanceId()).lurkerGuardians, LURKER_GUARDIAN_CACHE_INTERVAL_MS, bot,
+        FindLurkerGuardianGuids);
 
-    for (auto const& guid :
-         botAI->GetAiObjectContext()->GetValue<GuidVector>("ssc lurker guardians")->RefGet())
+    std::vector<Unit*> guardians;
+    for (ObjectGuid const& guid : guids)
     {
         Unit* guardian = botAI->GetUnit(guid);
         if (guardian && guardian->IsAlive())
@@ -571,23 +563,46 @@ bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target)
 
 // Leotheras the Blind
 
-ObjectGuid FindLeotherasGuid(Player* bot)
+GuidVector FindLeotherasUnitGuids(Player* bot)
 {
-    Creature* leotheras =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND), LEOTHERAS_SEARCH_DISTANCE);
-    return leotheras ? leotheras->GetGUID() : ObjectGuid::Empty;
+    return FindCreatureGuidsAround(
+        bot, LEOTHERAS_SPAWN_POSITION, LEOTHERAS_SEARCH_DISTANCE, {
+            Id(SscNpcs::NPC_LEOTHERAS_THE_BLIND),
+            Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS),
+            Id(SscNpcs::NPC_INNER_DEMON),
+        });
 }
 
-ObjectGuid FindShadowOfLeotherasGuid(Player* bot)
+namespace
 {
-    Creature* shadow =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_SHADOW_OF_LEOTHERAS), LEOTHERAS_SEARCH_DISTANCE);
-    return shadow ? shadow->GetGUID() : ObjectGuid::Empty;
+
+GuidVector const& GetLeotherasUnitGuids(Player* bot)
+{
+    return GetInstanceCreatureList(
+        SscState(bot->GetInstanceId()).leotherasUnits, LEOTHERAS_CACHE_INTERVAL_MS, bot,
+        FindLeotherasUnitGuids);
 }
+
+Creature* GetLivingLeotherasUnit(PlayerbotAI* botAI, SscNpcs npc)
+{
+    for (ObjectGuid const& guid : GetLeotherasUnitGuids(botAI->GetBot()))
+    {
+        if (guid.GetEntry() != Id(npc))
+            continue;
+
+        Creature* unit = botAI->GetCreature(guid);
+        if (unit && unit->IsAlive())
+            return unit;
+    }
+
+    return nullptr;
+}
+
+} // end anonymous namespace (Leotheras)
 
 Creature* GetLeotheras(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(botAI, "ssc leotheras");
+    return GetLivingLeotherasUnit(botAI, SscNpcs::NPC_LEOTHERAS_THE_BLIND);
 }
 
 bool IsSpellbinderPhase(Unit* leotheras)
@@ -628,7 +643,7 @@ bool IsLeotherasDemonPhase(PlayerbotAI* botAI)
 
 Creature* GetShadowOfLeotheras(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(botAI, "ssc shadow of leotheras");
+    return GetLivingLeotherasUnit(botAI, SscNpcs::NPC_SHADOW_OF_LEOTHERAS);
 }
 
 bool IsLeotherasFinalPhase(PlayerbotAI* botAI)
@@ -830,21 +845,18 @@ bool HasInnerDemon(Player* bot)
 
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI)
 {
-    ObjectGuid const botGuid = botAI->GetBot()->GetGUID();
-    Creature* innerDemon = nullptr;
-    for (ObjectGuid const& targetGuid :
-         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->RefGet())
+    Player* bot = botAI->GetBot();
+    for (ObjectGuid const& guid : GetLeotherasUnitGuids(bot))
     {
-        Creature* creature = botAI->GetCreature(targetGuid);
-        if (creature && creature->GetEntry() == Id(SscNpcs::NPC_INNER_DEMON) &&
-            creature->GetSummonerGUID() == botGuid)
-        {
-            innerDemon = creature;
-            break;
-        }
+        if (guid.GetEntry() != Id(SscNpcs::NPC_INNER_DEMON))
+            continue;
+
+        Creature* innerDemon = botAI->GetCreature(guid);
+        if (innerDemon && innerDemon->IsAlive() && innerDemon->GetSummonerGUID() == bot->GetGUID())
+            return innerDemon;
     }
 
-    return innerDemon;
+    return nullptr;
 }
 
 // Fathom-Lord Karathress
@@ -866,7 +878,10 @@ GuidVector const* GetKarathressUnitGuids(PlayerbotAI* botAI)
         return nullptr;
     }
 
-    return &botAI->GetAiObjectContext()->GetValue<GuidVector>("ssc karathress units")->RefGet();
+    Player* bot = botAI->GetBot();
+    return &GetInstanceCreatureList(
+        SscState(bot->GetInstanceId()).karathressUnits, KARATHRESS_UNIT_CACHE_INTERVAL_MS, bot,
+        FindKarathressUnitGuids);
 }
 
 Creature* GetLivingKarathressUnit(PlayerbotAI* botAI, ObjectGuid guid)
@@ -920,20 +935,13 @@ GuidVector FindKarathressUnitGuids(Player* bot)
     std::vector<uint32> entries = {
         Id(SscNpcs::NPC_FATHOM_LURKER),
         Id(SscNpcs::NPC_FATHOM_SPOREBAT),
+        Id(SscNpcs::NPC_SPITFIRE_TOTEM),
     };
     for (KarathressCouncilAssignment const& assignment : KARATHRESS_COUNCIL)
         entries.push_back(Id(assignment.npc));
 
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(creatures, entries, KARATHRESS_UNIT_SEARCH_RADIUS);
-
-    GuidVector guids;
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
+    GuidVector guids = FindCreatureGuidsAround(
+        bot, KARATHRESS_TANK_POSITION, KARATHRESS_UNIT_SEARCH_RADIUS, entries);
     std::sort(guids.begin(), guids.end());
     return guids;
 }
@@ -954,16 +962,34 @@ Unit* GetKarathressCouncilMember(Player* bot, SscNpcs npc)
     return nullptr;
 }
 
-ObjectGuid FindSpitfireTotemGuid(Player* bot)
-{
-    Creature* totem =
-        bot->FindNearestCreature(Id(SscNpcs::NPC_SPITFIRE_TOTEM), SPITFIRE_TOTEM_SEARCH_DISTANCE);
-    return totem ? totem->GetGUID() : ObjectGuid::Empty;
-}
-
+// The nearest to the bot within SPITFIRE_TOTEM_SEARCH_DISTANCE.
 Creature* GetSpitfireTotem(PlayerbotAI* botAI)
 {
-    return GetCachedCreature(botAI, "ssc spitfire totem");
+    GuidVector const* guids = GetKarathressUnitGuids(botAI);
+    if (!guids)
+        return nullptr;
+
+    Player* bot = botAI->GetBot();
+    Creature* nearest = nullptr;
+    float nearestDistance = SPITFIRE_TOTEM_SEARCH_DISTANCE;
+    for (ObjectGuid const& guid : *guids)
+    {
+        if (guid.GetEntry() != Id(SscNpcs::NPC_SPITFIRE_TOTEM))
+            continue;
+
+        Creature* totem = GetLivingKarathressUnit(botAI, guid);
+        if (!totem)
+            continue;
+
+        float const distance = bot->GetDistance(totem);
+        if (distance <= nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = totem;
+        }
+    }
+
+    return nearest;
 }
 
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem)
@@ -2330,36 +2356,22 @@ int8 GetNearestVashjStation(Unit* unit)
 
 // Vashj: Adds and Target Priority
 
-VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI)
+GuidVector FindVashjAddGuids(Player* bot)
 {
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    VashjAddGuids adds;
-    for (auto const& guid : context->GetValue<GuidVector>("possible targets no los")->RefGet())
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit)
-            continue;
+    return FindCreatureGuidsAround(
+        bot, VASHJ_PLATFORM_CENTER_POSITION, VASHJ_ADD_SEARCH_RADIUS, {
+            Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL),
+            Id(SscNpcs::NPC_COILFANG_ELITE),
+            Id(SscNpcs::NPC_COILFANG_STRIDER),
+            Id(SscNpcs::NPC_TOXIC_SPOREBAT),
+        });
+}
 
-        switch (unit->GetEntry())
-        {
-            case Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL):
-                adds.enchanted.push_back(guid);
-                break;
-            case Id(SscNpcs::NPC_COILFANG_ELITE):
-                adds.elites.push_back(guid);
-                break;
-            case Id(SscNpcs::NPC_COILFANG_STRIDER):
-                adds.striders.push_back(guid);
-                break;
-            case Id(SscNpcs::NPC_TOXIC_SPOREBAT):
-                adds.sporebats.push_back(guid);
-                break;
-            default:
-                break;
-        }
-    }
-
-    return adds;
+GuidVector const& GetVashjAdds(Player* bot)
+{
+    return GetInstanceCreatureList(
+        SscState(bot->GetInstanceId()).vashjAdds, VASHJ_ADDS_CACHE_INTERVAL_MS, bot,
+        FindVashjAddGuids);
 }
 
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted)
@@ -2563,12 +2575,16 @@ Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
             return target;
     }
 
+    Player* bot = botAI->GetBot();
     Unit* enchanted = nullptr;
-    auto const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
-    for (ObjectGuid const& guid : adds.enchanted)
+    for (ObjectGuid const& guid : GetVashjAdds(bot))
     {
+        if (guid.GetEntry() != Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL))
+            continue;
+
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() && pet->IsValidAttackTarget(unit) &&
+            bot->GetDistance(unit) <= VASHJ_PET_ENCHANTED_MAX_DISTANCE &&
             (!enchanted || vashj->GetExactDist2d(unit) < vashj->GetExactDist2d(enchanted)))
         {
             enchanted = unit;
@@ -2844,9 +2860,11 @@ bool SscResetInstance(uint32 instanceId)
     bool const wasSet =
         state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
         state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
-        state.lurkerGuardianTankAssignments || state.leotherasHumanoidPhaseStartTime ||
+        state.lurkerGuardians.refreshedAt || state.lurkerGuardianTankAssignments ||
+        state.leotherasUnits.refreshedAt || state.leotherasHumanoidPhaseStartTime ||
         state.leotherasWhirlwindEndTime || state.leotherasDemonPhaseStartTime ||
-        state.leotherasFinalPhaseStartTime || state.karathressDpsHoldTimer ||
+        state.leotherasFinalPhaseStartTime || state.karathressUnits.refreshedAt ||
+        state.karathressDpsHoldTimer || state.vashjAdds.refreshedAt ||
         state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
         state.vashjCorePassingChain;
 

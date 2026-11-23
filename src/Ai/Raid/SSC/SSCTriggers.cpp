@@ -232,7 +232,7 @@ bool LeotherasTheBlindRangedShouldSpreadUponPullTrigger::IsActive()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    if (bot->GetExactDist(LEOTHERAS_SPAWN_POSITION) <= LEOTHERAS_SEARCH_DISTANCE)
+    if (bot->GetExactDist(LEOTHERAS_SPAWN_POSITION) > LEOTHERAS_SEARCH_DISTANCE)
         return false;
 
     Creature* leotheras = GetLeotheras(botAI);

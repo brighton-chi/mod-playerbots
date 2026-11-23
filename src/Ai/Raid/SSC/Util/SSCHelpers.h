@@ -265,6 +265,7 @@ inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 
 // In front of a pillar to limit the distance that the main tank gets knocked back by Whirl.
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
+inline Position const LURKER_SPAWN_POSITION = { 38.457f, -417.324f, -18.917f };
 
 // Lurker is passive during Spout: a 3s wind-up (37431), then a 16s spin aura, turning 0.1 rad every
 // 250ms (37429 counterclockwise or 37430 clockwise).
@@ -317,8 +318,8 @@ inline constexpr float LEOTHERAS_LIFE_TAP_HEALTH_PCT = 90.0f;
 
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
-ObjectGuid FindLeotherasGuid(Player* bot);
-ObjectGuid FindShadowOfLeotherasGuid(Player* bot);
+// Leotheras, his Shadow, and the Inner Demons.
+GuidVector FindLeotherasUnitGuids(Player* bot);
 Creature* GetLeotheras(PlayerbotAI* botAI);
 bool IsSpellbinderPhase(Unit* leotheras);
 Creature* GetActiveLeotherasHumanoid(PlayerbotAI* botAI);
@@ -358,7 +359,7 @@ inline constexpr std::array KARATHRESS_COUNCIL = {
     KarathressCouncilAssignment{ SscNpcs::NPC_FATHOM_GUARD_TIDALVESS, 2 },
 };
 
-// The council's tank positions are within 80 yd of each other; 100 yd provides a bit of a buffer.
+// Around KARATHRESS_TANK_POSITION. The farthest tank position, Caribdis's, is 56 yd away.
 inline constexpr float KARATHRESS_UNIT_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 KARATHRESS_UNIT_CACHE_INTERVAL_MS = 200;
 
@@ -373,7 +374,6 @@ inline constexpr float SPITFIRE_TOTEM_SEARCH_DISTANCE = 75.0f;
 // Ranged attack Spitfire Totems only when this close. This will exclude some ranged bots on
 // Caribdis, which is the point, as ranged needs to maintain their spread due to Cyclones.
 inline constexpr float SPITFIRE_TOTEM_RANGED_ATTACK_DISTANCE = 30.0f;
-inline constexpr uint32 SPITFIRE_TOTEM_CACHE_INTERVAL_MS = 200;
 
 inline constexpr float CARIBDIS_HEALER_DISTANCE = 32.0f;
 inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
@@ -394,12 +394,11 @@ inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f
 inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
 inline Position const TIDALVESS_TANK_POSITION =  { 521.833f, -503.329f, -13.158f };
 
-// Living council members and Sharkkis's pets. Sorted, so every bot picks the same pet when more
-// than one is up.
+// Living council members, Sharkkis's pets, and Spitfire Totems. Sorted, so a reader that takes the
+// first of several pets keeps taking the same one.
 GuidVector FindKarathressUnitGuids(Player* bot);
 // A living council member, or null if it is dead or Karathress is not in progress.
 Unit* GetKarathressCouncilMember(Player* bot, SscNpcs npc);
-ObjectGuid FindSpitfireTotemGuid(Player* bot);
 Creature* GetSpitfireTotem(PlayerbotAI* botAI);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 // Sharkkis's tank picks up his pets too.
@@ -613,14 +612,6 @@ int8 GetNearestVashjStation(Unit* unit);
 
 // Vashj: Adds and Target Priority
 
-struct VashjAddGuids
-{
-    GuidVector enchanted;
-    GuidVector elites;
-    GuidVector striders;
-    GuidVector sporebats;
-};
-
 enum class VashjTarget : uint8
 {
     TaintedElemental,
@@ -661,6 +652,10 @@ struct VashjTargetFacts
 };
 
 inline constexpr uint32 VASHJ_ADDS_CACHE_INTERVAL_MS = 200;
+// Around the platform center. Enchanted Elementals spawn up to 93 yd away.
+inline constexpr float VASHJ_ADD_SEARCH_RADIUS = 100.0f;
+// Pets are sent only to Enchanted Elementals within this distance of their owner.
+inline constexpr float VASHJ_PET_ENCHANTED_MAX_DISTANCE = 100.0f;
 // Panic (38258) fears every player within 11 yd of a Strider, center to center.
 inline constexpr float VASHJ_STRIDER_PANIC_RADIUS = 11.0f;
 inline constexpr float VASHJ_STRIDER_STEP_IN_DISTANCE = 50.0f;
@@ -737,7 +732,9 @@ inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
     Position{  5.5f, -934.0f, 42.1f },
 };
 
-VashjAddGuids FindVashjAddGuids(PlayerbotAI* botAI);
+// Enchanted Elementals, Coilfang Elites and Striders, and Toxic Sporebats.
+GuidVector FindVashjAddGuids(Player* bot);
+GuidVector const& GetVashjAdds(Player* bot);
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted);
 bool IsVashjAddHeldByTank(Unit* unit);
 Player* GetVashjAddOwningTank(Player* bot, Unit* add);
@@ -883,12 +880,16 @@ struct SscInstanceState
     std::optional<uint32> hydrossNaturePhaseStartTime;
     std::optional<uint32> hydrossFrostMarkMaxedTime;
     std::optional<uint32> hydrossNatureMarkMaxedTime;
+    EncounterHelpers::InstanceCreatureList lurkerGuardians;
     std::optional<LurkerGuardianTankAssignments> lurkerGuardianTankAssignments;
+    EncounterHelpers::InstanceCreatureList leotherasUnits;
     std::optional<uint32> leotherasHumanoidPhaseStartTime;
     std::optional<uint32> leotherasWhirlwindEndTime;
     std::optional<uint32> leotherasDemonPhaseStartTime;
     std::optional<uint32> leotherasFinalPhaseStartTime;
+    EncounterHelpers::InstanceCreatureList karathressUnits;
     std::optional<uint32> karathressDpsHoldTimer;
+    EncounterHelpers::InstanceCreatureList vashjAdds;
     std::optional<ObjectGuid> vashjGroundingShaman;
     std::optional<VashjStationHolders> vashjStationHolders;
     std::optional<TaintedCoreLooter> vashjTaintedCoreLooter;

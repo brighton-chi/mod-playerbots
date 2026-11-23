@@ -1432,14 +1432,17 @@ bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
 bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit* vashj)
 {
     constexpr float searchRadius = 25.0f;
-    auto const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    GuidVector const& adds = GetVashjAdds(bot);
 
     // Surge range is 5.5y from Vashj's center so this leaves some room.
     constexpr float safeDistance = 10.0f;
     std::vector<Unit*> units;
     bool tooClose = false;
-    for (ObjectGuid const& guid : adds.enchanted)
+    for (ObjectGuid const& guid : adds)
     {
+        if (guid.GetEntry() != Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL))
+            continue;
+
         Unit* enchanted = botAI->GetUnit(guid);
         if (!enchanted || !enchanted->IsAlive())
             continue;
@@ -1455,8 +1458,11 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
 
     // Panic fears within 11y, so this tries to keep melee dps behind Vashj out of range as well.
     constexpr float striderSafeDistance = 18.0f;
-    for (ObjectGuid const& guid : adds.striders)
+    for (ObjectGuid const& guid : adds)
     {
+        if (guid.GetEntry() != Id(SscNpcs::NPC_COILFANG_STRIDER))
+            continue;
+
         Unit* strider = botAI->GetUnit(guid);
         if (!strider || !strider->IsAlive() || strider->GetVictim() == bot)
             continue;
@@ -1836,11 +1842,11 @@ bool IsBetterVashjTarget(Player* bot, Unit* vashj, VashjTarget target, Unit* a, 
 }
 
 Unit* GetBestVashjTarget(
-    PlayerbotAI* botAI, VashjTargetFacts const& facts, VashjAddGuids const& adds,
+    PlayerbotAI* botAI, VashjTargetFacts const& facts, GuidVector const& adds,
     VashjTargetTier const& tier)
 {
     Player* bot = botAI->GetBot();
-    GuidVector const* guids = nullptr;
+    SscNpcs npc;
     switch (tier.target)
     {
         case VashjTarget::TaintedElemental:
@@ -1848,22 +1854,27 @@ Unit* GetBestVashjTarget(
         case VashjTarget::LadyVashj:
             return IsVashjTargetAllowed(bot, facts, tier, facts.vashj) ? facts.vashj : nullptr;
         case VashjTarget::EnchantedElemental:
-            guids = &adds.enchanted;
+            npc = SscNpcs::NPC_ENCHANTED_ELEMENTAL;
             break;
         case VashjTarget::CoilfangElite:
-            guids = &adds.elites;
+            npc = SscNpcs::NPC_COILFANG_ELITE;
             break;
         case VashjTarget::CoilfangStrider:
-            guids = &adds.striders;
+            npc = SscNpcs::NPC_COILFANG_STRIDER;
             break;
         case VashjTarget::ToxicSporebat:
-            guids = &adds.sporebats;
+            npc = SscNpcs::NPC_TOXIC_SPOREBAT;
             break;
+        default:
+            return nullptr;
     }
 
     Unit* best = nullptr;
-    for (ObjectGuid const& guid : *guids)
+    for (ObjectGuid const& guid : adds)
     {
+        if (guid.GetEntry() != Id(npc))
+            continue;
+
         Unit* unit = botAI->GetUnit(guid);
         if (IsVashjTargetAllowed(bot, facts, tier, unit) &&
             (!best || IsBetterVashjTarget(bot, facts.vashj, tier.target, unit, best)))
@@ -1913,11 +1924,14 @@ bool LadyVashjAssignTargetPriorityAction::Execute(Event /*event*/)
     if (facts.holdsStationSlot)
         facts.tainted = GetTaintedElementalToKill(bot);
 
-    auto const& adds = context->GetValue<VashjAddGuids>("ssc vashj adds")->RefGet();
+    GuidVector const& adds = GetVashjAdds(bot);
     if (PlayerbotAI::IsMelee(bot) && PlayerbotAI::IsDps(bot))
     {
-        for (ObjectGuid const& guid : adds.striders)
+        for (ObjectGuid const& guid : adds)
         {
+            if (guid.GetEntry() != Id(SscNpcs::NPC_COILFANG_STRIDER))
+                continue;
+
             Unit* strider = botAI->GetUnit(guid);
             if (strider && strider->IsAlive())
                 facts.panicStriders.push_back(strider);
