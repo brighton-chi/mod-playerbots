@@ -332,13 +332,14 @@ class CreatureEntriesAroundCheck
 {
 public:
     CreatureEntriesAroundCheck(
-        Position const& center, float radius, std::vector<uint32> const& entries)
-        : _center(center), _radius(radius), _entries(entries) {}
+        Position const& center, float radius, std::vector<uint32> const& entries,
+        bool includeDead)
+        : _center(center), _radius(radius), _entries(entries), _includeDead(includeDead) {}
 
     bool operator()(Creature* creature) const
     {
         return std::find(_entries.begin(), _entries.end(), creature->GetEntry()) !=
-            _entries.end() && creature->IsAlive() &&
+            _entries.end() && (_includeDead || creature->IsAlive()) &&
             creature->GetExactDist2d(_center) <= _radius;
     }
 
@@ -346,15 +347,17 @@ private:
     Position const& _center;
     float const _radius;
     std::vector<uint32> const& _entries;
+    bool const _includeDead;
 };
 
 } // end anonymous namespace (Instance Creature Lists)
 
 GuidVector FindCreatureGuidsAround(
-    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries)
+    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries,
+    bool includeDead)
 {
     std::list<Creature*> creatures;
-    CreatureEntriesAroundCheck check(center, radius, entries);
+    CreatureEntriesAroundCheck check(center, radius, entries, includeDead);
     Acore::CreatureListSearcher<CreatureEntriesAroundCheck> searcher(bot, creatures, check);
     Cell::VisitObjects(
         center.GetPositionX(), center.GetPositionY(), bot->GetMap(), searcher, radius);

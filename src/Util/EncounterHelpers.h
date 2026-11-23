@@ -163,10 +163,12 @@ GuidVector const& GetInstanceCreatureList(
     InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*));
 // Clears the list. Returns true if it had been searched.
 bool ResetInstanceCreatureList(InstanceCreatureList& list);
-// Living creatures of the entries within 2D radius of a fixed center, on the bot's map. Unlike a
-// search centered on the bot, the result is the same whichever bot runs it.
+// Creatures of the entries within 2D radius of a fixed center, on the bot's map; living ones only
+// unless includeDead. Unlike a search centered on the bot, the result is the same whichever bot
+// runs it.
 GuidVector FindCreatureGuidsAround(
-    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries);
+    Player* bot, Position const& center, float radius, std::vector<uint32> const& entries,
+    bool includeDead = false);
 
 // Raid Target Icons (RTI)
 
