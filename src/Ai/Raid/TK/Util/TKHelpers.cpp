@@ -6,12 +6,12 @@
 
 #include "TKHelpers.h"
 #include "EncounterHelpers.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "TKKaelthasBossAI.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <limits>
-#include <list>
 #include <mutex>
 #include <string_view>
 #include <unordered_map>
@@ -46,6 +46,38 @@ constexpr std::string_view BossName(TkBosses boss)
     }
 }
 
+GuidVector SortOldestFirst(GuidVector guids)
+{
+    std::sort(guids.begin(), guids.end(), [](ObjectGuid const& first, ObjectGuid const& second)
+    {
+        return first.GetCounter() < second.GetCounter();
+    });
+
+    return guids;
+}
+
+// The nearest living creature in the list within radius of the bot.
+Creature* GetNearestInList(Player* bot, GuidVector const& guids, float radius)
+{
+    Creature* nearest = nullptr;
+    float nearestDistance = radius;
+    for (ObjectGuid const& guid : guids)
+    {
+        Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
+        if (!creature || !creature->IsAlive())
+            continue;
+
+        float const distance = bot->GetDistance(creature);
+        if (distance <= nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = creature;
+        }
+    }
+
+    return nearest;
+}
+
 } // end anonymous namespace (Shared)
 
 Unit* GetTkBoss(Player* bot, TkBosses boss)
@@ -56,41 +88,32 @@ Unit* GetTkBoss(Player* bot, TkBosses boss)
     return FindThreatTarget(bot, BossName(boss));
 }
 
-GuidVector FindTkAddGuids(Player* bot)
-{
-    std::vector<uint32> const entries = {
-        Id(TkNpcs::NPC_EMBER_OF_ALAR),
-        Id(TkNpcs::NPC_SOLARIUM_PRIEST),
-        Id(TkNpcs::NPC_SOLARIUM_AGENT),
-        Id(TkNpcs::NPC_PHOENIX),
-    };
-
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(creatures, entries, TK_ADD_SEARCH_RADIUS);
-
-    GuidVector guids;
-    guids.reserve(creatures.size());
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
-    std::sort(guids.begin(), guids.end(), [](ObjectGuid const& first, ObjectGuid const& second)
-    {
-        return first.GetCounter() < second.GetCounter();
-    });
-
-    return guids;
-}
-
 std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc)
 {
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("tk adds")->RefGet();
+    Player* bot = botAI->GetBot();
+    TkInstanceState& state = TkState(bot->GetInstanceId());
+    GuidVector const* guids = nullptr;
+    switch (npc)
+    {
+        case TkNpcs::NPC_EMBER_OF_ALAR:
+            guids = &GetInstanceCreatureList(
+                state.alarEmbers, TK_CACHE_INTERVAL_MS, bot, FindAlarEmberGuids);
+            break;
+        case TkNpcs::NPC_SOLARIUM_PRIEST:
+        case TkNpcs::NPC_SOLARIUM_AGENT:
+            guids = &GetInstanceCreatureList(
+                state.solarianAdds, TK_CACHE_INTERVAL_MS, bot, FindSolarianAddGuids);
+            break;
+        case TkNpcs::NPC_PHOENIX:
+            guids = &GetInstanceCreatureList(
+                state.kaelthasPhoenixes, TK_CACHE_INTERVAL_MS, bot, FindPhoenixGuids);
+            break;
+        default:
+            return {};
+    }
 
     std::vector<Unit*> adds;
-    for (ObjectGuid const& guid : guids)
+    for (ObjectGuid const& guid : *guids)
     {
         if (guid.GetEntry() != Id(npc))
             continue;
@@ -146,7 +169,7 @@ Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI)
     Unit* target = nullptr;
 
     AiObjectContext* context = botAI->GetAiObjectContext();
-    for (ObjectGuid const attackerGuid : AI_VALUE(GuidVector, "attackers"))
+    for (ObjectGuid const attackerGuid : AI_VALUE_REF(GuidVector, "attackers"))
     {
         Unit* attacker = botAI->GetUnit(attackerGuid);
         if (!attacker || attacker->GetEntry() != Id(TkNpcs::NPC_CRIMSON_HAND_CENTURION) ||
@@ -309,27 +332,24 @@ Player* GetSecondaryEmberTank(Player* bot)
     return assistTank;
 }
 
+GuidVector FindAlarEmberGuids(Player* bot)
+{
+    return SortOldestFirst(FindCreatureGuidsAround(
+        bot, ALAR_ROOM_CENTER, ALAR_ROOM_SEARCH_RADIUS, { Id(TkNpcs::NPC_EMBER_OF_ALAR) }));
+}
+
 GuidVector FindFlamePatchGuids(Player* bot)
 {
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(TkNpcs::NPC_FLAME_PATCH), ALAR_FLAME_PATCH_SEARCH_DISTANCE);
-
-    GuidVector guids;
-    guids.reserve(creatureList.size());
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
-    return guids;
+    return FindCreatureGuidsAround(
+        bot, ALAR_ROOM_CENTER, ALAR_ROOM_SEARCH_RADIUS, { Id(TkNpcs::NPC_FLAME_PATCH) });
 }
 
 std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI)
 {
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("tk flame patches")->RefGet();
+    Player* bot = botAI->GetBot();
+    GuidVector const& guids = GetInstanceCreatureList(
+        TkState(bot->GetInstanceId()).alarFlamePatches, TK_CACHE_INTERVAL_MS, bot,
+        FindFlamePatchGuids);
 
     std::vector<Unit*> flamePatches;
     flamePatches.reserve(guids.size());
@@ -382,6 +402,17 @@ bool HasWrathOfTheAstromancer(Player* bot)
     return bot->HasAura(Id(TkSpells::SPELL_WRATH_OF_THE_ASTROMANCER));
 }
 
+GuidVector FindSolarianAddGuids(Player* bot)
+{
+    std::vector<uint32> const entries = {
+        Id(TkNpcs::NPC_SOLARIUM_PRIEST),
+        Id(TkNpcs::NPC_SOLARIUM_AGENT),
+    };
+
+    return SortOldestFirst(FindCreatureGuidsAround(
+        bot, SOLARIAN_SPAWN_POSITION, SOLARIAN_ROOM_SEARCH_RADIUS, entries));
+}
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 namespace
@@ -389,7 +420,10 @@ namespace
 
 GuidVector const& GetLegendaryWeaponGuids(PlayerbotAI* botAI)
 {
-    return botAI->GetAiObjectContext()->GetValue<GuidVector>("tk legendary weapons")->RefGet();
+    Player* bot = botAI->GetBot();
+    return GetInstanceCreatureList(
+        TkState(bot->GetInstanceId()).kaelthasLegendaryWeapons, TK_CACHE_INTERVAL_MS, bot,
+        FindLegendaryWeaponGuids);
 }
 
 Creature* GetLegendaryWeaponByState(PlayerbotAI* botAI, uint32 weaponEntry, bool alive)
@@ -493,6 +527,12 @@ bool IsSanguinarDebuffHunter(Player* bot)
     return state && IsClassRolePlayer(bot, state->sanguinarDebuffHunter);
 }
 
+GuidVector FindPhoenixGuids(Player* bot)
+{
+    return SortOldestFirst(FindCreatureGuidsAround(
+        bot, KAELTHAS_SPAWN_POSITION, KAELTHAS_ROOM_SEARCH_DISTANCE, { Id(TkNpcs::NPC_PHOENIX) }));
+}
+
 GuidVector FindLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {
@@ -505,18 +545,9 @@ GuidVector FindLegendaryWeaponGuids(Player* bot)
         Id(TkNpcs::NPC_DEVASTATION),
     };
 
-    std::list<Creature*> weapons;
-    bot->GetCreatureListWithEntryInGrid(weapons, weaponEntries, KAELTHAS_ROOM_SEARCH_DISTANCE);
-
-    GuidVector guids;
-    guids.reserve(weapons.size());
-    for (Creature* weapon : weapons)
-    {
-        if (weapon)
-            guids.push_back(weapon->GetGUID());
-    }
-
-    return guids;
+    constexpr bool includeDead = true;
+    return FindCreatureGuidsAround(
+        bot, KAELTHAS_SPAWN_POSITION, KAELTHAS_ROOM_SEARCH_DISTANCE, weaponEntries, includeDead);
 }
 
 Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry)
@@ -592,15 +623,35 @@ Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId)
     return item && item->GetEntry() == itemId ? item : nullptr;
 }
 
+GuidVector FindFlameStrikeGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, KAELTHAS_SPAWN_POSITION, KAELTHAS_ROOM_SEARCH_DISTANCE,
+        { Id(TkNpcs::NPC_FLAME_STRIKE_TRIGGER) });
+}
+
 Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius)
 {
-    return bot->FindNearestCreature(Id(TkNpcs::NPC_FLAME_STRIKE_TRIGGER), radius);
+    GuidVector const& guids = GetInstanceCreatureList(
+        TkState(bot->GetInstanceId()).kaelthasFlameStrikes, TK_CACHE_INTERVAL_MS, bot,
+        FindFlameStrikeGuids);
+    return GetNearestInList(bot, guids, radius);
+}
+
+GuidVector FindPhoenixEggGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, KAELTHAS_SPAWN_POSITION, KAELTHAS_ROOM_SEARCH_DISTANCE,
+        { Id(TkNpcs::NPC_PHOENIX_EGG) });
 }
 
 Creature* GetPhoenixEgg(Player* bot)
 {
     constexpr float searchRadius = 75.0f;
-    return bot->FindNearestCreature(Id(TkNpcs::NPC_PHOENIX_EGG), searchRadius);
+    GuidVector const& guids = GetInstanceCreatureList(
+        TkState(bot->GetInstanceId()).kaelthasPhoenixEggs, TK_CACHE_INTERVAL_MS, bot,
+        FindPhoenixEggGuids);
+    return GetNearestInList(bot, guids, searchRadius);
 }
 
 // When it "dies" and reverts to an egg, the Phoenix becomes invisible but remains alive on top of
@@ -643,7 +694,11 @@ bool TkResetInstance(uint32 instanceId)
 
     TkInstanceState& state = it->second;
     bool const wasSet = state.lastRebirthState || state.isAlarInPhase2 ||
-        !state.voidReaverArcaneOrbs.empty() || state.advisorDpsHoldTimer;
+        state.alarEmbers.refreshedAt || state.alarFlamePatches.refreshedAt ||
+        !state.voidReaverArcaneOrbs.empty() || state.solarianAdds.refreshedAt ||
+        state.advisorDpsHoldTimer || state.kaelthasPhoenixes.refreshedAt ||
+        state.kaelthasLegendaryWeapons.refreshedAt || state.kaelthasFlameStrikes.refreshedAt ||
+        state.kaelthasPhoenixEggs.refreshedAt;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
     TkInstanceState kept;
