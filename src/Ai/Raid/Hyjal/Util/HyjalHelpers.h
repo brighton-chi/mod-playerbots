@@ -8,6 +8,7 @@
 #define PLAYERBOTS_HYJALHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <cmath>
@@ -143,9 +144,9 @@ bool IsInDeathAndDecay(PlayerbotAI* botAI);
 // Anetheron
 // Towering Infernal's CombatReach is 4 yd
 
-inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
-// Longer than the hazard interval because this is a creature grid search.
-inline constexpr uint32 INFERNAL_CACHE_INTERVAL = 200;
+// Around ANETHERON_TANK_POSITION. 150 yd leaves room for wherever a player tank holds him.
+inline constexpr float INFERNAL_SEARCH_RADIUS = 150.0f;
+inline constexpr uint32 INFERNAL_CACHE_INTERVAL_MS = 200;
 // A landing Infernal stuns everybody within 10 yd for 2s (31302) and then burns everything within
 // 10 yd of itself for as long as it lives with Immolation (31304 triggering 31303).
 inline constexpr float INFERNAL_DANGER_RADIUS = 10.0f;
@@ -162,9 +163,9 @@ inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1
 Position const& GetInfernalTankPosition(Player* bot);
 
 Player* GetInfernoTarget(Unit* anetheron);
-// Every living Towering Infernal, oldest first, read through the "hyjal infernals" value.
+// Every living Towering Infernal, oldest first, kept in the instance state.
 GuidVector FindInfernalGuids(Player* bot);
-GuidVector const& GetInfernalGuids(PlayerbotAI* botAI);
+GuidVector const& GetInfernalGuids(Player* bot);
 // The first Infernal that the Infernal tank does not have aggro on.
 Unit* GetLooseInfernal(PlayerbotAI* botAI);
 Unit* GetNearestInfernal(PlayerbotAI* botAI);
@@ -230,14 +231,14 @@ inline constexpr float CLEAVE_DANGER_ARC = 200.0f * static_cast<float>(M_PI) / 1
 inline Position const AZGALOR_TANK_POSITION      = { 5494.594f, -2747.069f, 1487.800f };
 // On top of Thrall's starting position, in order to get Thrall to aggro as soon as he is hit.
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
-// The Doomguard position is about 50 yd from Azgalor's tank position. 100 yd provides a buffer
-// (including for if a player tank positions differently).
-inline constexpr float DOOMGUARD_SEARCH_RADIUS = 100.0f;
-inline constexpr uint32 DOOMGUARD_CACHE_INTERVAL = 200;
+// Around AZGALOR_TANK_POSITION. The Doomguard position is about 50 yd from it; 150 yd leaves room
+// for wherever a player tank holds him.
+inline constexpr float DOOMGUARD_SEARCH_RADIUS = 150.0f;
+inline constexpr uint32 DOOMGUARD_CACHE_INTERVAL_MS = 200;
 
 bool IsSafeFromAzgalorCleave(Unit* azgalor, float x, float y);
 // Each Rain of Fire is its own dynamic object that expires after 10s; there can be 2 up at a time.
-std::vector<Position> GetRainOfFirePositions(PlayerbotAI* botAI);
+std::vector<Position> const& GetRainOfFirePositions(PlayerbotAI* botAI);
 bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearRainOfFire(PlayerbotAI* botAI, float radius);
 bool IsInRainOfFire(PlayerbotAI* botAI);
@@ -284,13 +285,15 @@ bool IsNearDoomfire(PlayerbotAI* botAI, float radius);
 bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius);
 // Every live Doomfire trail patch the cache holds, for callers that rely on a scoring system to
 // determine where bots should move to.
-std::vector<Position> GetDoomfirePositions(PlayerbotAI* botAI);
+std::vector<Position> const& GetDoomfirePositions(PlayerbotAI* botAI);
 bool GetPendingAirBurstCast(uint32 instanceId, AirBurstData& airBurst);
 
 // Shared encounter state
 
 struct HyjalInstanceState
 {
+    EncounterHelpers::InstanceCreatureList anetheronInfernals;
+    EncounterHelpers::InstanceCreatureList azgalorDoomguards;
     std::optional<AirBurstData> archimondeAirBurstTarget;
 };
 

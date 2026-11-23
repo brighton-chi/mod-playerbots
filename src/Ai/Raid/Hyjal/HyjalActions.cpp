@@ -467,7 +467,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     if (!azgalor)
         return false;
 
-    std::vector<Position> const pools = GetRainOfFirePositions(botAI);
+    std::vector<Position> const& pools = GetRainOfFirePositions(botAI);
     if (pools.empty())
         return false;
 
@@ -635,7 +635,7 @@ bool ArchimondeSpreadRangedAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    std::vector<Position> const trail = GetDoomfirePositions(botAI);
+    std::vector<Position> const& trail = GetDoomfirePositions(botAI);
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
