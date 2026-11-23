@@ -6,6 +6,7 @@
 
 #include "ZAActions.h"
 #include "EncounterHelpers.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "ThreatHelpers.h"
@@ -226,7 +227,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 {
-    std::vector<Unit*> const bombs = GetNearbyFireBombs(botAI);
+    std::vector<Unit*> const bombs = GetFireBombs(bot);
 
     if (bombs.empty())
         return false;
@@ -267,7 +268,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 
 bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 {
-    auto [hatcherLow, hatcherHigh] = GetAmanishiHatcherPair(botAI);
+    auto [hatcherLow, hatcherHigh] = GetAmanishiHatcherPair(bot);
     if (!hatcherLow || !hatcherHigh || hatcherHigh == hatcherLow)
         return false;
 
@@ -302,8 +303,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 bool HalazziDpsAttackTotemAndBossAction::Execute(Event /*event*/)
 {
     // Target priority 1: Corrupted Lightning Totems
-    if (Creature* totem = bot->FindNearestCreature(
-            Id(ZaNpcs::NPC_CORRUPTED_LIGHTNING_TOTEM), ZA_CREATURE_SEARCH_RADIUS))
+    if (Creature* totem = GetNearestCorruptedLightningTotem(bot))
     {
         if (MarkTargetWithSkull(bot, totem))
             return true;
@@ -326,9 +326,12 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
     auto const& priority = HEX_LORD_MALACRASS_DPS_PRIORITY;
     Unit* priorityTarget = nullptr;
     size_t bestRank = priority.size();
-    for (ObjectGuid const& guid : AI_VALUE_REF(GuidVector, "hex lord malacrass dps targets"))
+    GuidVector const& guids = GetInstanceCreatureList(
+        ZaState(bot->GetInstanceId()).hexLordMalacrassDpsTargets,
+        HEX_LORD_MALACRASS_DPS_TARGET_CACHE_INTERVAL_MS, bot, FindHexLordMalacrassDpsTargetGuids);
+    for (ObjectGuid const& guid : guids)
     {
-        Unit* unit = botAI->GetUnit(guid);
+        Creature* unit = ObjectAccessor::GetCreature(*bot, guid);
         if (!unit || !unit->IsAlive() || !unit->IsInWorld())
             continue;
 

@@ -99,7 +99,7 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         if (boss->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
             return 1.0f;
 
-        return CountJanalaiHatchlingsByEntry(botAI) >= JANALAI_BLOODLUST_HATCHLING_COUNT ?
+        return CountJanalaiHatchlingsByEntry(bot) >= JANALAI_BLOODLUST_HATCHLING_COUNT ?
             1.0f : 0.0f;
     }
 

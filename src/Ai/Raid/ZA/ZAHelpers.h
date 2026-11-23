@@ -8,6 +8,7 @@
 #define PLAYERBOTS_ZAHELPERS_H
 
 #include "Common.h"
+#include "EncounterHelpers.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 #include <array>
@@ -16,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+class Creature;
 class GameObject;
 class Player;
 class PlayerbotAI;
@@ -156,6 +158,8 @@ bool IsNalorakkInBearForm(Unit* nalorakk);
 
 inline constexpr float JANALAI_PLATFORM_Z = 19.146f;
 inline constexpr float JANALAI_RANGED_SPREAD_RADIUS = 15.0f;
+// Around JANALAI_TANK_POSITION, where Jan'alai is moved for each Fire Bomb event. Bombs and the
+// Fire Wall land within 34 yd of it.
 inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 40.0f;
 inline constexpr float JANALAI_FIRE_BOMB_SAFE_SPOT_SEARCH_RADIUS = 30.0f;
 // Fire Bomb (42630) has a 4 yd radius. The 1.5 yd extra padding is added for realism.
@@ -184,20 +188,19 @@ inline std::vector<Position> const JANALAI_SAFE_ZONE = {
     Position(-12.115170f, 1167.6681f, JANALAI_PLATFORM_Z)
 };
 
-// Every egg and both Hatcher spawns are within 91 yd of anywhere on the platform; 100 yd provides a
-// buffer.
+// Around JANALAI_TANK_POSITION. Every egg and both Hatcher spawns are within 70 yd of it.
 inline constexpr float JANALAI_ADD_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 JANALAI_ADD_CACHE_INTERVAL_MS = 200;
 
 // Living Hatchers and Hatchlings.
 GuidVector FindJanalaiAddGuids(Player* bot);
-std::vector<Unit*> GetJanalaiAdds(PlayerbotAI* botAI, ZaNpcs npc);
-std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI);
-uint32 CountJanalaiHatchlingsByEntry(PlayerbotAI* botAI);
+std::vector<Unit*> GetJanalaiAdds(Player* bot, ZaNpcs npc);
+std::pair<Unit*, Unit*> GetAmanishiHatcherPair(Player* bot);
+uint32 CountJanalaiHatchlingsByEntry(Player* bot);
 // Jan'alai casts Fire Bomb Channel at the beginning of each Fire Bomb event until bombs detonate.
 bool IsJanalaiBombing(Unit* janalai);
-GuidVector FindNearbyFireBombGuids(Player* bot);
-std::vector<Unit*> GetNearbyFireBombs(PlayerbotAI* botAI);
+GuidVector FindFireBombGuids(Player* bot);
+std::vector<Unit*> GetFireBombs(Player* bot);
 bool FindSafeStepInJanalaiZone(
     Player* bot, std::vector<Unit*> const& hazards, std::vector<Position> const& safeZone,
     float maxSearchDistance, float hazardRadius, float moveDist,
@@ -205,8 +208,17 @@ bool FindSafeStepInJanalaiZone(
 
 // Halazzi <Lynx Avatar>
 
+// Around HALAZZI_TANK_POSITION. He summons the totem where he stands; 100 yd leaves room for
+// wherever he is tanked.
+inline constexpr float HALAZZI_TOTEM_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 HALAZZI_TOTEM_CACHE_INTERVAL_MS = 200;
+
 // Right near his starting position.
 inline Position const HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
+
+GuidVector FindCorruptedLightningTotemGuids(Player* bot);
+// The nearest within ZA_CREATURE_SEARCH_RADIUS of the bot.
+Creature* GetNearestCorruptedLightningTotem(Player* bot);
 
 // Hex Lord Malacrass
 
@@ -215,8 +227,8 @@ inline Position const HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
 inline constexpr float ZA_FREEZING_TRAP_CLEARANCE = 11.0f;
 inline constexpr float ZA_FREEZING_TRAP_SEARCH_RADIUS = 16.0f;
 inline constexpr uint32 FREEZING_TRAP_CACHE_INTERVAL_MS = 200;
-// The adds spawn in a row within 12 yd of Malacrass; 100 yd leaves room for wherever they are
-// tanked.
+// Around Malacrass's spawn. The adds spawn in a row within 12 yd of it; 100 yd leaves room for
+// wherever they are tanked.
 inline constexpr float HEX_LORD_MALACRASS_DPS_TARGET_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 HEX_LORD_MALACRASS_DPS_TARGET_CACHE_INTERVAL_MS = 200;
 
@@ -232,6 +244,8 @@ inline constexpr std::array HEX_LORD_MALACRASS_DPS_PRIORITY = {
     ZaNpcs::NPC_SLITHER,
     ZaNpcs::NPC_HEX_LORD_MALACRASS,
 };
+
+inline Position const HEX_LORD_MALACRASS_SPAWN_POSITION = { 117.363f, 923.569f, 33.973f };
 
 ObjectGuid FindNearbyFreezingTrapGuid(Player* bot);
 GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI);
@@ -273,6 +287,10 @@ Player* GetZuljinCreepingParalysisDispelTarget(Player* bot);
 struct ZaInstanceState
 {
     std::optional<uint32> akilzonStormTimer;
+    EncounterHelpers::InstanceCreatureList janalaiAdds;
+    EncounterHelpers::InstanceCreatureList janalaiFireBombs;
+    EncounterHelpers::InstanceCreatureList halazziTotems;
+    EncounterHelpers::InstanceCreatureList hexLordMalacrassDpsTargets;
 };
 
 ZaInstanceState& ZaState(uint32 instanceId);

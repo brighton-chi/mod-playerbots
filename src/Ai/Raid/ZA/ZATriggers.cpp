@@ -110,7 +110,7 @@ bool JanalaiSpreadForFlameBreathTrigger::IsActiveInEncounter()
     if (!janalai)
         return false;
 
-    if (!GetJanalaiAdds(botAI, ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING).empty())
+    if (!GetJanalaiAdds(bot, ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING).empty())
         return false;
 
     return !IsJanalaiBombing(janalai);
@@ -134,7 +134,7 @@ bool JanalaiAmanishiHatchersSpawnedTrigger::IsActiveInEncounter()
     if (!janalai || janalai->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
         return false;
 
-    for (Unit* hatcher : GetJanalaiAdds(botAI, ZaNpcs::NPC_AMANISHI_HATCHER))
+    for (Unit* hatcher : GetJanalaiAdds(bot, ZaNpcs::NPC_AMANISHI_HATCHER))
     {
         if (bot->GetDistance(hatcher) <= ZA_CREATURE_SEARCH_RADIUS)
             return true;

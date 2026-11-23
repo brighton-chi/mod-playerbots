@@ -6,13 +6,13 @@
 
 #include "ZAHelpers.h"
 #include "EncounterHelpers.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <limits>
-#include <list>
 #include <mutex>
 #include <string_view>
 #include <unordered_map>
@@ -150,23 +150,14 @@ GuidVector FindJanalaiAddGuids(Player* bot)
         Id(ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING),
     };
 
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(creatures, entries, JANALAI_ADD_SEARCH_RADIUS);
-
-    GuidVector guids;
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
-    return guids;
+    return FindCreatureGuidsAround(bot, JANALAI_TANK_POSITION, JANALAI_ADD_SEARCH_RADIUS, entries);
 }
 
-std::vector<Unit*> GetJanalaiAdds(PlayerbotAI* botAI, ZaNpcs npc)
+std::vector<Unit*> GetJanalaiAdds(Player* bot, ZaNpcs npc)
 {
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("jan'alai adds")->RefGet();
+    GuidVector const& guids = GetInstanceCreatureList(
+        ZaState(bot->GetInstanceId()).janalaiAdds, JANALAI_ADD_CACHE_INTERVAL_MS, bot,
+        FindJanalaiAddGuids);
 
     std::vector<Unit*> adds;
     for (ObjectGuid const& guid : guids)
@@ -174,7 +165,7 @@ std::vector<Unit*> GetJanalaiAdds(PlayerbotAI* botAI, ZaNpcs npc)
         if (guid.GetEntry() != Id(npc))
             continue;
 
-        Unit* add = botAI->GetUnit(guid);
+        Creature* add = ObjectAccessor::GetCreature(*bot, guid);
         if (add && add->IsAlive() && add->IsInWorld())
             adds.push_back(add);
     }
@@ -182,12 +173,12 @@ std::vector<Unit*> GetJanalaiAdds(PlayerbotAI* botAI, ZaNpcs npc)
     return adds;
 }
 
-std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
+std::pair<Unit*, Unit*> GetAmanishiHatcherPair(Player* bot)
 {
     Unit* lowest = nullptr;
     Unit* highest = nullptr;
 
-    for (Unit* unit : GetJanalaiAdds(botAI, ZaNpcs::NPC_AMANISHI_HATCHER))
+    for (Unit* unit : GetJanalaiAdds(bot, ZaNpcs::NPC_AMANISHI_HATCHER))
     {
         if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
             lowest = unit;
@@ -199,10 +190,10 @@ std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
     return {lowest, highest};
 }
 
-uint32 CountJanalaiHatchlingsByEntry(PlayerbotAI* botAI)
+uint32 CountJanalaiHatchlingsByEntry(Player* bot)
 {
     return static_cast<uint32>(
-        GetJanalaiAdds(botAI, ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING).size());
+        GetJanalaiAdds(bot, ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING).size());
 }
 
 bool IsJanalaiBombing(Unit* janalai)
@@ -210,35 +201,25 @@ bool IsJanalaiBombing(Unit* janalai)
     return janalai && janalai->HasAura(Id(ZaSpells::SPELL_FIRE_BOMB_CHANNEL));
 }
 
-GuidVector FindNearbyFireBombGuids(Player* bot)
+GuidVector FindFireBombGuids(Player* bot)
 {
-    std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(
-        creatureList, Id(ZaNpcs::NPC_FIRE_BOMB), JANALAI_FIRE_BOMB_SEARCH_RADIUS);
-
-    GuidVector guids;
-    guids.reserve(creatureList.size());
-    for (Creature* creature : creatureList)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
-    return guids;
+    return FindCreatureGuidsAround(
+        bot, JANALAI_TANK_POSITION, JANALAI_FIRE_BOMB_SEARCH_RADIUS, { Id(ZaNpcs::NPC_FIRE_BOMB) });
 }
 
-std::vector<Unit*> GetNearbyFireBombs(PlayerbotAI* botAI)
+std::vector<Unit*> GetFireBombs(Player* bot)
 {
-    GuidVector const& guids =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("jan'alai fire bombs")->RefGet();
+    GuidVector const& guids = GetInstanceCreatureList(
+        ZaState(bot->GetInstanceId()).janalaiFireBombs, FIRE_BOMB_CACHE_INTERVAL_MS, bot,
+        FindFireBombGuids);
 
     std::vector<Unit*> bombs;
     bombs.reserve(guids.size());
     for (ObjectGuid const& guid : guids)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive())
-            bombs.push_back(unit);
+        Creature* bomb = ObjectAccessor::GetCreature(*bot, guid);
+        if (bomb && bomb->IsAlive())
+            bombs.push_back(bomb);
     }
 
     return bombs;
@@ -282,7 +263,38 @@ bool FindSafeStepInJanalaiZone(
 }
 
 // Halazzi <Lynx Avatar>
-// N/A
+
+GuidVector FindCorruptedLightningTotemGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, HALAZZI_TANK_POSITION, HALAZZI_TOTEM_SEARCH_RADIUS,
+        { Id(ZaNpcs::NPC_CORRUPTED_LIGHTNING_TOTEM) });
+}
+
+Creature* GetNearestCorruptedLightningTotem(Player* bot)
+{
+    GuidVector const& guids = GetInstanceCreatureList(
+        ZaState(bot->GetInstanceId()).halazziTotems, HALAZZI_TOTEM_CACHE_INTERVAL_MS, bot,
+        FindCorruptedLightningTotemGuids);
+
+    Creature* nearest = nullptr;
+    float nearestDistance = ZA_CREATURE_SEARCH_RADIUS;
+    for (ObjectGuid const& guid : guids)
+    {
+        Creature* totem = ObjectAccessor::GetCreature(*bot, guid);
+        if (!totem || !totem->IsAlive())
+            continue;
+
+        float const distance = bot->GetDistance(totem);
+        if (distance <= nearestDistance)
+        {
+            nearestDistance = distance;
+            nearest = totem;
+        }
+    }
+
+    return nearest;
+}
 
 // Hex Lord Malacrass
 
@@ -312,18 +324,9 @@ GuidVector FindHexLordMalacrassDpsTargetGuids(Player* bot)
     for (ZaNpcs const npc : HEX_LORD_MALACRASS_DPS_PRIORITY)
         entries.push_back(Id(npc));
 
-    std::list<Creature*> creatures;
-    bot->GetCreatureListWithEntryInGrid(
-        creatures, entries, HEX_LORD_MALACRASS_DPS_TARGET_SEARCH_RADIUS);
-
-    GuidVector guids;
-    for (Creature* creature : creatures)
-    {
-        if (creature && creature->IsAlive())
-            guids.push_back(creature->GetGUID());
-    }
-
-    return guids;
+    return FindCreatureGuidsAround(
+        bot, HEX_LORD_MALACRASS_SPAWN_POSITION, HEX_LORD_MALACRASS_DPS_TARGET_SEARCH_RADIUS,
+        entries);
 }
 
 // Zul'jin
@@ -409,7 +412,10 @@ bool ZaResetInstance(uint32 instanceId)
     if (it == zaStates.end())
         return false;
 
-    bool const wasSet = it->second.akilzonStormTimer.has_value();
+    ZaInstanceState const& state = it->second;
+    bool const wasSet = state.akilzonStormTimer || state.janalaiAdds.refreshedAt ||
+        state.janalaiFireBombs.refreshedAt || state.halazziTotems.refreshedAt ||
+        state.hexLordMalacrassDpsTargets.refreshedAt;
     zaStates.erase(it);
     return wasSet;
 }
