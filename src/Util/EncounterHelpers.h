@@ -142,17 +142,23 @@ bool ResetIfSet(std::optional<T>& field)
 
 // Instance Creature Lists
 
-// A creature search kept in a raid's instance state, so that one search serves every bot. The
-// search must give the same list whichever bot runs it: no per-bot filter, and a fixed center (see
-// FindCreatureGuidsAround).
+// A cached creature search, like a CalculatedValue, but kept once in the raid's instance state
+// instead of once per bot, so one search serves every bot. Use it when the search gives the same
+// list whichever bot runs it: no per-bot filter, and a fixed center (see FindCreatureGuidsAround).
+// Do not put a CalculatedValue on top; that only adds a second delay. A search whose answer depends
+// on the bot asking (a hazard search around the bot, the object nearest to it) stays a
+// CalculatedValue.
 struct InstanceCreatureList
 {
     std::optional<uint32> refreshedAt;
     GuidVector guids;
 };
 
-// Runs search(bot) if the list is older than intervalMs, then returns it. A GUID can be up to
-// intervalMs old, so resolve each one and check that it is alive.
+// The first read after intervalMs runs search(bot) and stores the list; later reads return it.
+// Readers resolve each GUID and check it is alive, so deaths, positions, and auras are current on
+// every read, and intervalMs only delays a newly spawned unit. Use about 1s for units that are up
+// from the pull or spawn slowly, and 200ms where bots must react to a spawn. Read each list through
+// one getter, so every reader passes the same interval.
 GuidVector const& GetInstanceCreatureList(
     InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*));
 // Clears the list. Returns true if it had been searched.
