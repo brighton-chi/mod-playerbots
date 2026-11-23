@@ -190,8 +190,7 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
     {
         // This grid search captures the 3s after spawn, during which Reflections are passive and
         // neither "find target" nor standard target acquisition through "attackers" can locate it.
-        if (Creature* reflection = bot->FindNearestCreature(
-                Id(SwpNpcs::NPC_SINISTER_REFLECTION), KILJAEDEN_REFLECTION_SEARCH_RADIUS))
+        if (Creature* reflection = GetNearestSinisterReflection(bot))
         {
             // Once Reflections are aggressive, tank assist can take over.
             if (reflection->GetReactState() == REACT_PASSIVE &&

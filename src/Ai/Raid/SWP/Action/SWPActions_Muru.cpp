@@ -760,7 +760,7 @@ bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    Creature* singularity = GetMuruSingularity(bot);
     if (!singularity || !singularity->IsAlive())
         return false;
 

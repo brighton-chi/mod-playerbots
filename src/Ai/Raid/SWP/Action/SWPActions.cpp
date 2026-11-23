@@ -150,14 +150,14 @@ bool SunwellRemoveAuraAction::Execute(Event /*event*/)
 
 bool VolatileFiendInterceptAction::isUseful()
 {
-    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* fiend = GetSwpVolatileFiend(botAI);
     return fiend && fiend->IsAlive() && fiend->IsSummon() &&
         AI_VALUE(Unit*, "current target") != fiend && IsVolatileFiendInterceptor(bot);
 }
 
 bool VolatileFiendInterceptAction::Execute(Event /*event*/)
 {
-    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* fiend = GetSwpVolatileFiend(botAI);
     return fiend && Attack(fiend);
 }
 
@@ -168,7 +168,7 @@ bool VolatileFiendMoveAwayAction::isUseful()
 
 bool VolatileFiendMoveAwayAction::Execute(Event /*event*/)
 {
-    Creature* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* fiend = GetSwpVolatileFiend(botAI);
     if (!fiend || !fiend->IsAlive())
         return false;
 

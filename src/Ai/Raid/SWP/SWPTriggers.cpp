@@ -51,7 +51,7 @@ bool SunwellAuraToRemoveTrigger::IsActive()
 
 bool VolatileFiendSelfDestructsWhenNearTrigger::IsActive()
 {
-    Unit* fiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Unit* fiend = GetSwpVolatileFiend(botAI);
     return fiend && fiend->IsAlive();
 }
 
@@ -740,7 +740,7 @@ bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
     if (!entropius)
         return false;
 
-    Creature* singularity = botAI->GetCreature(AI_VALUE(ObjectGuid, "muru singularity"));
+    Creature* singularity = GetMuruSingularity(bot);
     return singularity && singularity->IsAlive() &&
         bot->GetExactDist(singularity) < GetSingularityClearance(bot, entropius);
 }
@@ -749,7 +749,7 @@ bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActiveInEncounter()
 {
-    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > HAND_SEARCH_RADIUS)
+    if (bot->GetExactDist2d(SUNWELL_CENTER_POSITION) > KILJAEDEN_ADD_SEARCH_RADIUS)
         return false;
 
     return FindThreatTarget(bot, "hand of the deceiver");

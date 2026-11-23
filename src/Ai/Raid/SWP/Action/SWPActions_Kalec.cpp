@@ -268,8 +268,8 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
         return false;
 
     constexpr float searchRadius = 20.0f;
-    Creature* kalec = bot->FindNearestCreature(Id(SwpNpcs::NPC_KALECGOS_HUMANOID), searchRadius);
-    if (!kalec || sathrovarr->GetVictim() != kalec)
+    Creature* kalec = GetKalecgosUnit(bot, SwpNpcs::NPC_KALECGOS_HUMANOID);
+    if (!kalec || bot->GetDistance(kalec) > searchRadius || sathrovarr->GetVictim() != kalec)
         return false;
 
     constexpr float arrivalDist = 3.0f;

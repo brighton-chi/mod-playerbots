@@ -75,7 +75,7 @@ float VolatileFiendRestrictApproachMultiplier::GetValue(Action* action)
     if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    Creature* volatileFiend = botAI->GetCreature(AI_VALUE(ObjectGuid, "swp volatile fiend"));
+    Creature* volatileFiend = GetSwpVolatileFiend(botAI);
     if (!volatileFiend || !volatileFiend->IsAlive())
         return 1.0f;
 
