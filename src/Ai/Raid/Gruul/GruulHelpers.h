@@ -169,7 +169,7 @@ struct GruulInstanceState
 GruulInstanceState& GruulState(uint32 instanceId);
 GruulInstanceState* FindGruulState(uint32 instanceId);
 // Keeps the class roles (see ClassRoleAssignment).
-bool GruulResetInstance(uint32 instanceId);
+void GruulResetInstance(uint32 instanceId);
 
 }
 

@@ -1768,10 +1768,9 @@ bool KaraResetInstance(uint32 instanceId)
         return false;
 
     KaraInstanceState const& state = it->second;
-    bool const wasSet = state.attumenDpsHoldTimer || state.moroesGuests.refreshedAt ||
-        state.netherspitePortalPhaseTimer || AreNetherspitePortalsKnown(state) ||
-        !state.netherspiteVoidZones.empty() || !state.netherspiteBanishSlots.empty() ||
-        state.malchezaarInfernals.refreshedAt || state.nightbaneDpsHoldTimer ||
+    bool const wasSet = state.attumenDpsHoldTimer || state.netherspitePortalPhaseTimer ||
+        AreNetherspitePortalsKnown(state) || !state.netherspiteVoidZones.empty() ||
+        !state.netherspiteBanishSlots.empty() || state.nightbaneDpsHoldTimer ||
         state.nightbaneFlightStage || state.nightbaneFlightStackPosition ||
         state.nightbaneRainOfBonesCenter || state.nightbaneMeleePosition ||
         state.nightbaneRangedPosition;

@@ -2860,11 +2860,9 @@ bool SscResetInstance(uint32 instanceId)
     bool const wasSet =
         state.hydrossFrostPhaseStartTime || state.hydrossNaturePhaseStartTime ||
         state.hydrossFrostMarkMaxedTime || state.hydrossNatureMarkMaxedTime ||
-        state.lurkerGuardians.refreshedAt || state.lurkerGuardianTankAssignments ||
-        state.leotherasUnits.refreshedAt || state.leotherasHumanoidPhaseStartTime ||
+        state.lurkerGuardianTankAssignments || state.leotherasHumanoidPhaseStartTime ||
         state.leotherasWhirlwindEndTime || state.leotherasDemonPhaseStartTime ||
-        state.leotherasFinalPhaseStartTime || state.karathressUnits.refreshedAt ||
-        state.karathressDpsHoldTimer || state.vashjAdds.refreshedAt ||
+        state.leotherasFinalPhaseStartTime || state.karathressDpsHoldTimer ||
         state.vashjGroundingShaman || state.vashjStationHolders || state.vashjTaintedCoreLooter ||
         state.vashjCorePassingChain;
 

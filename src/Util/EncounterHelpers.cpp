@@ -319,10 +319,10 @@ GuidVector const& GetInstanceCreatureList(
     return list.guids;
 }
 
-bool ResetInstanceCreatureList(InstanceCreatureList& list)
+void ResetInstanceCreatureList(InstanceCreatureList& list)
 {
     list.guids.clear();
-    return ResetIfSet(list.refreshedAt);
+    list.refreshedAt.reset();
 }
 
 namespace

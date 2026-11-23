@@ -298,9 +298,7 @@ bool SwpResetInstance(uint32 instanceId)
 
     SwpInstanceState& state = it->second;
     bool const wasSet = state.kalecgos || state.brutallus || state.felmyst ||
-        state.eredarTwins || state.muru || state.kiljaeden || state.kalecgosUnits.refreshedAt ||
-        state.felmystDemonicVapors.refreshedAt || state.gauntletVolatileFiends.refreshedAt ||
-        state.muruUnits.refreshedAt || state.kiljaedenAdds.refreshedAt;
+        state.eredarTwins || state.muru || state.kiljaeden;
     SwpInstanceState kept;
     kept.alythessPaladinTank = state.alythessPaladinTank;
     kept.kiljaedenDragonOrbUser = state.kiljaedenDragonOrbUser;

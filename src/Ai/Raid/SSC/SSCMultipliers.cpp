@@ -70,22 +70,6 @@ bool IsMeleeReachSpell(Player* bot, Action* action)
         (bot->getClass() == CLASS_ROGUE && dynamic_cast<CastKillingSpreeAction*>(action));
 }
 
-bool IsAnyVashjAddUntanked(PlayerbotAI* botAI)
-{
-    for (ObjectGuid const& guid : GetVashjAdds(botAI->GetBot()))
-    {
-        uint32 const entry = guid.GetEntry();
-        if (entry != Id(SscNpcs::NPC_COILFANG_ELITE) && entry != Id(SscNpcs::NPC_COILFANG_STRIDER))
-            continue;
-
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && !IsVashjAddHeldByTank(unit))
-            return true;
-    }
-
-    return false;
-}
-
 } // end anonymous namespace
 
 // Shared
@@ -965,12 +949,11 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
 
     bool const isReachAction = dynamic_cast<ReachTargetAction*>(action);
     bool const isHealSpell = dynamic_cast<CastHealingSpellAction*>(action);
-    bool const isDebuffOnAttacker = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
     bool const isCombatFormationAction = dynamic_cast<CombatFormationMoveAction*>(action);
     bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
 
-    if (!isAlwaysBlocked && !isReachAction && !isHealSpell && !isDebuffOnAttacker &&
-        !isCombatFormationAction && !isDropTarget && !IsRepositionAction(bot, action))
+    if (!isAlwaysBlocked && !isReachAction && !isHealSpell && !isCombatFormationAction &&
+        !isDropTarget && !IsRepositionAction(bot, action))
     {
         return 1.0f;
     }
@@ -989,15 +972,6 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     // Tanks and dps should not waste mana on healing in their non-combat engines.
     if (isHealSpell)
         return PlayerbotAI::IsHeal(bot) ? 1.0f : 0.0f;
-
-    // Don't put secondary dots on the Enchanted Elementals or untanked Striders/Elites.
-    if (isDebuffOnAttacker)
-    {
-        if (IsEnchantedElemental(AI_VALUE(Unit*, "current target")))
-            return 0.0f;
-
-        return PlayerbotAI::IsTank(bot) || !IsAnyVashjAddUntanked(botAI) ? 1.0f : 0.0f;
-    }
 
     // Disable disperse and tank face and, if the target is an Enchanted Elemental, set behind.
     if (isCombatFormationAction)

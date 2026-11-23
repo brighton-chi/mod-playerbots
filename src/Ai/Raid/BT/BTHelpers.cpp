@@ -3015,12 +3015,10 @@ bool BtResetInstance(uint32 instanceId)
 
     BtInstanceState& state = it->second;
     bool const wasSet = state.najentusSpineAssignments || state.najentusSpineThrower ||
-        state.najentusSpineThrowTime || state.shadeOfAkamaAdds.refreshedAt ||
-        state.gorefiendConstructs.refreshedAt || state.councilDpsWaitTimer ||
-        state.illidanLastPhase || state.illidanPreviousPhase || state.illidanPhaseStartTime ||
+        state.najentusSpineThrowTime || state.councilDpsWaitTimer || state.illidanLastPhase ||
+        state.illidanPreviousPhase || state.illidanPhaseStartTime ||
         state.illidanFlamePhaseStartTime || state.eastFlameGuid || state.westFlameGuid ||
-        state.illidanTankAggroPhase || state.illidanInfections || state.illidanUnits.refreshedAt ||
-        state.illidanShadowDemons.refreshedAt;
+        state.illidanTankAggroPhase || state.illidanInfections;
 
     // Not erased because the class roles outlive encounters. See ClassRoleAssignment.
     BtInstanceState kept;

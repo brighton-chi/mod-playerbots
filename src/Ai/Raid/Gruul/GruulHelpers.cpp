@@ -252,15 +252,14 @@ GruulInstanceState* FindGruulState(uint32 instanceId)
     return it != gruulStates.end() ? &it->second : nullptr;
 }
 
-bool GruulResetInstance(uint32 instanceId)
+void GruulResetInstance(uint32 instanceId)
 {
     GruulInstanceState* state = FindGruulState(instanceId);
     if (!state)
-        return false;
+        return;
 
-    bool reset = ResetInstanceCreatureList(state->maulgarCouncil);
-    reset |= ResetInstanceCreatureList(state->wildFelStalkers);
-    return reset;
+    ResetInstanceCreatureList(state->maulgarCouncil);
+    ResetInstanceCreatureList(state->wildFelStalkers);
 }
 
 }

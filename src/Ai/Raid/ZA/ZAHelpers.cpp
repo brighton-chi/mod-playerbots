@@ -412,10 +412,7 @@ bool ZaResetInstance(uint32 instanceId)
     if (it == zaStates.end())
         return false;
 
-    ZaInstanceState const& state = it->second;
-    bool const wasSet = state.akilzonStormTimer || state.janalaiAdds.refreshedAt ||
-        state.janalaiFireBombs.refreshedAt || state.halazziTotems.refreshedAt ||
-        state.hexLordMalacrassDpsTargets.refreshedAt;
+    bool const wasSet = it->second.akilzonStormTimer.has_value();
     zaStates.erase(it);
     return wasSet;
 }

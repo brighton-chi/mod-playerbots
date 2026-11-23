@@ -41,7 +41,7 @@ struct SwpInstanceState
 SwpInstanceState& SwpState(uint32 instanceId);
 SwpInstanceState* FindSwpState(uint32 instanceId);
 // Clears every boss's state and creature list but keeps the class roles and the orb user. Returns
-// true if any was set.
+// true if any boss state was set.
 bool SwpResetInstance(uint32 instanceId);
 // Picks every class role player, and Kil'jaeden's orb user, again out of encounters; during one,
 // only fills an empty role or replaces a player who died or left.

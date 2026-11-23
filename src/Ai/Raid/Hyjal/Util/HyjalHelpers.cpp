@@ -734,9 +734,7 @@ bool HyjalResetInstance(uint32 instanceId)
     if (it == hyjalStates.end())
         return false;
 
-    HyjalInstanceState const& state = it->second;
-    bool const wasSet = state.anetheronInfernals.refreshedAt ||
-        state.azgalorDoomguards.refreshedAt || state.archimondeAirBurstTarget;
+    bool const wasSet = it->second.archimondeAirBurstTarget.has_value();
     hyjalStates.erase(it);
     return wasSet;
 }

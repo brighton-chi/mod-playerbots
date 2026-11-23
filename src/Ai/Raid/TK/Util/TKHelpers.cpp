@@ -694,11 +694,7 @@ bool TkResetInstance(uint32 instanceId)
 
     TkInstanceState& state = it->second;
     bool const wasSet = state.lastRebirthState || state.isAlarInPhase2 ||
-        state.alarEmbers.refreshedAt || state.alarFlamePatches.refreshedAt ||
-        !state.voidReaverArcaneOrbs.empty() || state.solarianAdds.refreshedAt ||
-        state.advisorDpsHoldTimer || state.kaelthasPhoenixes.refreshedAt ||
-        state.kaelthasLegendaryWeapons.refreshedAt || state.kaelthasFlameStrikes.refreshedAt ||
-        state.kaelthasPhoenixEggs.refreshedAt;
+        !state.voidReaverArcaneOrbs.empty() || state.advisorDpsHoldTimer;
 
     // Not erased: the class roles outlive encounters, see ClassRoleAssignment.
     TkInstanceState kept;

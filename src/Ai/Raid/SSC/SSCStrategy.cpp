@@ -331,9 +331,29 @@ void AppendLadyVashjGeneratorPhaseExclusions(Player* bot, GuidSet& exclusions)
         exclusions.insert(vashj->GetGUID());
 }
 
+// In phase 2, dots skip Enchanted Elementals and Elites and Striders that no tank holds.
+void AppendLadyVashjPhase2DebuffExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
+{
+    Player* bot = botAI->GetBot();
+    if (GetLadyVashjPhase(GetSscBoss(bot, SscBosses::DATA_LADY_VASHJ)) != 2)
+        return;
+
+    for (ObjectGuid const& guid : GetVashjAdds(bot))
+    {
+        uint32 const entry = guid.GetEntry();
+        bool const isTankableAdd =
+            entry == Id(SscNpcs::NPC_COILFANG_ELITE) || entry == Id(SscNpcs::NPC_COILFANG_STRIDER);
+        if (entry == Id(SscNpcs::NPC_ENCHANTED_ELEMENTAL) ||
+            (isTankableAdd && !IsVashjAddHeldByTank(botAI->GetUnit(guid))))
+        {
+            exclusions.insert(guid);
+        }
+    }
+}
+
 } // end anonymous namespace
 
-void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType /*type*/)
+void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
     Player* bot = botAI->GetBot();
     if (IsBossInProgress(bot, SSC_MAP_ID, Id(SscBosses::DATA_MOROGRIM_TIDEWALKER)))
@@ -343,5 +363,9 @@ void RaidSscStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
     }
 
     if (IsBossInProgress(bot, SSC_MAP_ID, Id(SscBosses::DATA_LADY_VASHJ)))
+    {
         AppendLadyVashjGeneratorPhaseExclusions(bot, exclusions);
+        if (type == TargetValueExclusionType::DebuffTarget)
+            AppendLadyVashjPhase2DebuffExclusions(botAI, exclusions);
+    }
 }

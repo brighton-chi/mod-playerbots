@@ -40,7 +40,7 @@ bool GruulsLairResetEncounterStatesAction::Execute(Event /*event*/)
         });
         reset |= ClearStrategyTargetIcon(
             bot, RtiTargetValue::crossIndex, { Id(GruulNpcs::NPC_KROSH_FIREHAND) });
-        reset |= GruulResetInstance(bot->GetInstanceId());
+        GruulResetInstance(bot->GetInstanceId());
     }
 
     return reset;

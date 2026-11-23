@@ -147,7 +147,9 @@ bool ResetIfSet(std::optional<T>& field)
 // list whichever bot runs it: no per-bot filter, and a fixed center (see FindCreatureGuidsAround).
 // Do not put a CalculatedValue on top; that only adds a second delay. A search whose answer depends
 // on the bot asking (a hazard search around the bot, the object nearest to it) stays a
-// CalculatedValue.
+// CalculatedValue. A raid's reset clears its lists but does not count them as state it reset: a
+// list read outside encounters would make the reset action report a reset, and take the tick,
+// every time.
 struct InstanceCreatureList
 {
     std::optional<uint32> refreshedAt;
@@ -161,8 +163,7 @@ struct InstanceCreatureList
 // one getter, so every reader passes the same interval.
 GuidVector const& GetInstanceCreatureList(
     InstanceCreatureList& list, uint32 intervalMs, Player* bot, GuidVector (*search)(Player*));
-// Clears the list. Returns true if it had been searched.
-bool ResetInstanceCreatureList(InstanceCreatureList& list);
+void ResetInstanceCreatureList(InstanceCreatureList& list);
 // Creatures of the entries within 2D radius of a fixed center, on the bot's map; living ones only
 // unless includeDead. Unlike a search centered on the bot, the result is the same whichever bot
 // runs it.

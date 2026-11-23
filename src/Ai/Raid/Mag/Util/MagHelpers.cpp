@@ -232,8 +232,7 @@ bool MagResetInstance(uint32 instanceId)
 
     MagInstanceState const& state = it->second;
     bool const wasSet = state.magDpsHoldTimer || state.blastNovaTimer || state.lastBlastNovaState ||
-        state.ceilingCollapseApplied || !state.botToCubeAssignments.empty() ||
-        state.burningAbyssals.refreshedAt;
+        state.ceilingCollapseApplied || !state.botToCubeAssignments.empty();
 
     magStates.erase(it);
     return wasSet;
