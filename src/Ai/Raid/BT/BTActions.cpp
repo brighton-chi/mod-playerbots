@@ -1682,7 +1682,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
 
     // The mage tank needs Dampen Magic to survive Zerevor, so stealing it is top priority. A
     // custom move is needed since CanCastSpell does not reject a target out of range.
-    if (zerevor->HasAura(Id(BtSpells::SPELL_DAMPEN_MAGIC)))
+    if (zerevor->HasAura(Id(BtSpells::SPELL_ZEREVOR_DAMPEN_MAGIC)))
     {
         if (!bot->IsWithinCombatRange(zerevor, SPELLSTEAL_RANGE))
         {
@@ -1831,7 +1831,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 
     bool const isCaster = PlayerbotAI::IsCaster(bot);
     uint32 const immunity = isCaster ? Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING) :
-        Id(BtSpells::SPELL_BLESSING_OF_PROTECTION);
+        Id(BtSpells::SPELL_GATHIOS_BLESSING_OF_PROTECTION);
 
     Unit* gathios = members.gathios;
     Unit* malande = members.malande;
@@ -1892,7 +1892,7 @@ bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
     {
         case CLASS_ROGUE:
         case CLASS_WARRIOR:
-            return !malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION));
+            return !malande->HasAura(Id(BtSpells::SPELL_GATHIOS_BLESSING_OF_PROTECTION));
         case CLASS_DEATH_KNIGHT:
         case CLASS_SHAMAN:
             return true;
@@ -2380,7 +2380,7 @@ bool IllidanStormrageTrackInfectionsAction::Execute(Event /*event*/)
 
             // The traps are used only for primary infections. Due to the trap cooldown, it is not
             // practical to trap for secondary infections. If all goes well, there should be none.
-            if (!player || !player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
+            if (!player || !player->HasAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRIMARY)))
                 continue;
 
             if (IsExemptFromIllidanInfectionRun(illidan, player))

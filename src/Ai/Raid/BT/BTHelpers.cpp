@@ -1313,9 +1313,9 @@ bool IsIllidariCouncilDpsHoldActive(Player* bot)
 bool HasDangerousCouncilAura(Player* bot)
 {
     static constexpr std::array dangerousAuras = {
-        Id(BtSpells::SPELL_CONSECRATION),
-        Id(BtSpells::SPELL_BLIZZARD),
-        Id(BtSpells::SPELL_FLAMESTRIKE),
+        Id(BtSpells::SPELL_GATHIOS_CONSECRATION),
+        Id(BtSpells::SPELL_ZEREVOR_BLIZZARD),
+        Id(BtSpells::SPELL_ZEREVOR_FLAMESTRIKE),
     };
 
     for (uint32 aura : dangerousAuras)
@@ -1337,7 +1337,8 @@ bool CanInterruptCircleOfHealing(Unit* malande)
     if (!malande)
         return false;
 
-    Spell* circle = malande->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_CIRCLE_OF_HEALING));
+    Spell* circle =
+        malande->FindCurrentSpellBySpellId(Id(BtSpells::SPELL_MALANDE_CIRCLE_OF_HEALING));
     return circle && circle->getState() == SPELL_STATE_PREPARING &&
         circle->GetCastTime() - circle->GetCastTimeRemaining() >= CIRCLE_OF_HEALING_REACTION_MS;
 }
@@ -1350,8 +1351,8 @@ bool IsInZerevorPatch(Unit* zerevor, Position const& point, float margin)
         return false;
 
     static constexpr std::array patchSpells = {
-        Id(BtSpells::SPELL_BLIZZARD),
-        Id(BtSpells::SPELL_FLAMESTRIKE),
+        Id(BtSpells::SPELL_ZEREVOR_BLIZZARD),
+        Id(BtSpells::SPELL_ZEREVOR_FLAMESTRIKE),
     };
 
     for (uint32 spellId : patchSpells)
@@ -1369,7 +1370,7 @@ bool IsInCouncilPatch(Position const& point, Unit* gathios, Unit* zerevor, float
     if (!gathios || !zerevor)
         return false;
 
-    DynamicObject* consecration = gathios->GetDynObject(Id(BtSpells::SPELL_CONSECRATION));
+    DynamicObject* consecration = gathios->GetDynObject(Id(BtSpells::SPELL_GATHIOS_CONSECRATION));
     if (consecration && consecration->GetExactDist2d(point) < consecration->GetRadius() + margin)
         return true;
 
@@ -1388,7 +1389,7 @@ bool ShouldRangedInterruptCircleOfHealing(Unit* malande, Unit* gathios, Unit* ze
     if (!malande || malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_SPELL_WARDING)))
         return false;
 
-    return malande->HasAura(Id(BtSpells::SPELL_BLESSING_OF_PROTECTION)) ||
+    return malande->HasAura(Id(BtSpells::SPELL_GATHIOS_BLESSING_OF_PROTECTION)) ||
         IsMalandeInCouncilPatch(malande, gathios, zerevor);
 }
 
@@ -2657,10 +2658,10 @@ Aura* GetParasiticShadowfiendAura(Player* player)
     if (!player)
         return nullptr;
 
-    if (Aura* aura = player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRI)))
+    if (Aura* aura = player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_PRIMARY)))
         return aura;
 
-    return player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_SEC));
+    return player->GetAura(Id(BtSpells::SPELL_PARASITIC_SHADOWFIEND_SECONDARY));
 }
 
 bool HasParasiticShadowfiend(Player* player)

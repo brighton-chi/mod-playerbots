@@ -56,114 +56,114 @@ enum class BtBosses : uint32
 enum class BtSpells : uint32
 {
     // Trash
-    SPELL_SHARED_BONDS              = 41363,
-    SPELL_SHELL_OF_PAIN             = 41371,
-    SPELL_SPELL_ABSORPTION          = 41034,
+    SPELL_SHARED_BONDS                    = 41363,
+    SPELL_SHELL_OF_PAIN                   = 41371,
+    SPELL_SPELL_ABSORPTION                = 41034,
 
     // High Warlord Naj'entus
-    SPELL_IMPALING_SPINE            = 39837,
-    SPELL_TIDAL_SHIELD              = 39872,
+    SPELL_IMPALING_SPINE                  = 39837,
+    SPELL_TIDAL_SHIELD                    = 39872,
 
     // Supremus
-    SPELL_SNARE_SELF                = 41922,
-    SPELL_VOLCANIC_ERUPTION         = 40276,
-    SPELL_VOLCANIC_GEYSER           = 42055,
-    SPELL_MOLTEN_FLAME_PATCH        = 40253,
+    SPELL_SNARE_SELF                      = 41922,
+    SPELL_VOLCANIC_ERUPTION               = 40276,
+    SPELL_VOLCANIC_GEYSER                 = 42055,
+    SPELL_MOLTEN_FLAME_PATCH              = 40253,
 
     // Teron Gorefiend
-    SPELL_SHADOW_OF_DEATH           = 40251,
-    SPELL_SPIRITUAL_VENGEANCE       = 40268,
+    SPELL_SHADOW_OF_DEATH                 = 40251,
+    SPELL_SPIRITUAL_VENGEANCE             = 40268,
 
-    SPELL_SPIRIT_LANCE              = 40157,
-    SPELL_SPIRIT_CHAINS             = 40175,
-    SPELL_SPIRIT_VOLLEY             = 40314,
-    SPELL_SPIRIT_STRIKE             = 40325,
-    SPELL_SPIRIT_SHIELD             = 40322,
+    SPELL_SPIRIT_LANCE                    = 40157,
+    SPELL_SPIRIT_CHAINS                   = 40175,
+    SPELL_SPIRIT_VOLLEY                   = 40314,
+    SPELL_SPIRIT_STRIKE                   = 40325,
+    SPELL_SPIRIT_SHIELD                   = 40322,
 
     // Gurtogg Bloodboil
-    SPELL_BOSS_FEL_RAGE             = 40594, // Dropped for the final 2s of phase 2
-    SPELL_PLAYER_FEL_RAGE           = 40604, // Lasts the entirety of phase 2 (30s)
-    SPELL_INSIGNIFICANCE            = 40618,
-    SPELL_BLOODBOIL                 = 42005,
+    SPELL_BOSS_FEL_RAGE                   = 40594, // Dropped for the final 2s of phase 2
+    SPELL_PLAYER_FEL_RAGE                 = 40604, // Lasts the entirety of phase 2 (30s)
+    SPELL_INSIGNIFICANCE                  = 40618,
+    SPELL_BLOODBOIL                       = 42005,
 
     // Reliquary of Souls
-    SPELL_DEADEN                    = 41410,
-    SPELL_RUNE_SHIELD               = 41431,
+    SPELL_DEADEN                          = 41410,
+    SPELL_RUNE_SHIELD                     = 41431,
 
     // Mother Shahraz
-    SPELL_FATAL_ATTRACTION          = 41001,
+    SPELL_FATAL_ATTRACTION                = 41001,
 
     // Gathios the Shatterer
-    SPELL_BLESSING_OF_PROTECTION    = 41450,
-    SPELL_BLESSING_OF_SPELL_WARDING = 41451,
-    SPELL_JUDGEMENT                 = 41467,
-    SPELL_SEAL_OF_COMMAND           = 41469,
-    SPELL_CONSECRATION              = 41541,
+    SPELL_GATHIOS_BLESSING_OF_PROTECTION  = 41450,
+    SPELL_BLESSING_OF_SPELL_WARDING       = 41451,
+    SPELL_GATHIOS_JUDGEMENT               = 41467,
+    SPELL_GATHIOS_SEAL_OF_COMMAND         = 41469,
+    SPELL_GATHIOS_CONSECRATION            = 41541,
 
     // Lady Malande
-    SPELL_CIRCLE_OF_HEALING         = 41455,
+    SPELL_MALANDE_CIRCLE_OF_HEALING       = 41455,
 
     // Veras Darkshadow
-    SPELL_VERAS_VANISH              = 41476,
+    SPELL_VERAS_VANISH                    = 41476,
 
     // High Nethermancer Zerevor
-    SPELL_DAMPEN_MAGIC              = 41478,
-    SPELL_FLAMESTRIKE               = 41481,
-    SPELL_BLIZZARD                  = 41482,
+    SPELL_ZEREVOR_DAMPEN_MAGIC            = 41478,
+    SPELL_ZEREVOR_FLAMESTRIKE             = 41481,
+    SPELL_ZEREVOR_BLIZZARD                = 41482,
 
     // Illidan Stormrage <The Betrayer>
-    SPELL_DEMON_TRANSFORM_1         = 40511,
-    SPELL_DEMON_TRANSFORM_2         = 40398,
-    SPELL_DEMON_TRANSFORM_3         = 40510,
-    SPELL_DEMON_FORM                = 40506,
-    SPELL_DARK_BARRAGE              = 40585,
-    SPELL_AGONIZING_FLAMES          = 40932,
-    SPELL_PARASITIC_SHADOWFIEND_PRI = 41917, // primary infection, cast by Illidan
-    SPELL_PARASITIC_SHADOWFIEND_SEC = 41914, // secondary infection, from a Shadowfiend
-    SPELL_PARALYZE                  = 41083,
-    SPELL_SHADOW_PRISON             = 40647,
-    SPELL_SHADOW_BLAST              = 41078,
+    SPELL_DEMON_TRANSFORM_1               = 40511,
+    SPELL_DEMON_TRANSFORM_2               = 40398,
+    SPELL_DEMON_TRANSFORM_3               = 40510,
+    SPELL_DEMON_FORM                      = 40506,
+    SPELL_DARK_BARRAGE                    = 40585,
+    SPELL_AGONIZING_FLAMES                = 40932,
+    SPELL_PARASITIC_SHADOWFIEND_PRIMARY   = 41917, // primary infection, cast by Illidan
+    SPELL_PARASITIC_SHADOWFIEND_SECONDARY = 41914, // secondary infection, from a Shadowfiend
+    SPELL_PARALYZE                        = 41083,
+    SPELL_SHADOW_PRISON                   = 40647,
+    SPELL_SHADOW_BLAST                    = 41078,
 
     // Death Knight
-    SPELL_MIND_FREEZE               = 47528,
+    SPELL_MIND_FREEZE                     = 47528,
 
     // Druid
-    SPELL_TREE_OF_LIFE              = 33891,
+    SPELL_TREE_OF_LIFE                    = 33891,
 
     // Hunter
-    SPELL_FEIGN_DEATH               = 5384,
-    SPELL_FROST_TRAP                = 13809,
-    SPELL_FROST_TRAP_AURA           = 13810,
-    SPELL_MISDIRECTION              = 34477,
-    SPELL_MISDIRECTION_AURA         = 35079, // the aura on the hunter
+    SPELL_FEIGN_DEATH                     = 5384,
+    SPELL_FROST_TRAP                      = 13809,
+    SPELL_FROST_TRAP_AURA                 = 13810,
+    SPELL_MISDIRECTION                    = 34477,
+    SPELL_MISDIRECTION_AURA               = 35079, // the aura on the hunter
 
     // Mage
-    SPELL_COUNTERSPELL              = 2139,
-    SPELL_SPELLSTEAL                = 30449,
+    SPELL_COUNTERSPELL                    = 2139,
+    SPELL_SPELLSTEAL                      = 30449,
 
     // Paladin
-    SPELL_DIVINE_SHIELD             = 642,
+    SPELL_DIVINE_SHIELD                   = 642,
 
     // Priest
-    SPELL_DISPERSION                = 47585,
+    SPELL_DISPERSION                      = 47585,
 
     // Rogue
-    SPELL_KICK                      = 1766,
+    SPELL_KICK                            = 1766,
 
     // Shaman
-    SPELL_TOTEMIC_RECALL            = 36936,
-    SPELL_WIND_SHEAR                = 57994,
+    SPELL_TOTEMIC_RECALL                  = 36936,
+    SPELL_WIND_SHEAR                      = 57994,
 
     // Warlock (Felhunter)
-    SPELL_SPELL_LOCK_1              = 19244,
-    SPELL_SPELL_LOCK_2              = 19647,
+    SPELL_SPELL_LOCK_1                    = 19244,
+    SPELL_SPELL_LOCK_2                    = 19647,
 
     // Warrior
-    SPELL_SHIELD_BASH               = 72,
-    SPELL_BERSERKER_STANCE          = 2458,
-    SPELL_PUMMEL                    = 6552,
-    SPELL_SPELL_REFLECTION          = 23920,
-    SPELL_VIGILANCE                 = 50720,
+    SPELL_SHIELD_BASH                     = 72,
+    SPELL_BERSERKER_STANCE                = 2458,
+    SPELL_PUMMEL                          = 6552,
+    SPELL_SPELL_REFLECTION                = 23920,
+    SPELL_VIGILANCE                       = 50720,
 };
 
 enum class BtNpcs : uint32
