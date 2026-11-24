@@ -23,6 +23,18 @@ bool IsBetterRank(SpellInfo const* candidate, SpellInfo const* best)
 }
 }  // namespace
 
+namespace
+{
+// A name can match a rank chain and unrelated chainless spells. Always prefer the chained spell.
+bool IsBetterRank(SpellInfo const* candidate, SpellInfo const* best)
+{
+    if (candidate->IsRanked() != best->IsRanked())
+        return candidate->IsRanked();
+
+    return candidate->GetRank() > best->GetRank();
+}
+}
+
 SpellIdValue::SpellIdValue(PlayerbotAI* botAI) : CalculatedValue<uint32>(botAI, "spell id", 20 * IN_MILLISECONDS) {}
 
 VehicleSpellIdValue::VehicleSpellIdValue(PlayerbotAI* botAI) : CalculatedValue<uint32>(botAI, "vehicle spell id") {}
@@ -115,28 +127,7 @@ uint32 SpellIdValue::Calculate()
             best = spellInfo;
     }
 
-    if (!best)
-        return 0;
-
-    int32 const saveMana = static_cast<int32>(std::round(AI_VALUE(double, "mana save level")));
-    if (saveMana <= 1)
-        return best->Id;
-
-    // Mana save level N picks the Nth-highest rank of the chosen spell, else its lowest.
-    std::vector<SpellInfo const*> ranks;
-    for (uint32 spellId : spellIds)
-    {
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (spellInfo && spellInfo->IsRankOf(best))
-            ranks.push_back(spellInfo);
-    }
-
-    std::sort(
-        ranks.begin(), ranks.end(),
-        [](SpellInfo const* a, SpellInfo const* b) { return a->GetRank() > b->GetRank(); });
-
-    size_t const index = std::min<size_t>(saveMana - 1, ranks.size() - 1);
-    return ranks[index]->Id;
+    return best ? best->Id : 0;
 }
 
 uint32 VehicleSpellIdValue::Calculate()
