@@ -310,8 +310,7 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValueInEncounter(Action* 
         case CLASS_PRIEST:
         {
             if (!dynamic_cast<CastDispelMagicOnPartyAction*>(action) &&
-                !dynamic_cast<CastDispelMagicAction*>(action) &&
-                !dynamic_cast<CastMassDispelAction*>(action))
+                !dynamic_cast<CastDispelMagicAction*>(action))
             {
                 return 1.0f;
             }
@@ -335,9 +334,7 @@ float HexLordMalacrassUnstableAfflictionMultiplier::GetValueInEncounter(Action* 
             return 1.0f;
     }
 
-    // Mass Dispel's action target is the current target, not a party member.
-    Unit* target = dynamic_cast<CastMassDispelAction*>(action)
-        ? AI_VALUE2(Unit*, "party member to dispel", DISPEL_MAGIC) : action->GetTarget();
+    Unit* target = action->GetTarget();
     return target && target->HasAura(Id(ZaSpells::SPELL_UNSTABLE_AFFLICTION)) ? 0.0f : 1.0f;
 }
 
