@@ -1406,7 +1406,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs weaponEntry)
 {
-    bool const botClass = bot->getClass();
+    uint8 const botClass = bot->getClass();
     bool const isDk = botClass == CLASS_DEATH_KNIGHT;
     bool const isDruid = botClass == CLASS_DRUID;
     bool const isHunter = botClass == CLASS_HUNTER;
