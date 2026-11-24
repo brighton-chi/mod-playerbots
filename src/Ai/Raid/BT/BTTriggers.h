@@ -73,6 +73,14 @@ public:
     bool IsActive() override;
 };
 
+class SisterOfPainShouldControlPetTrigger : public Trigger
+{
+public:
+    SisterOfPainShouldControlPetTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "sister of pain should control pet") {}
+    bool IsActive() override;
+};
+
 class ShadowmoonReaverWandBuildsChargesTrigger : public Trigger
 {
 public:

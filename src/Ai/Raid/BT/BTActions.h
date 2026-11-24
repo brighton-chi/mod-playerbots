@@ -98,6 +98,19 @@ public:
     bool Execute(Event event) override;
 };
 
+class SisterOfPainControlPetAction : public Action
+{
+public:
+    SisterOfPainControlPetAction(PlayerbotAI* botAI)
+        : Action(botAI, "sister of pain control pet") {}
+    bool Execute(Event event) override;
+
+private:
+    // The Pain a passive pet was taken off. The hold ends once she is no longer held.
+    ObjectGuid _heldPain;
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
 class ShadowmoonReaverStopWandAction : public Action
 {
 public:

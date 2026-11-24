@@ -26,6 +26,9 @@ public:
         creators["sister of pleasure focus dps"] =
             &RaidBlackTempleActionContext::sister_of_pleasure_focus_dps;
 
+        creators["sister of pain control pet"] =
+            &RaidBlackTempleActionContext::sister_of_pain_control_pet;
+
         creators["shadowmoon reaver stop wand"] =
             &RaidBlackTempleActionContext::shadowmoon_reaver_stop_wand;
 
@@ -280,6 +283,10 @@ private:
     static Action* sister_of_pleasure_focus_dps(PlayerbotAI* botAI)
     {
         return new SisterOfPleasureFocusDpsAction(botAI);
+    }
+    static Action* sister_of_pain_control_pet(PlayerbotAI* botAI)
+    {
+        return new SisterOfPainControlPetAction(botAI);
     }
     static Action* shadowmoon_reaver_stop_wand(PlayerbotAI* botAI)
     {

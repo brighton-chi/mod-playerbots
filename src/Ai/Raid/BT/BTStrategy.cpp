@@ -29,6 +29,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("sister of pleasure should be focused",
         { NextAction("sister of pleasure focus dps", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("sister of pain should control pet",
+        { NextAction("sister of pain control pet", ACTION_RAID + 2) }));
+
     triggers.push_back(new TriggerNode("shadowmoon reaver wand builds charges",
         { NextAction("shadowmoon reaver stop wand", ACTION_EMERGENCY + 1) }));
 

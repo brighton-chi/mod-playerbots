@@ -350,6 +350,24 @@ bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain)
     return false;
 }
 
+bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit)
+{
+    return unit && unit->IsAlive() && unit->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
+        IsSisterOfPainHeld(botAI, unit);
+}
+
+Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature const& pet)
+{
+    Unit* target = FindSisterOfPleasureLinkedTo(botAI, pain);
+    if (!target)
+        target = botAI->GetAiObjectContext()->GetValue<Unit*>("dps target")->Get();
+
+    if (!target || IsHeldSisterOfPain(botAI, target) || !pet.IsValidAttackTarget(target))
+        return nullptr;
+
+    return target;
+}
+
 // True while magic would risk building a Chaotic Charge: (1) during Spell Absorption, (2) before
 // the first Spell Absorption is cast, and (3) in the margin before the earliest possible recast.
 bool IsShadowmoonReaverUnsafeForMagic(Unit* unit)

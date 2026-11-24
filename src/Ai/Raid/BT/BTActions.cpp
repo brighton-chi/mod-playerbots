@@ -210,6 +210,41 @@ bool SisterOfPleasureFocusDpsAction::Execute(Event /*event*/)
     return next && next != pain && Attack(next);
 }
 
+// Shell of Pain returns 2,500 shadow for every melee hit and reflects single-target spells, so a
+// pet on a held Pain is sent to another target, or with none waits passive by its owner.
+// Unlike a boss's pet hold, the stance is restored here, not by the black temple reset: trash is
+// fought with no encounter in progress, and the reset runs on every such tick, so it would undo
+// the hold. The trigger stays active while the pet is passive, and the stance comes back once the
+// Pain dies or is no longer held (out of combat, that is when her Shell fades). A pet dismissed
+// or relogged while held comes back passive.
+bool SisterOfPainControlPetAction::Execute(Event /*event*/)
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* pain = pet->GetVictim();
+    if (!IsHeldSisterOfPain(botAI, pain))
+        pain = _heldPain.IsEmpty() ? nullptr : botAI->GetUnit(_heldPain);
+
+    if (!IsHeldSisterOfPain(botAI, pain))
+    {
+        _heldPain.Clear();
+        return SetMinionStancesForHold(bot, false, _previousReactStates);
+    }
+
+    if (Unit* target = GetSisterOfPainPetTarget(botAI, pain, *pet))
+    {
+        _heldPain.Clear();
+        bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+        pet->CastStop();
+        return CommandPetAttack(pet, target) || restored;
+    }
+
+    _heldPain = pain->GetGUID();
+    return SetMinionStancesForHold(bot, true, _previousReactStates);
+}
+
 bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
 {
     bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
@@ -219,6 +254,10 @@ bool ShadowmoonReaverStopWandAction::Execute(Event /*event*/)
 // Imps, water elementals, succubi and felhunters are kept off Reavers while anything else can be
 // attacked. With only Reavers left, the pet waits passive by its owner while one is unsafe, and
 // is sent onto them otherwise.
+// The stance is restored here, not by the black temple reset: trash is fought with no encounter
+// in progress, and the reset runs on every such tick, so it would undo the hold. The trigger stays
+// active while the pet is passive, and the stance comes back once no Reaver is left or the pet is
+// sent onto one.
 bool ShadowmoonReaverControlCasterPetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();

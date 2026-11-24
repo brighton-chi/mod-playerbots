@@ -248,6 +248,11 @@ Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
 Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI);
 bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain);
+// A living Sister of Pain that non-tanks are held off (see IsSisterOfPainHeld).
+bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit);
+// Where a pet on a held Sister of Pain goes: the Pleasure linked to her, else the owner's dps
+// target unless it is a held Pain too. Null if neither, and the pet waits passive.
+Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature const& pet);
 
 enum class ChaoticChargeReach : uint8
 {

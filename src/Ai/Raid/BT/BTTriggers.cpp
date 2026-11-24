@@ -54,6 +54,17 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
     return pain && IsSisterOfPainHeld(botAI, pain);
 }
 
+// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it needs commanding.
+bool SisterOfPainShouldControlPetTrigger::IsActive()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    // Also true while the pet is passive, so the action can restore a stance it set.
+    return pet->HasReactState(REACT_PASSIVE) || IsHeldSisterOfPain(botAI, pet->GetVictim());
+}
+
 // Wands keep shooting once started, so a multiplier alone can't stop wanding.
 bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
 {
