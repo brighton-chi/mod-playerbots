@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <vector>
 
+class Creature;
 class Player;
 class Unit;
 
@@ -137,6 +138,7 @@ GuidVector FindWildFelStalkerGuids(Player* bot);
 std::vector<Unit*> GetWildFelStalkers(Player* bot);
 GuidVector FindMaulgarCouncilGuids(Player* bot);
 Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc);
+Unit* GetMaulgarPetTarget(Player* bot, Creature const& pet);
 
 // Gruul the Dragonkiller
 

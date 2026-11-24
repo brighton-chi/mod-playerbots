@@ -47,6 +47,9 @@ public:
         creators["high king maulgar misdirect ogres to tanks"] =
             &RaidGruulsLairActionContext::high_king_maulgar_misdirect_ogres_to_tanks;
 
+        creators["high king maulgar command pet target"] =
+            &RaidGruulsLairActionContext::high_king_maulgar_command_pet_target;
+
         creators["high king maulgar announce class roles"] =
             &RaidGruulsLairActionContext::high_king_maulgar_announce_class_roles;
 
@@ -108,6 +111,10 @@ private:
     static Action* high_king_maulgar_misdirect_ogres_to_tanks(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarMisdirectOgresToTanksAction(botAI);
+    }
+    static Action* high_king_maulgar_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new HighKingMaulgarCommandPetTargetAction(botAI);
     }
 
     static Action* high_king_maulgar_announce_class_roles(PlayerbotAI* botAI)

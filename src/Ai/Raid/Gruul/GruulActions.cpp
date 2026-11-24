@@ -346,6 +346,16 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     return botAI->CanCastSpell("steady shot", ogre) && botAI->CastSpell("steady shot", ogre);
 }
 
+bool HighKingMaulgarCommandPetTargetAction::Execute(Event /*event*/)
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet)
+        return false;
+
+    Unit* target = GetMaulgarPetTarget(bot, *pet);
+    return target && CommandPetAttack(pet, target);
+}
+
 bool HighKingMaulgarAnnounceClassRolesAction::Execute(Event /*event*/)
 {
     return IsMechanicTrackerBot(bot, GRUUL_MAP_ID) && UpdateMaulgarClassRoleAnnouncement(botAI);

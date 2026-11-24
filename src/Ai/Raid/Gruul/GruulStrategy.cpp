@@ -42,6 +42,9 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar hunter should misdirect",
         { NextAction("high king maulgar misdirect ogres to tanks", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("high king maulgar pet should switch target",
+        { NextAction("high king maulgar command pet target", ACTION_RAID + 2) }));
+
     // Gruul the Dragonkiller
     triggers.push_back(new TriggerNode("gruul the dragonkiller should be tanked",
         { NextAction("gruul the dragonkiller tanks position boss", ACTION_RAID) }));

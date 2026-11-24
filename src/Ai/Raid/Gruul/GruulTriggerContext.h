@@ -47,6 +47,9 @@ public:
         creators["high king maulgar hunter should misdirect"] =
             &RaidGruulsLairTriggerContext::high_king_maulgar_hunter_should_misdirect;
 
+        creators["high king maulgar pet should switch target"] =
+            &RaidGruulsLairTriggerContext::high_king_maulgar_pet_should_switch_target;
+
         // Gruul the Dragonkiller
         creators["gruul the dragonkiller should be tanked"] =
             &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_should_be_tanked;
@@ -105,6 +108,11 @@ private:
     static Trigger* high_king_maulgar_hunter_should_misdirect(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarHunterShouldMisdirectTrigger(botAI);
+    }
+
+    static Trigger* high_king_maulgar_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new HighKingMaulgarPetShouldSwitchTargetTrigger(botAI);
     }
 
     // Gruul the Dragonkiller

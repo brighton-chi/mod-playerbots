@@ -99,6 +99,16 @@ bool HighKingMaulgarHunterShouldMisdirectTrigger::IsActiveInEncounter()
     return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT;
 }
 
+bool HighKingMaulgarPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+        return false;
+
+    Unit* target = GetMaulgarPetTarget(bot, *pet);
+    return target && pet->GetVictim() != target;
+}
+
 // Gruul the Dragonkiller
 
 bool GruulTheDragonkillerShouldBeTankedTrigger::IsActiveInEncounter()

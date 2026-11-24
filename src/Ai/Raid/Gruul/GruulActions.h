@@ -100,6 +100,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class HighKingMaulgarCommandPetTargetAction : public Action
+{
+public:
+    HighKingMaulgarCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "high king maulgar command pet target") {}
+    bool Execute(Event event) override;
+};
+
 class HighKingMaulgarAnnounceClassRolesAction : public Action
 {
 public:

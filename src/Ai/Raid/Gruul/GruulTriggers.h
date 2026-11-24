@@ -149,6 +149,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class HighKingMaulgarPetShouldSwitchTargetTrigger : public GruulsLairEncounterTrigger
+{
+public:
+    HighKingMaulgarPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : GruulsLairEncounterTrigger(
+            botAI, "high king maulgar pet should switch target",
+            GruulHelpers::GruulBosses::DATA_HIGH_KING_MAULGAR) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Gruul the Dragonkiller
 
 class GruulTheDragonkillerShouldBeTankedTrigger : public GruulsLairEncounterTrigger
