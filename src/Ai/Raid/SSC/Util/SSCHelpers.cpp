@@ -8,7 +8,6 @@
 #include "EncounterHelpers.h"
 #include "Map.h"
 #include "PathGenerator.h"
-#include "Pet.h"
 #include "Random.h"
 #include "RtiTargetValue.h"
 #include "ObjectAccessor.h"
