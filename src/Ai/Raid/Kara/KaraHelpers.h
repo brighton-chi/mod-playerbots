@@ -179,12 +179,12 @@ bool IsKarazhanFearCasterActive(Player* bot);
 
 // A Mana Warp casts Warp Breach at 10% HP. A stun that is on then and lasts past the cast's first
 // retry (1.2s later) stops it for good, and so does a stun during its 1s cast. Interrupts do
-// nothing. So warps are stunned from 15%, and during the cast if that stun misses or ends too soon.
+// nothing. So warps are stunned from 20%, and during the cast if that stun misses or ends too soon.
 inline constexpr float MANA_WARP_WARP_BREACH_HEALTH_PCT = 10.0f;
-inline constexpr float MANA_WARP_STUN_HEALTH_PCT = 15.0f;
+inline constexpr float MANA_WARP_STUN_HEALTH_PCT = 20.0f;
 // At or below this, a DPS bot with a stun casts nothing else while targeting a Mana Warp, so its
-// global cooldown is free at 15%. Rogues and cat druids first build combo points.
-inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 25.0f;
+// global cooldown is free at 20%. Rogues and cat druids first build combo points.
+inline constexpr float MANA_WARP_STAND_BY_HEALTH_PCT = 30.0f;
 // War Stomp has a 0.5s cast; other stunners leave its warp alone until it lands.
 inline constexpr uint32 WAR_STOMP_CAST_MS = 500;
 inline constexpr uint32 WAR_STOMP_CLAIM_MS = WAR_STOMP_CAST_MS + 200;
@@ -645,6 +645,8 @@ inline constexpr float CHARRED_EARTH_HAZARD_RADIUS = 11.5f; // 10 yd patch + 1.5
 inline constexpr float CHARRED_EARTH_CLEARANCE = CHARRED_EARTH_HAZARD_RADIUS + 0.5f;
 inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
+// A bot can stop this far short of its position, so it must stay below the clearance's margin.
+inline constexpr float NIGHTBANE_ARRIVAL_DISTANCE = 0.1f;
 // Each Rain of Bones tick hits everyone within 6 yd of a random point up to 8 yd from its center
 // (no combat reach added), so the rain reaches 14 yd.
 inline constexpr float RAIN_OF_BONES_HAZARD_RADIUS = 14.0f;
@@ -655,13 +657,12 @@ inline constexpr int32 RAIN_OF_BONES_REACTION_MS = 1000;
 inline constexpr float NIGHTBANE_FINAL_PHASE_HEALTH_PCT = 20.0f;
 // The terrace is a ring around the dome. Terrace angles are measured around the dome, running
 // counterclockwise from the northwest end to the northeast end.
-inline constexpr float TERRACE_INNER_RADIUS = 36.0f; // the dome's wall is at 33.5-35.8 yd
 inline constexpr float TERRACE_OUTER_RADIUS = 51.0f;
 inline constexpr float TERRACE_ARC_RADIUS = 47.856f;
 inline constexpr float TERRACE_ARC_START = 0.2418f;
 inline constexpr float TERRACE_ARC_END = 4.9241f;
 // The floor runs from 35.8 to 49.4 yd from the dome center at every terrace angle (navmesh).
-inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f;
+inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f; // the dome's wall is at 33.5-35.8 yd
 inline constexpr float TERRACE_FLOOR_OUTER_RADIUS = 49.4f;
 // A lane around the dome, on the floor at every angle. The flight stack sits on it, and steps
 // around the terrace stay on it or further out. It is 10.5 yd in from the parapet, so skeletons

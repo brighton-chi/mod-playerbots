@@ -1806,13 +1806,12 @@ bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
     if (!state || !state->nightbaneRangedPosition)
         return false;
 
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GetTerraceWalkPosition(*bot, *state->nightbaneRangedPosition), arrivalDist,
-            nullptr, moveX, moveY, backwards))
+            bot, GetTerraceWalkPosition(*bot, *state->nightbaneRangedPosition),
+            NIGHTBANE_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1834,13 +1833,12 @@ bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
         return false;
 
     Position const position = GetNightbaneMeleePosition(*nightbane, *state->nightbaneMeleePosition);
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GetTerraceWalkPosition(*bot, position), arrivalDist, nightbane, moveX, moveY,
-            backwards))
+            bot, GetTerraceWalkPosition(*bot, position), NIGHTBANE_ARRIVAL_DISTANCE, nightbane,
+            moveX, moveY, backwards))
     {
         return false;
     }

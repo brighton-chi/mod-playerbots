@@ -142,7 +142,7 @@ bool IsManaWarpClaimedForWarStomp(Unit* warp)
         getMSTimeDiff(claimIt->second, getMSTime()) < WAR_STOMP_CLAIM_MS;
 }
 
-// First, attempt to stun between 10% and 15% HP because if the mob is stunned at 10%, it will not
+// First, attempt to stun between 10% and 20% HP because if the mob is stunned at 10%, it will not
 // cast Warp Breach. If that fails, then there is a second opportunity to stun while it is casting.
 bool IsManaWarpToStun(Player* bot, Unit* unit, float reach)
 {
@@ -1534,11 +1534,15 @@ float GetTerraceAngle(Position const& position)
 }
 
 // The destination, unless the straight line to it would pass through the dome, in which case this
-// is a step on an arc that moves to the destination.
+// is a step along an arc around the dome. The last step goes straight to the destination, because
+// one on the floor's inner edge can measure as inside the dome and would never be reached.
 Position GetTerraceWalkPosition(Position const& from, Position const& destination)
 {
-    if (GetDistanceToSegment2d(TERRACE_DOME_CENTER, from, destination) >= TERRACE_INNER_RADIUS)
+    if (GetDistanceToSegment2d(TERRACE_DOME_CENTER, from, destination) >=
+        TERRACE_FLOOR_INNER_RADIUS)
+    {
         return destination;
+    }
 
     constexpr float stepDist = 3.5f;
     float const radius =
@@ -1546,6 +1550,9 @@ Position GetTerraceWalkPosition(Position const& from, Position const& destinatio
     float const fromAngle = GetTerraceAngle(from);
     float const angleLeft = GetTerraceAngle(destination) - fromAngle;
     float const maxStepAngle = stepDist / radius;
+    if (std::abs(angleLeft) <= maxStepAngle)
+        return destination;
+
     float const angle = fromAngle + std::clamp(angleLeft, -maxStepAngle, maxStepAngle);
 
     return Position(
