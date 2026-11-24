@@ -823,7 +823,7 @@ bool GetFloorAt(Player* bot, float x, float y, float& outZ)
 
 bool IsBanishPhase(Unit* netherspite)
 {
-    return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED));
+    return netherspite && netherspite->HasAura(Id(KaraSpells::SPELL_VERTEX_SHADE_BLACK));
 }
 
 // A druid's power type changes to reflect its form, so a cat shifting out to offheal would count as
@@ -843,11 +843,8 @@ bool IsNetherspiteDpsHeld(Player* bot, Unit* netherspite)
     if (!netherspite)
         return false;
 
-    if (PlayerbotAI::IsTank(bot) ||
-        netherspite->HasAura(Id(KaraSpells::SPELL_NETHERSPITE_BANISHED)))
-    {
+    if (PlayerbotAI::IsTank(bot) || netherspite->HasAura(Id(KaraSpells::SPELL_VERTEX_SHADE_BLACK)))
         return false;
-    }
 
     KaraInstanceState const* state = FindKaraState(netherspite->GetInstanceId());
     if (!state || !state->netherspitePortalPhaseTimer)

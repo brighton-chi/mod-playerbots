@@ -73,7 +73,7 @@ enum class KaraSpells : uint32
 
     // Terestian Illhoof
     SPELL_BROKEN_PACT             = 30065, // on Terestian from Kil'rek's death to his return
-    SPELL_SACRIFICE               = 30115, // on the player until the Demon Chains die
+    SPELL_SACRIFICE               = 30115, // on the player until the Demon Chains are destroyed
 
     // Shade of Aran
     SPELL_FLAME_WREATH_CAST       = 30004,
@@ -91,7 +91,7 @@ enum class KaraSpells : uint32
     SPELL_NETHER_EXHAUSTION_RED   = 38637,
     SPELL_NETHER_EXHAUSTION_GREEN = 38638,
     SPELL_NETHER_EXHAUSTION_BLUE  = 38639,
-    SPELL_NETHERSPITE_BANISHED    = 39833, // "Vortex Shade Black"
+    SPELL_VERTEX_SHADE_BLACK      = 39833, // on Netherspite during his banish phase
 
     // Prince Malchezaar
     SPELL_ENFEEBLE                = 30843,

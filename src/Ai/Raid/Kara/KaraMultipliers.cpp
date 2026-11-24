@@ -377,7 +377,7 @@ float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action) && !IsRepositionAction(bot, action) &&
-        !IsKillingSpree(bot, action))
+        !IsKillingSpree(bot, action) && !dynamic_cast<CastReachTargetSpellAction*>(action))
     {
         return 1.0f;
     }
