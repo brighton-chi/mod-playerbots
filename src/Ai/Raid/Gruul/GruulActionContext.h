@@ -116,7 +116,6 @@ private:
     {
         return new HighKingMaulgarCommandPetTargetAction(botAI);
     }
-
     static Action* high_king_maulgar_announce_class_roles(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarAnnounceClassRolesAction(botAI);

@@ -70,7 +70,6 @@ private:
     {
         return new GruulsLairNoEncounterInProgressTrigger(botAI);
     }
-
     static Trigger* gruuls_lair_class_roles_should_be_assigned(PlayerbotAI* botAI)
     {
         return new GruulsLairClassRolesShouldBeAssignedTrigger(botAI);
@@ -109,7 +108,6 @@ private:
     {
         return new HighKingMaulgarHunterShouldMisdirectTrigger(botAI);
     }
-
     static Trigger* high_king_maulgar_pet_should_switch_target(PlayerbotAI* botAI)
     {
         return new HighKingMaulgarPetShouldSwitchTargetTrigger(botAI);

@@ -246,7 +246,6 @@ private:
     {
         return new SscNoEncounterInProgressTrigger(botAI);
     }
-
     static Trigger* ssc_class_roles_should_be_assigned(PlayerbotAI* botAI)
     {
         return new SscClassRolesShouldBeAssignedTrigger(botAI);
@@ -363,12 +362,10 @@ private:
     {
         return new LeotherasTheBlindShouldManageDpsHoldTimersTrigger(botAI);
     }
-
     static Trigger* leotheras_the_blind_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindShouldManagePetAggressionTrigger(botAI);
     }
-
     static Trigger* leotheras_the_blind_pet_should_switch_target(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindPetShouldSwitchTargetTrigger(botAI);

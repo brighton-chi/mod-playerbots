@@ -277,7 +277,6 @@ private:
     {
         return new BlackTempleNoEncounterInProgressTrigger(botAI);
     }
-
     static Trigger* black_temple_class_roles_should_be_assigned(PlayerbotAI* botAI)
     {
         return new BlackTempleClassRolesShouldBeAssignedTrigger(botAI);

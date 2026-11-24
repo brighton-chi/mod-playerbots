@@ -285,7 +285,6 @@ private:
     {
         return new AzgalorDetermineDpsPriorityAction(botAI);
     }
-
     static Action* azgalor_command_pet_target(PlayerbotAI* botAI)
     {
         return new AzgalorCommandPetTargetAction(botAI);

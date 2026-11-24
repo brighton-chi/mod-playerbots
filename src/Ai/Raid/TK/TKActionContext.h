@@ -161,7 +161,6 @@ private:
     {
         return new TempestKeepClearStaleFallingFlagAction(botAI);
     }
-
     static Action* tempest_keep_assign_class_roles(PlayerbotAI* botAI)
     {
         return new TempestKeepAssignClassRolesAction(botAI);

@@ -283,7 +283,6 @@ private:
     {
         return new AzgalorShouldDivideDpsTrigger(botAI);
     }
-
     static Trigger* azgalor_pet_should_switch_target(PlayerbotAI* botAI)
     {
         return new AzgalorPetShouldSwitchTargetTrigger(botAI);
