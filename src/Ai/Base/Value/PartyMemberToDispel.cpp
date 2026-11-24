@@ -13,8 +13,15 @@
 class PartyMemberToDispelPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {
 public:
-    PartyMemberToDispelPredicate(PlayerbotAI* botAI, uint32 dispelType, std::optional<float> range)
-        : FindPlayerPredicate(), PlayerbotAIAware(botAI), dispelType(dispelType), maxRange(range)
+    // Dispel Magic reaches 40 yd on a friendly unit but only 30 yd on a hostile (charmed) one.
+    struct Range
+    {
+        float Friendly;
+        float Hostile;
+    };
+
+    PartyMemberToDispelPredicate(PlayerbotAI* botAI, uint32 dispelType, std::optional<Range> range)
+        : FindPlayerPredicate(), PlayerbotAIAware(botAI), _dispelType(dispelType), _range(range)
     {
     }
 
@@ -23,32 +30,38 @@ public:
         if (!unit->IsAlive())
             return false;
 
-        if (maxRange && !botAI->GetBot()->IsWithinCombatRange(unit, *maxRange))
-            return false;
+        if (_range)
+        {
+            Player* bot = botAI->GetBot();
+            float const maxRange = bot->IsHostileTo(unit) ? _range->Hostile : _range->Friendly;
+            if (!bot->IsWithinCombatRange(unit, maxRange))
+                return false;
+        }
 
-        return botAI->HasAuraToDispel(unit, dispelType);
+        return botAI->HasAuraToDispel(unit, _dispelType);
     }
 
 private:
-    uint32 dispelType;
-    std::optional<float> maxRange;
+    uint32 _dispelType;
+    std::optional<Range> _range;
 };
 
 // Qualifier "<dispel type>" or "<dispel type> <spell>". With a spell the bot knows, the pick is
-// limited to that spell's range, tested the way the core tests a friendly target.
+// limited to that spell's range, tested the way the core tests the cast.
 Unit* PartyMemberToDispel::Calculate()
 {
     uint32 dispelType = atoi(qualifier.c_str());
 
-    std::optional<float> maxRange;
+    std::optional<PartyMemberToDispelPredicate::Range> range;
     std::size_t const spellStart = qualifier.find(' ');
     if (spellStart != std::string::npos)
     {
         uint32 const spellId = AI_VALUE2(uint32, "spell id", qualifier.substr(spellStart + 1));
         if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
-            maxRange = spellInfo->GetMaxRange(true, bot);
+            range = PartyMemberToDispelPredicate::Range{spellInfo->GetMaxRange(true, bot),
+                                                        spellInfo->GetMaxRange(false, bot)};
     }
 
-    PartyMemberToDispelPredicate predicate(botAI, dispelType, maxRange);
+    PartyMemberToDispelPredicate predicate(botAI, dispelType, range);
     return FindPartyMember(predicate);
 }
