@@ -246,7 +246,7 @@ bool ShadeOfAranCastingArcaneExplosionTrigger::IsActiveInEncounter()
 // Ranged only. Blizzard moves around Aran in a band, and melee range is inside the minimum radius.
 bool ShadeOfAranRangedInBlizzardTrigger::IsActiveInEncounter()
 {
-    if (!bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ARAN_BLIZZARD)))
         return false;
 
     // Return false for rooted bots (Chains of Ice) so they can at least keep casting.
@@ -292,7 +292,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
     if (!aran)
         return false;
 
-    if (bot->HasAura(Id(KaraSpells::SPELL_BLIZZARD)))
+    if (bot->HasAura(Id(KaraSpells::SPELL_ARAN_BLIZZARD)))
         return false;
 
     float const distance = bot->GetExactDist2d(aran);

@@ -568,7 +568,8 @@ GuidVector FindTerestianAddGuids(Player* bot)
 
 bool IsAranCastingArcaneExplosion(Unit* aran)
 {
-    return aran && aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARCANE_EXPLOSION));
+    return aran &&
+        aran->FindCurrentSpellBySpellId(Id(KaraSpells::SPELL_ARAN_ARCANE_EXPLOSION));
 }
 
 std::optional<Position> GetBlizzardEscapePosition(Player* bot)
@@ -583,7 +584,7 @@ std::optional<Position> GetBlizzardEscapePosition(Player* bot)
     for (WorldObject* object : objects)
     {
         DynamicObject const* patch = object->ToDynObject();
-        if (patch && patch->GetSpellId() == Id(KaraSpells::SPELL_BLIZZARD) &&
+        if (patch && patch->GetSpellId() == Id(KaraSpells::SPELL_ARAN_BLIZZARD) &&
             (!oldest || patch->GetDuration() < oldest->GetDuration()))
         {
             oldest = patch;

@@ -78,8 +78,11 @@ enum class KaraSpells : uint32
     // Shade of Aran
     SPELL_FLAME_WREATH_CAST       = 30004,
     SPELL_FLAME_WREATH_AURA       = 29946,
-    SPELL_BLIZZARD                = 29951,
-    SPELL_ARCANE_EXPLOSION        = 29973,
+    SPELL_ARAN_BLIZZARD           = 29951,
+    SPELL_ARAN_ARCANE_EXPLOSION   = 29973,
+    SPELL_ARAN_FIREBALL           = 29953,
+    SPELL_ARAN_FROSTBOLT          = 29954,
+    SPELL_ARAN_ARCANE_MISSILES    = 29955,
 
     // Netherspite
     SPELL_RED_BEAM_DEBUFF         = 30421, // "Nether Portal - Perseverance" (player aura)
@@ -395,6 +398,8 @@ inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20 * IN_MILLISECONDS
 // No one moves this soon after the rings land, which also outlasts the ring value's cache.
 inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
 inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
+// Fireball and Frostbolt (2s casts) are not interrupted before this much of the cast left.
+inline constexpr int32 ARAN_INTERRUPT_CAST_REMAINING_MS = 500;
 
 // Aran blinks here before each super spell. His Blizzard circles around it, so this is used to
 // calculate the Blizzard escape position.

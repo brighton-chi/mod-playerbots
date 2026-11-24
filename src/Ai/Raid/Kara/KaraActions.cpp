@@ -876,7 +876,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 
     // Wait out a Blizzard rather than walk back into it.
     for (Position const& patch : GetDynamicObjectPositions(
-             bot, ARAN_ROOM_SEARCH_RADIUS, Id(KaraSpells::SPELL_BLIZZARD)))
+             bot, ARAN_ROOM_SEARCH_RADIUS, Id(KaraSpells::SPELL_ARAN_BLIZZARD)))
     {
         if (patch.GetExactDist2d(position) <= ARAN_BLIZZARD_CLEARANCE)
             return false;

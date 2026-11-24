@@ -206,6 +206,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new ShadeOfAranArcaneExplosionDisableMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));
+    multipliers.push_back(new ShadeOfAranDelayInterruptsMultiplier(botAI));
     multipliers.push_back(new NetherspiteDisableReactiveMovementMultiplier(botAI));
     multipliers.push_back(new NetherspiteHoldDpsMultiplier(botAI));
     multipliers.push_back(new PrinceMalchezaarDisableReactiveMovementMultiplier(botAI));
