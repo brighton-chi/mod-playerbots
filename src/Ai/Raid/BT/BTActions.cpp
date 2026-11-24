@@ -97,6 +97,13 @@ bool BlackTempleResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* councilPetAction = context->GetAction("illidari council set pet stance");
+    if (councilPetAction &&
+        static_cast<IllidariCouncilSetPetStanceAction*>(councilPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     Action* petAction = context->GetAction("illidan stormrage set pet stance");
     if (petAction && static_cast<IllidanStormrageSetPetStanceAction*>(petAction)->ResetPetStance())
         reset = true;
@@ -1852,10 +1859,20 @@ bool IllidariCouncilCommandPetTargetAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
     Unit* target = GetCouncilPetTarget(botAI, pet);
-    if (!target || !pet->IsValidAttackTarget(target))
-        return false;
+    return target && CommandPetAttack(pet, target);
+}
 
-    return CommandPetAttack(pet, target);
+bool IllidariCouncilSetPetStanceAction::Execute(Event /*event*/)
+{
+    return SetMinionStancesForHold(
+        bot, IsIllidariCouncilPetHoldActive(bot), _previousReactStates);
+}
+
+bool IllidariCouncilSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
 }
 
 bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)

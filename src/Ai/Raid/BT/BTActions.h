@@ -555,6 +555,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class IllidariCouncilSetPetStanceAction : public Action
+{
+public:
+    IllidariCouncilSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "illidari council set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
 class IllidariCouncilAssignDpsTargetsAction : public AttackAction
 {
 public:

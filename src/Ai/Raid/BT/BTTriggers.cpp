@@ -569,6 +569,14 @@ bool IllidariCouncilPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     return target && pet->GetVictim() != target;
 }
 
+bool IllidariCouncilShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    return IsMinionStanceWrongForHold(bot, IsIllidariCouncilPetHoldActive(bot));
+}
+
 bool IllidariCouncilShouldAssignDpsPriorityTrigger::IsActiveInEncounter()
 {
     IllidariCouncilMembers const members = GetIllidariCouncilMembers(bot);

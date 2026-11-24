@@ -186,6 +186,9 @@ public:
         creators["illidari council ranged should spread"] =
             &RaidBlackTempleTriggerContext::illidari_council_ranged_should_spread;
 
+        creators["illidari council should manage pet aggression"] =
+            &RaidBlackTempleTriggerContext::illidari_council_should_manage_pet_aggression;
+
         creators["illidari council pet should switch target"] =
             &RaidBlackTempleTriggerContext::illidari_council_pet_should_switch_target;
 
@@ -515,6 +518,10 @@ private:
     static Trigger* illidari_council_ranged_should_spread(PlayerbotAI* botAI)
     {
         return new IllidariCouncilRangedShouldSpreadTrigger(botAI);
+    }
+    static Trigger* illidari_council_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilShouldManagePetAggressionTrigger(botAI);
     }
     static Trigger* illidari_council_pet_should_switch_target(PlayerbotAI* botAI)
     {

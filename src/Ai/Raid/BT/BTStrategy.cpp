@@ -192,6 +192,9 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("illidari council ranged should spread",
         { NextAction("illidari council spread ranged", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("illidari council should manage pet aggression",
+        { NextAction("illidari council set pet stance", ACTION_RAID + 4) }));
+
     triggers.push_back(new TriggerNode("illidari council pet should switch target",
         { NextAction("illidari council command pet target", ACTION_RAID + 3) }));
 

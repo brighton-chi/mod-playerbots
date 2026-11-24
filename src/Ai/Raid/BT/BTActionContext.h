@@ -185,6 +185,9 @@ public:
         creators["illidari council spread ranged"] =
             &RaidBlackTempleActionContext::illidari_council_spread_ranged;
 
+        creators["illidari council set pet stance"] =
+            &RaidBlackTempleActionContext::illidari_council_set_pet_stance;
+
         creators["illidari council command pet target"] =
             &RaidBlackTempleActionContext::illidari_council_command_pet_target;
 
@@ -530,6 +533,10 @@ private:
     {
         return new BlackTempleSpreadRangedAction(
             botAI, "illidari council spread ranged", BtHelpers::COUNCIL_RANGED_SPREAD_DISTANCE);
+    }
+    static Action* illidari_council_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new IllidariCouncilSetPetStanceAction(botAI);
     }
     static Action* illidari_council_command_pet_target(PlayerbotAI* botAI)
     {

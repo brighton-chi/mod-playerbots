@@ -1316,16 +1316,19 @@ bool IsZerevorMageTank(Player* player)
 
 bool IsIllidariCouncilDpsHoldActive(Player* bot)
 {
-    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
-    if (!state || !state->councilDpsWaitTimer ||
-        GetMSTimeDiffToNow(*state->councilDpsWaitTimer) >= COUNCIL_DPS_WAIT_MS)
-    {
+    if (!IsIllidariCouncilPetHoldActive(bot))
         return false;
-    }
 
     return !((PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot)) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 0, false) ||
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) || IsZerevorMageTank(bot));
+}
+
+bool IsIllidariCouncilPetHoldActive(Player* bot)
+{
+    BtInstanceState const* state = FindBtState(bot->GetInstanceId());
+    return !state || !state->councilDpsWaitTimer ||
+        GetMSTimeDiffToNow(*state->councilDpsWaitTimer) < COUNCIL_DPS_WAIT_MS;
 }
 
 bool HasDangerousCouncilAura(Player* bot)
@@ -1678,22 +1681,30 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 }
 
 // Felhunters stay on Malande for Spell Lock; other pets attack their master's target, or Gathios
-// when the master has none.
+// when the master has none the pet can attack. Nothing during the pull hold.
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
-    if (!pet)
+    if (!pet || IsIllidariCouncilPetHoldActive(botAI->GetBot()))
         return nullptr;
 
     IllidariCouncilMembers const members = GetIllidariCouncilMembers(botAI->GetBot());
     if (!members.gathios)
         return nullptr;
 
+    Unit* target = members.gathios;
     if (pet->GetEntry() == NPC_FELHUNTER && members.malande)
-        return members.malande;
+    {
+        target = members.malande;
+    }
+    else
+    {
+        AiObjectContext* context = botAI->GetAiObjectContext();
+        Unit* ownerTarget = AI_VALUE(Unit*, "current target");
+        if (ownerTarget && ownerTarget->IsAlive() && pet->IsValidAttackTarget(ownerTarget))
+            target = ownerTarget;
+    }
 
-    AiObjectContext* context = botAI->GetAiObjectContext();
-    Unit* target = AI_VALUE(Unit*, "current target");
-    return target && target->IsAlive() ? target : members.gathios;
+    return pet->IsValidAttackTarget(target) ? target : nullptr;
 }
 
 // CanCastSpell accepts any spell a pet knows without checking range or cooldown, so check manually.

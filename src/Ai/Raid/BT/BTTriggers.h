@@ -620,6 +620,18 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class IllidariCouncilShouldManagePetAggressionTrigger : public BlackTempleEncounterTrigger
+{
+public:
+    IllidariCouncilShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : BlackTempleEncounterTrigger(
+            botAI, "illidari council should manage pet aggression",
+            BtHelpers::BtBosses::DATA_ILLIDARI_COUNCIL) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class IllidariCouncilShouldAssignDpsPriorityTrigger : public BlackTempleEncounterTrigger
 {
 public:

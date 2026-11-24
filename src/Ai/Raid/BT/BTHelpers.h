@@ -565,6 +565,9 @@ bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(Player* bot);
 bool IsZerevorMageTank(Player* player);
 bool IsIllidariCouncilDpsHoldActive(Player* bot);
+// The pull hold's window, whatever the bot's role, from engage until COUNCIL_DPS_WAIT_MS after the
+// tracker stamps it. Every pet is held for all of it, the Zerevor mage tank's included.
+bool IsIllidariCouncilPetHoldActive(Player* bot);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
 bool CanInterruptCircleOfHealing(Unit* malande);
