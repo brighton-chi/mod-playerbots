@@ -68,10 +68,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("kalecgos update raid assignments", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("kalecgos dps hold is active",
-        {
-            NextAction("kalecgos stop attacking for hold", ACTION_EMERGENCY + 2),
-            NextAction("kalecgos select target for hold", ACTION_RAID),
-        }));
+        { NextAction("kalecgos stop attacking for hold", ACTION_EMERGENCY + 2),
+          NextAction("kalecgos select target for hold", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos should manage pet aggression",
         { NextAction("kalecgos set pet stance", ACTION_RAID + 4) }));
@@ -112,10 +110,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("felmyst run away from encapsulated player", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("felmyst player has gas nova",
-        {
-            NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6),
-            NextAction("felmyst move into mass dispel reach", ACTION_EMERGENCY + 5),
-        }));
+        { NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6),
+          NextAction("felmyst move into mass dispel reach", ACTION_EMERGENCY + 5) }));
 
     triggers.push_back(new TriggerNode("felmyst takeoff is near",
         { NextAction("felmyst move to air group position", ACTION_EMERGENCY + 1) }));
@@ -142,10 +138,8 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("felmyst manage landing dps timer", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("felmyst landing dps hold is active",
-        {
-            NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
-            NextAction("felmyst select target for hold", ACTION_RAID),
-        }));
+        { NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
+          NextAction("felmyst select target for hold", ACTION_RAID) }));
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins should leave balcony",
