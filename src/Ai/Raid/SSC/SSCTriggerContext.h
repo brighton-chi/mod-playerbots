@@ -104,6 +104,12 @@ public:
         creators["leotheras the blind should manage dps hold timers"] =
             &RaidSscTriggerContext::leotheras_the_blind_should_manage_dps_hold_timers;
 
+        creators["leotheras the blind should manage pet aggression"] =
+            &RaidSscTriggerContext::leotheras_the_blind_should_manage_pet_aggression;
+
+        creators["leotheras the blind pet should switch target"] =
+            &RaidSscTriggerContext::leotheras_the_blind_pet_should_switch_target;
+
         // Fathom-Lord Karathress
         creators["fathom-lord karathress targets should be tanked"] =
             &RaidSscTriggerContext::fathom_lord_karathress_targets_should_be_tanked;
@@ -356,6 +362,16 @@ private:
     static Trigger* leotheras_the_blind_should_manage_dps_hold_timers(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindShouldManageDpsHoldTimersTrigger(botAI);
+    }
+
+    static Trigger* leotheras_the_blind_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new LeotherasTheBlindShouldManagePetAggressionTrigger(botAI);
+    }
+
+    static Trigger* leotheras_the_blind_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new LeotherasTheBlindPetShouldSwitchTargetTrigger(botAI);
     }
 
     // Fathom-Lord Karathress

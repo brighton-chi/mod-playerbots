@@ -375,6 +375,30 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class LeotherasTheBlindShouldManagePetAggressionTrigger : public SscEncounterTrigger
+{
+public:
+    LeotherasTheBlindShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(
+            botAI, "leotheras the blind should manage pet aggression",
+            SscHelpers::SscBosses::DATA_LEOTHERAS_THE_BLIND) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class LeotherasTheBlindPetShouldSwitchTargetTrigger : public SscEncounterTrigger
+{
+public:
+    LeotherasTheBlindPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(
+            botAI, "leotheras the blind pet should switch target",
+            SscHelpers::SscBosses::DATA_LEOTHERAS_THE_BLIND) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Fathom-Lord Karathress
 
 class FathomLordKarathressTargetsShouldBeTankedTrigger : public SscEncounterTrigger

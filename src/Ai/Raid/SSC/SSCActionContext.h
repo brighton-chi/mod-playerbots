@@ -109,6 +109,12 @@ public:
         creators["leotheras the blind manage dps hold timers"] =
             &RaidSscActionContext::leotheras_the_blind_manage_dps_hold_timers;
 
+        creators["leotheras the blind set pet stance"] =
+            &RaidSscActionContext::leotheras_the_blind_set_pet_stance;
+
+        creators["leotheras the blind command pet target"] =
+            &RaidSscActionContext::leotheras_the_blind_command_pet_target;
+
         creators["leotheras the blind announce class roles"] =
             &RaidSscActionContext::leotheras_the_blind_announce_class_roles;
 
@@ -377,6 +383,14 @@ private:
     static Action* leotheras_the_blind_manage_dps_hold_timers(PlayerbotAI* botAI)
     {
         return new LeotherasTheBlindManageDpsHoldTimersAction(botAI);
+    }
+    static Action* leotheras_the_blind_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new LeotherasTheBlindSetPetStanceAction(botAI);
+    }
+    static Action* leotheras_the_blind_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new LeotherasTheBlindCommandPetTargetAction(botAI);
     }
     static Action* leotheras_the_blind_announce_class_roles(PlayerbotAI* botAI)
     {

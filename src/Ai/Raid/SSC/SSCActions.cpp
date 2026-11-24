@@ -46,6 +46,13 @@ bool SscResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* leotherasPetAction = context->GetAction("leotheras the blind set pet stance");
+    if (leotherasPetAction &&
+        static_cast<LeotherasTheBlindSetPetStanceAction*>(leotherasPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     Action* karathressPetAction = context->GetAction("fathom-lord karathress set pet stance");
     if (karathressPetAction &&
         static_cast<FathomLordKarathressSetPetStanceAction*>(karathressPetAction)->ResetPetStance())
@@ -984,6 +991,30 @@ bool LeotherasTheBlindManageDpsHoldTimersAction::TrackWhirlwindEnd(
     return false;
 }
 
+bool LeotherasTheBlindSetPetStanceAction::Execute(Event /*event*/)
+{
+    Unit* leotheras = GetSscBoss(bot, SscBosses::DATA_LEOTHERAS_THE_BLIND);
+    return leotheras && SetMinionStancesForHold(
+        bot, IsLeotherasPetHoldActive(botAI, leotheras), _previousReactStates);
+}
+
+bool LeotherasTheBlindSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
+}
+
+bool LeotherasTheBlindCommandPetTargetAction::Execute(Event /*event*/)
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet)
+        return false;
+
+    Unit* target = GetLeotherasPetTarget(botAI, *pet);
+    return target && CommandPetAttack(pet, target);
+}
+
 bool LeotherasTheBlindAnnounceClassRolesAction::Execute(Event /*event*/)
 {
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && UpdateLeotherasClassRoleAnnouncement(botAI);
@@ -1228,7 +1259,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 
 bool FathomLordKarathressSetPetStanceAction::Execute(Event /*event*/)
 {
-    return SetMinionStancesForHold(bot, IsKarathressBlessingHoldActive(bot), _previousReactStates);
+    return SetMinionStancesForHold(bot, IsKarathressPetHoldActive(bot), _previousReactStates);
 }
 
 bool FathomLordKarathressSetPetStanceAction::ResetPetStance()

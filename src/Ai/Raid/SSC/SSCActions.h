@@ -318,6 +318,26 @@ private:
     bool TrackWhirlwindEnd(Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now);
 };
 
+class LeotherasTheBlindSetPetStanceAction : public Action
+{
+public:
+    LeotherasTheBlindSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
+class LeotherasTheBlindCommandPetTargetAction : public Action
+{
+public:
+    LeotherasTheBlindCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "leotheras the blind command pet target") {}
+    bool Execute(Event event) override;
+};
+
 class LeotherasTheBlindAnnounceClassRolesAction : public Action
 {
 public:

@@ -771,12 +771,11 @@ Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI)
     return shadowVictim;
 }
 
-bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
+LeotherasDpsHoldWindow GetLeotherasDpsHoldWindow(PlayerbotAI* botAI, Unit* leotheras)
 {
     if (!leotheras)
-        return false;
+        return LeotherasDpsHoldWindow::None;
 
-    Player* bot = botAI->GetBot();
     SscInstanceState const& state = SscState(leotheras->GetInstanceId());
     uint32 const now = getMSTime();
 
@@ -791,44 +790,74 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
 
     if (IsLeotherasHumanoidPhase(botAI))
     {
-        if (PlayerbotAI::IsTank(bot))
-            return false;
-
         std::optional<uint32> const& start = state.leotherasHumanoidPhaseStartTime;
-        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_HUMANOID_DPS_HOLD_MS)
-            return true;
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_HUMANOID_DPS_HOLD_MS ||
+            isJustAfterWhirlwind())
+        {
+            return LeotherasDpsHoldWindow::Humanoid;
+        }
 
-        return isJustAfterWhirlwind();
+        return LeotherasDpsHoldWindow::None;
     }
 
     if (IsLeotherasDemonPhase(botAI))
     {
-        if (IsLeotherasWarlockTank(bot))
-            return false;
-
-        if (PlayerbotAI::IsTank(bot) && !GetLeotherasWarlockTank(bot))
-            return false;
-
         std::optional<uint32> const& start = state.leotherasDemonPhaseStartTime;
-        if (!start)
-            return true;
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_DEMON_DPS_HOLD_MS)
+            return LeotherasDpsHoldWindow::Demon;
 
-        return getMSTimeDiff(*start, now) < LEOTHERAS_DEMON_DPS_HOLD_MS;
+        return LeotherasDpsHoldWindow::None;
     }
 
     if (IsLeotherasFinalPhase(botAI))
     {
-        if (PlayerbotAI::IsTank(bot) || IsLeotherasWarlockTank(bot))
-            return false;
-
         std::optional<uint32> const& start = state.leotherasFinalPhaseStartTime;
-        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_FINAL_DPS_HOLD_MS)
-            return true;
+        if (!start || getMSTimeDiff(*start, now) < LEOTHERAS_FINAL_DPS_HOLD_MS ||
+            isJustAfterWhirlwind())
+        {
+            return LeotherasDpsHoldWindow::Final;
+        }
+    }
 
-        return isJustAfterWhirlwind();
+    return LeotherasDpsHoldWindow::None;
+}
+
+bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
+{
+    Player* bot = botAI->GetBot();
+    switch (GetLeotherasDpsHoldWindow(botAI, leotheras))
+    {
+        case LeotherasDpsHoldWindow::Humanoid:
+            return !PlayerbotAI::IsTank(bot);
+        case LeotherasDpsHoldWindow::Demon:
+            if (IsLeotherasWarlockTank(bot))
+                return false;
+
+            return !PlayerbotAI::IsTank(bot) || GetLeotherasWarlockTank(bot) != nullptr;
+        case LeotherasDpsHoldWindow::Final:
+            return !PlayerbotAI::IsTank(bot) && !IsLeotherasWarlockTank(bot);
+        case LeotherasDpsHoldWindow::None:
+            break;
     }
 
     return false;
+}
+
+bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras)
+{
+    return GetLeotherasDpsHoldWindow(botAI, leotheras) != LeotherasDpsHoldWindow::None;
+}
+
+Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature const& pet)
+{
+    if (!IsLeotherasFinalPhase(botAI))
+        return nullptr;
+
+    Creature* leotheras = GetActiveLeotherasHumanoid(botAI);
+    if (!leotheras || IsLeotherasPetHoldActive(botAI, leotheras))
+        return nullptr;
+
+    return pet.IsValidAttackTarget(leotheras) ? leotheras : nullptr;
 }
 
 bool HasTooManyChaosBlastStacks(Player* bot)
@@ -1088,6 +1117,11 @@ bool IsKarathressStartDpsHoldActive(Player* bot)
     std::optional<uint32> const& holdStart =
         SscState(karathress->GetInstanceId()).karathressDpsHoldTimer;
     return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) < KARATHRESS_DPS_HOLD_MS;
+}
+
+bool IsKarathressPetHoldActive(Player* bot)
+{
+    return IsKarathressStartDpsHoldActive(bot) || IsKarathressBlessingHoldActive(bot);
 }
 
 Unit* GetSharkkisPet(Player* bot)

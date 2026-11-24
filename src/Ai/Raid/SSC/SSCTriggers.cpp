@@ -358,6 +358,26 @@ bool LeotherasTheBlindShouldManageDpsHoldTimersTrigger::IsActiveInEncounter()
     return IsMechanicTrackerBot(bot, SSC_MAP_ID) && GetEncounterBoss();
 }
 
+bool LeotherasTheBlindShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    Unit* leotheras = GetEncounterBoss();
+    return leotheras &&
+        IsMinionStanceWrongForHold(bot, IsLeotherasPetHoldActive(botAI, leotheras));
+}
+
+bool LeotherasTheBlindPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+        return false;
+
+    Unit* target = GetLeotherasPetTarget(botAI, *pet);
+    return target && pet->GetVictim() != target;
+}
+
 // Fathom-Lord Karathress
 
 bool FathomLordKarathressTargetsShouldBeTankedTrigger::IsActiveInEncounter()
@@ -414,7 +434,7 @@ bool FathomLordKarathressShouldManagePetAggressionTrigger::IsActiveInEncounter()
     if (!HasControllableMinion(bot))
         return false;
 
-    return IsMinionStanceWrongForHold(bot, IsKarathressBlessingHoldActive(bot));
+    return IsMinionStanceWrongForHold(bot, IsKarathressPetHoldActive(bot));
 }
 
 bool FathomLordKarathressPetShouldSwitchTargetTrigger::IsActiveInEncounter()

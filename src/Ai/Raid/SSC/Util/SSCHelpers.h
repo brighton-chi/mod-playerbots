@@ -318,6 +318,14 @@ inline constexpr float LEOTHERAS_LIFE_TAP_HEALTH_PCT = 90.0f;
 
 inline Position const LEOTHERAS_SPAWN_POSITION = { 376.543f, -438.631f, 29.608f };
 
+enum class LeotherasDpsHoldWindow : uint8
+{
+    None,
+    Humanoid,
+    Demon,
+    Final,
+};
+
 // Leotheras, his Shadow, and the Inner Demons.
 GuidVector FindLeotherasUnitGuids(Player* bot);
 Creature* GetLeotheras(PlayerbotAI* botAI);
@@ -339,7 +347,14 @@ Creature* GetLeotherasHumanoidToAvoid(PlayerbotAI* botAI);
 Unit* GetDemonTargetToAvoid(Player* bot, Unit* demon);
 Unit* GetChaosBlastTargetToAvoid(PlayerbotAI* botAI);
 Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI);
+// The hold window that is open, whatever the bot's role.
+LeotherasDpsHoldWindow GetLeotherasDpsHoldWindow(PlayerbotAI* botAI, Unit* leotheras);
 bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras);
+// Pets keep hitting through his threat resets, so every pet is held in every window, the Warlock
+// tank's included.
+bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras);
+// Leotheras in the final phase outside a hold, so no pet is left on the Shadow.
+Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature const& pet);
 bool HasTooManyChaosBlastStacks(Player* bot);
 bool HasInnerDemon(Player* bot);
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);
@@ -410,6 +425,8 @@ Unit* GetSharkkisPet(Player* bot);
 bool IsKarathressBlessingHoldActive(Player* bot);
 // Non-tanks for the first KARATHRESS_DPS_HOLD_MS of the fight, and before the timer is stamped.
 bool IsKarathressStartDpsHoldActive(Player* bot);
+// Either hold. A defensive pet would otherwise join on a hit to its owner, such as Hurl Trident.
+bool IsKarathressPetHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 // Pets don't follow their owner's switches while their own target lives (AttackAction doesn't send
