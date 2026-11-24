@@ -288,8 +288,8 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
         return false;
 
     return MoveTo(
-        TK_MAP_ID, targetX, targetY, position.GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+        TK_MAP_ID, targetX, targetY, position.GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
@@ -1132,7 +1132,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
     bool const isActiveCapernianTank = isPhase3 && IsCapernianTank(bot);
 
     Unit* target = nullptr;
-
     // Target priority 1: Thaladred, except Capernian tank during all advisors phase
     if (!isActiveCapernianTank)
     {
@@ -1144,7 +1143,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
                 return true;
         }
     }
-
     // Target priority 2: Capernian for ranged only (excluding debuff Hunter)
     if (!target && PlayerbotAI::IsRangedDps(bot) && !IsSanguinarDebuffHunter(bot))
     {
@@ -1156,7 +1154,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
                 return true;
         }
     }
-
     // Target priority 3: Sanguinar (debuff Hunter and melee move here after Thaladred)
     if (!target)
     {
@@ -1168,7 +1165,6 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
                 return true;
         }
     }
-
     // Target priority 4: Telonicus; initialized as nullptr for melee positioning below
     Unit* telonicus = nullptr;
     if (!target)
@@ -1210,8 +1206,8 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::MeleeDpsPositionOutsideBo
         return false;
 
     return MoveTo(
-        TK_MAP_ID, targetX, targetY, telonicus->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        TK_MAP_ID, targetX, targetY, telonicus->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KaelthasSunstriderManageAdvisorDpsTimerAction::Execute(Event /*event*/)
@@ -1410,19 +1406,18 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs weaponEntry)
 {
+    bool const botClass = bot->getClass();
+    bool const isDk = botClass == CLASS_DEATH_KNIGHT;
+    bool const isDruid = botClass == CLASS_DRUID;
+    bool const isHunter = botClass == CLASS_HUNTER;
+    bool const isPaladin = botClass == CLASS_PALADIN;
+    bool const isRogue = botClass == CLASS_ROGUE;
+    bool const isShaman = botClass == CLASS_SHAMAN;
+    bool const isWarrior = botClass == CLASS_WARRIOR;
+
     uint8 const tab = AiFactory::GetPlayerSpecTab(bot);
-
-    bool const isDruid = bot->getClass() == CLASS_DRUID;
-    bool const isHunter = bot->getClass() == CLASS_HUNTER;
-    bool const isPaladin = bot->getClass() == CLASS_PALADIN;
-    bool const isRogue = bot->getClass() == CLASS_ROGUE;
-    bool const isShaman = bot->getClass() == CLASS_SHAMAN;
-
-    bool const isDk = bot->getClass() == CLASS_DEATH_KNIGHT;
-    bool const isFrostDk = (isDk && tab == DEATH_KNIGHT_TAB_FROST);
-
-    bool const isWarrior = bot->getClass() == CLASS_WARRIOR;
-    bool const isArmsWarrior = (isWarrior && tab == WARRIOR_TAB_ARMS);
+    bool const isFrostDk = isDk && tab == DEATH_KNIGHT_TAB_FROST;
+    bool const isArmsWarrior = isWarrior && tab == WARRIOR_TAB_ARMS;
 
     switch (weaponEntry)
     {
@@ -1483,17 +1478,14 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(uint32 weaponEntry
         float const targetY = weapon->GetPositionY() + std::sin(angle) * targetDist;
 
         return MoveTo(
-            TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    // OpenLootAction returns true for a bare stop or dismount without opening the loot.
-    if (bot->isMoving() || bot->IsMounted())
+    // OpenLootAction returns true for a bare stop without opening the loot.
+    if (bot->isMoving())
     {
-        if (bot->isMoving())
-            bot->StopMoving();
-        if (bot->IsMounted())
-            bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+        bot->StopMoving();
         return false;
     }
 
