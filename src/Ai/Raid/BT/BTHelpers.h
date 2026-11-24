@@ -252,7 +252,7 @@ bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain);
 bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit);
 // Where a pet on a held Sister of Pain goes: the Pleasure linked to her, else the owner's dps
 // target unless it is a held Pain too. Null if neither, and the pet waits passive.
-Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature const& pet);
+Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature* pet);
 
 enum class ChaoticChargeReach : uint8
 {
@@ -327,9 +327,9 @@ inline constexpr uint32 SUPREMUS_HAZARD_CACHE_INTERVAL_MS = 200;
 // Tank phase only, so a Molten Flame trail chasing one ranged bot doesn't run through the rest.
 inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 6.0f;
 inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
-inline constexpr float SUPREMUS_VOLCANO_SAFE_DISTANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 3.0f;
+inline constexpr float SUPREMUS_VOLCANO_CLEARANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 3.0f;
 inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f; // 5 yd + victim's combat reach
-inline constexpr float SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE =
+inline constexpr float SUPREMUS_MOLTEN_FLAME_CLEARANCE =
     SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS + 1.0f;
 // Supremus fixates on a new target every 10s from the start of the kite phase.
 inline constexpr int64 SUPREMUS_FIXATE_INTERVAL_SECONDS = 10;
@@ -520,7 +520,7 @@ inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
 // yard also covers path steps measuring in 3D, while the minimum is checked in 2D.
 inline constexpr float MAGE_TANK_HEALER_STEP_STOP_DISTANCE = MAGE_TANK_HEALER_MIN_DISTANCE + 0.5f;
 // Zerevor casts Arcane Explosion when anyone is within 10 yd, plus both combat reaches (14.65 yd).
-inline constexpr float ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE = 15.0f;
+inline constexpr float ZEREVOR_ARCANE_EXPLOSION_CLEARANCE = 15.0f;
 // Non-tanks closer than the safe distance move away to this distance from Zerevor.
 inline constexpr float ZEREVOR_AVOID_DISTANCE = 18.0f;
 // A patch hits a player whose center is within its radius plus the player's 1.5 yd combat reach,

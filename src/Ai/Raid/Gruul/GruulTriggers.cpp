@@ -105,7 +105,7 @@ bool HighKingMaulgarPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
         return false;
 
-    Unit* target = GetMaulgarPetTarget(bot, *pet);
+    Unit* target = GetMaulgarPetTarget(bot, pet);
     return target && pet->GetVictim() != target;
 }
 

@@ -681,11 +681,11 @@ Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor)
 }
 
 // Every pet follows the ranged priority, including the pets of melee.
-Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature const& pet)
+Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     Unit* azgalor = GetHyjalBoss(botAI->GetBot(), HyjalBosses::DATA_AZGALOR);
     Unit* target = GetAzgalorRangedTarget(botAI, azgalor);
-    return target && pet.IsValidAttackTarget(target) ? target : nullptr;
+    return target && pet->IsValidAttackTarget(target) ? target : nullptr;
 }
 
 // Archimonde

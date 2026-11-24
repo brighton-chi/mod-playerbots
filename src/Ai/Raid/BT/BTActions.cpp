@@ -240,7 +240,7 @@ bool SisterOfPainControlPetAction::Execute(Event /*event*/)
         return SetMinionStancesForHold(bot, false, _previousReactStates);
     }
 
-    if (Unit* target = GetSisterOfPainPetTarget(botAI, pain, *pet))
+    if (Unit* target = GetSisterOfPainPetTarget(botAI, pain, pet))
     {
         _heldPain.Clear();
         bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
@@ -541,7 +541,7 @@ bool SupremusKiteBossAction::Execute(Event /*event*/)
     float const timeRemaining = GetSupremusFixateTimeRemaining(supremus);
     float const catchDistance = GetSupremusCatchDistance(bot, *supremus);
     float const probeDistance = std::max(
-        bot->GetSpeed(MOVE_RUN) * timeRemaining, 2.0f * SUPREMUS_VOLCANO_SAFE_DISTANCE);
+        bot->GetSpeed(MOVE_RUN) * timeRemaining, 2.0f * SUPREMUS_VOLCANO_CLEARANCE);
     std::vector<SupremusHazard> const& hazards = GetSupremusHazards(botAI);
 
     constexpr uint32 headingMemoryMs = 2 * IN_MILLISECONDS;
@@ -1938,7 +1938,7 @@ bool IllidariCouncilAssignDpsTargetsAction::Execute(Event /*event*/)
 bool IllidariCouncilAssignDpsTargetsAction::ShouldAttackMalande(
     Unit* malande, Unit* gathios, Unit* zerevor)
 {
-    if (zerevor->GetExactDist2d(malande) < ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE ||
+    if (zerevor->GetExactDist2d(malande) < ZEREVOR_ARCANE_EXPLOSION_CLEARANCE ||
         IsMalandeInCouncilPatch(malande, gathios, zerevor))
     {
         return false;

@@ -158,8 +158,8 @@ bool IsNalorakkInBearForm(Unit* nalorakk);
 
 inline constexpr float JANALAI_PLATFORM_Z = 19.146f;
 inline constexpr float JANALAI_RANGED_SPREAD_RADIUS = 15.0f;
-// Around JANALAI_TANK_POSITION, where Jan'alai is moved for each Fire Bomb event. Bombs and the
-// Fire Wall land within 34 yd of it.
+// Around JANALAI_TANK_POSITION, where Jan'alai is moved for each Fire Bomb event. All Bombs and the
+// Fire Wall are within 34 yd of it.
 inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 40.0f;
 inline constexpr float JANALAI_FIRE_BOMB_SAFE_SPOT_SEARCH_RADIUS = 30.0f;
 // Fire Bomb (42630) has a 4 yd radius. The 1.5 yd extra padding is added for realism.
@@ -217,7 +217,6 @@ inline constexpr uint32 HALAZZI_TOTEM_CACHE_INTERVAL_MS = 200;
 inline Position const HALAZZI_TANK_POSITION = { 370.733f, 1131.202f, 6.516f };
 
 GuidVector FindCorruptedLightningTotemGuids(Player* bot);
-// The nearest within ZA_CREATURE_SEARCH_RADIUS of the bot.
 Creature* GetNearestCorruptedLightningTotem(Player* bot);
 
 // Hex Lord Malacrass

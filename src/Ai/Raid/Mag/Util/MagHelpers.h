@@ -79,6 +79,8 @@ inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID = 90980;
 inline constexpr uint32 EAST_CHANNELER_DB_GUID      = 90982;
 inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID = 90981;
 
+// Around Magtheridon's spawn. The Channelers are within about 40 yd of it; 100 yd covers the room.
+inline constexpr float BURNING_ABYSSAL_SEARCH_RADIUS = 100.0f;
 // Hold dps for this long after Magtheridon first becomes attackable.
 inline constexpr float MAG_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
 // Blast Nova is cast 55.65s after Magtheridon joins the fight (marked by the Shadow Cage aura
@@ -93,15 +95,12 @@ inline constexpr uint32 ONE_WORLD_UPDATE_MS = 50;
 inline constexpr float DEBRIS_HAZARD_RADIUS = 10.0f;
 inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
 // Quake is cast 28.3s after Magtheridon joins the fight and is repeated every 56.3-64.3s. Each
-// cast delays Blast Nova by (essentially) 7s.
+// cast delays Blast Nova by ~7s.
 inline constexpr float QUAKE_DELAY_MS = 6999;
 // At 30% HP, Magtheridon causes the ceiling to fall on players, dealing 5,250+ damage and 2s stun.
 inline constexpr float CEILING_COLLAPSE_HP_PCT = 30.0f;
 // The ceiling collapse delays Quake and Blast Nova by 18s.
 inline constexpr uint32 CEILING_COLLAPSE_DELAY_MS = 18 * IN_MILLISECONDS;
-
-// Around Magtheridon's spawn. The Channelers are within about 40 yd of it; 100 yd covers the room.
-inline constexpr float BURNING_ABYSSAL_SEARCH_RADIUS = 100.0f;
 
 inline Position const MAGTHERIDON_SPAWN_POSITION =       { -18.701f,   2.241f, -0.321f,   0.0f };
 // The waiting position is SE-ish of Magtheridon.

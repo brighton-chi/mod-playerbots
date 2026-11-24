@@ -576,7 +576,7 @@ bool AzgalorCommandPetTargetAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    Unit* target = GetAzgalorPetTarget(botAI, *pet);
+    Unit* target = GetAzgalorPetTarget(botAI, pet);
     return target && CommandPetAttack(pet, target);
 }
 

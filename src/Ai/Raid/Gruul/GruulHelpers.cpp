@@ -184,9 +184,9 @@ Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc)
     return nullptr;
 }
 
-// Pets follow the ranged kill order: (1) Blindeye, (2) Olm, (3) Krosh, (4) Kiggler, and
-// (5) Maulgar. Krosh casts Blast Wave only when a player is within 15 yards, not a pet.
-Unit* GetMaulgarPetTarget(Player* bot, Creature const& pet)
+// Pets follow the ranged kill order. Krosh can be attacked because he casts Blast Wave only when
+// a player is within 15 yards, not a pet.
+Unit* GetMaulgarPetTarget(Player* bot, Creature* pet)
 {
     Unit* target = nullptr;
     if (Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER))
@@ -200,7 +200,7 @@ Unit* GetMaulgarPetTarget(Player* bot, Creature const& pet)
     else if (Unit* maulgar = GetGruulsLairBoss(bot, GruulBosses::DATA_HIGH_KING_MAULGAR))
         target = maulgar;
 
-    return target && pet.IsValidAttackTarget(target) ? target : nullptr;
+    return target && pet->IsValidAttackTarget(target) ? target : nullptr;
 }
 
 // Gruul the Dragonkiller

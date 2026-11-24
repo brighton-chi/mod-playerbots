@@ -252,7 +252,7 @@ GuidVector FindLesserDoomguardGuids(Player* bot);
 // The oldest living Lesser Doomguard, so every bot picks the same one.
 Unit* GetLesserDoomguard(PlayerbotAI* botAI);
 Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor);
-Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature const& pet);
+Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature* pet);
 
 // Archimonde
 

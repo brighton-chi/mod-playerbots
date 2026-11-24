@@ -637,8 +637,9 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetTankValue(Action*
 float IllidariCouncilControlMovementAndTargetingMultiplier::GetNonTankValue(Action* action)
 {
     bool const isSetBehind = dynamic_cast<SetBehindTargetAction*>(action);
-    bool const isMeleeApproach = isSetBehind || dynamic_cast<ReachMeleeAction*>(action) ||
-        dynamic_cast<CastReachTargetSpellAction*>(action) || IsKillingSpree(bot, action);
+    bool const isMeleeApproach = PlayerbotAI::IsMelee(bot) &&
+        (isSetBehind || dynamic_cast<ReachMeleeAction*>(action) ||
+         dynamic_cast<CastReachTargetSpellAction*>(action) || IsKillingSpree(bot, action));
     if (isMeleeApproach && IsMeleeTargetNearZerevor())
         return 0.0f;
 
@@ -691,19 +692,19 @@ float IllidariCouncilControlMovementAndTargetingMultiplier::GetHealerValue(Actio
     return 1.0f;
 }
 
-// Melee wait if any part of their target's melee ring is in Arcane Explosion range.
+// Melee wait if any part of their target's melee ring (plus padding) is in Arcane Explosion range.
 bool IllidariCouncilControlMovementAndTargetingMultiplier::IsMeleeTargetNearZerevor()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    if (!target || IsZerevorMageTank(bot) || !GetZerevorMageTank(bot))
+    if (!target)
         return false;
 
     Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
     if (!zerevor)
         return false;
 
-    float const clearance = ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE + bot->GetMeleeRange(target);
-    return zerevor->GetExactDist2d(target) < clearance;
+    return zerevor->GetExactDist2d(
+        target) < ZEREVOR_ARCANE_EXPLOSION_CLEARANCE + bot->GetMeleeRange(target);
 }
 
 float IllidariCouncilDisableMageTankActionsMultiplier::GetValueInEncounter(Action* action)

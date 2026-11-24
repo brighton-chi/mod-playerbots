@@ -356,13 +356,13 @@ bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit)
         IsSisterOfPainHeld(botAI, unit);
 }
 
-Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature const& pet)
+Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature* pet)
 {
     Unit* target = FindSisterOfPleasureLinkedTo(botAI, pain);
     if (!target)
         target = botAI->GetAiObjectContext()->GetValue<Unit*>("dps target")->Get();
 
-    if (!target || IsHeldSisterOfPain(botAI, target) || !pet.IsValidAttackTarget(target))
+    if (!target || IsHeldSisterOfPain(botAI, target) || !pet->IsValidAttackTarget(target))
         return nullptr;
 
     return target;
@@ -727,7 +727,7 @@ std::vector<SupremusHazard> FindSupremusHazards(Player* bot)
         {
             hazards.push_back({
                 volcano->GetPosition(), SUPREMUS_VOLCANO_HAZARD_RADIUS,
-                SUPREMUS_VOLCANO_SAFE_DISTANCE });
+                SUPREMUS_VOLCANO_CLEARANCE });
         }
     }
 
@@ -739,7 +739,7 @@ std::vector<SupremusHazard> FindSupremusHazards(Player* bot)
              bot, SUPREMUS_HAZARD_SEARCH_RADIUS, Id(BtSpells::SPELL_MOLTEN_FLAME_PATCH)))
     {
         hazards.push_back(
-            { patch, SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS, SUPREMUS_MOLTEN_FLAME_SAFE_DISTANCE });
+            { patch, SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS, SUPREMUS_MOLTEN_FLAME_CLEARANCE });
     }
 
     return hazards;
@@ -1570,7 +1570,7 @@ bool IsMageTankHealerPositionSafe(Position const& point, Player* mageTank, Unit*
     if (toMageTank > MAGE_TANK_HEALER_MAX_DISTANCE || toMageTank < MAGE_TANK_HEALER_MIN_DISTANCE)
         return false;
 
-    return zerevor->GetExactDist2d(point) >= ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE &&
+    return zerevor->GetExactDist2d(point) >= ZEREVOR_ARCANE_EXPLOSION_CLEARANCE &&
         !IsInZerevorPatch(zerevor, point, COUNCIL_PATCH_MARGIN);
 }
 

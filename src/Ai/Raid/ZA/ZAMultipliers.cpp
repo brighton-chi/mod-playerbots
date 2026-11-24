@@ -206,9 +206,6 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
 // Nalorakk's troll form and Halazzi's lynx add need to be handled by the assist tank.
 float ZulAmanControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
@@ -219,8 +216,7 @@ float ZulAmanControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         IsBossInProgress(bot, ZA_MAP_ID, Id(ZaBosses::DATA_HALAZZI)) ? 0.0f : 1.0f;
 }
 
-// CombatFormationMoveAction is the action for the "disperse" command. It is also the parent class
-// for SetBehindTargetAction and TankFaceAction.
+// CombatFormationMoveAction is the action for the "disperse" command.
 float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CombatFormationMoveAction*>(action))

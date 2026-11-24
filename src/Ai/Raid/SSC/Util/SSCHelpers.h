@@ -354,7 +354,7 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras);
 // tank's included.
 bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras);
 // Leotheras in the final phase outside a hold, so no pet is left on the Shadow.
-Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature const& pet);
+Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature* pet);
 bool HasTooManyChaosBlastStacks(Player* bot);
 bool HasInnerDemon(Player* bot);
 Creature* GetPersonalInnerDemon(PlayerbotAI* botAI);

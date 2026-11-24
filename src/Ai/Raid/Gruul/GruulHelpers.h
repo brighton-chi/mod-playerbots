@@ -68,6 +68,7 @@ enum class GruulNpcs : uint32
 // Shared
 
 inline constexpr uint32 GRUUL_MAP_ID = 565;
+inline constexpr float GRUUL_ARRIVAL_DISTANCE = 3.0f;
 
 // The ogre council members are found with a grid search (see GetMaulgarCouncilMember) and Gruul
 // with the bot's threat list.
@@ -97,17 +98,17 @@ inline constexpr float MAULGAR_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 // Hold cooldowns until Blindeye is at this percent health. Also the gate for on-pull Misdirects.
 inline constexpr float BLINDEYE_ENGAGED_HEALTH_PCT = 75.0f;
 inline constexpr float KIGGLER_ARCANE_EXPLOSION_HAZARD_RADIUS = 30.0f;
-// Stays inside the "enemy out of spell" threshold (spellDistance + CONTACT_DISTANCE + both reaches.
-// ~34y exact against Kiggler), allowing the boomie to attack Kiggler safely without Nature's Reach.
-inline constexpr float KIGGLER_ARCANE_EXPLOSION_SAFE_DISTANCE =
+// Stays inside the "enemy out of spell" threshold (spellDistance + CONTACT_DISTANCE + both reaches,
+// ~34yd exact against Kiggler), allowing the boomie to attack safely without Nature's Reach.
+inline constexpr float KIGGLER_ARCANE_EXPLOSION_CLEARANCE =
     KIGGLER_ARCANE_EXPLOSION_HAZARD_RADIUS + 2.0f;
 inline constexpr float KROSH_BLAST_WAVE_HAZARD_RADIUS = 15.0f;
-inline constexpr float KROSH_BLAST_WAVE_SAFE_DISTANCE = KROSH_BLAST_WAVE_HAZARD_RADIUS + 2.0f;
+inline constexpr float KROSH_BLAST_WAVE_CLEARANCE = KROSH_BLAST_WAVE_HAZARD_RADIUS + 2.0f;
 // Whirlwind's padding is greater than usual. The tl;dr is MoveAway()'s math results in its fallback
 // candidates (when running straight away is blocked) moving the bot less than the specified
 // distance. Melee dps often ends up between Maulgar and a wall and needing fallback escape angles.
 inline constexpr float MAULGAR_WHIRLWIND_HAZARD_RADIUS = 8.0f;
-inline constexpr float MAULGAR_WHIRLWIND_SAFE_DISTANCE = MAULGAR_WHIRLWIND_HAZARD_RADIUS + 4.0f;
+inline constexpr float MAULGAR_WHIRLWIND_CLEARANCE = MAULGAR_WHIRLWIND_HAZARD_RADIUS + 4.0f;
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 // Around Maulgar's spawn. The ogres' tank positions are within about 60 yd of it; 100 yd covers the
 // room.
@@ -138,20 +139,20 @@ GuidVector FindWildFelStalkerGuids(Player* bot);
 std::vector<Unit*> GetWildFelStalkers(Player* bot);
 GuidVector FindMaulgarCouncilGuids(Player* bot);
 Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc);
-Unit* GetMaulgarPetTarget(Player* bot, Creature const& pet);
+Unit* GetMaulgarPetTarget(Player* bot, Creature* pet);
 
 // Gruul the Dragonkiller
 
 inline constexpr uint32 CAVE_IN_CACHE_INTERVAL_MS = 100;
-// Radius is 8y, plus the 1.5y CombatReach the membership check adds for the player, rounded up.
-// The pool lasts 15s and is cast as often as every 3.5s, so 5 can be on the ground at once.
+// Radius is 8 yd, plus player CombatReach, rounded up. The pool lasts 15s and is cast as often as
+// every 3.5s, so up to 5 can be on the ground at once.
 inline constexpr float CAVE_IN_RADIUS = 10.0f;
 // Distance for the multiplier. As usual, wider than the avoidance to prevent running back in.
 inline constexpr float CAVE_IN_CONTROL_RADIUS = CAVE_IN_RADIUS + 5.0f;
 inline constexpr float CAVE_IN_SEARCH_RADIUS = CAVE_IN_CONTROL_RADIUS + 2.0f;
-// Radius is 20y with 2y of MoveAway padding. Sort of. The details are not really important; I note
-// only that damage has a linear relationship with distance.
-inline constexpr float GRUUL_SHATTER_SAFE_DISTANCE = 22.0f;
+// Radius is 20 yd with 2 yd of padding. Damage has a linear relationship with distance, with some
+// nuances not worth covering here.
+inline constexpr float GRUUL_SHATTER_CLEARANCE = 22.0f;
 
 bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearCaveIn(PlayerbotAI* botAI, float radius);

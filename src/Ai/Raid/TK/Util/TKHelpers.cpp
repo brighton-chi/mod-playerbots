@@ -506,7 +506,7 @@ bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
     return GetKaelthasAdvisorDpsHold(botAI, kaelthas) != KaelthasAdvisorDpsHold::None;
 }
 
-Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature const& pet)
+Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     Unit* kaelthas = GetTkBoss(botAI->GetBot(), TkBosses::DATA_KAELTHAS_SUNSTRIDER);
     if (GetKaelthasTkPhase(kaelthas) != PHASE_WEAPONS)
@@ -518,7 +518,7 @@ Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature const& pet)
             continue;
 
         if (Unit* candidate = GetLegendaryWeapon(botAI, Id(weapon.entry)))
-            return pet.IsValidAttackTarget(candidate) ? candidate : nullptr;
+            return pet->IsValidAttackTarget(candidate) ? candidate : nullptr;
     }
 
     return nullptr;

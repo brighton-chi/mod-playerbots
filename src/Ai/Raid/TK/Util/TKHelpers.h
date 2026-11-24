@@ -334,7 +334,7 @@ bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
 // Every pet is held while an advisor's opening hold runs, the Capernian tank's included.
 bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
 // In the weapons phase, pets follow the melee priority, which leaves out Devastation.
-Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature const& pet);
+Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature* pet);
 bool UpdateTkClassRoles(PlayerbotAI* botAI);
 bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
 // Demonology spec is preferred for the Capernian Warlock tank.

@@ -458,6 +458,6 @@ bool KaelthasSunstriderPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
         return false;
 
-    Unit* target = GetKaelthasWeaponPetTarget(botAI, *pet);
+    Unit* target = GetKaelthasWeaponPetTarget(botAI, pet);
     return target && pet->GetVictim() != target;
 }

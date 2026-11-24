@@ -531,7 +531,7 @@ bool IllidariCouncilNonTanksShouldAvoidZerevorTrigger::IsActiveInEncounter()
         return false;
 
     Unit* zerevor = GetIllidariCouncilMembers(bot).zerevor;
-    if (!zerevor || bot->GetExactDist2d(zerevor) >= ZEREVOR_ARCANE_EXPLOSION_SAFE_DISTANCE)
+    if (!zerevor || bot->GetExactDist2d(zerevor) >= ZEREVOR_ARCANE_EXPLOSION_CLEARANCE)
         return false;
 
     Player* mageTank = GetZerevorMageTank(bot);

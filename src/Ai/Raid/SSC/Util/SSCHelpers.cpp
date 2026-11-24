@@ -848,7 +848,7 @@ bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras)
     return GetLeotherasDpsHoldWindow(botAI, leotheras) != LeotherasDpsHoldWindow::None;
 }
 
-Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature const& pet)
+Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     if (!IsLeotherasFinalPhase(botAI))
         return nullptr;
@@ -857,7 +857,7 @@ Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature const& pet)
     if (!leotheras || IsLeotherasPetHoldActive(botAI, leotheras))
         return nullptr;
 
-    return pet.IsValidAttackTarget(leotheras) ? leotheras : nullptr;
+    return pet->IsValidAttackTarget(leotheras) ? leotheras : nullptr;
 }
 
 bool HasTooManyChaosBlastStacks(Player* bot)

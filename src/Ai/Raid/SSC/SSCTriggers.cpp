@@ -374,7 +374,7 @@ bool LeotherasTheBlindPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
         return false;
 
-    Unit* target = GetLeotherasPetTarget(botAI, *pet);
+    Unit* target = GetLeotherasPetTarget(botAI, pet);
     return target && pet->GetVictim() != target;
 }
 

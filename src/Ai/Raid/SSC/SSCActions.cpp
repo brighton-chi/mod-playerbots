@@ -1011,7 +1011,7 @@ bool LeotherasTheBlindCommandPetTargetAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    Unit* target = GetLeotherasPetTarget(botAI, *pet);
+    Unit* target = GetLeotherasPetTarget(botAI, pet);
     return target && CommandPetAttack(pet, target);
 }
 

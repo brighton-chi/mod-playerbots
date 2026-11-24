@@ -2210,7 +2210,7 @@ bool KaelthasSunstriderCommandPetTargetAction::Execute(Event /*event*/)
     if (!pet)
         return false;
 
-    Unit* target = GetKaelthasWeaponPetTarget(botAI, *pet);
+    Unit* target = GetKaelthasWeaponPetTarget(botAI, pet);
     return target && CommandPetAttack(pet, target);
 }
 
