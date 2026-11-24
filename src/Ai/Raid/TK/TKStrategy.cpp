@@ -129,6 +129,12 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider in gravity lapse phase",
         { NextAction("kael'thas sunstrider spread out in midair", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("kael'thas sunstrider should manage pet aggression",
+        { NextAction("kael'thas sunstrider set pet stance", ACTION_RAID + 3) }));
+
+    triggers.push_back(new TriggerNode("kael'thas sunstrider pet should switch target",
+        { NextAction("kael'thas sunstrider command pet target", ACTION_RAID + 2) }));
 }
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

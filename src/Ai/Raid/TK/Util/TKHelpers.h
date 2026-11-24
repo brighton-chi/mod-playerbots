@@ -300,9 +300,41 @@ inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f
 // Towards the front-center of the platform to ensure an open area for Gravity Lapse.
 inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
+enum class KaelthasAdvisorDpsHold : uint8
+{
+    None,
+    Sanguinar,
+    Capernian,
+    Telonicus,
+};
+
+struct LegendaryWeaponPriority
+{
+    TkNpcs entry;
+    // The axe is marked with a cross instead of skull as it is outside the full priority chain
+    // (only ranged dps attacks it).
+    bool markWithCross;
+    bool rangedDpsOnly;
+};
+inline constexpr std::array LEGENDARY_WEAPON_PRIORITIES = {
+    LegendaryWeaponPriority{ TkNpcs::NPC_STAFF_OF_DISINTEGRATION, false, false },
+    LegendaryWeaponPriority{ TkNpcs::NPC_COSMIC_INFUSER,          false, false },
+    LegendaryWeaponPriority{ TkNpcs::NPC_NETHERSTRAND_LONGBOW,    false, false },
+    LegendaryWeaponPriority{ TkNpcs::NPC_DEVASTATION,             true,  true  },
+    LegendaryWeaponPriority{ TkNpcs::NPC_INFINITY_BLADES,         false, false },
+    LegendaryWeaponPriority{ TkNpcs::NPC_WARP_SLICER,             false, false },
+    LegendaryWeaponPriority{ TkNpcs::NPC_PHASESHIFT_BULWARK,      false, false },
+};
+
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
+// The advisor whose opening hold is running, whatever the bot's role.
+KaelthasAdvisorDpsHold GetKaelthasAdvisorDpsHold(PlayerbotAI* botAI, Unit* kaelthas);
 bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
+// Every pet is held while an advisor's opening hold runs, the Capernian tank's included.
+bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
+// In the weapons phase, pets follow the melee priority, which leaves out Devastation.
+Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature const& pet);
 bool UpdateTkClassRoles(PlayerbotAI* botAI);
 bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
 // Demonology spec is preferred for the Capernian Warlock tank.

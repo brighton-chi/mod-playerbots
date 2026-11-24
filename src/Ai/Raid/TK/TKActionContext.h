@@ -141,6 +141,12 @@ public:
         creators["kael'thas sunstrider spread out in midair"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_spread_out_in_midair;
 
+        creators["kael'thas sunstrider set pet stance"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_set_pet_stance;
+
+        creators["kael'thas sunstrider command pet target"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_command_pet_target;
+
         creators["kael'thas sunstrider announce class roles"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_announce_class_roles;
     }
@@ -317,6 +323,14 @@ private:
     static Action* kaelthas_sunstrider_spread_out_in_midair(PlayerbotAI* botAI)
     {
         return new KaelthasSunstriderSpreadOutInMidairAction(botAI);
+    }
+    static Action* kaelthas_sunstrider_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new KaelthasSunstriderSetPetStanceAction(botAI);
+    }
+    static Action* kaelthas_sunstrider_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new KaelthasSunstriderCommandPetTargetAction(botAI);
     }
     static Action* kaelthas_sunstrider_announce_class_roles(PlayerbotAI* botAI)
     {

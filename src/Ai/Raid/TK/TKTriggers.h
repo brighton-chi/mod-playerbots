@@ -459,4 +459,28 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class KaelthasSunstriderShouldManagePetAggressionTrigger : public TempestKeepEncounterTrigger
+{
+public:
+    KaelthasSunstriderShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider should manage pet aggression",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class KaelthasSunstriderPetShouldSwitchTargetTrigger : public TempestKeepEncounterTrigger
+{
+public:
+    KaelthasSunstriderPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(
+            botAI, "kael'thas sunstrider pet should switch target",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 #endif

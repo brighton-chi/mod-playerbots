@@ -129,6 +129,12 @@ public:
 
         creators["kael'thas sunstrider in gravity lapse phase"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_in_gravity_lapse_phase;
+
+        creators["kael'thas sunstrider should manage pet aggression"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_should_manage_pet_aggression;
+
+        creators["kael'thas sunstrider pet should switch target"] =
+            &RaidTempestKeepTriggerContext::kaelthas_sunstrider_pet_should_switch_target;
     }
 
 private:
@@ -286,6 +292,16 @@ private:
     static Trigger* kaelthas_sunstrider_in_gravity_lapse_phase(PlayerbotAI* botAI)
     {
         return new KaelthasSunstriderInGravityLapsePhaseTrigger(botAI);
+    }
+
+    static Trigger* kaelthas_sunstrider_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new KaelthasSunstriderShouldManagePetAggressionTrigger(botAI);
+    }
+
+    static Trigger* kaelthas_sunstrider_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new KaelthasSunstriderPetShouldSwitchTargetTrigger(botAI);
     }
 };
 

@@ -19,10 +19,7 @@ using namespace EncounterHelpers;
 
 bool TempestKeepNoEncounterInProgressTrigger::IsActive()
 {
-    if (IsEncounterInProgress(bot, TK_MAP_ID))
-        return false;
-
-    return IsMechanicTrackerBot(bot, TK_MAP_ID);
+    return !IsEncounterInProgress(bot, TK_MAP_ID);
 }
 
 bool TempestKeepStuckFallingTrigger::IsActive()
@@ -443,4 +440,24 @@ bool KaelthasSunstriderInGravityLapsePhaseTrigger::IsActiveInEncounter()
     constexpr float gravityLapseHpThreshold = 50.0f;
     Unit* kaelthas = GetEncounterBoss();
     return kaelthas && kaelthas->GetHealthPct() <= gravityLapseHpThreshold;
+}
+
+bool KaelthasSunstriderShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    Unit* kaelthas = GetEncounterBoss();
+    return kaelthas &&
+        IsMinionStanceWrongForHold(bot, IsKaelthasAdvisorPetHoldActive(botAI, kaelthas));
+}
+
+bool KaelthasSunstriderPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+        return false;
+
+    Unit* target = GetKaelthasWeaponPetTarget(botAI, *pet);
+    return target && pet->GetVictim() != target;
 }

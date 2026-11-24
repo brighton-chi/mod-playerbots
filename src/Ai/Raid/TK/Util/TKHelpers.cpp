@@ -458,29 +458,70 @@ bool IsAdvisorActive(Unit* advisor)
         !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
-bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
+KaelthasAdvisorDpsHold GetKaelthasAdvisorDpsHold(PlayerbotAI* botAI, Unit* kaelthas)
 {
     if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
-        return false;
+        return KaelthasAdvisorDpsHold::None;
 
     std::optional<uint32> const& holdStart = TkState(kaelthas->GetInstanceId()).advisorDpsHoldTimer;
     if (holdStart && *holdStart != ADVISOR_DPS_HOLD_NOT_STARTED &&
         getMSTimeDiff(*holdStart, getMSTime()) >= ADVISOR_DPS_HOLD_MS)
     {
-        return false;
+        return KaelthasAdvisorDpsHold::None;
     }
 
     Player* bot = botAI->GetBot();
     if (IsAdvisorActive(FindThreatTarget(bot, "lord sanguinar")))
-        return !PlayerbotAI::IsMainTank(bot);
+        return KaelthasAdvisorDpsHold::Sanguinar;
 
     if (IsAdvisorActive(FindThreatTarget(bot, "grand astromancer capernian")))
-        return !IsCapernianTank(bot);
+        return KaelthasAdvisorDpsHold::Capernian;
 
     if (IsAdvisorActive(FindThreatTarget(bot, "master engineer telonicus")))
-        return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+        return KaelthasAdvisorDpsHold::Telonicus;
+
+    return KaelthasAdvisorDpsHold::None;
+}
+
+bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
+{
+    Player* bot = botAI->GetBot();
+    switch (GetKaelthasAdvisorDpsHold(botAI, kaelthas))
+    {
+        case KaelthasAdvisorDpsHold::Sanguinar:
+            return !PlayerbotAI::IsMainTank(bot);
+        case KaelthasAdvisorDpsHold::Capernian:
+            return !IsCapernianTank(bot);
+        case KaelthasAdvisorDpsHold::Telonicus:
+            return !PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+        case KaelthasAdvisorDpsHold::None:
+            break;
+    }
 
     return false;
+}
+
+bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
+{
+    return GetKaelthasAdvisorDpsHold(botAI, kaelthas) != KaelthasAdvisorDpsHold::None;
+}
+
+Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature const& pet)
+{
+    Unit* kaelthas = GetTkBoss(botAI->GetBot(), TkBosses::DATA_KAELTHAS_SUNSTRIDER);
+    if (GetKaelthasTkPhase(kaelthas) != PHASE_WEAPONS)
+        return nullptr;
+
+    for (LegendaryWeaponPriority const& weapon : LEGENDARY_WEAPON_PRIORITIES)
+    {
+        if (weapon.rangedDpsOnly)
+            continue;
+
+        if (Unit* candidate = GetLegendaryWeapon(botAI, Id(weapon.entry)))
+            return pet.IsValidAttackTarget(candidate) ? candidate : nullptr;
+    }
+
+    return nullptr;
 }
 
 bool UpdateTkClassRoles(PlayerbotAI* botAI)

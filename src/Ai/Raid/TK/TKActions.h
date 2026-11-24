@@ -416,6 +416,26 @@ private:
     bool HoverAndSpread();
 };
 
+class KaelthasSunstriderSetPetStanceAction : public Action
+{
+public:
+    KaelthasSunstriderSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "kael'thas sunstrider set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
+class KaelthasSunstriderCommandPetTargetAction : public Action
+{
+public:
+    KaelthasSunstriderCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "kael'thas sunstrider command pet target") {}
+    bool Execute(Event event) override;
+};
+
 class KaelthasSunstriderAnnounceClassRolesAction : public Action
 {
 public:

@@ -32,6 +32,17 @@ using namespace EncounterHelpers;
 bool TempestKeepResetEncounterStatesAction::Execute(Event /*event*/)
 {
     bool reset = false;
+
+    Action* kaelthasPetAction = context->GetAction("kael'thas sunstrider set pet stance");
+    if (kaelthasPetAction &&
+        static_cast<KaelthasSunstriderSetPetStanceAction*>(kaelthasPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
+    if (!IsMechanicTrackerBot(bot, TK_MAP_ID))
+        return reset;
+
     reset |= TkResetInstance(bot->GetInstanceId());
     reset |= ClearStrategyTargetIcon(bot, RtiTargetValue::skullIndex, {
         Id(TkNpcs::NPC_THALADRED_THE_DARKENER),
@@ -1271,29 +1282,10 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         return isMeleeDps && axe && candidate->GetExactDist2d(axe) <= safeDistance;
     };
 
-    struct WeaponPriority
-    {
-        TkNpcs entry;
-        // The axe is marked with a cross instead of skull as it is outside the full priority
-        // chain (only ranged dps attacks it).
-        bool markWithCross;
-        bool rangedDpsOnly;
-    };
-
-    static constexpr std::array weaponPriorities = {
-        WeaponPriority{ TkNpcs::NPC_STAFF_OF_DISINTEGRATION, false, false },
-        WeaponPriority{ TkNpcs::NPC_COSMIC_INFUSER,          false, false },
-        WeaponPriority{ TkNpcs::NPC_NETHERSTRAND_LONGBOW,    false, false },
-        WeaponPriority{ TkNpcs::NPC_DEVASTATION,             true,  true  },
-        WeaponPriority{ TkNpcs::NPC_INFINITY_BLADES,         false, false },
-        WeaponPriority{ TkNpcs::NPC_WARP_SLICER,             false, false },
-        WeaponPriority{ TkNpcs::NPC_PHASESHIFT_BULWARK,      false, false },
-    };
-
     Unit* target = nullptr;
     bool markClaimed = false;
     bool skippedForAxe = false;
-    for (WeaponPriority const& weapon : weaponPriorities)
+    for (LegendaryWeaponPriority const& weapon : LEGENDARY_WEAPON_PRIORITIES)
     {
         if (weapon.rangedDpsOnly && !isRangedDps)
             continue;
@@ -2194,6 +2186,30 @@ bool KaelthasSunstriderSpreadOutInMidairAction::HoverAndSpread()
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, false, false);
+}
+
+bool KaelthasSunstriderSetPetStanceAction::Execute(Event /*event*/)
+{
+    Unit* kaelthas = GetTkBoss(bot, TkBosses::DATA_KAELTHAS_SUNSTRIDER);
+    return kaelthas && SetMinionStancesForHold(
+        bot, IsKaelthasAdvisorPetHoldActive(botAI, kaelthas), _previousReactStates);
+}
+
+bool KaelthasSunstriderSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
+}
+
+bool KaelthasSunstriderCommandPetTargetAction::Execute(Event /*event*/)
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet)
+        return false;
+
+    Unit* target = GetKaelthasWeaponPetTarget(botAI, *pet);
+    return target && CommandPetAttack(pet, target);
 }
 
 bool KaelthasSunstriderAnnounceClassRolesAction::Execute(Event /*event*/)
