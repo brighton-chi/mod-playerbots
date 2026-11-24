@@ -508,6 +508,9 @@ bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
 
 Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
+    if (!pet)
+        return nullptr;
+
     Unit* kaelthas = GetTkBoss(botAI->GetBot(), TkBosses::DATA_KAELTHAS_SUNSTRIDER);
     if (GetKaelthasTkPhase(kaelthas) != PHASE_WEAPONS)
         return nullptr;

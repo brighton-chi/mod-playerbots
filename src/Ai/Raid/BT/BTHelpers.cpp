@@ -358,6 +358,9 @@ bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit)
 
 Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature* pet)
 {
+    if (!pet)
+        return nullptr;
+
     Unit* target = FindSisterOfPleasureLinkedTo(botAI, pain);
     if (!target)
         target = botAI->GetAiObjectContext()->GetValue<Unit*>("dps target")->Get();
@@ -2168,6 +2171,8 @@ bool ShouldIllidanPetsBePassive(Player* bot, Unit* illidan)
 
     IllidanPhase const phase = GetIllidanPhase(illidan);
     return phase == IllidanPhase::Flying || phase == IllidanPhase::Demon ||
+        (phase == IllidanPhase::Initial &&
+         GetIllidanHoldWindow(illidan) == IllidanDpsHold::AfterReset) ||
         IsIllidanPickupPending(bot, illidan);
 }
 

@@ -467,6 +467,8 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
     },
 };
 
+// Search radius for portals and void zones. The search is run from the tracker, so the distance is
+// large enough to generally capture the room.
 inline constexpr float NETHERSPITE_BEAM_SEARCH_RADIUS = 150.0f;
 // A player blocks a beam within 1.5 yd of the beam and more than 16.5 yd from Netherspite's center.
 // The script compares distances to the portal with combat reach subtracted, so Netherspite's reach

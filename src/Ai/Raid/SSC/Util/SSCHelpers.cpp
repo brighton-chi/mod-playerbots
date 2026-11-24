@@ -850,7 +850,7 @@ bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras)
 
 Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
-    if (!IsLeotherasFinalPhase(botAI))
+    if (!pet || !IsLeotherasFinalPhase(botAI))
         return nullptr;
 
     Creature* leotheras = GetActiveLeotherasHumanoid(botAI);

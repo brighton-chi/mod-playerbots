@@ -188,6 +188,9 @@ Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc)
 // a player is within 15 yards, not a pet.
 Unit* GetMaulgarPetTarget(Player* bot, Creature* pet)
 {
+    if (!pet)
+        return nullptr;
+
     Unit* target = nullptr;
     if (Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER))
         target = blindeye;

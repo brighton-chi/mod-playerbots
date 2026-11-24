@@ -3031,7 +3031,6 @@ bool IllidanStormrageAssignTargetPriorityAction::Execute(Event /*event*/)
         }
 
         StandDown(botAI);
-        CallBackPets(bot);
         return true;
     }
 
