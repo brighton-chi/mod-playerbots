@@ -657,6 +657,12 @@ bool RomuloAndJulianneSkullHigherHealthAction::Execute(Event /*event*/)
     return MarkTargetWithSkull(bot, higher);
 }
 
+bool JulianneLeaveCombatForFakeDeathAction::Execute(Event /*event*/)
+{
+    StandDown(botAI);
+    return true;
+}
+
 // The Wizard of Oz
 
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)

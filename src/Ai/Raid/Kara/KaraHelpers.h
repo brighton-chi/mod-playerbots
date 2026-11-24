@@ -325,6 +325,8 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf);
 // this much health below the other, the skull target is swapped to the higher health boss.
 inline constexpr uint32 ROMULO_AND_JULIANNE_HEALTH_GAP = 25000;
 
+bool IsJulianneDrinkingPoison(Unit* unit);
+
 // Wizard of Oz
 
 inline constexpr float SCORCH_RANGE = 30.0f;

@@ -528,6 +528,16 @@ Player* GetBigBadWolfTargetToProtect(Unit* wolf)
     return target;
 }
 
+// Romulo and Julianne
+
+// Julianne's first fatal blow leaves her at 1 HP and still selectable through her 2s Drink Poison
+// cast and the 2.5s after it, until she fakes death. Damage on her in that window is wasted.
+bool IsJulianneDrinkingPoison(Unit* unit)
+{
+    return unit && unit->GetEntry() == Id(KaraNpcs::NPC_JULIANNE) && unit->GetHealth() == 1 &&
+        !unit->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+}
+
 // Terestian Illhoof
 
 // Prerequisite to searching for Demon Chains, which exist only while a group member is sacrificed.

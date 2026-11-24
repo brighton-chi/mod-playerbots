@@ -180,6 +180,11 @@ bool RomuloAndJulianneShouldDieTogetherTrigger::IsActiveInEncounter()
     return GetOperaActor(bot, "romulo") && GetOperaActor(bot, "julianne");
 }
 
+bool JulianneDrinkingPoisonTrigger::IsActiveInEncounter()
+{
+    return IsJulianneDrinkingPoison(AI_VALUE(Unit*, "current target"));
+}
+
 // The Wizard of Oz
 
 bool WizardOfOzShouldPrioritizeTargetsTrigger::IsActiveInEncounter()

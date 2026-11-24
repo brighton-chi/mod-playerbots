@@ -360,12 +360,12 @@ float ShadeOfAranArcaneExplosionDisableMovementMultiplier::GetValueInEncounter(A
     return aran && IsAranCastingArcaneExplosion(aran) ? 0.0f : 1.0f;
 }
 
-// Includes set behind, as he faces a random player with each cast.
 float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
+    // Don't add the typical carveout for set behind. Aran faces a random player with each cast.
     bool const isReactiveMovement =
         dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action);
