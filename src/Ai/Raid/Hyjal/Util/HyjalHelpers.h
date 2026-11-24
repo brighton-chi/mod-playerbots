@@ -17,6 +17,7 @@
 #include <type_traits>
 #include <vector>
 
+class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -250,6 +251,8 @@ bool AnyGroupMemberHasDoom(Player* bot);
 GuidVector FindLesserDoomguardGuids(Player* bot);
 // The oldest living Lesser Doomguard, so every bot picks the same one.
 Unit* GetLesserDoomguard(PlayerbotAI* botAI);
+Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor);
+Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature const& pet);
 
 // Archimonde
 

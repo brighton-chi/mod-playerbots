@@ -357,6 +357,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class AzgalorPetShouldSwitchTargetTrigger : public HyjalEncounterTrigger
+{
+public:
+    AzgalorPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : HyjalEncounterTrigger(
+            botAI, "azgalor pet should switch target", HyjalHelpers::HyjalBosses::DATA_AZGALOR) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Archimonde
 
 class ArchimondeShamanShouldProtectAgainstFearTrigger : public HyjalEncounterTrigger

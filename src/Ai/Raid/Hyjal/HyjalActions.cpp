@@ -566,22 +566,18 @@ bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
     if (PlayerbotAI::IsMelee(bot))
         return AI_VALUE(Unit*, "current target") != azgalor && Attack(azgalor);
 
-    Unit* target = nullptr;
-    if (azgalor->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
-    {
-        target = azgalor;
-    }
-    else
-    {
-        constexpr float doomguardEngageDist = 70.0f;
-        Unit* doomguard = GetLesserDoomguard(botAI);
-        if (doomguard && bot->GetExactDist2d(doomguard) < doomguardEngageDist)
-            target = doomguard;
-        else
-            target = azgalor;
-    }
-
+    Unit* target = GetAzgalorRangedTarget(botAI, azgalor);
     return AI_VALUE(Unit*, "current target") != target && Attack(target);
+}
+
+bool AzgalorCommandPetTargetAction::Execute(Event /*event*/)
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet)
+        return false;
+
+    Unit* target = GetAzgalorPetTarget(botAI, *pet);
+    return target && CommandPetAttack(pet, target);
 }
 
 // Archimonde

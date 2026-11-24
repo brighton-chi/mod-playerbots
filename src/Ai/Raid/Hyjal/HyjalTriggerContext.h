@@ -110,6 +110,9 @@ public:
 
         creators["azgalor should divide dps"] = &RaidHyjalTriggerContext::azgalor_should_divide_dps;
 
+        creators["azgalor pet should switch target"] =
+            &RaidHyjalTriggerContext::azgalor_pet_should_switch_target;
+
         // Archimonde
         creators["archimonde hunter should misdirect"] =
             &RaidHyjalTriggerContext::archimonde_hunter_should_misdirect;
@@ -279,6 +282,11 @@ private:
     static Trigger* azgalor_should_divide_dps(PlayerbotAI* botAI)
     {
         return new AzgalorShouldDivideDpsTrigger(botAI);
+    }
+
+    static Trigger* azgalor_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new AzgalorPetShouldSwitchTargetTrigger(botAI);
     }
 
     // Archimonde

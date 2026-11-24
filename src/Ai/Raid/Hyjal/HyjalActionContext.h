@@ -112,6 +112,9 @@ public:
         creators["azgalor determine dps priority"] =
             &RaidHyjalActionContext::azgalor_determine_dps_priority;
 
+        creators["azgalor command pet target"] =
+            &RaidHyjalActionContext::azgalor_command_pet_target;
+
         // Archimonde
         creators["archimonde misdirect boss to main tank"] =
             &RaidHyjalActionContext::archimonde_misdirect_boss_to_main_tank;
@@ -281,6 +284,11 @@ private:
     static Action* azgalor_determine_dps_priority(PlayerbotAI* botAI)
     {
         return new AzgalorDetermineDpsPriorityAction(botAI);
+    }
+
+    static Action* azgalor_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new AzgalorCommandPetTargetAction(botAI);
     }
 
     // Archimonde

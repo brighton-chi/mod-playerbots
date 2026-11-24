@@ -265,6 +265,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AzgalorCommandPetTargetAction : public Action
+{
+public:
+    AzgalorCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "azgalor command pet target") {}
+    bool Execute(Event event) override;
+};
+
 // Archimonde
 
 class ArchimondeSetTremorTotemAction : public Action

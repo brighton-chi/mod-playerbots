@@ -666,6 +666,28 @@ Unit* GetLesserDoomguard(PlayerbotAI* botAI)
     return nullptr;
 }
 
+// Ranged take a Lesser Doomguard within 70 yards of them, except during Azgalor's burn phase.
+Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor)
+{
+    if (!azgalor || azgalor->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
+        return azgalor;
+
+    constexpr float doomguardEngageDist = 70.0f;
+    Unit* doomguard = GetLesserDoomguard(botAI);
+    if (doomguard && botAI->GetBot()->GetExactDist2d(doomguard) < doomguardEngageDist)
+        return doomguard;
+
+    return azgalor;
+}
+
+// Every pet follows the ranged priority, including the pets of melee.
+Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature const& pet)
+{
+    Unit* azgalor = GetHyjalBoss(botAI->GetBot(), HyjalBosses::DATA_AZGALOR);
+    Unit* target = GetAzgalorRangedTarget(botAI, azgalor);
+    return target && pet.IsValidAttackTarget(target) ? target : nullptr;
+}
+
 // Archimonde
 
 bool HasProtectionOfElune(Player* bot)

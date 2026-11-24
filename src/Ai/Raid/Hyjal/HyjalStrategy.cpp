@@ -109,6 +109,9 @@ void RaidHyjalStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor should divide dps",
         { NextAction("azgalor determine dps priority", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("azgalor pet should switch target",
+        { NextAction("azgalor command pet target", ACTION_RAID + 3) }));
+
     // Archimonde
     triggers.push_back(new TriggerNode("archimonde hunter should misdirect",
         { NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 1) }));

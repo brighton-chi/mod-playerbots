@@ -328,6 +328,16 @@ bool AzgalorShouldDivideDpsTrigger::IsActiveInEncounter()
     return PlayerbotAI::IsDps(bot);
 }
 
+bool AzgalorPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+        return false;
+
+    Unit* target = GetAzgalorPetTarget(botAI, *pet);
+    return target && pet->GetVictim() != target;
+}
+
 // Archimonde
 
 bool ArchimondeShamanShouldProtectAgainstFearTrigger::IsActiveInEncounter()
