@@ -8,20 +8,6 @@
 #include "ChatHelper.h"
 #include "Playerbots.h"
 #include "Vehicle.h"
-#include <algorithm>
-
-namespace
-{
-// A name can match a rank chain and unrelated chainless spells, such as the Blacksmithing
-// recipe "Corruption"; the chain always wins.
-bool IsBetterRank(SpellInfo const* candidate, SpellInfo const* best)
-{
-    if (candidate->IsRanked() != best->IsRanked())
-        return candidate->IsRanked();
-
-    return candidate->GetRank() > best->GetRank();
-}
-}  // namespace
 
 namespace
 {
