@@ -557,6 +557,13 @@ bool IsTerestianSacrificeActive(Player* bot)
     return false;
 }
 
+GuidVector FindTerestianAddGuids(Player* bot)
+{
+    return FindCreatureGuidsAround(
+        bot, TERESTIAN_SPAWN_POSITION, TERESTIAN_ADD_SEARCH_RADIUS,
+        { Id(KaraNpcs::NPC_DEMON_CHAINS), Id(KaraNpcs::NPC_KILREK) });
+}
+
 // Shade of Aran
 
 bool IsAranCastingArcaneExplosion(Unit* aran)
@@ -647,25 +654,32 @@ bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran)
     return true;
 }
 
-// There is no raid action to banish the Elementals. This condition exists in case a player does it.
-GuidVector FindUnbanishedConjuredElementals(Player* bot)
+GuidVector FindConjuredElementalGuids(Player* bot)
 {
-    std::list<Creature*> elementals;
-    bot->GetCreatureListWithEntryInGrid(
-        elementals, Id(KaraNpcs::NPC_CONJURED_ELEMENTAL), ARAN_ROOM_SEARCH_RADIUS);
+    return FindCreatureGuidsAround(
+        bot, ARAN_ROOM_CENTER, ARAN_ROOM_SEARCH_RADIUS, { Id(KaraNpcs::NPC_CONJURED_ELEMENTAL) });
+}
 
-    GuidVector guids;
-    for (Creature* elemental : elementals)
+// There is no raid action to banish the Elementals. This condition exists in case a player does it.
+GuidVector GetUnbanishedConjuredElementals(Player* bot)
+{
+    GuidVector const& guids = GetInstanceCreatureList(
+        KaraState(bot->GetInstanceId()).aranElementals, ARAN_ELEMENTALS_CACHE_INTERVAL_MS, bot,
+        FindConjuredElementalGuids);
+
+    GuidVector unbanished;
+    for (ObjectGuid const& guid : guids)
     {
+        Creature* elemental = ObjectAccessor::GetCreature(*bot, guid);
         if (elemental && elemental->IsAlive() &&
             !elemental->HasAura(Id(KaraSpells::SPELL_BANISH_RANK_1)) &&
             !elemental->HasAura(Id(KaraSpells::SPELL_BANISH_RANK_2)))
         {
-            guids.push_back(elemental->GetGUID());
+            unbanished.push_back(guid);
         }
     }
 
-    return guids;
+    return unbanished;
 }
 
 // Netherspite

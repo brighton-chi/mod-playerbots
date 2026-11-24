@@ -350,7 +350,14 @@ inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165
 
 // Terestian Illhoof
 
+// Around Terestian's spawn. Demon Chains appear under him, and Kil'rek is summoned beside him.
+inline constexpr float TERESTIAN_ADD_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 TERESTIAN_ADDS_CACHE_INTERVAL_MS = 200;
+
+inline Position const TERESTIAN_SPAWN_POSITION = { -11240.600f, -1704.270f, 179.320f };
+
 bool IsTerestianSacrificeActive(Player* bot);
+GuidVector FindTerestianAddGuids(Player* bot);
 
 // Shade of Aran
 
@@ -397,7 +404,8 @@ bool IsAranCastingArcaneExplosion(Unit* aran);
 std::optional<Position> GetBlizzardEscapePosition(Player* bot);
 bool IsFlameWreathInProgress(PlayerbotAI* botAI, Unit* aran);
 bool CanReachTargetDuringFlameWreath(PlayerbotAI* botAI, Unit* aran);
-GuidVector FindUnbanishedConjuredElementals(Player* bot);
+GuidVector FindConjuredElementalGuids(Player* bot);
+GuidVector GetUnbanishedConjuredElementals(Player* bot);
 
 // Netherspite
 
@@ -706,6 +714,8 @@ struct KaraInstanceState
 {
     std::optional<uint32> attumenDpsHoldTimer;
     EncounterHelpers::InstanceCreatureList moroesGuests;
+    EncounterHelpers::InstanceCreatureList terestianAdds;
+    EncounterHelpers::InstanceCreatureList aranElementals;
     std::optional<uint32> netherspitePortalPhaseTimer;
     std::array<NetherspiteBeamState, NETHERSPITE_BEAMS.size()> netherspiteBeams;
     std::vector<Position> netherspiteVoidZones;

@@ -737,29 +737,29 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
     // Chains do not attack and are not zoned in, and neither is Kil'rek after being resummoned.
-    // Thus, we need to use grid searches, but they can be limited: chains only during a Sacrifice,
-    // and Kil'rek only when Illhoof does not have Broken Pact.
+    // Thus, we need the creature list, but chains only during a Sacrifice, and Kil'rek only when
+    // Illhoof does not have Broken Pact.
     Unit* terestian = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
-    std::vector<uint32> entries;
-    if (IsTerestianSacrificeActive(bot))
-        entries.push_back(Id(KaraNpcs::NPC_DEMON_CHAINS));
-
-    if (!terestian || !terestian->HasAura(Id(KaraSpells::SPELL_BROKEN_PACT)))
-        entries.push_back(Id(KaraNpcs::NPC_KILREK));
-
-    if (!entries.empty())
+    bool const markChains = IsTerestianSacrificeActive(bot);
+    bool const markKilrek = !terestian || !terestian->HasAura(Id(KaraSpells::SPELL_BROKEN_PACT));
+    if (markChains || markKilrek)
     {
-        constexpr float searchRadius = 100.0f;
-        std::list<Creature*> adds;
-        bot->GetCreatureListWithEntryInGrid(adds, entries, searchRadius);
+        GuidVector const& adds = GetInstanceCreatureList(
+            KaraState(bot->GetInstanceId()).terestianAdds, TERESTIAN_ADDS_CACHE_INTERVAL_MS, bot,
+            FindTerestianAddGuids);
 
         Creature* kilrek = nullptr;
-        for (Creature* add : adds)
+        for (ObjectGuid const& guid : adds)
         {
-            if (!add->IsAlive())
+            bool const isChains = guid.GetEntry() == Id(KaraNpcs::NPC_DEMON_CHAINS);
+            if (isChains ? !markChains : !markKilrek)
                 continue;
 
-            if (add->GetEntry() == Id(KaraNpcs::NPC_DEMON_CHAINS))
+            Creature* add = ObjectAccessor::GetCreature(*bot, guid);
+            if (!add || !add->IsAlive())
+                continue;
+
+            if (isChains)
                 return MarkTargetWithSkull(bot, add);
 
             kilrek = add;
@@ -831,9 +831,7 @@ bool ShadeOfAranStopMovingAction::Execute(Event /*event*/)
 
 bool ShadeOfAranMarkElementalAction::Execute(Event /*event*/)
 {
-    GuidVector const& elementals =
-        context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet();
-    for (ObjectGuid const& guid : elementals)
+    for (ObjectGuid const& guid : GetUnbanishedConjuredElementals(bot))
     {
         Unit* elemental = botAI->GetUnit(guid);
         if (elemental && elemental->IsAlive())

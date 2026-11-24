@@ -271,8 +271,7 @@ bool ShadeOfAranShouldPrioritizeElementalsTrigger::IsActiveInEncounter()
     if (!IsMechanicTrackerBot(bot, KARA_MAP_ID))
         return false;
 
-    GuidVector const& elementals =
-        context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet();
+    GuidVector const elementals = GetUnbanishedConjuredElementals(bot);
     if (elementals.empty())
         return false;
 
@@ -307,7 +306,7 @@ bool ShadeOfAranRangedShouldMaintainDistanceTrigger::IsActiveInEncounter()
         return false;
 
     // If elementals are up, let ranged have freedom to reach them even if outside the band.
-    return context->GetValue<GuidVector>("shade of aran unbanished elementals")->RefGet().empty();
+    return GetUnbanishedConjuredElementals(bot).empty();
 }
 
 // Netherspite
