@@ -928,7 +928,7 @@ bool TeronGorefiendPositionRangedOnBalconyAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -1485,7 +1485,7 @@ bool IllidariCouncilMisdirectToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
@@ -2033,7 +2033,7 @@ bool IllidanStormrageMisdirectToTanksAction::TryMisdirectToFlameTanks(Group* gro
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member->GetGUID());

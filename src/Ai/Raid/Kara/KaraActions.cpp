@@ -226,7 +226,7 @@ bool AttumenTheHuntsmanAssistTankPositionUnmountedAction::Execute(Event /*event*
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID)
+        if (!member || member == bot || !member->IsAlive() || !bot->IsInMap(member))
             continue;
 
         // A cleave's jump adds the member's reach; Intangible Presence doesn't.
@@ -1161,7 +1161,7 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != KARA_MAP_ID ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member) || member->HasAura(Id(data.exhaustion)))
         {
             continue;
@@ -1502,7 +1502,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
             if (!member)
                 continue;
 
-            if (member->GetMapId() != KARA_MAP_ID)
+            if (!bot->IsInMap(member))
                 tiers[2].push_back(member);
             else if (member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
                 tiers[0].push_back(member);
@@ -1526,7 +1526,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBanishSlots(
             bool const isHunter = member->getClass() == CLASS_HUNTER;
             float const radius =
                 isHunter ? NETHERSPITE_HUNTER_BANISH_SLOT_RADIUS : NETHERSPITE_BANISH_SLOT_RADIUS;
-            bool const isInKara = member->GetMapId() == KARA_MAP_ID;
+            bool const isInKara = bot->IsInMap(member);
             bool const isHunterBot = isHunter && GET_PLAYERBOT_AI(member) && isInKara;
 
             auto best = angles.begin();

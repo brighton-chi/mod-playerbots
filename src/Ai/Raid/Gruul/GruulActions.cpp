@@ -254,7 +254,7 @@ bool HighKingMaulgarBanishFelStalkerAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->GetMapId() == GRUUL_MAP_ID &&
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
             member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
         {
             warlocks.push_back(member);
@@ -288,8 +288,8 @@ bool HighKingMaulgarMisdirectOgresToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            member->GetMapId() == GRUUL_MAP_ID && GET_PLAYERBOT_AI(member))
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
+            member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }
@@ -415,7 +415,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID ||
+            if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
                 !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member))
             {
                 continue;
@@ -495,7 +495,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID)
+        if (!member || member == bot || !member->IsAlive() || !bot->IsInMap(member))
             continue;
 
         float const distance = bot->GetExactDist2d(member);

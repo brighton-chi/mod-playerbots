@@ -309,7 +309,7 @@ std::vector<Player*> GetRangedMembers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == HYJAL_MAP_ID && GET_PLAYERBOT_AI(member) &&
+        if (member && bot->IsInMap(member) && GET_PLAYERBOT_AI(member) &&
             PlayerbotAI::IsRanged(member))
         {
             members.push_back(member);

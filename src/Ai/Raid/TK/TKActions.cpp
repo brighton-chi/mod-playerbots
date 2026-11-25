@@ -812,7 +812,7 @@ std::vector<Player*> HighAstromancerSolarianTargetSolariumPriestsAction::GetMele
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != TK_MAP_ID ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;
@@ -878,7 +878,7 @@ bool KaelthasSunstriderMisdirectAdvisorsToTanksAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            member->GetMapId() == TK_MAP_ID && GET_PLAYERBOT_AI(member))
+            bot->IsInMap(member) && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }
@@ -1030,7 +1030,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != TK_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;

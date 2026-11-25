@@ -103,7 +103,7 @@ bool MagtheridonMisdirectChannelersToMainTankAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-            member->GetMapId() == MAG_MAP_ID && GET_PLAYERBOT_AI(member))
+            bot->IsInMap(member) && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
         }
@@ -186,7 +186,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
     {
         Player* member = ref->GetSource();
         if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK &&
-            member->GetMapId() == MAG_MAP_ID && GET_PLAYERBOT_AI(member))
+            bot->IsInMap(member) && GET_PLAYERBOT_AI(member))
         {
             warlocks.push_back(member);
         }
@@ -558,7 +558,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::AssignCubeClickers(
     for (auto it = assignment.begin(); it != assignment.end(); )
     {
         Player* player = ObjectAccessor::GetPlayer(*bot, it->first);
-        if (!player || !player->IsAlive() || player->GetMapId() != MAG_MAP_ID)
+        if (!player || !player->IsAlive())
             it = assignment.erase(it);
         else
             ++it;
@@ -588,7 +588,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::AssignCubeClickers(
         for (GroupReference* ref = group->GetFirstMember(); ref && !candidate; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != MAG_MAP_ID ||
+            if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
                 member->getClass() == CLASS_WARLOCK || !GET_PLAYERBOT_AI(member) ||
                 !PlayerbotAI::IsRangedDps(member))
             {
@@ -608,7 +608,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::AssignCubeClickers(
                  ref && !candidate; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member->GetMapId() != MAG_MAP_ID ||
+                if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
                     !GET_PLAYERBOT_AI(member) || member == victim ||
                     PlayerbotAI::IsMainTank(member))
                 {
@@ -638,7 +638,7 @@ bool MagtheridonUpdateTimersAndAssignmentsAction::NeedsCubeReassignment(uint32 i
     for (auto const& pair : assignment)
     {
         Player* assigned = ObjectAccessor::GetPlayer(*bot, pair.first);
-        if (!assigned || !assigned->IsAlive() || assigned->GetMapId() != MAG_MAP_ID)
+        if (!assigned || !assigned->IsAlive())
             return true;
     }
 

@@ -92,7 +92,7 @@ Unit* FindCouncilMember(Player* bot, std::string_view name)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* player = ref->GetSource();
-        if (!player || player == bot || !player->IsAlive() || player->GetMapId() != BT_MAP_ID)
+        if (!player || player == bot || !player->IsAlive() || !bot->IsInMap(player))
             continue;
 
         if (Unit* member = FindThreatTarget(player, name))
@@ -495,14 +495,13 @@ namespace
 bool IsValidSpineRemover(Player* bot, ObjectGuid remover)
 {
     Player* player = ObjectAccessor::GetPlayer(*bot, remover);
-    return player && player->IsAlive() && player->GetMapId() == BT_MAP_ID &&
-        !IsNajentusImpaled(player);
+    return player && player->IsAlive() && !IsNajentusImpaled(player);
 }
 
 bool CanThrowNajentusSpine(Player* player)
 {
-    return player && player->IsAlive() && player->GetMapId() == BT_MAP_ID &&
-        !IsNajentusImpaled(player) && player->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
+    return player && player->IsAlive() && !IsNajentusImpaled(player) &&
+        player->HasItemCount(Id(BtItems::ITEM_NAJENTUS_SPINE));
 }
 
 std::vector<NajentusSpineAssignment> const* FindNajentusSpineAssignments(uint32 instanceId)
@@ -565,7 +564,7 @@ Player* FindNajentusSpineRemover(Player* bot, Player* impaled)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == impaled || !member->IsAlive() || member->GetMapId() != BT_MAP_ID ||
+        if (!member || member == impaled || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member) || PlayerbotAI::IsTank(member) || IsNajentusImpaled(member))
         {
             continue;
@@ -635,8 +634,11 @@ Player* FindNajentusSpineThrower(Player* bot, Unit* najentus)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !GET_PLAYERBOT_AI(member) || !CanThrowNajentusSpine(member))
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
+            !CanThrowNajentusSpine(member))
+        {
             continue;
+        }
 
         float const dist = member->GetExactDist2d(najentus);
         if (dist < closestDist)
@@ -983,7 +985,7 @@ std::vector<std::vector<Player*>> GetGurtoggRangedRotationGroups(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive() ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsRanged(member) ||
             IsGurtoggFelRageTarget(member))
         {
@@ -2434,7 +2436,7 @@ GuidVector FindIllidanTrapHunterGuids(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->getClass() == CLASS_HUNTER &&
+        if (member && bot->IsInMap(member) && member->getClass() == CLASS_HUNTER &&
             GET_PLAYERBOT_AI(member))
         {
             trapHunters.push_back(member->GetGUID());
@@ -2559,7 +2561,7 @@ int32 GetIllidanRangedIndex(Player* player, size_t slotCount, bool inDemonForm)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member))
+        if (!member || !player->IsInMap(member) || !GET_PLAYERBOT_AI(member))
             continue;
 
         ObjectGuid const guid = member->GetGUID();
@@ -2590,7 +2592,7 @@ int32 GetIllidanHealerIndex(Player* bot, size_t slotCount)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
+        if (member && bot->IsInMap(member) && GET_PLAYERBOT_AI(member) &&
             PlayerbotAI::IsHeal(member))
         {
             healers.push_back(member->GetGUID());
@@ -2612,7 +2614,7 @@ int32 GetIllidanMeleeIndex(Player* bot, size_t slotCount)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || !GET_PLAYERBOT_AI(member))
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member))
             continue;
 
         ObjectGuid const guid = member->GetGUID();
@@ -2677,7 +2679,7 @@ int32 GetIllidanGrateStackIndex(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && GET_PLAYERBOT_AI(member) &&
+        if (member && bot->IsInMap(member) && GET_PLAYERBOT_AI(member) &&
             !IsFlameOfAzzinothTank(member))
         {
             bots.push_back(member->GetGUID());
@@ -2768,7 +2770,7 @@ GuidVector FindInfectedPlayerGuids(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->GetMapId() == BT_MAP_ID && member->IsAlive() &&
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
             HasParasiticShadowfiend(member))
         {
             infected.push_back(member->GetGUID());
@@ -2795,7 +2797,7 @@ std::vector<ShadowDemon> FindShadowDemons(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != BT_MAP_ID || !member->IsAlive())
+        if (!member || !member->IsAlive() || !bot->IsInMap(member))
             continue;
 
         Aura const* paralyze = member->GetAura(Id(BtSpells::SPELL_PARALYZE));

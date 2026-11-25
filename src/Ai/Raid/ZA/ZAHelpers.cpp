@@ -345,7 +345,7 @@ bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != ZA_MAP_ID || !PlayerbotAI::IsRanged(member))
+        if (!member || !bot->IsInMap(member) || !PlayerbotAI::IsRanged(member))
             continue;
 
         if (PlayerbotAI::IsHeal(member))

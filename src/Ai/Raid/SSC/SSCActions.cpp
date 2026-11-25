@@ -1115,7 +1115,7 @@ bool FathomLordKarathressMisdirectToTanksAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->GetMapId() == SSC_MAP_ID &&
+        if (member && member->IsAlive() && bot->IsInMap(member) &&
             member->getClass() == CLASS_HUNTER && GET_PLAYERBOT_AI(member))
         {
             hunters.push_back(member);
@@ -1596,7 +1596,7 @@ bool LadyVashjAssignStationSlotsAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member) || holdsSlot(member->GetGUID()))
         {
             continue;
@@ -2314,7 +2314,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     uint32 const now = getMSTime();
     VashjCoreCatcher const& catcher = chain.catchers[next];
     Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
-    if (!player || !player->IsAlive() || player->GetMapId() != SSC_MAP_ID)
+    if (!player || !player->IsAlive())
     {
         ReassignVashjCoreCatcher(bot, chain, next);
         return false;

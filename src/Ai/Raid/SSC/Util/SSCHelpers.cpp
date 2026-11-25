@@ -180,7 +180,7 @@ bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+        if (!member || !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsRanged(member))
         {
             continue;
@@ -210,7 +210,7 @@ std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member != bot && member->IsAlive() && member->GetMapId() == SSC_MAP_ID)
+        if (member && member != bot && member->IsAlive() && bot->IsInMap(member))
             members.push_back(member);
     }
 
@@ -1627,7 +1627,7 @@ Player* FindVashjCoreCatcher(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+        if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
             !GET_PLAYERBOT_AI(member) || PlayerbotAI::IsTank(member))
         {
             continue;
@@ -1765,7 +1765,7 @@ bool IsVashjPhase3RangedTooClose(Player* bot, Unit* vashj)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member != bot && member->IsAlive() && member->GetMapId() == SSC_MAP_ID &&
+        if (member && member != bot && member->IsAlive() && bot->IsInMap(member) &&
             bot->GetExactDist2d(member) < VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE)
         {
             return true;
@@ -1880,7 +1880,7 @@ Player* FindVashjGroundingShaman(Player* bot)
     {
         Player* member = ref->GetSource();
         if (member && member->getClass() == CLASS_SHAMAN && member->IsAlive() &&
-            member->GetMapId() == SSC_MAP_ID && group->SameSubGroup(mainTank, member) &&
+            bot->IsInMap(member) && group->SameSubGroup(mainTank, member) &&
             GET_PLAYERBOT_AI(member))
         {
             return member;
@@ -2500,7 +2500,7 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase)
     {
         Player* member = ref->GetSource();
         if (!member || member == bot || member == vashjTank || !member->IsAlive() ||
-            member->GetMapId() != SSC_MAP_ID || !GET_PLAYERBOT_AI(member) ||
+            !bot->IsInMap(member) || !GET_PLAYERBOT_AI(member) ||
             !PlayerbotAI::IsTank(member) || member->GetExactDist2d(add) >= botDistance)
         {
             continue;
@@ -2663,7 +2663,7 @@ Player* FindTaintedCoreLooter(Player* bot, Unit* tainted, int8 station)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != SSC_MAP_ID ||
+            if (!member || !member->IsAlive() || !bot->IsInMap(member) ||
                 !GET_PLAYERBOT_AI(member) || !PlayerbotAI::IsHeal(member) ||
                 GetVashjStationSlot(member).station >= 0)
             {
