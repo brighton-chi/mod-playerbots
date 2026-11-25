@@ -374,11 +374,24 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     if (gruul->GetVictim() != bot || !bot->IsWithinMeleeRange(gruul))
         return false;
 
+    Position const& position = GRUUL_POSITION;
+    float const distToPosition = gruul->GetExactDist2d(position);
+    if (distToPosition <= GRUUL_ARRIVAL_DISTANCE)
+        return false;
+
+    // Gruul stops this far from a tank he follows. Growth adds 1 yd to his reach per stack.
+    float const leadDistance = CONTACT_DISTANCE + gruul->GetCombatReach() + bot->GetCombatReach();
+    float const ratio = leadDistance / distToPosition;
+    Position const destination(
+        position.GetPositionX() + (position.GetPositionX() - gruul->GetPositionX()) * ratio,
+        position.GetPositionY() + (position.GetPositionY() - gruul->GetPositionY()) * ratio,
+        bot->GetPositionZ());
+
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GRUUL_TANK_POSITION, GRUUL_ARRIVAL_DISTANCE, gruul, moveX, moveY, backwards))
+            bot, destination, GRUUL_ARRIVAL_DISTANCE, gruul, moveX, moveY, backwards))
     {
         return false;
     }
@@ -394,7 +407,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Position const& position = GRUUL_TANK_POSITION;
+    Position const& position = GRUUL_POSITION;
 
     if (!_hasInitialPosition)
     {

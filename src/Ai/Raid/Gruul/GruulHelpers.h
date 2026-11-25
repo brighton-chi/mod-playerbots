@@ -124,7 +124,6 @@ inline Position const MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
 inline Position const OLM_TANK_POSITION      = { 101.050f, 219.359f,  -9.503f };
 inline Position const BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
 inline Position const KROSH_TANK_POSITION    = { 116.880f, 166.208f, -14.231f };
-inline Position const GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
 
 bool IsMaulgarTank(Player* bot);
 bool IsOlmTank(Player* bot);
@@ -153,6 +152,10 @@ inline constexpr float CAVE_IN_SEARCH_RADIUS = CAVE_IN_CONTROL_RADIUS + 2.0f;
 // Radius is 20 yd with 2 yd of padding. Damage has a linear relationship with distance, with some
 // nuances not worth covering here.
 inline constexpr float GRUUL_SHATTER_CLEARANCE = 22.0f;
+
+// Center of Gruul's room, where the tank holds him: the point with the most open floor (42 yd to
+// the nearest navmesh edge). The ranged positions are a ring around it.
+inline Position const GRUUL_POSITION = { 231.217f, 363.233f, -4.420f };
 
 bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearCaveIn(PlayerbotAI* botAI, float radius);
