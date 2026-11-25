@@ -660,6 +660,26 @@ public:
     bool Execute(Event event) override;
 };
 
+class MuruSetPetStanceAction : public Action
+{
+public:
+    MuruSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
+class MuruCommandPetTargetAction : public Action
+{
+public:
+    MuruCommandPetTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "m'uru command pet target") {}
+    bool Execute(Event event) override;
+};
+
 // Kil'jaeden <The Deceiver>
 
 class KiljaedenAnnounceDragonOrbUserAction : public Action

@@ -109,6 +109,10 @@ bool IsMuruPhaseActive(Unit* muru);
 bool IsMuruDarknessActive(Unit* muru);
 bool IsMuruDarknessEarly(Unit* muru);
 bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target);
+// Phase 1 Darkness, from the pre-effect, whatever the owner's role.
+bool IsMuruPetHoldActive(Unit* muru);
+// The owner's current target, but never a Dark Fiend, and during Darkness never one inside it.
+Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru);
 bool IsSpellFuryReservedForMages(Unit* furyMage);
 bool IsEntropiusDpsHoldActive(Player* bot);
 // M'uru, Entropius, their adds, the void zones (Darkness), the Dark Fiends, and the Singularity.

@@ -752,6 +752,37 @@ bool MuruTheSingularityIsNearTrigger::IsActiveInEncounter()
         bot->GetExactDist(singularity) < GetSingularityClearance(bot, entropius);
 }
 
+// An enslaved Void Spawn is commanded by its own action, so its warlock's stance is left alone.
+bool MuruShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    Unit* charm = bot->GetCharm();
+    if (charm && charm->GetEntry() == Id(SwpNpcs::NPC_VOID_SPAWN))
+        return false;
+
+    return IsMinionStanceWrongForHold(bot, IsMuruPetHoldActive(GetEncounterBoss()));
+}
+
+// A passive pet is switched only while Darkness holds it.
+bool MuruPetShouldSwitchTargetTrigger::IsActiveInEncounter()
+{
+    Pet* pet = bot->GetPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    Unit* muru = GetEncounterBoss();
+    bool const isHeld = IsMuruPetHoldActive(muru);
+    if (pet->HasReactState(REACT_PASSIVE) && !isHeld)
+        return false;
+
+    if (Unit* target = GetMuruPetTarget(botAI, pet, muru))
+        return pet->GetVictim() != target;
+
+    return isHeld && IsMeleeTargetInMuruDarkness(muru, pet->GetVictim());
+}
+
 // Kil'jaeden <The Deceiver>
 
 bool KiljaedenHandsOfTheDeceiverAreActiveTrigger::IsActiveInEncounter()

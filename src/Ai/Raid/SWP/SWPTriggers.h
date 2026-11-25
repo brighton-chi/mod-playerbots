@@ -781,6 +781,28 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class MuruShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    MuruShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "m'uru should manage pet aggression", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class MuruPetShouldSwitchTargetTrigger : public SunwellEncounterTrigger
+{
+public:
+    MuruPetShouldSwitchTargetTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "m'uru pet should switch target", SwpHelpers::SwpBosses::DATA_MURU) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Kil'jaeden <The Deceiver>
 
 class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public SunwellEncounterTrigger

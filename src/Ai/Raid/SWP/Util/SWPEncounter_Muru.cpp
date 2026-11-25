@@ -170,6 +170,28 @@ bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target)
         muru->GetExactDist2d(target) <= MURU_DARKNESS_MELEE_TARGET_DISTANCE;
 }
 
+bool IsMuruPetHoldActive(Unit* muru)
+{
+    return IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru);
+}
+
+// A hunter pet's Growl would make it a Dark Fiend's victim, and the fiend explodes on reaching its
+// victim, so pets are kept off fiends.
+Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru)
+{
+    if (!pet)
+        return nullptr;
+
+    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (!target || !target->IsAlive() || target->GetEntry() == Id(SwpNpcs::NPC_DARK_FIEND))
+        return nullptr;
+
+    if (IsMuruPetHoldActive(muru) && IsMeleeTargetInMuruDarkness(muru, target))
+        return nullptr;
+
+    return pet->IsValidAttackTarget(target) ? target : nullptr;
+}
+
 bool IsSpellFuryReservedForMages(Unit* furyMage)
 {
     if (!furyMage)

@@ -104,6 +104,13 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* muruPetAction = context->GetAction("m'uru set pet stance");
+    if (muruPetAction &&
+        static_cast<MuruSetPetStanceAction*>(muruPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // Kil'jaeden
     if (KiljaedenEncounterState* kiljaedenState = FindKiljaedenState(instanceId))
         reset |= kiljaedenState->dragonOrbUsers.erase(guid) > 0;

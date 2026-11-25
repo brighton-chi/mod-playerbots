@@ -212,6 +212,12 @@ public:
         creators["m'uru the singularity is near"] =
             &RaidSwpTriggerContext::muru_the_singularity_is_near;
 
+        creators["m'uru should manage pet aggression"] =
+            &RaidSwpTriggerContext::muru_should_manage_pet_aggression;
+
+        creators["m'uru pet should switch target"] =
+            &RaidSwpTriggerContext::muru_pet_should_switch_target;
+
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden hands of the deceiver are active"] =
             &RaidSwpTriggerContext::kiljaeden_hands_of_the_deceiver_are_active;
@@ -527,6 +533,16 @@ private:
     static Trigger* muru_the_singularity_is_near(PlayerbotAI* botAI)
     {
         return new MuruTheSingularityIsNearTrigger(botAI);
+    }
+
+    static Trigger* muru_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new MuruShouldManagePetAggressionTrigger(botAI);
+    }
+
+    static Trigger* muru_pet_should_switch_target(PlayerbotAI* botAI)
+    {
+        return new MuruPetShouldSwitchTargetTrigger(botAI);
     }
 
     // Kil'jaeden <The Deceiver>

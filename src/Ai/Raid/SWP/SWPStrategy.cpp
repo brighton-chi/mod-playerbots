@@ -231,6 +231,12 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("m'uru the singularity is near",
         { NextAction("m'uru escape the singularity", ACTION_EMERGENCY + 7) }));
 
+    triggers.push_back(new TriggerNode("m'uru should manage pet aggression",
+        { NextAction("m'uru set pet stance", ACTION_RAID + 4) }));
+
+    triggers.push_back(new TriggerNode("m'uru pet should switch target",
+        { NextAction("m'uru command pet target", ACTION_RAID + 3) }));
+
     // Kil'jaeden <The Deceiver>
     triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active",
         { NextAction("kil'jaeden control hands of the deceiver", ACTION_EMERGENCY),

@@ -217,6 +217,10 @@ public:
         creators["m'uru escape the singularity"] =
             &RaidSwpActionContext::muru_escape_the_singularity;
 
+        creators["m'uru set pet stance"] = &RaidSwpActionContext::muru_set_pet_stance;
+
+        creators["m'uru command pet target"] = &RaidSwpActionContext::muru_command_pet_target;
+
         // Kil'jaeden <The Deceiver>
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSwpActionContext::kiljaeden_announce_dragon_orb_user;
@@ -554,6 +558,16 @@ private:
     static Action* muru_escape_the_singularity(PlayerbotAI* botAI)
     {
         return new MuruEscapeTheSingularityAction(botAI);
+    }
+
+    static Action* muru_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new MuruSetPetStanceAction(botAI);
+    }
+
+    static Action* muru_command_pet_target(PlayerbotAI* botAI)
+    {
+        return new MuruCommandPetTargetAction(botAI);
     }
 
     // Kil'jaeden <The Deceiver>
