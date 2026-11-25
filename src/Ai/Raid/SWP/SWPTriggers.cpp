@@ -577,7 +577,7 @@ bool EredarTwinsShouldManagePetAggressionTrigger::IsActiveInEncounter()
     if (!HasControllableMinion(bot))
         return false;
 
-    return IsMinionStanceWrongForHold(bot, IsEredarTwinsStartHoldActive(botAI));
+    return IsMinionStanceWrongForHold(bot, IsEredarTwinsStartHoldWindowActive(bot));
 }
 
 bool EredarTwinsActiveConflagrationTargetTrigger::IsActiveInEncounter()
