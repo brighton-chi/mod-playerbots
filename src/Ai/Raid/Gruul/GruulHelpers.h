@@ -149,9 +149,17 @@ inline constexpr float CAVE_IN_RADIUS = 10.0f;
 // Distance for the multiplier. As usual, wider than the avoidance to prevent running back in.
 inline constexpr float CAVE_IN_CONTROL_RADIUS = CAVE_IN_RADIUS + 5.0f;
 inline constexpr float CAVE_IN_SEARCH_RADIUS = CAVE_IN_CONTROL_RADIUS + 2.0f;
-// Radius is 20 yd with 2 yd of padding. Damage has a linear relationship with distance, with some
-// nuances not worth covering here.
-inline constexpr float GRUUL_SHATTER_CLEARANCE = 22.0f;
+// Shatter hits players within 20 yd edge-to-edge of a stoned player: 23 yd center-to-center.
+// Damage falls off linearly with distance.
+inline constexpr float GRUUL_SHATTER_HAZARD_RADIUS = 23.0f;
+// Others are still landing and moving while a bot spreads, so it aims past the hazard radius.
+inline constexpr float GRUUL_SHATTER_CLEARANCE = GRUUL_SHATTER_HAZARD_RADIUS + 5.0f;
+inline constexpr float GRUUL_SHATTER_STEP_DISTANCE = 3.5f;
+// A step that stops further short than this is rejected, not clamped.
+inline constexpr float GRUUL_SHATTER_STEP_TOLERANCE = 0.5f;
+// The portcullis (x 170.2) shuts during the fight, but bot movement paths through doors. Spread
+// steps never end south of this line.
+inline constexpr float GRUUL_ROOM_MIN_X = 172.0f;
 
 // Center of Gruul's room, where the tank holds him: the point with the most open floor (42 yd to
 // the nearest navmesh edge). The ranged positions are a ring around it.
@@ -161,6 +169,7 @@ bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearCaveIn(PlayerbotAI* botAI, float radius);
 bool IsInCaveIn(PlayerbotAI* botAI);
 bool HasGroundSlam(Player* bot);
+bool CanMoveStraightTo(Player* bot, Position const& destination);
 
 // Shared encounter state
 

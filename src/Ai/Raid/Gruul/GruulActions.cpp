@@ -481,14 +481,57 @@ bool GruulTheDragonkillerGetOutOfCaveInAction::Execute(Event /*event*/)
     return FleePosition(pool, CAVE_IN_RADIUS, minInterval);
 }
 
+// Every group member inside the clearance pushes the bot away, harder the closer they are, so the
+// step leaves the crowd rather than just the nearest player. A blocked step tries angles up to 90
+// degrees to either side.
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, GRUUL_SHATTER_CLEARANCE);
-    if (!nearestPlayer)
+    Group* group = bot->GetGroup();
+    if (!group)
         return false;
 
-    float const distToNearest = bot->GetExactDist2d(nearestPlayer);
-    float const moveDist = std::min(3.5f, GRUUL_SHATTER_CLEARANCE - distToNearest);
+    float pushX = 0.0f;
+    float pushY = 0.0f;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member == bot || !member->IsAlive() || !member->IsInMap(bot))
+            continue;
 
-    return MoveAway(nearestPlayer, moveDist);
+        float const distance = bot->GetExactDist2d(member);
+        if (distance >= GRUUL_SHATTER_CLEARANCE)
+            continue;
+
+        float const weight = GRUUL_SHATTER_CLEARANCE - distance;
+        float const angle = member->GetAngle(bot);
+        pushX += weight * std::cos(angle);
+        pushY += weight * std::sin(angle);
+    }
+
+    if (pushX == 0.0f && pushY == 0.0f)
+        return false;
+
+    float const pushAngle = std::atan2(pushY, pushX);
+    constexpr float angleStep = static_cast<float>(M_PI) / 8.0f;
+    for (float const offset : { 0.0f, 1.0f, -1.0f, 2.0f, -2.0f, 3.0f, -3.0f, 4.0f, -4.0f })
+    {
+        float const angle = pushAngle + offset * angleStep;
+        Position const destination(
+            bot->GetPositionX() + std::cos(angle) * GRUUL_SHATTER_STEP_DISTANCE,
+            bot->GetPositionY() + std::sin(angle) * GRUUL_SHATTER_STEP_DISTANCE,
+            bot->GetPositionZ());
+
+        if (destination.GetPositionX() < GRUUL_ROOM_MIN_X ||
+            !CanMoveStraightTo(bot, destination))
+        {
+            continue;
+        }
+
+        return MoveTo(
+            GRUUL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
+            bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
+            true, false);
+    }
+
+    return false;
 }

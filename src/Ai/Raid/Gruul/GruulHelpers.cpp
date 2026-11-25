@@ -5,10 +5,12 @@
  */
 
 #include "GruulHelpers.h"
+#include "Map.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "ThreatHelpers.h"
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <mutex>
 #include <unordered_map>
@@ -257,6 +259,23 @@ bool HasGroundSlam(Player* bot)
 {
     return bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_1)) ||
         bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
+}
+
+// The collision check includes gameobjects, so a line through the shut portcullis fails here.
+bool CanMoveStraightTo(Player* bot, Position const& destination)
+{
+    float x = destination.GetPositionX();
+    float y = destination.GetPositionY();
+    float z = bot->GetMapWaterOrGroundLevel(x, y, bot->GetPositionZ());
+    if (z <= INVALID_HEIGHT)
+        z = bot->GetPositionZ();
+
+    if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
+        return false;
+
+    // An incomplete path can cut the point short without counting as a collision.
+    return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
+        GRUUL_SHATTER_STEP_TOLERANCE;
 }
 
 // Shared encounter state
