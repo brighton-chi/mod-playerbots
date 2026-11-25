@@ -130,6 +130,8 @@ public:
         creators["felmyst select target for hold"] =
             &RaidSwpActionContext::felmyst_select_target_for_hold;
 
+        creators["felmyst set pet stance"] = &RaidSwpActionContext::felmyst_set_pet_stance;
+
         // Eredar Twins
         creators["eredar twins jump from balcony"] =
             &RaidSwpActionContext::eredar_twins_jump_from_balcony;
@@ -430,6 +432,11 @@ private:
     static Action* felmyst_select_target_for_hold(PlayerbotAI* botAI)
     {
         return new FelmystSelectTargetForHoldAction(botAI);
+    }
+
+    static Action* felmyst_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new FelmystSetPetStanceAction(botAI);
     }
 
     // Eredar Twins

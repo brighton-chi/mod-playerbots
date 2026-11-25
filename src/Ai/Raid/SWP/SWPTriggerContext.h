@@ -128,6 +128,9 @@ public:
         creators["felmyst landing dps hold is active"] =
             &RaidSwpTriggerContext::felmyst_landing_dps_hold_is_active;
 
+        creators["felmyst should manage pet aggression"] =
+            &RaidSwpTriggerContext::felmyst_should_manage_pet_aggression;
+
         // Eredar Twins
         creators["eredar twins should leave balcony"] =
             &RaidSwpTriggerContext::eredar_twins_should_leave_balcony;
@@ -403,6 +406,11 @@ private:
     static Trigger* felmyst_landing_dps_hold_is_active(PlayerbotAI* botAI)
     {
         return new FelmystLandingDpsHoldIsActiveTrigger(botAI);
+    }
+
+    static Trigger* felmyst_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new FelmystShouldManagePetAggressionTrigger(botAI);
     }
 
     // Eredar Twins

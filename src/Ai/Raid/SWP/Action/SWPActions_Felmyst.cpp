@@ -499,3 +499,17 @@ bool FelmystSelectTargetForHoldAction::Execute(Event /*event*/)
 
     return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
 }
+
+// Owners stop attacking for the landing hold, but an imp or water elemental still casting at
+// Felmyst from the air phase keeps her as its target, so every pet is held.
+bool FelmystSetPetStanceAction::Execute(Event /*event*/)
+{
+    return SetMinionStancesForHold(bot, IsFelmystPetHoldActive(bot), _previousReactStates);
+}
+
+bool FelmystSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
+}

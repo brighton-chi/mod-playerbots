@@ -126,8 +126,7 @@ bool KalecgosSelectTargetForHoldAction::Execute(Event /*event*/)
 
 bool KalecgosSetPetStanceAction::Execute(Event /*event*/)
 {
-    bool const isHeld = GetKalecgosDpsHoldWindow(bot) != KalecgosDpsHold::None;
-    return SetMinionStancesForHold(bot, isHeld, _previousReactStates);
+    return SetMinionStancesForHold(bot, IsKalecgosPetHoldActive(bot), _previousReactStates);
 }
 
 bool KalecgosSetPetStanceAction::ResetPetStance()

@@ -393,6 +393,18 @@ public:
     bool Execute(Event event) override;
 };
 
+class FelmystSetPetStanceAction : public Action
+{
+public:
+    FelmystSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "felmyst set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
 // Eredar Twins
 
 class EredarTwinsJumpFromBalconyAction : public MovementAction

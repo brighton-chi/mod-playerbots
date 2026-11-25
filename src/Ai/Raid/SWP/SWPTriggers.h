@@ -447,6 +447,17 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class FelmystShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    FelmystShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "felmyst should manage pet aggression", SwpHelpers::SwpBosses::DATA_FELMYST) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Eredar Twins
 
 class EredarTwinsHunterShouldMisdirectTrigger : public SunwellEncounterTrigger

@@ -44,6 +44,9 @@ inline constexpr uint32 SPECTRAL_RIFT_CACHE_INTERVAL_MS = 200;
 // Approximate Z-coordinate of the Spectral Realm, used to force teleport bots down if they are
 // struggling with gravity.
 inline constexpr float SPECTRAL_REALM_Z = -74.5f;
+// Anything under this Z is in the Spectral Realm, the core's own test in Spectral Blast's target
+// filter. Pets never get the Spectral Realm aura, so their side is read from their Z.
+inline constexpr float SPECTRAL_REALM_MAX_Z = 50.0f;
 
 // Spectral Blast hits every other player within 10 yds of the blasted player's center.
 inline constexpr float KALECGOS_SPECTRAL_BLAST_HAZARD_RADIUS = 10.0f;
@@ -129,10 +132,14 @@ void RecordSpectralRealmEnter(Player* player);
 // Kalecgos for a surface bot, Sathrovarr for a bot in the Spectral Realm.
 Unit* GetKalecgosSideBoss(Player* bot);
 KalecgosCall GetDueKalecgosCall(Player* bot);
-// The hold on the bot's side of the realms, whatever its role. For pets and cooldowns.
+// The hold on one side of the realms, whatever the role.
+KalecgosDpsHold GetKalecgosSideHoldWindow(uint32 instanceId, bool isRealmSide);
+// The hold on the bot's side of the realms, whatever its role. For cooldowns.
 KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot);
 // The hold that applies to the bot itself. Tanks are never held.
 KalecgosDpsHold GetKalecgosDpsHold(Player* bot);
+// True if any of the bot's controllable minions is on a held side.
+bool IsKalecgosPetHoldActive(Player* bot);
 
 // Shared encounter state
 

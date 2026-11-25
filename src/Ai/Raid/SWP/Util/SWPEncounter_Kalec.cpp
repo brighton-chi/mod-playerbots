@@ -885,13 +885,12 @@ KalecgosCall GetDueKalecgosCall(Player* bot)
 }
 
 // Each side of the realms has one enemy, so a held side holds everything.
-KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
+KalecgosDpsHold GetKalecgosSideHoldWindow(uint32 instanceId, bool isRealmSide)
 {
-    KalecgosEncounterState const* state = FindKalecgosState(bot->GetInstanceId());
+    KalecgosEncounterState const* state = FindKalecgosState(instanceId);
     if (!state)
         return KalecgosDpsHold::None;
 
-    bool const isRealmSide = IsInSpectralRealm(bot);
     if (state->healthCall == KalecgosHealthCall::GapHold && state->firstLowBoss &&
         (*state->firstLowBoss == KalecgosBoss::Sathrovarr) == isRealmSide)
     {
@@ -904,9 +903,39 @@ KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
     return KalecgosDpsHold::None;
 }
 
+KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
+{
+    return GetKalecgosSideHoldWindow(bot->GetInstanceId(), IsInSpectralRealm(bot));
+}
+
 KalecgosDpsHold GetKalecgosDpsHold(Player* bot)
 {
     return PlayerbotAI::IsTank(bot) ? KalecgosDpsHold::None : GetKalecgosDpsHoldWindow(bot);
+}
+
+// The portal teleports only the player, so a pet's side can differ from its owner's. A pet
+// attacking Kalecgos keeps him and stays on the surface. A pet following its owner is allowed to
+// path through the floor, so it follows straight down into the realm and back up again.
+bool IsKalecgosPetHoldActive(Player* bot)
+{
+    uint32 const instanceId = bot->GetInstanceId();
+    bool const isSurfaceHeld =
+        GetKalecgosSideHoldWindow(instanceId, false) != KalecgosDpsHold::None;
+    bool const isRealmHeld =
+        GetKalecgosSideHoldWindow(instanceId, true) != KalecgosDpsHold::None;
+    if (!isSurfaceHeld && !isRealmHeld)
+        return false;
+
+    return std::any_of(
+        bot->m_Controlled.begin(), bot->m_Controlled.end(),
+        [isSurfaceHeld, isRealmHeld](Unit* unit)
+        {
+            Creature* minion = unit ? unit->ToCreature() : nullptr;
+            if (!minion || !minion->IsAlive() || !minion->GetCharmInfo())
+                return false;
+
+            return minion->GetPositionZ() < SPECTRAL_REALM_MAX_Z ? isRealmHeld : isSurfaceHeld;
+        });
 }
 
 // Shared encounter state

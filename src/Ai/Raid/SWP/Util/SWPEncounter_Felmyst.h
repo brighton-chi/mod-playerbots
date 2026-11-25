@@ -299,9 +299,13 @@ bool IsFelmystFogMovementSuppressed(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystLandingApproachDestination(
     Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
-// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, for
-// everyone but the main tank.
+// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, whatever
+// the bot's role.
+bool IsFelmystLandingHoldWindowActive(Player* bot);
+// The landing hold window, for everyone but the main tank.
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI);
+// While Felmyst is flying and through the landing hold window, whatever the bot's role.
+bool IsFelmystPetHoldActive(Player* bot);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(
     Player* target, uint32 durationMs = 3 * IN_MILLISECONDS);

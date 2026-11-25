@@ -141,6 +141,9 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("felmyst stop attacking for landing", ACTION_EMERGENCY + 2),
           NextAction("felmyst select target for hold", ACTION_RAID) }));
 
+    triggers.push_back(new TriggerNode("felmyst should manage pet aggression",
+        { NextAction("felmyst set pet stance", ACTION_RAID + 4) }));
+
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins should leave balcony",
         { NextAction("eredar twins jump from balcony", ACTION_EMERGENCY + 1) }));

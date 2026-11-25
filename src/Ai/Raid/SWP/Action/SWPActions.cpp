@@ -74,6 +74,13 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
         reset = true;
     }
 
+    Action* felmystPetAction = context->GetAction("felmyst set pet stance");
+    if (felmystPetAction &&
+        static_cast<FelmystSetPetStanceAction*>(felmystPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // Eredar Twins
     Action* twinsAction = context->GetAction("eredar twins alythess tank move out of blaze");
     if (twinsAction && static_cast<EredarTwinsAlythessTankMoveOutOfBlazeAction*>(twinsAction)

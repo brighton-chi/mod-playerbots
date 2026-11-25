@@ -173,8 +173,7 @@ bool KalecgosShouldManagePetAggressionTrigger::IsActiveInEncounter()
     if (!state || (state->healthCall == KalecgosHealthCall::None && !state->endHoldCalled))
         return false;
 
-    return IsMinionStanceWrongForHold(
-        bot, GetKalecgosDpsHoldWindow(bot) != KalecgosDpsHold::None);
+    return IsMinionStanceWrongForHold(bot, IsKalecgosPetHoldActive(bot));
 }
 
 // Brutallus
@@ -463,6 +462,14 @@ bool FelmystShouldHoldDpsWhileLandingTrigger::IsActiveInEncounter()
 bool FelmystLandingDpsHoldIsActiveTrigger::IsActiveInEncounter()
 {
     return IsFelmystLandingDpsHoldActive(botAI);
+}
+
+bool FelmystShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot))
+        return false;
+
+    return IsMinionStanceWrongForHold(bot, IsFelmystPetHoldActive(bot));
 }
 
 // Eredar Twins

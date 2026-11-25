@@ -1079,17 +1079,28 @@ bool TryGetFelmystLandingApproachDestination(
     return TryFindSpotPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
 }
 
-bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
+bool IsFelmystLandingHoldWindowActive(Player* bot)
 {
-    if (PlayerbotAI::IsMainTank(botAI->GetBot()))
-        return false;
-
-    Unit* felmyst = GetSwpBoss(botAI->GetBot(), SwpBosses::DATA_FELMYST);
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
     if (!felmyst)
         return false;
 
     FelmystEncounterState const* state = FindFelmystState(felmyst->GetInstanceId());
     return state && state->landingDpsWaitStartMs;
+}
+
+bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    return !PlayerbotAI::IsMainTank(bot) && IsFelmystLandingHoldWindowActive(bot);
+}
+
+// TEST: pets are held for the whole air phase, so they stop starting chases after Felmyst that
+// fail partway. Held pets don't fight the Unyielding Dead either.
+bool IsFelmystPetHoldActive(Player* bot)
+{
+    Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
+    return felmyst && (felmyst->IsFlying() || IsFelmystLandingHoldWindowActive(bot));
 }
 
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state)
