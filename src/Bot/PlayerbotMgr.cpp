@@ -1127,6 +1127,9 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
 
             if (sPlayerbotAIConfig.ApplyInstanceStrategies)
                 botAI->ApplyInstanceStrategies(master->GetMapId());
+
+            if (sPlayerbotAIConfig.RestrictHealerDPS)
+                botAI->EvaluateHealerDpsStrategy();
         }
 
         return messages;
