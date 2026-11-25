@@ -161,6 +161,9 @@ inline constexpr float GRUUL_ROOM_MIN_X = 172.0f;
 // Center of Gruul's room, where the tank holds him: the point with the most open floor (42 yd to
 // the nearest navmesh edge). The ranged positions are a ring around it.
 inline Position const GRUUL_POSITION = { 231.217f, 363.233f, -4.420f };
+// Gruul stops a fixed distance from the tank, so however far short of its spot the tank stops, he
+// stops that far short of the center.
+inline constexpr float GRUUL_TANK_ARRIVAL_DISTANCE = 0.5f;
 
 bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearCaveIn(PlayerbotAI* botAI, float radius);
