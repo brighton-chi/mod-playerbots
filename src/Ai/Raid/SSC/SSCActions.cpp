@@ -2314,7 +2314,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     uint32 const now = getMSTime();
     VashjCoreCatcher const& catcher = chain.catchers[next];
     Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
-    if (!player || !player->IsAlive() || !player->GetMapId() == SSC_MAP_ID)
+    if (!player || !player->IsAlive() || player->GetMapId() != SSC_MAP_ID)
     {
         ReassignVashjCoreCatcher(bot, chain, next);
         return false;
