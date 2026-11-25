@@ -272,6 +272,10 @@ void RaidSwpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kil'jaeden stale root after dragon",
         { NextAction("kil'jaeden release stale root", ACTION_EMERGENCY + 10) }));
+
+    // Above the stack for Shield of the Blue, so pets are held before their owners move.
+    triggers.push_back(new TriggerNode("kil'jaeden should manage pet aggression",
+        { NextAction("kil'jaeden set pet stance", ACTION_EMERGENCY + 12) }));
 }
 
 void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

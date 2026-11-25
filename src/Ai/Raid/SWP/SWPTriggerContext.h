@@ -251,6 +251,9 @@ public:
 
         creators["kil'jaeden stale root after dragon"] =
             &RaidSwpTriggerContext::kiljaeden_stale_root_after_dragon;
+
+        creators["kil'jaeden should manage pet aggression"] =
+            &RaidSwpTriggerContext::kiljaeden_should_manage_pet_aggression;
     }
 
 private:
@@ -589,6 +592,11 @@ private:
     static Trigger* kiljaeden_stale_root_after_dragon(PlayerbotAI* botAI)
     {
         return new KiljaedenStaleRootAfterDragonTrigger(botAI);
+    }
+
+    static Trigger* kiljaeden_should_manage_pet_aggression(PlayerbotAI* botAI)
+    {
+        return new KiljaedenShouldManagePetAggressionTrigger(botAI);
     }
 };
 

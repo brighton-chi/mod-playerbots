@@ -807,4 +807,16 @@ public:
     bool Execute(Event event) override;
 };
 
+class KiljaedenSetPetStanceAction : public Action
+{
+public:
+    KiljaedenSetPetStanceAction(PlayerbotAI* botAI)
+        : Action(botAI, "kil'jaeden set pet stance") {}
+    bool Execute(Event event) override;
+    bool ResetPetStance();
+
+private:
+    std::vector<EncounterHelpers::SavedMinionStance> _previousReactStates;
+};
+
 #endif

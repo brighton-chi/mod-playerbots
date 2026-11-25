@@ -262,6 +262,8 @@ public:
 
         creators["kil'jaeden release stale root"] =
             &RaidSwpActionContext::kiljaeden_release_stale_root;
+
+        creators["kil'jaeden set pet stance"] = &RaidSwpActionContext::kiljaeden_set_pet_stance;
     }
 
 private:
@@ -627,6 +629,11 @@ private:
     static Action* kiljaeden_release_stale_root(PlayerbotAI* botAI)
     {
         return new KiljaedenReleaseStaleRootAction(botAI);
+    }
+
+    static Action* kiljaeden_set_pet_stance(PlayerbotAI* botAI)
+    {
+        return new KiljaedenSetPetStanceAction(botAI);
     }
 };
 

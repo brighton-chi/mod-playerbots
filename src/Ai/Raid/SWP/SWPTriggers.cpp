@@ -942,3 +942,13 @@ bool KiljaedenStaleRootAfterDragonTrigger::IsActiveInEncounter()
 
     return HasStaleRootFlag(bot);
 }
+
+// A rider's drake is one of its controlled units, so a rider's stance is left alone until it lands.
+bool KiljaedenShouldManagePetAggressionTrigger::IsActiveInEncounter()
+{
+    if (!HasControllableMinion(bot) || HasKiljaedenDragonAura(bot))
+        return false;
+
+    return IsMinionStanceWrongForHold(
+        bot, IsKiljaedenCastingDarknessOfAThousandSouls(GetEncounterBoss()));
+}

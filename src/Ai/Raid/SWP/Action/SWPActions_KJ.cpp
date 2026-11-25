@@ -708,3 +708,19 @@ bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
 {
     return ReleaseStaleRootFlag(bot);
 }
+
+// Melee pets attack from behind Kil'jaeden, far from the Shield of the Blue stack, so every pet is
+// held for the Darkness of a Thousand Souls cast and channel, and follows its owner into the stack.
+bool KiljaedenSetPetStanceAction::Execute(Event /*event*/)
+{
+    Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
+    return SetMinionStancesForHold(
+        bot, IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden), _previousReactStates);
+}
+
+bool KiljaedenSetPetStanceAction::ResetPetStance()
+{
+    bool const restored = SetMinionStancesForHold(bot, false, _previousReactStates);
+    _previousReactStates.clear();
+    return restored;
+}

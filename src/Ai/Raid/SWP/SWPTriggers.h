@@ -931,4 +931,16 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class KiljaedenShouldManagePetAggressionTrigger : public SunwellEncounterTrigger
+{
+public:
+    KiljaedenShouldManagePetAggressionTrigger(PlayerbotAI* botAI)
+        : SunwellEncounterTrigger(
+            botAI, "kil'jaeden should manage pet aggression",
+            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 #endif

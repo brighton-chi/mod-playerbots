@@ -115,6 +115,13 @@ bool SunwellResetEncounterStatesAction::Execute(Event /*event*/)
     if (KiljaedenEncounterState* kiljaedenState = FindKiljaedenState(instanceId))
         reset |= kiljaedenState->dragonOrbUsers.erase(guid) > 0;
 
+    Action* kiljaedenPetAction = context->GetAction("kil'jaeden set pet stance");
+    if (kiljaedenPetAction &&
+        static_cast<KiljaedenSetPetStanceAction*>(kiljaedenPetAction)->ResetPetStance())
+    {
+        reset = true;
+    }
+
     // A drake lost as Kil'jaeden dies leaves its rider stale-rooted after the encounter, when the
     // in-combat release (KiljaedenReleaseStaleRootAction) can no longer run.
     reset |= ReleaseStaleRootFlag(bot);
