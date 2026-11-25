@@ -175,8 +175,7 @@ bool IsMuruPetHoldActive(Unit* muru)
     return IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru);
 }
 
-// A hunter pet's Growl would make it a Dark Fiend's victim, and the fiend explodes on reaching its
-// victim, so pets are kept off fiends.
+// Damage can't kill a Dark Fiend, so a pet is never sent onto one, even when its owner targets it.
 Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru)
 {
     if (!pet)
