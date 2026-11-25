@@ -2231,7 +2231,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
     *releasePacket << tainted->GetGUID();
     bot->GetSession()->QueuePacket(releasePacket);
 
-    botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay); // 1s default; for realism before throw.
+    botAI->SetNextCheckDelay(sPlayerbotAIConfig.LootDelay); // 1s default, for realism before throw.
     return true;
 }
 
@@ -2242,8 +2242,8 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         return false;
 
     int8 const index = GetVashjCoreCatcherIndex(*chain, bot);
-    Item* core = HasTaintedCore(bot) ?
-        bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE)) : nullptr;
+    Item* core =
+        HasTaintedCore(bot) ? bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE)) : nullptr;
     if (!core)
         return index >= 0 && MoveToCoreSpot(*chain, index);
 
@@ -2314,7 +2314,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     uint32 const now = getMSTime();
     VashjCoreCatcher const& catcher = chain.catchers[next];
     Player* player = ObjectAccessor::GetPlayer(*bot, catcher.bot);
-    if (!player || !player->IsAlive() || !player->IsInMap(bot))
+    if (!player || !player->IsAlive() || !player->GetMapId() == SSC_MAP_ID)
     {
         ReassignVashjCoreCatcher(bot, chain, next);
         return false;
@@ -2376,7 +2376,9 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
         }
     }
     else
+    {
         chain.failedThrows = 0;
+    }
 
     chain.throwTarget = player->GetGUID();
     chain.throwTime = now;

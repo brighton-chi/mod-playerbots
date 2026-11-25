@@ -481,8 +481,9 @@ bool GruulTheDragonkillerGetOutOfCaveInAction::Execute(Event /*event*/)
     return FleePosition(pool, CAVE_IN_RADIUS, minInterval);
 }
 
-// Every group member inside the clearance pushes the bot away, harder the closer they are, so the
-// step leaves the crowd rather than just the nearest player.
+// Each group member inside the clearance pushes the bot directly away from them, harder the closer
+// they are. Note that this is different from moving away from the group's average position, which
+// would send players standing together the same way instead of splitting them up.
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -494,7 +495,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member == bot || !member->IsAlive() || !member->IsInMap(bot))
+        if (!member || member == bot || !member->IsAlive() || member->GetMapId() != GRUUL_MAP_ID)
             continue;
 
         float const distance = bot->GetExactDist2d(member);
