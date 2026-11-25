@@ -416,7 +416,6 @@ private:
     {
         return new FelmystLandingDpsHoldIsActiveTrigger(botAI);
     }
-
     static Trigger* felmyst_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
         return new FelmystShouldManagePetAggressionTrigger(botAI);
@@ -537,12 +536,10 @@ private:
     {
         return new MuruTheSingularityIsNearTrigger(botAI);
     }
-
     static Trigger* muru_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
         return new MuruShouldManagePetAggressionTrigger(botAI);
     }
-
     static Trigger* muru_pet_should_switch_target(PlayerbotAI* botAI)
     {
         return new MuruPetShouldSwitchTargetTrigger(botAI);
@@ -593,7 +590,6 @@ private:
     {
         return new KiljaedenStaleRootAfterDragonTrigger(botAI);
     }
-
     static Trigger* kiljaeden_should_manage_pet_aggression(PlayerbotAI* botAI)
     {
         return new KiljaedenShouldManagePetAggressionTrigger(botAI);

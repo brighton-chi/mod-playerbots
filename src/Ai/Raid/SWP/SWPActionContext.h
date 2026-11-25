@@ -439,7 +439,6 @@ private:
     {
         return new FelmystSelectTargetForHoldAction(botAI);
     }
-
     static Action* felmyst_set_pet_stance(PlayerbotAI* botAI)
     {
         return new FelmystSetPetStanceAction(botAI);
@@ -561,12 +560,10 @@ private:
     {
         return new MuruEscapeTheSingularityAction(botAI);
     }
-
     static Action* muru_set_pet_stance(PlayerbotAI* botAI)
     {
         return new MuruSetPetStanceAction(botAI);
     }
-
     static Action* muru_command_pet_target(PlayerbotAI* botAI)
     {
         return new MuruCommandPetTargetAction(botAI);
@@ -630,7 +627,6 @@ private:
     {
         return new KiljaedenReleaseStaleRootAction(botAI);
     }
-
     static Action* kiljaeden_set_pet_stance(PlayerbotAI* botAI)
     {
         return new KiljaedenSetPetStanceAction(botAI);

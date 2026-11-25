@@ -913,9 +913,9 @@ KalecgosDpsHold GetKalecgosDpsHold(Player* bot)
     return PlayerbotAI::IsTank(bot) ? KalecgosDpsHold::None : GetKalecgosDpsHoldWindow(bot);
 }
 
-// The portal teleports only the player, so a pet's side can differ from its owner's. A pet
-// attacking Kalecgos keeps him and stays on the surface. A pet following its owner is allowed to
-// path through the floor, so it follows straight down into the realm and back up again.
+// The portal unsummons a player's pet and resummons it beside its owner, but a guardian (Feral
+// Spirit, Force of Nature, Army of the Dead) has no path through the floor and stays on the
+// surface, so each minion's own side decides.
 bool IsKalecgosPetHoldActive(Player* bot)
 {
     uint32 const instanceId = bot->GetInstanceId();
