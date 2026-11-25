@@ -482,8 +482,7 @@ bool GruulTheDragonkillerGetOutOfCaveInAction::Execute(Event /*event*/)
 }
 
 // Every group member inside the clearance pushes the bot away, harder the closer they are, so the
-// step leaves the crowd rather than just the nearest player. A blocked step tries angles up to 90
-// degrees to either side.
+// step leaves the crowd rather than just the nearest player.
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -513,7 +512,8 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 
     float const pushAngle = std::atan2(pushY, pushX);
     constexpr float angleStep = static_cast<float>(M_PI) / 8.0f;
-    for (float const offset : { 0.0f, 1.0f, -1.0f, 2.0f, -2.0f, 3.0f, -3.0f, 4.0f, -4.0f })
+    // Steps of 22.5 degrees off the push direction, alternating sides, out to 90 degrees.
+    for (int const offset : { 0, 1, -1, 2, -2, 3, -3, 4, -4 })
     {
         float const angle = pushAngle + offset * angleStep;
         Position const destination(

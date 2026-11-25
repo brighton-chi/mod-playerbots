@@ -30,6 +30,8 @@ std::unordered_map<uint32, GruulInstanceState> gruulStates;
 
 } // end anonymous namespace (Shared)
 
+// The ogre council members are found with a grid search (see GetMaulgarCouncilMember) and Gruul
+// with the bot's threat list.
 Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss)
 {
     if (boss == GruulBosses::DATA_HIGH_KING_MAULGAR)
@@ -187,7 +189,7 @@ Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc)
 }
 
 // Pets follow the ranged kill order. Krosh can be attacked because he casts Blast Wave only when
-// a player is within 15 yards, not a pet.
+// a player is within 15 yd, not a pet.
 Unit* GetMaulgarPetTarget(Player* bot, Creature* pet)
 {
     if (!pet)
@@ -261,7 +263,8 @@ bool HasGroundSlam(Player* bot)
         bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
 }
 
-// The collision check includes gameobjects, so a line through the shut portcullis fails here.
+// MoveTo follows the navmesh, which is built without gameobjects, so its path runs through the shut
+// portcullis. The core's collision check includes gameobjects and fails on that line.
 bool CanMoveStraightTo(Player* bot, Position const& destination)
 {
     float x = destination.GetPositionX();
@@ -293,6 +296,7 @@ GruulInstanceState* FindGruulState(uint32 instanceId)
     return it != gruulStates.end() ? &it->second : nullptr;
 }
 
+// Keeps the class roles (see ClassRoleAssignment).
 void GruulResetInstance(uint32 instanceId)
 {
     GruulInstanceState* state = FindGruulState(instanceId);

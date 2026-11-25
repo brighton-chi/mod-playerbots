@@ -70,8 +70,6 @@ enum class GruulNpcs : uint32
 inline constexpr uint32 GRUUL_MAP_ID = 565;
 inline constexpr float GRUUL_ARRIVAL_DISTANCE = 3.0f;
 
-// The ogre council members are found with a grid search (see GetMaulgarCouncilMember) and Gruul
-// with the bot's threat list.
 Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss);
 
 // High King Maulgar
@@ -90,16 +88,16 @@ inline constexpr EncounterHelpers::ClassRole KIGGLER_MOONKIN_TANK_ROLE = {
     .role = { "class_role_kiggler_moonkin_tank", "Kiggler moonkin tank" },
     .candidate = { "class_role_class_balance_druid", "Balance Druid" },
 };
-// 90 yards is about the distance from Maulgar to where the hallway opens into the council room.
+// 90 yd is about the distance from Maulgar to where the hallway opens into the council room.
 inline constexpr float MAULGAR_CLASS_ROLE_ANNOUNCE_DISTANCE = 90.0f;
-// 150 yards is short of the instance portal and Gruul's room.
+// 150 yd is short of the instance portal and Gruul's room.
 inline constexpr float MAULGAR_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
 // Hold cooldowns until Blindeye is at this percent health. Also the gate for on-pull Misdirects.
 inline constexpr float BLINDEYE_ENGAGED_HEALTH_PCT = 75.0f;
 inline constexpr float KIGGLER_ARCANE_EXPLOSION_HAZARD_RADIUS = 30.0f;
 // Stays inside the "enemy out of spell" threshold (spellDistance + CONTACT_DISTANCE + both reaches,
-// ~34yd exact against Kiggler), allowing the boomie to attack safely without Nature's Reach.
+// ~34 yd exact against Kiggler), allowing the boomie to attack safely without Nature's Reach.
 inline constexpr float KIGGLER_ARCANE_EXPLOSION_CLEARANCE =
     KIGGLER_ARCANE_EXPLOSION_HAZARD_RADIUS + 2.0f;
 inline constexpr float KROSH_BLAST_WAVE_HAZARD_RADIUS = 15.0f;
@@ -155,7 +153,6 @@ inline constexpr float GRUUL_SHATTER_HAZARD_RADIUS = 23.0f;
 // Others are still landing and moving while a bot spreads, so it aims past the hazard radius.
 inline constexpr float GRUUL_SHATTER_CLEARANCE = GRUUL_SHATTER_HAZARD_RADIUS + 5.0f;
 inline constexpr float GRUUL_SHATTER_STEP_DISTANCE = 3.5f;
-// A step that stops further short than this is rejected, not clamped.
 inline constexpr float GRUUL_SHATTER_STEP_TOLERANCE = 0.5f;
 // The portcullis (x 170.2) shuts during the fight, but bot movement paths through doors. Spread
 // steps never end south of this line.
@@ -183,7 +180,6 @@ struct GruulInstanceState
 
 GruulInstanceState& GruulState(uint32 instanceId);
 GruulInstanceState* FindGruulState(uint32 instanceId);
-// Keeps the class roles (see ClassRoleAssignment).
 void GruulResetInstance(uint32 instanceId);
 
 }

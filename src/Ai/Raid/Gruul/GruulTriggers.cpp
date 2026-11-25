@@ -127,7 +127,7 @@ bool GruulTheDragonkillerBotInCaveInTrigger::IsActiveInEncounter()
     if (!gruul)
         return false;
 
-    // The tank holding Gruul eats cave in. Moving him messes up the spread.
+    // The tank holding Gruul eats cave in. Moving would drag Gruul off the center.
     if (gruul->GetVictim() == bot)
         return false;
 
