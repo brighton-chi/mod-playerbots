@@ -1090,6 +1090,15 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
     return heldPet;
 }
 
+bool IsKarathressBlessingHoldWindowActive(Player* bot)
+{
+    Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
+    if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
+        return false;
+
+    return GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_CARIBDIS);
+}
+
 bool IsKarathressBlessingHoldActive(Player* bot)
 {
     if (PlayerbotAI::IsHeal(bot) || !PlayerbotAI::IsMelee(bot))
@@ -1098,18 +1107,11 @@ bool IsKarathressBlessingHoldActive(Player* bot)
     if (PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot))
         return false;
 
-    Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
-    if (!karathress || karathress->GetHealthPct() > KARATHRESS_BLESSING_HOLD_HEALTH_PCT)
-        return false;
-
-    return GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_CARIBDIS);
+    return IsKarathressBlessingHoldWindowActive(bot);
 }
 
-bool IsKarathressStartDpsHoldActive(Player* bot)
+bool IsKarathressStartHoldWindowActive(Player* bot)
 {
-    if (PlayerbotAI::IsTank(bot))
-        return false;
-
     Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
     if (!karathress)
         return false;
@@ -1119,9 +1121,14 @@ bool IsKarathressStartDpsHoldActive(Player* bot)
     return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) < KARATHRESS_DPS_HOLD_MS;
 }
 
+bool IsKarathressStartDpsHoldActive(Player* bot)
+{
+    return !PlayerbotAI::IsTank(bot) && IsKarathressStartHoldWindowActive(bot);
+}
+
 bool IsKarathressPetHoldActive(Player* bot)
 {
-    return IsKarathressStartDpsHoldActive(bot) || IsKarathressBlessingHoldActive(bot);
+    return IsKarathressStartHoldWindowActive(bot) || IsKarathressBlessingHoldWindowActive(bot);
 }
 
 Unit* GetSharkkisPet(Player* bot)
@@ -1155,7 +1162,7 @@ Unit* GetSharkkisPet(Player* bot)
 Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     Player* bot = botAI->GetBot();
-    if (!pet || IsKarathressStartDpsHoldActive(bot))
+    if (!pet || IsKarathressStartHoldWindowActive(bot))
         return nullptr;
 
     AiObjectContext* context = botAI->GetAiObjectContext();

@@ -209,7 +209,7 @@ enum class HydrossDpsHoldWindow : uint8
 // Ranged spread this far apart in frost phase to mitigate Water Tomb.
 inline constexpr float HYDROSS_FROST_RANGED_SPREAD_DISTANCE = 5.0f;
 // Cleansing Field (37935) is a 20 yd aura on the Hydross Cleansing Field Helper (21934). Both
-// combat reaches count (3 for the helper, 5 for Hydross), so 28y is where the phase change occurs.
+// combat reaches count (3 for the helper, 5 for Hydross), so the phase change occurs at 28 yd.
 inline constexpr float HYDROSS_CLEANSING_FIELD_RADIUS = 28.0f;
 // The incoming phase's tank waits this far short of the field's edge, on its own side.
 inline constexpr float HYDROSS_HANDOFF_SHORT_DISTANCE = 8.0f;
@@ -397,7 +397,7 @@ inline constexpr float CARIBDIS_TIDAL_SURGE_CLEARANCE =
     CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS + 2.0f;
 // Bots move toward Caribdis until she's in sight, and stop once within this distance of her.
 inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
-// A Cyclone spawns on a random player within 45y of Caribdis and picks up all players within 4y.
+// Cyclones spawn on random players within 45 yd of Caribdis and pick up all players within 4 yd.
 inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;
 inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 4.0f;
 // A bot more than 1 yd above the ground is treated as being in a Cyclone. One toss lifts players
@@ -420,12 +420,16 @@ bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
 // A Sporebat before a Lurker. Null if neither is up or Karathress is not in progress.
 Unit* GetSharkkisPet(Player* bot);
-// Non-healer melee other than the main tank, from Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT
-// until Caribdis dies.
+// From Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT until Caribdis dies, whatever the bot's
+// role.
+bool IsKarathressBlessingHoldWindowActive(Player* bot);
+// The Blessing hold window, for non-healer melee other than the main tank.
 bool IsKarathressBlessingHoldActive(Player* bot);
-// Non-tanks for the first KARATHRESS_DPS_HOLD_MS of the fight, and before the timer is stamped.
+// The first KARATHRESS_DPS_HOLD_MS of the fight, regardless of the bot's role.
+bool IsKarathressStartHoldWindowActive(Player* bot);
+// The start hold window, for non-tanks.
 bool IsKarathressStartDpsHoldActive(Player* bot);
-// Either hold. A defensive pet would otherwise join on a hit to its owner, such as Hurl Trident.
+// Either window, for every pet. A defensive pet would otherwise attack if its owner was hit.
 bool IsKarathressPetHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);

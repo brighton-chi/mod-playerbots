@@ -313,7 +313,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     if (ember->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
-    // The Embers' Rebirth has a range of 15 yards (16.5y damage radius), but more space is
+    // The Embers' Rebirth has a range of 15 yards (16.5 yd damage radius), but more space is
     // needed since this movement is tank-to-player, not Ember.
     constexpr float safeDistance = 20.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
@@ -1050,7 +1050,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         return false;
 
     // The spread is a 90-degree arc for healers and a 120-degree arc for ranged DPS.
-    // Capernian's CombatReach is 4.5y + standard player CombatReach (without Bloodlust) is 1.5y.
+    // Capernian's CombatReach is 4.5 yd.
     float const arcSpan = isHeal ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
     float const radius = isHeal ? 42.0f : 34.0f; // 36 and 28 yards of actual distance
     constexpr float arcCenter = 2.9f;
@@ -1366,7 +1366,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (axe->GetVictim() != bot || !bot->IsWithinMeleeRange(axe))
         return false;
 
-    // Devastation's CombatReach is 0y (so it is set to DEFAULT_COMBAT_REACH, or 1.5y).
+    // Devastation's CombatReach is 0 yd (so it is set to DEFAULT_COMBAT_REACH, or 1.5 yd).
     constexpr float safeDistance = 15.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;

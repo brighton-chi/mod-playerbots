@@ -266,7 +266,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
     if (!magtheridon)
         return false;
 
-    // This 20y flee is sort of a cheap way to stay out of Magtheridon's Cleave.
+    // This 20 yd flee is sort of a cheap way to stay out of Magtheridon's Cleave.
     constexpr float safeDistFromBoss = 20.0f;
     constexpr uint32 minInterval = 0;
     if (bot->GetExactDist(magtheridon) < safeDistFromBoss &&

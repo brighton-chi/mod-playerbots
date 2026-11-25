@@ -440,8 +440,11 @@ bool FathomLordKarathressShouldManagePetAggressionTrigger::IsActiveInEncounter()
 bool FathomLordKarathressPetShouldSwitchTargetTrigger::IsActiveInEncounter()
 {
     Guardian* pet = bot->GetGuardianPet();
-    if (!pet || !pet->IsAlive() || pet->HasReactState(REACT_PASSIVE))
+    if (!pet || !pet->IsAlive() ||
+        (pet->HasReactState(REACT_PASSIVE) && !IsKarathressPetHoldActive(bot)))
+    {
         return false;
+    }
 
     Unit* target = GetKarathressPetTarget(botAI, pet);
     return target && pet->GetVictim() != target;
@@ -858,8 +861,8 @@ bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
     return IsNearToxicSpores(botAI, radius);
 }
 
-// For "ring melee" (melee dps within 10y of a Toxic Spore pool, but only if not already in melee
-// range at a position that is >= 7.5y from every pool).
+// For "ring melee" (melee dps within 10 yd of a Toxic Spore pool, but only if not already in melee
+// range at a position that is >= 7.5 yd from every pool).
 bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 {
     if (!PlayerbotAI::IsMelee(bot) || PlayerbotAI::IsTank(bot))

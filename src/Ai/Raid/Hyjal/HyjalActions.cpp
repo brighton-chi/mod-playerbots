@@ -103,7 +103,7 @@ bool HyjalRemoveDangerousDotAction::Execute(Event /*event*/)
 // Rage Winterchill
 
 // This is essentially a modified "avoid aoe" due to the default Playerbots.MaxAoeAvoidRadius in
-// the config being 15y (>25y would be needed for avoid aoe to work for D&D).
+// the config being 15 yd (>25 yd would be needed for avoid aoe to work for D&D).
 bool RageWinterchillRangedGetOutOfDeathAndDecayAction::Execute(Event /*event*/)
 {
     Position pool;
@@ -138,7 +138,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 }
 
 // Melee looks for an open position within the boss's melee range. If one isn't available (likely
-// the case if D&D lands on melee, with its 20y radius), then melee takes the shortest path out of
+// the case if D&D lands on melee, with its 20 yd radius), then melee takes the shortest path out of
 // the hazard and waits it out.
 bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*event*/)
 {
@@ -281,7 +281,7 @@ bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// An Infernal burns everything within 10y of itself, so anybody who is not tanking it leaves.
+// An Infernal burns everything within 10 yd of itself, so anybody who is not tanking it leaves.
 bool AnetheronGetOutOfImmolationAction::Execute(Event /*event*/)
 {
     Unit* infernal = GetNearestInfernal(botAI);
@@ -494,7 +494,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
 }
 
 // Like with Winterchill, this is essentially a forced "avoid aoe" due to the default config being
-// insufficient (in this case, >20y would be needed for safety).
+// insufficient (in this case, >20 yd would be needed for safety).
 bool AzgalorRangedGetOutOfRainOfFireAction::Execute(Event /*event*/)
 {
     Position pool;
@@ -554,9 +554,9 @@ bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Only ranged DPS within 70y should attack Doomguards. This distance seems to reach enough bots to
-// get decent DPS on the adds but not reach too far (which risks ranged running in front of Azgalor
-// to get to the Doomguard or just wasting time).
+// Only ranged DPS within 70 yd should attack Doomguards. This distance seems to reach enough bots
+// to get decent DPS on the adds but not reach too far (which risks ranged running in front of
+// Azgalor to get to the Doomguard or just wasting time).
 bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* azgalor = GetHyjalBoss(bot, HyjalBosses::DATA_AZGALOR);

@@ -77,7 +77,7 @@ Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss);
 // High King Maulgar
 
 // Ogre combat reaches:
-// (1) Maulgar = 3.5y, (2) Olm = 2.2y, (3) Blindeye = 3.525y, (4) Krosh = 2y, (5) Kiggler = 3.3y
+// Maulgar = 3.5 yd, Olm = 2.2 yd, Blindeye = 3.525 yd, Krosh = 2 yd, Kiggler = 3.3 yd
 
 inline constexpr EncounterHelpers::ClassRole KROSH_MAGE_TANK_ROLE = {
     .playerClass = CLASS_MAGE,

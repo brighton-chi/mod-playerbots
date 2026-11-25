@@ -364,7 +364,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 
     constexpr float pi = static_cast<float>(M_PI);
 
-    // Everyone gets a radius between 20 and 22y from their GUID, so the running looks a bit more
+    // Everyone gets a radius between 20 and 22 yd from their GUID, so the running looks a bit more
     // natural, but the main tank always gets 20 because they start at the worst position.
     uint32 const seed = bot->GetGUID().GetCounter();
     float const runRadius = PlayerbotAI::IsMainTank(bot) ? LURKER_SPOUT_RUN_RADIUS_MIN :
@@ -1464,7 +1464,7 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
     constexpr float searchRadius = 25.0f;
     GuidVector const& adds = GetVashjAdds(bot);
 
-    // Surge range is 5.5y from Vashj's center so this leaves some room.
+    // Surge range is 5.5 yd from Vashj's center so this leaves some room.
     constexpr float safeDistance = 10.0f;
     std::vector<Unit*> units;
     bool tooClose = false;
@@ -1486,7 +1486,7 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
             tooClose = true;
     }
 
-    // Panic fears within 11y, so this tries to keep melee dps behind Vashj out of range as well.
+    // Panic fears within 11 yd, so this tries to keep melee dps behind Vashj out of range as well.
     constexpr float striderSafeDistance = 18.0f;
     for (ObjectGuid const& guid : adds)
     {
@@ -1729,7 +1729,7 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
     if (mainTank->HasAura(Id(SscSpells::SPELL_GROUNDING_TOTEM_EFFECT)))
         return false;
 
-    // Grounding Totem Effect has a 30y range, but totems are dropped 3y away from the Shaman.
+    // Grounding Totem Effect has a 30 yd range, but totems are dropped 3 yd away from the Shaman.
     constexpr float distFromTank = 27.0f;
     if (bot->GetDistance(mainTank) > distFromTank)
     {
@@ -2066,7 +2066,7 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Two locations: (1) 12y in front of the north rock's tip, and (2) southeast of the dais middle.
+// Two locations: (1) 12 yd in front of the north rock's tip, and (2) southeast of the dais middle.
 bool LadyVashjPositionCoilfangEliteAction::Execute(Event /*event*/)
 {
     Unit* elite = AI_VALUE(Unit*, "current target");
@@ -2341,7 +2341,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
         return false;
     }
 
-    // Throw Key (38134) throws the Core when used and has a 40y range (3D edge-to-edge, as usual).
+    // Throw Key (38134) throws the Core when used and has a 40 yd range (3D edge-to-edge).
     constexpr float throwKeyRange = 40.0f;
     if (bot->GetDistance(player) > throwKeyRange || !bot->IsWithinLOSInMap(player))
     {
