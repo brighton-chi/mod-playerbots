@@ -88,10 +88,11 @@ inline constexpr uint8 FLAME_TOUCHED_PROTECT_STACKS = 5;
 inline constexpr int32 FLAME_SEAR_PROTECT_WINDOW_MS = 2 * IN_MILLISECONDS;
 
 inline Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
-// All tank positions are in Alythess's melee range (4.7-5.15 yd from her) and within Sacrolash's
-// Shadow Blades (20 yd), which clears the tank's Flame Touched. Visited in order; the move from the
-// last to the first passes 2.56 yd from her center, outside the 2.375 yd radius within which she
-// backs off her victim once Empower has grown her from Sacrolash dying (2 yd before).
+// All tank positions are in Alythess's melee range (4.7-5.2 yd from her) and within Sacrolash's
+// Shadow Blades (20 yd), which clears the tank's Flame Touched. Visited in order. She backs off a
+// victim within half their combat reaches added, 2.6 yd once Empower (Sacrolash dead) and Bloodlust
+// both grow them, so the move from the last to the first passes 2.56 yd from her in phase 1 and
+// 2.73 in phase 2.
 inline std::array const ALYTHESS_TANK_POSITIONS = {
     Position{ 1820.310f, 630.150f, 33.404f },
     Position{ 1815.800f, 628.800f, 33.404f },
@@ -99,6 +100,8 @@ inline std::array const ALYTHESS_TANK_POSITIONS = {
     Position{ 1818.100f, 621.000f, 33.404f },
     Position{ 1823.040f, 622.130f, 33.404f },
 };
+// Replaces the last tank position once Alythess is Empowered; out of Shadow Blades (20.4 yd).
+inline Position const ALYTHESS_EMPOWERED_LAST_TANK_POSITION = { 1823.400f, 622.500f, 33.404f };
 // The tank's Blaze patch lands where it stops, and the positions are 4.67 yd apart against a 4.5 yd
 // clearance, so it must stop on the position, not short of it on the way in.
 inline constexpr float ALYTHESS_TANK_ARRIVAL_DISTANCE = 0.2f;
@@ -131,7 +134,7 @@ inline Position const EREDAR_TWINS_FLOOR_ASIDE_POSITION = { 1817.200f, 616.000f,
 inline constexpr float EREDAR_TWINS_STEP_ASIDE_ARRIVAL_DISTANCE = 1.0f;
 
 // Phase 2: everybody but the Alythess tank in one stack, in her melee range on her far side from
-// Sacrolash, 4.8 yd from the nearest Alythess tank position, so a Shadow Nova reaches the tank.
+// Sacrolash, 4.4 yd from the nearest Alythess tank position, so a Shadow Nova reaches the tank.
 inline constexpr float EREDAR_TWINS_P2_STACK_ARRIVAL_DISTANCE = 0.3f;
 inline Position const EREDAR_TWINS_P2_STACK_POSITION =      { 1823.900f, 626.900f, 33.404f };
 // Hunters' shots fail within their melee range of the target, 6.08 yd from Empowered Alythess's

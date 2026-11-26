@@ -67,6 +67,7 @@ enum class SwpSpells : uint32
     SPELL_CONFLAGRATION                = 45342,
     SPELL_FLAME_TOUCHED                = 45348,
     SPELL_FLAME_SEAR                   = 46771,
+    SPELL_EMPOWER                      = 45366,
 
     // M'uru
     SPELL_DARKNESS                     = 45996,

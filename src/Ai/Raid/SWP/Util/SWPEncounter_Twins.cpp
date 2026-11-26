@@ -123,6 +123,12 @@ Position GetAlythessTankPosition(Unit* alythess, uint8 index)
     if (index >= ALYTHESS_TANK_POSITIONS.size())
         index = 0;
 
+    if (index == ALYTHESS_TANK_POSITIONS.size() - 1 && alythess &&
+        alythess->HasAura(Id(SwpSpells::SPELL_EMPOWER)))
+    {
+        return GetAdjustedPosition(alythess, ALYTHESS_EMPOWERED_LAST_TANK_POSITION);
+    }
+
     return GetAdjustedPosition(alythess, ALYTHESS_TANK_POSITIONS[index]);
 }
 
