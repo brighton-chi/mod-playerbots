@@ -927,7 +927,7 @@ float GetDpsHoldValue(Player* bot, Action* action)
     return castOnRaidSpell ? 1.0f : 0.0f;
 }
 
-// Stopping Attacks and Spells
+// Stopping Attacks and Offensive Channels
 
 namespace
 {
@@ -975,7 +975,7 @@ bool IsOffensiveChannel(Player* bot, Spell const* channel)
     return IsGroundChannelOnEnemies(channel);
 }
 
-} // end anonymous namespace (Stopping Attacks and Spells)
+} // end anonymous namespace (Stopping Attacks and Offensive Channels)
 
 bool IsAttackingTarget(Player* bot, Unit* target)
 {
@@ -1018,14 +1018,14 @@ bool StopAttackingAndChanneling(Player* bot)
     return isStopped;
 }
 
-// Unlike StopAttackingAndChanneling, a queued swing ability is canceled only if the bot's swing is
-// on the target (by AttackStop). Otherwise, it fires at the bot's actual victim, not the target.
 bool StopAttackingTarget(Player* bot, Unit* target)
 {
     if (!target)
         return false;
 
     bool isStopped = false;
+    // Unlike StopAttackingAndChanneling, a queued swing ability is canceled only if the bot's swing
+    // is on the target. Otherwise, it fires at the bot's actual victim, not the target.
     if (bot->GetVictim() == target)
     {
         bot->AttackStop();

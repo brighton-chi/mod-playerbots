@@ -217,8 +217,13 @@ bool IsDpsHoldCandidate(Player* bot, Action* action);
 // Healing, buffs etc. go through a dps hold. Totems don't because some are offensive.
 float GetDpsHoldValue(Player* bot, Action* action);
 
-// Stopping Attacks and Spells
+// Stopping Attacks and Offensive Channels
 
+// These exist instead of AttackStop + CastStop to stop offense without canceling heals or
+// other non-offensive channels, optionally against one enemy only. To stop all attacks, shots,
+// and channels, AttackStop + CastStop suffices, gated on what the bot is doing if the action should
+// return true only when something is stopped.
+//
 // Except for SelectTarget, none of these helpers decides the bot's engine. In a fight, a bot leaves
 // its combat engine through drop target, which runs when its current target is missing or invalid.
 // - Hold and keep the target (StopAttackingAndChanneling or StopAttackingTarget): The hold lasts
@@ -234,13 +239,14 @@ float GetDpsHoldValue(Player* bot, Action* action);
 // True if the bot's swing, auto shot, wand, or channel is aimed at the target. A channel on the
 // ground at enemies counts as aimed at any enemy.
 bool IsAttackingTarget(Player* bot, Unit* target);
-// Stops the bot's swing, queued swing ability (e.g., Heroic Strike), auto shot or wand, and channel
-// aimed at any enemy, regardless of which one, so channeled heals continue. Returns true if
-// anything is stopped.
+// Stops everything offensive: the bot's swing, queued swing ability (e.g., Heroic Strike), auto
+// shot or wand, and a channel aimed at any enemy. Unlike CastStop, it leaves non-offensive
+// channels running (heals, Evocation, Hymn of Hope), since a dps hold lets heals through.
+// Returns true if anything is stopped.
 bool StopAttackingAndChanneling(Player* bot);
 // Stops only what is aimed at the target: the bot's swing, auto shot or wand, and channel on the
-// target enemy or on the ground at enemies, so channeled heals continue. Returns true if anything
-// is stopped.
+// target enemy or on the ground at enemies, so attacks on other units continue. Non-offensive
+// channels continue too. Returns true if anything is stopped.
 bool StopAttackingTarget(Player* bot, Unit* target);
 // Calls StopAttackingAndChanneling and clears the current target.
 void StandDown(PlayerbotAI* botAI);
