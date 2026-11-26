@@ -135,7 +135,7 @@ float AlarControlTauntingMultiplier::GetValueInEncounter(Action* action)
     if (isFirstAlarTank)
         return platformIndex == PLATFORM_0_IDX || platformIndex == PLATFORM_2_IDX ? 1.0f : 0.0f;
 
-    // Second A'lar tank.
+    // Second Al'ar tank.
     return platformIndex == PLATFORM_1_IDX || platformIndex == PLATFORM_3_IDX ? 1.0f : 0.0f;
 }
 

@@ -125,10 +125,7 @@ inline constexpr uint32 TK_MAP_ID = 550;
 inline constexpr uint32 TK_CACHE_INTERVAL_MS = 200;
 
 Unit* GetTkBoss(Player* bot, TkBosses boss);
-// Living adds of one entry (Embers of Al'ar, Solarium Priests and Agents, or Phoenixes), oldest
-// first, from its encounter's list in the instance state.
 std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc);
-// The oldest and newest living adds of one entry (the same unit if only one is up).
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, TkNpcs npc);
 Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 
@@ -137,7 +134,7 @@ Player* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
 Unit* GetCenturionCastingArcaneFlurry(PlayerbotAI* botAI);
 
 // Al'ar <Phoenix God>
-// CombatReach is 15 yards
+// Al'ar's combat reach is 15 yd.
 
 enum AlarLocationIndex
 {
@@ -202,7 +199,8 @@ inline Position const ALAR_SE_RAMP_BASE        = { 281.064f, -36.590f, -2.389f }
 inline Position const ALAR_SW_RAMP_BASE        = { 281.064f,  36.590f, -2.389f };
 inline Position const ALAR_ROOM_S_CENTER       = { 281.064f,   0.000f, -2.389f };
 
-// Around ALAR_ROOM_CENTER. Every platform, ramp, and ground position is within 70 yd of it.
+// Measured from the center of Al'ar's room. Every platform, ramp, and ground position is within
+// 70 yd of it, so 100 yd covers them.
 inline constexpr float ALAR_ROOM_SEARCH_RADIUS = 100.0f;
 
 bool IsAlarInPhase2(uint32 instanceId);
@@ -219,7 +217,7 @@ GuidVector FindFlamePatchGuids(Player* bot);
 std::vector<Unit*> GetFlamePatches(PlayerbotAI* botAI);
 
 // Void Reaver
-// CombatReach is 15 yards
+// Void Reaver's combat reach is 15 yd.
 
 struct ArcaneOrbData
 {
@@ -241,7 +239,7 @@ bool IsNearActiveArcaneOrb(Player* bot, float radius);
 
 // High Astromancer Solarian
 
-// Around Solarian's spawn; 100 yd covers her room.
+// Measured from Solarian's spawn. 100 yd covers her room.
 inline constexpr float SOLARIAN_ROOM_SEARCH_RADIUS = 100.0f;
 
 inline Position const SOLARIAN_SPAWN_POSITION = { 432.740f, -373.645f, 18.014f };
@@ -263,8 +261,8 @@ enum KTPhases
     PHASE_FINAL          = 5
 };
 
-// 125 yards is about the exact distance from Kael to the entrances to his room. Also the radius of
-// the room searches around KAELTHAS_SPAWN_POSITION.
+// 125 yd is about the exact distance from Kael to the entrances to his room. Room searches from his
+// spawn position use it too.
 inline constexpr float KAELTHAS_ROOM_SEARCH_DISTANCE = 125.0f;
 inline constexpr uint32 ADVISOR_DPS_HOLD_NOT_STARTED = 0;
 inline constexpr uint32 ADVISOR_DPS_HOLD_MS = 10 * IN_MILLISECONDS;
@@ -328,23 +326,16 @@ inline constexpr std::array LEGENDARY_WEAPON_PRIORITIES = {
 
 uint32 GetKaelthasTkPhase(Unit* kaelthas);
 bool IsAdvisorActive(Unit* advisor);
-// The advisor whose opening hold is running, whatever the bot's role.
 KaelthasAdvisorDpsHold GetKaelthasAdvisorDpsHold(PlayerbotAI* botAI, Unit* kaelthas);
 bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
-// Every pet is held while an advisor's opening hold runs, the Capernian tank's included.
 bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas);
-// In the weapons phase, pets follow the melee priority, which leaves out Devastation.
 Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature* pet);
 bool UpdateTkClassRoles(PlayerbotAI* botAI);
 bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI);
-// Demonology spec is preferred for the Capernian Warlock tank.
 Player* GetCapernianTank(Player* bot);
 bool IsCapernianTank(Player* bot);
-// The Debuff Hunter attacks Sanguinar in phase 3 with melee (after Thaladred) to apply Armor
-// Disruption from the Netherstrand Longbow (as opposed to other ranged, who attack Capernian).
 bool IsSanguinarDebuffHunter(Player* bot);
 GuidVector FindPhoenixGuids(Player* bot);
-// Dead weapons included, for looting.
 GuidVector FindLegendaryWeaponGuids(Player* bot);
 Unit* GetLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);
 Creature* GetDeadLegendaryWeapon(PlayerbotAI* botAI, uint32 weaponEntry);

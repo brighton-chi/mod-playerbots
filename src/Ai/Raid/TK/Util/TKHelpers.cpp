@@ -88,6 +88,7 @@ Unit* GetTkBoss(Player* bot, TkBosses boss)
     return FindThreatTarget(bot, BossName(boss));
 }
 
+// Living adds of one entry, oldest first: Al'ar's Embers, Solarium Priests or Agents, or Phoenixes.
 std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc)
 {
     Player* bot = botAI->GetBot();
@@ -126,6 +127,7 @@ std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc)
     return adds;
 }
 
+// The oldest and newest living adds of one entry (the same unit if only one is up).
 std::pair<Unit*, Unit*> GetTargetUnitPair(PlayerbotAI* botAI, TkNpcs npc)
 {
     std::vector<Unit*> const adds = GetTkAdds(botAI, npc);
@@ -458,6 +460,7 @@ bool IsAdvisorActive(Unit* advisor)
         !advisor->HasAura(Id(TkSpells::SPELL_PERMANENT_FEIGN_DEATH));
 }
 
+// The advisor whose opening hold is running, whatever the bot's role.
 KaelthasAdvisorDpsHold GetKaelthasAdvisorDpsHold(PlayerbotAI* botAI, Unit* kaelthas)
 {
     if (GetKaelthasTkPhase(kaelthas) != PHASE_SINGLE_ADVISOR)
@@ -501,11 +504,13 @@ bool IsKaelthasAdvisorDpsHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
     return false;
 }
 
+// Every pet is held while an advisor's opening hold runs, the Capernian tank's included.
 bool IsKaelthasAdvisorPetHoldActive(PlayerbotAI* botAI, Unit* kaelthas)
 {
     return GetKaelthasAdvisorDpsHold(botAI, kaelthas) != KaelthasAdvisorDpsHold::None;
 }
 
+// In the weapons phase, pets follow the melee priority, which leaves out Devastation.
 Unit* GetKaelthasWeaponPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     if (!pet)
@@ -547,6 +552,7 @@ bool UpdateKaelthasClassRoleAnnouncement(PlayerbotAI* botAI)
         });
 }
 
+// Demonology spec is preferred for the Capernian Warlock tank.
 Player* GetCapernianTank(Player* bot)
 {
     TkInstanceState const* state = FindTkState(bot->GetInstanceId());
@@ -562,6 +568,8 @@ bool IsCapernianTank(Player* bot)
     return state && IsClassRolePlayer(bot, state->capernianTank);
 }
 
+// The Debuff Hunter attacks Sanguinar in phase 3 with melee (after Thaladred) to apply Armor
+// Disruption from the Netherstrand Longbow (as opposed to other ranged, who attack Capernian).
 bool IsSanguinarDebuffHunter(Player* bot)
 {
     if (bot->getClass() != CLASS_HUNTER)
@@ -577,6 +585,7 @@ GuidVector FindPhoenixGuids(Player* bot)
         bot, KAELTHAS_SPAWN_POSITION, KAELTHAS_ROOM_SEARCH_DISTANCE, { Id(TkNpcs::NPC_PHOENIX) }));
 }
 
+// Dead weapons included, for looting.
 GuidVector FindLegendaryWeaponGuids(Player* bot)
 {
     static std::vector<uint32> const weaponEntries = {

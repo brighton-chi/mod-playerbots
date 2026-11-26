@@ -313,8 +313,8 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     if (ember->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
-    // The Embers' Rebirth has a range of 15 yards (16.5 yd damage radius), but more space is
-    // needed since this movement is tank-to-player, not Ember.
+    // The Rebirth hits within 15 yd, center to center, but more space is needed since this
+    // movement is tank-to-player, not Ember.
     constexpr float safeDistance = 20.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
@@ -1049,10 +1049,12 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     if (findIt == ring.end())
         return false;
 
-    // The spread is a 90-degree arc for healers and a 120-degree arc for ranged DPS.
-    // Capernian's CombatReach is 4.5 yd.
+    // The spread is a 90° arc for healers and a 120° arc for ranged dps.
     float const arcSpan = isHeal ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
-    float const radius = isHeal ? 42.0f : 34.0f; // 36 and 28 yards of actual distance
+    // Healers stand 42 yd and ranged dps 34 yd from Capernian's center: 36 and 28 yd edge to edge,
+    // after her 4.5 yd combat reach and a player's 1.5 yd (Bloodlust is held in this phase). 28 yd
+    // leaves some margin under 30 yd, the most common spell range.
+    float const radius = isHeal ? 42.0f : 34.0f;
     constexpr float arcCenter = 2.9f;
     float const arcStart = arcCenter - arcSpan / 2.0f;
 
@@ -1366,7 +1368,7 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (axe->GetVictim() != bot || !bot->IsWithinMeleeRange(axe))
         return false;
 
-    // Devastation's CombatReach is 0 yd (so it is set to DEFAULT_COMBAT_REACH, or 1.5 yd).
+    // Devastation's combat reach is 0 in the database, which the core raises to the 1.5 yd default.
     constexpr float safeDistance = 15.0f;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
