@@ -18,6 +18,7 @@ using namespace EncounterHelpers;
 
 float HyjalDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
+    // The map check is for a strategy that persists outside Hyjal, such as after a server reset.
     if (botAI->GetState() == BOT_STATE_NON_COMBAT || bot->GetMapId() != HYJAL_MAP_ID)
         return 1.0f;
 

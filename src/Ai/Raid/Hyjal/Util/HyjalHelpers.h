@@ -126,8 +126,8 @@ bool GetRangedRingStep(
 
 // Rage Winterchill
 
-// 2 yd radius + 1.95 yd max player CombatReach (1.5 yd * 1.3 during Bloodlust). Range should not
-// be increased by CombatReach, but the range of persistent ground-based AoEs is bugged in AC.
+// Death and Decay's radius is 20 yd, plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust),
+// rounded up. The reach shouldn't count, but AC's range for persistent ground-based AoEs is bugged.
 inline constexpr float DEATH_AND_DECAY_RADIUS = 22.0f;
 // Out to this distance, movement is controlled only by the avoidance action.
 inline constexpr float DEATH_AND_DECAY_CONTROL_RADIUS =
@@ -143,9 +143,9 @@ bool IsNearDeathAndDecay(PlayerbotAI* botAI, float radius);
 bool IsInDeathAndDecay(PlayerbotAI* botAI);
 
 // Anetheron
-// Towering Infernal's CombatReach is 4 yd
+// A Towering Infernal's combat reach is 4 yd.
 
-// Around ANETHERON_TANK_POSITION. 150 yd leaves room for wherever a player tank holds him.
+// Measured from Anetheron's tank position, with room for wherever a player tank holds him.
 inline constexpr float INFERNAL_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 INFERNAL_CACHE_INTERVAL_MS = 200;
 // A landing Infernal stuns everybody within 10 yd for 2s (31302) and then burns everything within
@@ -160,28 +160,22 @@ inline constexpr float INFERNAL_RANGED_ENGAGE_DISTANCE = 50.0f;
 inline Position const ANETHERON_TANK_POSITION       = { 5033.177f, -1765.996f, 1324.195f };
 inline Position const ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1323.070f };
 inline Position const ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
-// Whichever of the two spots the Infernal tank stands nearer.
 Position const& GetInfernalTankPosition(Player* bot);
 
 Player* GetInfernoTarget(Unit* anetheron);
-// Every living Towering Infernal, oldest first, kept in the instance state.
 GuidVector FindInfernalGuids(Player* bot);
 GuidVector const& GetInfernalGuids(Player* bot);
-// The first Infernal that the Infernal tank does not have aggro on.
 Unit* GetLooseInfernal(PlayerbotAI* botAI);
 Unit* GetNearestInfernal(PlayerbotAI* botAI);
-// The Infernal a ranged bot should attack instead of the boss, if any. It is the oldest Infernal
-// alive within engage range, but in practice, a raid should have only one up at a time.
 Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron);
 Unit* GetInfernalTargetingBot(PlayerbotAI* botAI);
-// Both resolve the first assist tank among the living, so keep them in step.
 bool IsInfernalTank(Player* bot);
 Player* GetInfernalTank(Player* bot);
 
 // Kaz'rogal
-// CombatReach is 7.875 yards
+// Kaz'rogal's combat reach is 7.875 yd.
 
-// War Stomp is 12 yd + up to 1.95 yd CombatReach.
+// War Stomp's radius is 12 yd, plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust).
 inline constexpr float KAZROGAL_RANGED_ARC_RADIUS = 15.0f;
 // For keeping extra distance during the pull to avoid War Stomp.
 inline constexpr float KAZROGAL_RANGED_ARC_APPROACH_RADIUS = 25.0f;
@@ -214,11 +208,11 @@ bool IsKazrogalManaUser(PlayerbotAI* botAI);
 bool HasMarkOfKazrogal(Player* bot);
 
 // Azgalor
-// CombatReach is 8.8 yards
-// Doomguard CombatReach is 3.75 yards
+// Azgalor's combat reach is 8.8 yd.
+// The Doomguard's combat reach is 3.75 yd.
 
-// 15 yd radius + 1.95 yd max player CombatReach. Like for D&D, the addition of CombatReach to the
-// range is due to an AC bug.
+// Rain of Fire's radius is 15 yd, plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust),
+// rounded up. As with Death and Decay, the reach is added because of an AC bug.
 inline constexpr float RAIN_OF_FIRE_RADIUS = 17.0f;
 // Out to this distance, movement is controlled only by the avoidance action.
 inline constexpr float RAIN_OF_FIRE_CONTROL_RADIUS = RAIN_OF_FIRE_RADIUS + HAZARD_CONTROL_MARGIN;
@@ -232,8 +226,8 @@ inline constexpr float CLEAVE_DANGER_ARC = 200.0f * static_cast<float>(M_PI) / 1
 inline Position const AZGALOR_TANK_POSITION      = { 5494.594f, -2747.069f, 1487.800f };
 // On top of Thrall's starting position, in order to get Thrall to aggro as soon as he is hit.
 inline Position const AZGALOR_DOOMGUARD_POSITION = { 5452.166f, -2723.282f, 1485.480f };
-// Around AZGALOR_TANK_POSITION. The Doomguard position is about 50 yd from it; 150 yd leaves room
-// for wherever a player tank holds him.
+// Measured from Azgalor's tank position. The Doomguard position is about 50 yd from it, and 150 yd
+// leaves room for wherever a player tank holds Azgalor.
 inline constexpr float DOOMGUARD_SEARCH_RADIUS = 150.0f;
 inline constexpr uint32 DOOMGUARD_CACHE_INTERVAL_MS = 200;
 
@@ -244,12 +238,9 @@ bool GetNearestRainOfFirePosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearRainOfFire(PlayerbotAI* botAI, float radius);
 bool IsInRainOfFire(PlayerbotAI* botAI);
 bool IsDoomed(Player* bot);
-// The first assist tank picks up Doomguards, unless it has Doom, in which case the second assist
-// tank takes over.
 bool IsDoomguardTank(Player* bot);
 bool AnyGroupMemberHasDoom(Player* bot);
 GuidVector FindLesserDoomguardGuids(Player* bot);
-// The oldest living Lesser Doomguard, so every bot picks the same one.
 Unit* GetLesserDoomguard(PlayerbotAI* botAI);
 Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor);
 Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature* pet);
@@ -263,8 +254,8 @@ struct AirBurstData
 };
 
 inline constexpr float AIR_BURST_CLEARANCE = 15.0f;
-// The actual damaging radius of Doomfire (31495), which is a 1s periodic that drops a
-// Doomfire (31943) pool, which has a persistent area aura of 6 yd (plus 1.95 yd max CombatReach).
+// The damaging radius of Doomfire (31495), a 1s periodic that drops a Doomfire (31943) pool: a 6 yd
+// persistent area aura, plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust), rounded up.
 inline constexpr float DOOMFIRE_BURN_RADIUS = 8.0f;
 // How far from Doomfires will avoidance place the bot.
 inline constexpr float DOOMFIRE_DANGER_RADIUS = DOOMFIRE_BURN_RADIUS + 2.0f;
@@ -277,17 +268,13 @@ inline constexpr float DOOMFIRE_SEARCH_RADIUS =
 // General spread to prevent clumping due to the risk of Air Burst.
 inline constexpr float ARCHIMONDE_RANGED_SPREAD_DISTANCE = 10.0f;
 
-// Up the hill a bit, for space from the World Tree. The tank walks him here at the pull only.
+// Up the hill a bit, for space from the World Tree. The tank brings him here at the pull only.
 // Archimonde slaps so the tank will pause moving whenever below 60% HP.
 inline Position const ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
 
-// Invincibility applied by Tyrande when Archimonde is at 10% HP. Used to cut off boss strategies
-// since the fight is effectively over at this point.
 bool HasProtectionOfElune(Player* bot);
 bool IsNearDoomfire(PlayerbotAI* botAI, float radius);
 bool IsPositionNearDoomfire(PlayerbotAI* botAI, float x, float y, float radius);
-// Every live Doomfire trail patch the cache holds, for callers that rely on a scoring system to
-// determine where bots should move to.
 std::vector<Position> const& GetDoomfirePositions(PlayerbotAI* botAI);
 bool GetPendingAirBurstCast(uint32 instanceId, AirBurstData& airBurst);
 

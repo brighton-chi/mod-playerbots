@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-// A latch so the gap between MARK_DANGER_MANA and MARK_REJOIN_MANA does not make bots run back and
-// forth to/from the group.
+// A latch so the gap between MARK_DANGER_MANA and MARK_REJOIN_MANA does not have bots running
+// back and forth to/from the group.
 class KazrogalBelowManaThresholdValue : public ManualSetValue<bool>
 {
 public:

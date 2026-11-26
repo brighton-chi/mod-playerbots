@@ -395,6 +395,7 @@ Player* GetInfernoTarget(Unit* anetheron)
     return target ? target->ToPlayer() : nullptr;
 }
 
+// Every living Towering Infernal, oldest first.
 GuidVector FindInfernalGuids(Player* bot)
 {
     GuidVector guids = FindCreatureGuidsAround(
@@ -416,6 +417,7 @@ GuidVector const& GetInfernalGuids(Player* bot)
         FindInfernalGuids);
 }
 
+// The first Infernal that the Infernal tank does not have aggro on.
 Unit* GetLooseInfernal(PlayerbotAI* botAI)
 {
     Player* infernalTank = GetInfernalTank(botAI->GetBot());
@@ -454,6 +456,8 @@ Unit* GetNearestInfernal(PlayerbotAI* botAI)
     return nearest;
 }
 
+// The Infernal a ranged bot should attack instead of the boss, if any. It is the oldest Infernal
+// alive within engage range, but in practice, a raid should have only one up at a time.
 Unit* GetInfernalToAttack(PlayerbotAI* botAI, Unit* anetheron)
 {
     if (!anetheron || anetheron->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
@@ -486,6 +490,7 @@ Unit* GetInfernalTargetingBot(PlayerbotAI* botAI)
     return nullptr;
 }
 
+// This and GetInfernalTank both pick the first living assist tank, so keep them in step.
 bool IsInfernalTank(Player* bot)
 {
     return PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
@@ -496,6 +501,7 @@ Player* GetInfernalTank(Player* bot)
     return GetGroupAssistTank(bot, 0);
 }
 
+// Whichever of the two positions the Infernal tank stands nearer.
 Position const& GetInfernalTankPosition(Player* bot)
 {
     Player* infernalTank = GetInfernalTank(bot);
@@ -605,6 +611,8 @@ bool IsDoomed(Player* bot)
     return bot->HasAura(Id(HyjalSpells::SPELL_DOOM));
 }
 
+// The first assist tank picks up Doomguards, unless it has Doom, in which case the second assist
+// tank takes over.
 bool IsDoomguardTank(Player* bot)
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -650,6 +658,7 @@ GuidVector FindLesserDoomguardGuids(Player* bot)
     return guids;
 }
 
+// The oldest living Lesser Doomguard, so every bot picks the same one.
 Unit* GetLesserDoomguard(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -666,7 +675,9 @@ Unit* GetLesserDoomguard(PlayerbotAI* botAI)
     return nullptr;
 }
 
-// Ranged take a Lesser Doomguard within 70 yards of them, except during Azgalor's burn phase.
+// Only ranged dps within 70 yd attack a Lesser Doomguard, and not during Azgalor's burn phase.
+// Enough ranged are usually within 70 yd to get decent dps on the adds, and bots farther out risk
+// running in front of Azgalor to get to the Doomguard or just wasting time.
 Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor)
 {
     if (!azgalor || azgalor->GetHealthPct() <= BOSS_BURN_HEALTH_PCT)
@@ -693,11 +704,15 @@ Unit* GetAzgalorPetTarget(PlayerbotAI* botAI, Creature* pet)
 
 // Archimonde
 
+// Invincibility applied by Tyrande when Archimonde is at 10% HP. Used to cut off boss strategies
+// since the fight is effectively over at this point.
 bool HasProtectionOfElune(Player* bot)
 {
     return bot->HasAura(Id(HyjalSpells::SPELL_PROTECTION_OF_ELUNE));
 }
 
+// Every live Doomfire trail patch the cache holds, for callers that rely on a scoring system to
+// determine where bots should move to.
 std::vector<Position> const& GetDoomfirePositions(PlayerbotAI* botAI)
 {
     return GetCachedHazardPositions(botAI, "hyjal doomfire trail");

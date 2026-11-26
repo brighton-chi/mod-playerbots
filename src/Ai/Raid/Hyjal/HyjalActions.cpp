@@ -554,9 +554,6 @@ bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Only ranged DPS within 70 yd should attack Doomguards. This distance seems to reach enough bots
-// to get decent DPS on the adds but not reach too far (which risks ranged running in front of
-// Azgalor to get to the Doomguard or just wasting time).
 bool AzgalorDetermineDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* azgalor = GetHyjalBoss(bot, HyjalBosses::DATA_AZGALOR);
