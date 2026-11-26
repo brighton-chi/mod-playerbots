@@ -616,7 +616,7 @@ bool BigBadWolfProtectRedHoodAction::Execute(Event /*event*/)
     }
 }
 
-// Range is edge to edge. As I've noted ad nauseaum across raid strategy comments, CanCastSpell
+// Range is edge to edge. As I've noted ad nauseam across raid strategy comments, CanCastSpell
 // passes targets out of range.
 bool BigBadWolfProtectRedHoodAction::CastOnTarget(char const* spell, Player* target, float range)
 {
@@ -874,7 +874,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
         return false;
     }
 
-    // Wait out a Blizzard rather than walk back into it.
+    // Wait out a Blizzard rather than move back into it.
     for (Position const& patch : GetDynamicObjectPositions(
              bot, ARAN_ROOM_SEARCH_RADIUS, Id(KaraSpells::SPELL_ARAN_BLIZZARD)))
     {
@@ -889,7 +889,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 
 // Netherspite
 
-// The red beam dance (5 seconds in, 5 seconds out). This allows a single tank to block the beam for
+// The red beam dance (5s in, 5s out). This allows a single tank to block the beam for
 // an entire phase by reducing the number of stacks accumulated.
 bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 {
@@ -1226,7 +1226,7 @@ std::vector<Player*> NetherspiteManageTimersAndTrackersAction::GetBeamCandidates
 // Whether the waiting position is still usable: (1) in the band FindNextPosition picks from, within
 // 0.5 yd, or moved up to 4 yd along the line by ShiftNextPositionAlongLine (hunters only away from
 // Netherspite because 4 yd toward him would take them to the edge of his melee range, 20.8 yd or
-// 21.3 under Bloodlust, where Auto Shot fails), and (2) clear of void zones and beams.
+// 21.3 with Bloodlust, where Auto Shot fails), and (2) clear of void zones and beams.
 bool NetherspiteManageTimersAndTrackersAction::IsNextPositionGood(
     Unit* netherspite, Position const& portal, KaraInstanceState const& state, float side,
     Position const& position, float low, bool isHunter)
@@ -1362,7 +1362,7 @@ void NetherspiteManageTimersAndTrackersAction::UpdateBeamBlockers(
         }
     }
 
-    // Near the end of the Portal Phase, the blocker does not swap, even at threshold stacks.
+    // Near the end of the portal phase, the blocker does not swap, even at threshold stacks.
     bool const isPhaseEnding = state.netherspitePortalPhaseTimer &&
         getMSTimeDiff(*state.netherspitePortalPhaseTimer, getMSTime()) >= NETHERSPITE_LAST_SWAP_MS;
     Player* newBlocker = blocker;
@@ -1760,8 +1760,8 @@ bool PrinceMalchezaarTankPositionBossAction::Execute(Event /*event*/)
 
 // The tank backs up to the parapet until it stands between Nightbane and the parapet. This mirrors
 // the retail strategy of keeping Nightbane perpendicular to the walkway, which largely keeps his
-// breach, cleave, and tail sweep off the playing field and allows melee to attack his flanks
-// safely. The tank does not move out of Charred Earth so this positioning can be maintained.
+// Smoldering Breath, Cleave, and Tail Sweep off the playing field and allows melee to attack his
+// flanks safely. The tank does not move out of Charred Earth so this positioning can be maintained.
 bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -1851,7 +1851,7 @@ bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
 }
 
 // During any DPS hold period, pets are set passive. This includes the entire flight phase because
-// pets tend to go out-of-bounds off the terrace to chase Nightbane or skeletons.
+// pets tend to go out of bounds off the terrace to chase Nightbane or skeletons.
 bool NightbaneSetPetStanceAction::Execute(Event /*event*/)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -2014,7 +2014,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 }
 
 // Melee start each ground phase on Nightbane's right flank. If Charred Earth appears under melee,
-// they move to the other flank. If both flanks are covered, melee steps out of range and waits
+// they move to the other flank. If both flanks are covered, melee step out of range and wait
 // until it is safe to attack again.
 bool NightbaneManageTimersAndTrackersAction::UpdateMeleePosition(
     KaraInstanceState& state, Unit& nightbane, std::vector<Position> const& charredEarths)

@@ -358,7 +358,7 @@ bool NetherspiteShouldSpreadForNetherbreathTrigger::IsActiveInEncounter()
     if (!slot)
         return false;
 
-    // Slots last until the tracker's next update, which can come after the Banish Phase ends.
+    // Slots last until the tracker's next update, which can come after the banish phase ends.
     Unit* netherspite = GetEncounterBoss();
     if (netherspite && !IsBanishPhase(netherspite))
         return false;

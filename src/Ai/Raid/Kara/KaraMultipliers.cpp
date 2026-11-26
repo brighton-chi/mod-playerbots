@@ -141,8 +141,8 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             return 1.0f;
     }
 
-    // If the boss cannot be found but the encounter is in progress, it is probably because the bot
-    // was battle rezzed and zone combat hasn't reapplied, so block cooldowns.
+    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
+    // on the boss's threat list yet, so hold cooldowns.
     if (!boss)
         return 0.0f;
 
@@ -365,7 +365,7 @@ float ShadeOfAranDisableReactiveMovementMultiplier::GetValueInEncounter(Action* 
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    // Don't add the typical carveout for set behind. Aran faces a random player with each cast.
+    // Don't add the typical carve-out for set behind. Aran faces a random player with each cast.
     bool const isReactiveMovement =
         dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action);
@@ -487,7 +487,7 @@ Position GetNetherspiteReachEndPosition(Unit& bot, Unit& target, float range)
 } // end anonymous namespace (Netherspite)
 
 // Positioning in and around the beams decides the outcome of the fight, and a tight formation is
-// kept during the Banish phase, so reactive and unpredictable movement is blocked.
+// kept during the banish phase, so reactive and unpredictable movement is blocked.
 float NetherspiteDisableReactiveMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isReactiveMovement =

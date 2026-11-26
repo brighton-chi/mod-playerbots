@@ -97,6 +97,8 @@ Unit* GetKaraBoss(Player* bot, KaraBosses boss)
     return FindThreatTarget(bot, BossName(boss));
 }
 
+// Barnes spawns the Opera cast non-attackable, and the play's release clears the flag, so an
+// actor counts only once released, as the script itself tests.
 Unit* GetOperaActor(Player* bot, std::string_view name)
 {
     if (!IsBossInProgress(bot, KARA_MAP_ID, Id(KaraBosses::DATA_OPERA_PERFORMANCE)))
@@ -106,6 +108,8 @@ Unit* GetOperaActor(Player* bot, std::string_view name)
     return actor && !actor->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ? actor : nullptr;
 }
 
+// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf, Dorothee, or Roar is
+// fighting, or Nightbane is on the ground.
 bool IsKarazhanFearCasterActive(Player* bot)
 {
     Unit* nightbane = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
@@ -450,7 +454,7 @@ uint8 GetNextBigBadWolfRunIndex(uint8 index, int32 direction)
 }
 
 // BBW runs straight at the bot, cutting inside any route, so a poor start runs into him. This
-// forecasts the chase for every point and direction and returns the one that keeps BBW furthest
+// forecasts the chase for every point and direction and returns the one that keeps BBW farthest
 // away from the bot at his closest approach.
 BigBadWolfRunPlan GetBigBadWolfRunPlan(Player* bot, Unit& wolf, float seconds)
 {
@@ -730,7 +734,7 @@ NetherspiteArc GetNetherspiteStandingArc(Unit& netherspite, KaraInstanceState co
 }
 
 // How far from Netherspite's center bots stand between the blue and green beams. Melee stay inside
-// his melee range (20.8 yd). Hunters stay outside it, or Auto Shot fails.
+// his melee range (20.8 yd, 21.3 yd with Bloodlust). Hunters stay outside it, or Auto Shot fails.
 NetherspiteRadiusBand GetNetherspiteRadiusBand(Player* bot)
 {
     if (PlayerbotAI::IsHeal(bot))
@@ -1150,8 +1154,7 @@ bool IsBetweenNetherspiteBeams(
 }
 
 // True if the position passes IsBetweenNetherspiteBeams and a straight move there from the bot
-// crosses no void zone, and no beam that will be up by the time it arrives (i.e., the bot will not
-// cross an active beam on its way to its destination).
+// crosses no void zone, and no beam that will be up by the time it arrives.
 bool CanMoveBetweenNetherspiteBeams(
     Player* bot, Unit* netherspite, KaraInstanceState const& state, float x, float y)
 {
@@ -1333,8 +1336,8 @@ bool CanWalkStraightTo(Player* bot, Position const& destination)
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
         return false;
 
-    // An incomplete path can cut the point short without counting as a collision. A point the move
-    // stops further short of than the movers' arrival distance is rejected, not clamped.
+    // On an incomplete path, the check moves the point short of the destination without failing. A
+    // point that falls short by more than the movers' arrival distance is rejected, not clamped.
     return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
         MALCHEZAAR_ARRIVAL_DISTANCE;
 }

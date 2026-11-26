@@ -170,12 +170,8 @@ enum class KaraNpcs : uint32
 inline constexpr uint32 KARA_MAP_ID = 532;
 
 Unit* GetKaraBoss(Player* bot, KaraBosses boss);
-// Barnes spawns the Opera cast non-attackable, and the play's release clears the flag, so an
-// actor counts only once released, as the script itself tests.
 Unit* GetOperaActor(Player* bot, std::string_view name);
 
-// Shamans drop Tremor Totem while a Spectral Charger, the Big Bad Wolf, Dorothee, or Roar is
-// fighting, or Nightbane is on the ground.
 bool IsKarazhanFearCasterActive(Player* bot);
 
 // Trash
@@ -367,7 +363,7 @@ GuidVector FindTerestianAddGuids(Player* bot);
 // No reach added.
 inline constexpr float ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS = 21.0f;
 inline constexpr float ARAN_ARCANE_EXPLOSION_CLEARANCE = ARAN_ARCANE_EXPLOSION_HAZARD_RADIUS + 1.0f;
-// The pull lands everyone on his spot, so each bot takes its own way out.
+// The pull lands everyone at his position, so each bot takes its own way out.
 inline constexpr float ARAN_PULLED_ONTO_BOSS_DISTANCE = 1.0f;
 inline constexpr uint32 ARAN_ARCANE_EXPLOSION_EXIT_DIRECTIONS = 16;
 // No reach added.
@@ -377,7 +373,7 @@ inline constexpr float ARAN_RANGED_MIN_DISTANCE = ARAN_COUNTERSPELL_HAZARD_RADIU
 inline constexpr float ARAN_RANGED_MAX_DISTANCE = 13.0f;
 inline constexpr float ARAN_RANGED_BAND_TOLERANCE = 0.5f;
 inline constexpr uint32 ARAN_ELEMENTALS_CACHE_INTERVAL_MS = 1000;
-// 13 yd + player reach.
+// 13 yd plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust).
 inline constexpr float ARAN_BLIZZARD_HAZARD_RADIUS = 14.5f;
 inline constexpr float ARAN_BLIZZARD_CLEARANCE = ARAN_BLIZZARD_HAZARD_RADIUS + 0.5f;
 inline constexpr float ARAN_ROOM_SEARCH_RADIUS = 60.0f;
@@ -398,7 +394,7 @@ inline constexpr int32 ARAN_FLAME_WREATH_RING_DURATION_MS = 20 * IN_MILLISECONDS
 // No one moves this soon after the rings land, which also outlasts the ring value's cache.
 inline constexpr int32 ARAN_FLAME_WREATH_SETTLE_MS = 1000;
 inline constexpr uint32 ARAN_FLAME_WREATH_RING_CACHE_INTERVAL_MS = 500;
-// Fireball and Frostbolt (2s casts) are not interrupted before this much of the cast left.
+// Fireball and Frostbolt (2s casts) are interrupted only once this much of the cast is left.
 inline constexpr int32 ARAN_INTERRUPT_CAST_REMAINING_MS = 500;
 
 // Aran blinks here before each super spell. His Blizzard circles around it, so this is used to
@@ -472,7 +468,8 @@ inline constexpr std::array NETHERSPITE_BEAMS = {
 inline constexpr float NETHERSPITE_BEAM_SEARCH_RADIUS = 150.0f;
 // A player blocks a beam within 1.5 yd of the beam and more than 16.5 yd from Netherspite's center.
 // The script compares distances to the portal with combat reach subtracted, so Netherspite's reach
-// of 18 yd minus a player's 1.5 means the first 16.5 yd of the beam cannot be blocked.
+// of 18 yd minus a player's 1.5 yd (1.95 yd with Bloodlust) means the first 16.5 yd (16.05 yd) of
+// the beam can't be blocked.
 inline constexpr float NETHERSPITE_BEAM_WIDTH = 1.5f;
 inline constexpr float NETHERSPITE_BEAM_START = 16.5f;
 inline constexpr float NETHERSPITE_BEAM_CLEARANCE = NETHERSPITE_BEAM_WIDTH + 1.5f;
@@ -512,8 +509,8 @@ inline constexpr float NETHERSPITE_NEXT_ALONG_RANGE = 2.5f;
 inline constexpr float NETHERSPITE_NEXT_SHIFT_RANGE = 4.0f;
 // See GetNetherspiteStandingArc.
 inline constexpr float NETHERSPITE_MAX_STANDING_ARC = static_cast<float>(M_PI) * 170.0f / 180.0f;
-// Heals reach 43 yd center to center. NETHERSPITE_RED_DANCE_STEP is 3 yd, so 38 yd accounts for
-// that movement plus 2 yd of margin.
+// Heals reach 43 yd center to center (43.9 yd with Bloodlust). NETHERSPITE_RED_DANCE_STEP is 3 yd,
+// so 38 yd accounts for that movement plus 2 yd of margin.
 inline constexpr float NETHERSPITE_HEALER_TANK_RANGE = 38.0f;
 // Standard player run speed, used to determine if a bot can pass between a portal and Netherspite
 // at the beginning of a portal phase before the beam spawns (CrossesBeamAfterStart).
@@ -523,7 +520,8 @@ inline constexpr float NETHERSPITE_BOT_SPEED = 7.0f;
 inline constexpr float NETHERSPITE_VZ_HAZARD_RADIUS = 2.0f;
 inline constexpr float NETHERSPITE_VZ_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 1.0f;
 // This clearance is 0.5 yd short of the ordinary 3 yd void zone clearance because the standard
-// blocking position is 18 yd from Netherspite, and 21 yd would be out of melee range (20.8 yd).
+// blocking position is 18 yd from Netherspite, and 21 yd would be out of melee range (20.8 yd,
+// 21.3 yd with Bloodlust).
 inline constexpr float VOID_ZONE_BEAM_POSITION_CLEARANCE = NETHERSPITE_VZ_HAZARD_RADIUS + 0.5f;
 inline constexpr float VOID_ZONE_STEP_AROUND_DISTANCE = NETHERSPITE_VZ_CLEARANCE + 0.5f;
 // Tried when neither side of the void zone is clear at the normal step-around distance.
@@ -531,7 +529,7 @@ inline constexpr float VOID_ZONE_WIDE_STEP_AROUND_DISTANCE = VOID_ZONE_STEP_AROU
 
 // Banish slots: every group member gets a bearing from Netherspite, spread evenly so each
 // Netherbreath (a 45° cone) hits only one bot. Slots are 20 yd out (inside his melee range of
-// 20.8 yd), except 25 yd for hunters (outside melee range, or Auto Shot fails).
+// 20.8 yd, 21.3 yd with Bloodlust), except 25 yd for hunters (outside it, or Auto Shot fails).
 inline constexpr float NETHERSPITE_BANISH_SLOT_RADIUS = 20.0f;
 inline constexpr float NETHERSPITE_HUNTER_BANISH_SLOT_RADIUS = 25.0f;
 // A bot more than this far off its slot's bearing moves back. Ten slots are 36° apart, and the cone
@@ -584,7 +582,8 @@ inline constexpr float MALC_HELLFIRE_CLEARANCE = MALC_HELLFIRE_HAZARD_RADIUS + 1
 inline constexpr float MALC_SHADOW_NOVA_HAZARD_RADIUS = 30.0f;
 inline constexpr float MALC_SHADOW_NOVA_CLEARANCE = MALC_SHADOW_NOVA_HAZARD_RADIUS + 1.0f;
 inline constexpr int32 MALC_SHADOW_NOVA_CAST_TIME_MS = 2 * IN_MILLISECONDS;
-// Malchezaar's melee range for a player: 4 yd (his reach) + 1.5 yd + 4/3 yd.
+// Malchezaar's melee range for a player: 4 yd (his reach) + a player's 1.5 yd (1.95 yd with
+// Bloodlust) + 4/3 yd.
 inline constexpr float MALCHEZAAR_MELEE_RANGE = 6.83f;
 // Malchezaar being this far from an active Infernal means it is safe to stand in melee range.
 inline constexpr float MALCHEZAAR_MELEE_CLEARANCE =
@@ -599,8 +598,8 @@ inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float MALCHEZAAR_SEARCH_RADIUS = 60.0f;
 // Bounds the pathfinding cost of each position search.
 inline constexpr uint8 MALCHEZAAR_MAX_WALK_CHECKS = 64;
-// A smaller arrival distance than is typical, due to the small safety margins used for hazards for
-// this fight, which requires usage of an ever-shrinking safe playable space.
+// Smaller than the usual arrival distance, because this fight's hazard margins are small and the
+// safe floor keeps shrinking.
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr uint32 INFERNALS_CACHE_INTERVAL_MS = 200;
 
@@ -650,7 +649,8 @@ enum class NightbaneMeleePosition : uint8
 inline constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
 inline constexpr float NIGHTBANE_GROUND_Z = 91.473f;
 inline constexpr uint32 NIGHTBANE_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
-inline constexpr float CHARRED_EARTH_HAZARD_RADIUS = 11.5f; // 10 yd patch + 1.5 yd player reach
+// 10 yd patch + a player's 1.5 yd combat reach (1.95 yd with Bloodlust).
+inline constexpr float CHARRED_EARTH_HAZARD_RADIUS = 11.5f;
 inline constexpr float CHARRED_EARTH_CLEARANCE = CHARRED_EARTH_HAZARD_RADIUS + 0.5f;
 inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
@@ -674,11 +674,11 @@ inline constexpr float TERRACE_ARC_END = 4.9241f;
 inline constexpr float TERRACE_FLOOR_INNER_RADIUS = 35.8f; // the dome's wall is at 33.5-35.8 yd
 inline constexpr float TERRACE_FLOOR_OUTER_RADIUS = 49.4f;
 // A lane around the dome, on the floor at every angle. The flight stack sits on it, and steps
-// around the terrace stay on it or further out. It is 10.5 yd in from the parapet, so skeletons
+// around the terrace stay on it or farther out. It is 10.5 yd in from the parapet, so skeletons
 // appearing up to 10 yd from a Rain of Bones on the stack stay on the terrace.
 inline constexpr float TERRACE_INNER_LANE_DIST = 39.0f;
 // In flight, Nightbane casts Fireball Barrage at players more than 52 yd from his center (40 yd
-// plus both combat reaches), so the flight stack stays within 50 yd of his flight position.
+// plus both combat reaches, 52.45 with Bloodlust), so the flight stack stays within 50 yd of him.
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MIN_ANGLE = 1.2566f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_MAX_ANGLE = 3.0020f;
 inline constexpr float NIGHTBANE_FLIGHT_STACK_HOME_ANGLE = 2.0944f;
