@@ -139,7 +139,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Formation, flee, reposition and follow moves can walk a bot into the water.
+// Formation, flee, reposition and follow moves can take a bot into the water.
 class TheLurkerBelowMaintainPositionsMultiplier : public SscEncounterMultiplier
 {
 public:
@@ -176,7 +176,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Until his tank has him on the spot he may still be turning, and behind him can be in the
+// Until his tank has him in position he may still be turning, and behind him can be in the
 // water. On an islet melee don't move behind anything.
 class TheLurkerBelowMeleeWaitToSetBehindMultiplier : public SscEncounterMultiplier
 {
@@ -190,7 +190,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Reach melee's path walked melee off an islet into the water; the direct move does it instead.
+// Reach melee's path took melee off an islet into the water; the direct move does it instead.
 class TheLurkerBelowMeleeDisableReachMultiplier : public SscEncounterMultiplier
 {
 public:

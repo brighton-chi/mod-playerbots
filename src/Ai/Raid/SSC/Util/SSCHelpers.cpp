@@ -270,6 +270,8 @@ bool IsSkullOnWaterElementalTotem(PlayerbotAI* botAI)
 
 // Hydross the Unstable <Duke of Currents>
 
+// The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
+// tank is an add tank and picks up the Elementals that spawn upon phase changes.
 bool IsHydrossFrostTank(Player* bot)
 {
     return PlayerbotAI::IsTank(bot) && PlayerbotAI::IsMainTank(bot);
@@ -374,7 +376,7 @@ bool CanHydrossMarkBeMaxed(Unit* hydross)
     std::optional<uint32> const& phaseStartTime = IsHydrossInFrostPhase(hydross) ?
         state.hydrossFrostPhaseStartTime : state.hydrossNaturePhaseStartTime;
 
-    // Don't count residual Marks from a bad transition for purposes of the dps hold window.
+    // Don't count residual Marks from a bad transition for purposes of the DPS hold window.
     constexpr uint32 staleMarkWindowMs = 45 * IN_MILLISECONDS;
     return phaseStartTime && getMSTimeDiff(*phaseStartTime, getMSTime()) >= staleMarkWindowMs;
 }
@@ -421,6 +423,8 @@ bool HasNoMarkOfCorruption(Player* bot)
 
 // The Lurker Below
 
+// Lurker is passive during Spout: a 3s wind-up (37431), then a 16s spin aura, turning 0.1 rad every
+// 250ms (37429 counterclockwise or 37430 clockwise).
 bool IsLurkerSpouting(Unit* lurker)
 {
     Creature* creature = lurker ? lurker->ToCreature() : nullptr;
@@ -562,6 +566,7 @@ bool ShouldGoToLurkerWalkway(Player* bot, Unit* lurker, Unit* target)
 
 // Leotheras the Blind
 
+// Leotheras, his Shadow, and the Inner Demons.
 GuidVector FindLeotherasUnitGuids(Player* bot)
 {
     return FindCreatureGuidsAround(
@@ -679,6 +684,7 @@ bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI)
         });
 }
 
+// Demonology spec is preferred for the Leotheras Warlock tank.
 Player* GetLeotherasWarlockTank(Player* bot)
 {
     SscInstanceState const* state = FindSscState(bot->GetInstanceId());
@@ -771,6 +777,7 @@ Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI)
     return shadowVictim;
 }
 
+// The hold window that is open, whatever the bot's role.
 LeotherasDpsHoldWindow GetLeotherasDpsHoldWindow(PlayerbotAI* botAI, Unit* leotheras)
 {
     if (!leotheras)
@@ -843,11 +850,13 @@ bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras)
     return false;
 }
 
+// Pets hit through his threat resets, so every pet is held in every window, the Warlock tank's too.
 bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras)
 {
     return GetLeotherasDpsHoldWindow(botAI, leotheras) != LeotherasDpsHoldWindow::None;
 }
 
+// Leotheras in the final phase outside a hold, so no pet is left on the Shadow.
 Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     if (!pet || !IsLeotherasFinalPhase(botAI))
@@ -958,6 +967,8 @@ Unit* GetAssignedCouncilMember(PlayerbotAI* botAI)
 
 } // end anonymous namespace (Karathress)
 
+// Living council members, Sharkkis's pets, and Spitfire Totems. Sorted, so a reader that takes the
+// first of several pets keeps taking the same one.
 GuidVector FindKarathressUnitGuids(Player* bot)
 {
     std::vector<uint32> entries = {
@@ -974,6 +985,7 @@ GuidVector FindKarathressUnitGuids(Player* bot)
     return guids;
 }
 
+// A living council member, or null if it is dead or Karathress is not in progress.
 Unit* GetKarathressCouncilMember(Player* bot, SscNpcs npc)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -1057,6 +1069,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
     return false;
 }
 
+// Sharkkis's tank picks up his pets too.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -1090,6 +1103,7 @@ Unit* GetSharkkisTankTarget(PlayerbotAI* botAI)
     return heldPet;
 }
 
+// From KARATHRESS_BLESSING_HOLD_HEALTH_PCT until Caribdis dies, whatever the bot's role.
 bool IsKarathressBlessingHoldWindowActive(Player* bot)
 {
     Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
@@ -1099,6 +1113,7 @@ bool IsKarathressBlessingHoldWindowActive(Player* bot)
     return GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_CARIBDIS);
 }
 
+// The Blessing hold window, for non-healer melee other than the main tank.
 bool IsKarathressBlessingHoldActive(Player* bot)
 {
     if (PlayerbotAI::IsHeal(bot) || !PlayerbotAI::IsMelee(bot))
@@ -1110,6 +1125,7 @@ bool IsKarathressBlessingHoldActive(Player* bot)
     return IsKarathressBlessingHoldWindowActive(bot);
 }
 
+// The first KARATHRESS_DPS_HOLD_MS of the fight, whatever the bot's role.
 bool IsKarathressStartHoldWindowActive(Player* bot)
 {
     Unit* karathress = GetSscBoss(bot, SscBosses::DATA_FATHOM_LORD_KARATHRESS);
@@ -1121,16 +1137,19 @@ bool IsKarathressStartHoldWindowActive(Player* bot)
     return !holdStart || getMSTimeDiff(*holdStart, getMSTime()) < KARATHRESS_DPS_HOLD_MS;
 }
 
+// The start hold window, for non-tanks.
 bool IsKarathressStartDpsHoldActive(Player* bot)
 {
     return !PlayerbotAI::IsTank(bot) && IsKarathressStartHoldWindowActive(bot);
 }
 
+// Either window, for every pet. A defensive pet would otherwise attack if its owner was hit.
 bool IsKarathressPetHoldActive(Player* bot)
 {
     return IsKarathressStartHoldWindowActive(bot) || IsKarathressBlessingHoldWindowActive(bot);
 }
 
+// Sharkkis's Sporebat, else his Lurker. Null if neither is up or Karathress isn't in progress.
 Unit* GetSharkkisPet(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -1159,6 +1178,9 @@ Unit* GetSharkkisPet(Player* bot)
     return lurker;
 }
 
+// Pets don't follow their owner's switches while their own target lives (AttackAction doesn't send
+// them), so they are sent to the owner's target. Nothing during the start hold, and not Karathress
+// while Caribdis lives with him under KARATHRESS_BLESSING_HOLD_HEALTH_PCT.
 Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     Player* bot = botAI->GetBot();
@@ -1182,6 +1204,7 @@ Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet)
 
 // Morogrim Tidewalker
 
+// The stack point is directly across Tidewalker from his tank to keep it stable.
 Position GetTidewalkerStackPoint(Player& bot, Unit& tidewalker)
 {
     Unit* victim = tidewalker.GetVictim();
@@ -1732,7 +1755,7 @@ int8 GetLadyVashjPhase(Unit* vashj)
     if (vashj->HasAura(Id(SscSpells::SPELL_MAGIC_BARRIER)))
         return 2;
 
-    // Phase 3, else transitioning from Phase 1 to Phase 2.
+    // Phase 3, else transitioning from phase 1 to phase 2.
     return healthPct <= 50.0f ? 3 : 0;
 }
 
@@ -1866,6 +1889,8 @@ Player* GetVashjGroundingShaman(Player* bot)
     return shaman && shaman->IsAlive() ? shaman : nullptr;
 }
 
+// Vashj's Shock Blast (38509) stuns her tank for 5s. It can be absorbed by Grounding Totem Effect,
+// but it is party only, so the totem must be placed by a Shaman in the main tank's subgroup.
 Player* FindVashjGroundingShaman(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -2067,6 +2092,7 @@ bool IsInMeleeRangeClearOfSpores(
         });
 }
 
+// If a bot has Divine Shield or Dispersion, it may move through pools (but not stop in them).
 bool CanWalkThroughToxicSpores(Player* bot)
 {
     switch (bot->getClass())
@@ -2372,6 +2398,8 @@ Position const* GetVashjStationPositionToReturnTo(Player* bot, Unit* currentTarg
     return &stationPosition;
 }
 
+// One subtlety: the Tainted Elemental spawn position just east of the north rock is closest to the
+// NW station in a straight line, but NW is blocked by the rock, so the NE station gets it instead.
 int8 GetNearestVashjStation(Unit* unit)
 {
     if (!unit)
@@ -2396,6 +2424,7 @@ int8 GetNearestVashjStation(Unit* unit)
 
 // Vashj: Adds and Target Priority
 
+// Enchanted Elementals, Coilfang Elites and Striders, and Toxic Sporebats.
 GuidVector FindVashjAddGuids(Player* bot)
 {
     return FindCreatureGuidsAround(
@@ -2592,6 +2621,8 @@ bool IsTankedStriderInStepInReach(Player* bot, Unit* unit)
         bot->GetExactDist(unit) <= VASHJ_STRIDER_STEP_IN_DISTANCE && IsVashjAddHeldByTank(unit);
 }
 
+// Pets skip targets they're useless on: Vashj while she's immune in phase 2, Striders (Panic fears
+// any pet in melee range), Sporebats (out of reach), and any target the pet can't attack.
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj)
 {
     if (!pet || !vashj)

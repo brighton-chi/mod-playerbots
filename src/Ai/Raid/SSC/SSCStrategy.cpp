@@ -337,7 +337,7 @@ void AppendLadyVashjGeneratorPhaseExclusions(Player* bot, GuidSet& exclusions)
         exclusions.insert(vashj->GetGUID());
 }
 
-// In phase 2, dots skip Enchanted Elementals and Elites and Striders that no tank holds.
+// In phase 2, DoTs skip Enchanted Elementals, plus any Elite or Strider no tank holds.
 void AppendLadyVashjPhase2DebuffExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
     Player* bot = botAI->GetBot();

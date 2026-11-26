@@ -800,8 +800,9 @@ bool LadyVashjShouldDestroyTaintedCoreTrigger::IsActiveInEncounter()
     return nextTainted && !nextTainted->IsAlive() && GetTaintedCoreLootSlot(nextTainted) >= 0;
 }
 
-// Pets are held in phase 2 only, so the trigger runs from then on (phase 3 to restore stances). A
-// pet left passive by its owner then doesn't run the action through all of phase 1.
+// Pets are held only in phase 2, so the trigger waits for it and keeps running in phase 3 to
+// restore stances. Without the phase 1 gate, a pet its owner set passive would count as wrong and
+// run the action all through phase 1.
 bool LadyVashjShouldManagePetAggressionTrigger::IsActiveInEncounter()
 {
     if (!HasControllableMinion(bot))
@@ -832,7 +833,7 @@ bool LadyVashjPetShouldSwitchTargetTrigger::IsActiveInEncounter()
     return target && pet->GetVictim() != target;
 }
 
-// Bots attacking Sporebats tend to walk up into the air, sometimes onto the ceiling pipes. I have
+// Bots attacking Sporebats tend to climb into the air, sometimes onto the ceiling pipes. I have
 // not been able to figure out what causes it, but this action prevents them from doing it.
 bool LadyVashjBotAboveTheGroundTrigger::IsActiveInEncounter()
 {
@@ -861,7 +862,7 @@ bool LadyVashjBotInToxicSporesTrigger::IsActiveInEncounter()
     return IsNearToxicSpores(botAI, radius);
 }
 
-// For "ring melee" (melee dps within 10 yd of a Toxic Spore pool, but only if not already in melee
+// For "ring melee" (melee DPS within 10 yd of a Toxic Spore pool, but only if not already in melee
 // range at a position that is >= 7.5 yd from every pool).
 bool LadyVashjMeleeNearToxicSporesTrigger::IsActiveInEncounter()
 {

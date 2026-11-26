@@ -125,8 +125,9 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     std::optional<uint32> const bossId = GetBossInProgress(bot, SSC_MAP_ID);
     if (!bossId)
     {
-        // Leotheras goes in progress only once something hostile hits him, which may not happen
-        // until his Spellbinders are dead, so hold near him on their pull too.
+        // Leotheras's boss state becomes IN_PROGRESS only once something hostile hits him, which
+        // may not happen until his Spellbinders are dead, so the hold also covers bots near him
+        // during their pull.
         if (bot->GetExactDist(LEOTHERAS_SPAWN_POSITION) > LEOTHERAS_SEARCH_DISTANCE)
             return 1.0f;
 
@@ -137,19 +138,19 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
-    // Leotheras by his grid search, like on the Spellbinder pull, rather than his threat list.
+    // Leotheras is found by his grid search, as on the Spellbinder pull, not his threat list.
     SscBosses const bossKey = static_cast<SscBosses>(*bossId);
     Unit* boss = bossKey == SscBosses::DATA_LEOTHERAS_THE_BLIND ?
         GetLeotheras(botAI) : GetSscBoss(bot, bossKey);
 
-    // If the boss cannot be found but the encounter is in progress, it is probably because the bot
-    // was rezzed and zone combat hasn't reapplied, so block cooldowns.
+    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
+    // on the boss's threat list yet, so hold cooldowns.
     if (!boss)
         return 0.0f;
 
     switch (bossKey)
     {
-        // Vashj: Bloodlust/Heroism are phase 3 only; other dps cooldowns can be used from phase 2.
+        // Vashj: Bloodlust/Heroism are phase 3 only; other DPS cooldowns can be used from phase 2.
         case SscBosses::DATA_LADY_VASHJ:
         {
             int8 const phase = GetLadyVashjPhase(boss);
@@ -166,14 +167,13 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
 
             break;
         }
-        // Karathress: Hold until Tidalvess, the first council member in the kill order, is under
-        // 95%.
+        // Karathress: Hold until Tidalvess, first in the kill order, is under 95%.
         case SscBosses::DATA_FATHOM_LORD_KARATHRESS:
         {
             Unit* tidalvess = GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_TIDALVESS);
             return tidalvess && tidalvess->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
-        // Lurker: No dps cooldowns while spouting or submerged.
+        // Lurker: No DPS cooldowns while spouting or submerged.
         case SscBosses::DATA_THE_LURKER_BELOW:
         {
             if (!IsLurkerSurfacedAndCalm(boss))
@@ -264,7 +264,7 @@ float HydrossTheUnstableDisablePhaseTankAssistMultiplier::GetValueInEncounter(Ac
     return IsHydrossPhaseTank(bot) ? 0.0f : 1.0f;
 }
 
-// Phase changes reset threat. Hold dps from 1s after Marks hit 100% until 5s post-phase change.
+// Phase changes reset threat. Hold DPS from 1s after Marks hit 100% until 5s post-phase change.
 float HydrossTheUnstableHoldDpsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsHoldCandidate(bot, action))
@@ -969,7 +969,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     if (isDropTarget)
         return 0.0f;
 
-    // Tanks and dps should not waste mana on healing in their non-combat engines.
+    // Tanks and DPS should not waste mana on healing in their non-combat engines.
     if (isHealSpell)
         return PlayerbotAI::IsHeal(bot) ? 1.0f : 0.0f;
 
@@ -980,7 +980,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
             !IsEnchantedElemental(AI_VALUE(Unit*, "current target")) ? 1.0f : 0.0f;
     }
 
-    // Ranged dps with a station slot attack from their assigned positions only, unless pursuing a
+    // Ranged DPS with a station slot attack from their assigned positions only, unless pursuing a
     // Tainted Elemental or stepping in to cast range of a Strider.
     if (PlayerbotAI::IsRangedDps(bot))
     {
@@ -1085,7 +1085,7 @@ float LadyVashjMeleeControlSporeAvoidanceMultiplier::GetValueInEncounter(Action*
     return IsNearToxicSpores(botAI, TOXIC_SPORES_MELEE_CONTROL_RADIUS) ? 0.0f : 1.0f;
 }
 
-// Use only the custom ranged dps and healer reach actions when a straight line to the target is
+// Use only the custom ranged DPS and healer reach actions when a straight line to the target is
 // not entirely clear of Toxic Spore pools.
 float LadyVashjRangedDoNotReachThroughSporesMultiplier::GetValueInEncounter(Action* action)
 {

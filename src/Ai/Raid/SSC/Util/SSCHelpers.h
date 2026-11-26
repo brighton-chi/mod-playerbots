@@ -169,8 +169,6 @@ inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
 
-// Karathress, being a council encounter, finds the bosses from a grid search (see
-// GetKarathressCouncilMember), while others read the bot's threat list.
 Unit* GetSscBoss(Player* bot, SscBosses boss);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
@@ -182,7 +180,7 @@ std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);
 
 // Trash
 
-// 25 yd radius + 1.95 yd player CombatReach
+// 25 yd radius plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust), rounded up.
 inline constexpr float TOXIC_POOL_HAZARD_RADIUS = 27.0f;
 inline constexpr float TOXIC_POOL_HOLDING_RADIUS = TOXIC_POOL_HAZARD_RADIUS + 5.0f;
 inline constexpr float TOXIC_POOL_SEARCH_RADIUS = TOXIC_POOL_HOLDING_RADIUS + 2.0f;
@@ -218,8 +216,6 @@ inline Position const HYDROSS_FROST_TANK_POSITION =    { -235.653f, -354.823f, -
 inline Position const HYDROSS_NATURE_TANK_POSITION =   { -224.721f, -324.755f, -3.682f };
 inline Position const HYDROSS_CLEANSING_FIELD_CENTER = { -239.715f, -366.440f, -0.745f };
 
-// The main tank holds Hydross in frost phase, the first assist tank in nature phase. Every other
-// tank is an add tank and picks up the Elementals that spawn upon phase changes.
 bool IsHydrossFrostTank(Player* bot);
 bool IsHydrossNatureTank(Player* bot);
 bool IsHydrossPhaseTank(Player* bot);
@@ -267,8 +263,6 @@ inline constexpr float LURKER_GUARDIAN_SEARCH_RADIUS = 100.0f;
 inline Position const LURKER_MAIN_TANK_POSITION = { 23.706f, -406.038f, -19.686f };
 inline Position const LURKER_SPAWN_POSITION = { 38.457f, -417.324f, -18.917f };
 
-// Lurker is passive during Spout: a 3s wind-up (37431), then a 16s spin aura, turning 0.1 rad every
-// 250ms (37429 counterclockwise or 37430 clockwise).
 bool IsLurkerSpouting(Unit* lurker);
 bool IsLurkerSurfacedAndCalm(Unit* lurker);
 int8 GetLurkerSpoutSpin(Unit* lurker);
@@ -289,9 +283,9 @@ inline constexpr EncounterHelpers::ClassRole LEOTHERAS_WARLOCK_TANK_ROLE = {
     .candidate = { "class_role_class_warlock", "Warlock" },
     .preferredCandidate = { "class_role_class_demonology_warlock", "Demonology Warlock" },
 };
-// 100 yards takes the raid to just around the column near the entrance to Leo's chamber.
+// 100 yd takes the raid to just around the column near the entrance to Leo's chamber.
 inline constexpr float LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
-// 150 yards is about the distance to the entrance to Leo's chamber. Beyond him, it extends past
+// 150 yd is about the distance to the entrance to Leo's chamber. Beyond him, it extends past
 // Karathress's spawn point.
 inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
@@ -326,7 +320,6 @@ enum class LeotherasDpsHoldWindow : uint8
     Final,
 };
 
-// Leotheras, his Shadow, and the Inner Demons.
 GuidVector FindLeotherasUnitGuids(Player* bot);
 Creature* GetLeotheras(PlayerbotAI* botAI);
 bool IsSpellbinderPhase(Unit* leotheras);
@@ -339,7 +332,6 @@ bool IsLeotherasFinalPhase(PlayerbotAI* botAI);
 Creature* GetLeotherasDemonOrShadow(PlayerbotAI* botAI);
 bool UpdateSscClassRoles(PlayerbotAI* botAI);
 bool UpdateLeotherasClassRoleAnnouncement(PlayerbotAI* botAI);
-// Demonology spec is preferred for the Leotheras Warlock tank.
 Player* GetLeotherasWarlockTank(Player* bot);
 bool IsLeotherasWarlockTank(Player* bot);
 bool IsLeotherasChannelingWhirlwind(Unit* leotheras);
@@ -347,13 +339,9 @@ Creature* GetLeotherasHumanoidToAvoid(PlayerbotAI* botAI);
 Unit* GetDemonTargetToAvoid(Player* bot, Unit* demon);
 Unit* GetChaosBlastTargetToAvoid(PlayerbotAI* botAI);
 Unit* GetShadowTargetToSeparateFrom(PlayerbotAI* botAI);
-// The hold window that is open, whatever the bot's role.
 LeotherasDpsHoldWindow GetLeotherasDpsHoldWindow(PlayerbotAI* botAI, Unit* leotheras);
 bool IsLeotherasDpsHoldActive(PlayerbotAI* botAI, Unit* leotheras);
-// Pets keep hitting through his threat resets, so every pet is held in every window, the Warlock
-// tank's included.
 bool IsLeotherasPetHoldActive(PlayerbotAI* botAI, Unit* leotheras);
-// Leotheras in the final phase outside a hold, so no pet is left on the Shadow.
 Unit* GetLeotherasPetTarget(PlayerbotAI* botAI, Creature* pet);
 bool HasTooManyChaosBlastStacks(Player* bot);
 bool HasInnerDemon(Player* bot);
@@ -374,12 +362,12 @@ inline constexpr std::array KARATHRESS_COUNCIL = {
     KarathressCouncilAssignment{ SscNpcs::NPC_FATHOM_GUARD_TIDALVESS, 2 },
 };
 
-// Around KARATHRESS_TANK_POSITION. The farthest tank position, Caribdis's, is 56 yd away.
+// Measured from Karathress's tank position. The farthest tank position, Caribdis's, is 56 yd away.
 inline constexpr float KARATHRESS_UNIT_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 KARATHRESS_UNIT_CACHE_INTERVAL_MS = 200;
 
 // Karathress gains Blessing of the Tides if he hits 75% HP with any Fathom-Guard still alive, so if
-// ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop dps.
+// ranged fail to kill Caribdis before he gets to this percent health, melee needs to stop DPS.
 inline constexpr float KARATHRESS_BLESSING_HOLD_HEALTH_PCT = 85.0f;
 // The widest tank AoE is Death and Decay at 10 yd.
 inline constexpr float KARATHRESS_AOE_THREAT_CLEARANCE = 15.0f;
@@ -395,7 +383,7 @@ inline constexpr float CARIBDIS_HEALER_MAX_DISTANCE = 35.0f;
 inline constexpr float CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS = 10.0f;
 inline constexpr float CARIBDIS_TIDAL_SURGE_CLEARANCE =
     CARIBDIS_TIDAL_SURGE_HAZARD_RADIUS + 2.0f;
-// Bots move toward Caribdis until she's in sight, and stop once within this distance of her.
+// Bots move toward Caribdis until she's in sight, but never closer than this.
 inline constexpr float CARIBDIS_APPROACH_STOP_DISTANCE = 5.0f;
 // Cyclones spawn on random players within 45 yd of Caribdis and pick up all players within 4 yd.
 inline constexpr float CARIBDIS_CYCLONE_SUMMON_RANGE = 45.0f;
@@ -409,33 +397,19 @@ inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f
 inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
 inline Position const TIDALVESS_TANK_POSITION =  { 521.833f, -503.329f, -13.158f };
 
-// Living council members, Sharkkis's pets, and Spitfire Totems. Sorted, so a reader that takes the
-// first of several pets keeps taking the same one.
 GuidVector FindKarathressUnitGuids(Player* bot);
-// A living council member, or null if it is dead or Karathress is not in progress.
 Unit* GetKarathressCouncilMember(Player* bot, SscNpcs npc);
 Creature* GetSpitfireTotem(PlayerbotAI* botAI);
 bool ShouldAttackSpitfireTotem(Player* bot, Unit* totem);
-// Sharkkis's tank picks up his pets too.
 Unit* GetSharkkisTankTarget(PlayerbotAI* botAI);
-// A Sporebat before a Lurker. Null if neither is up or Karathress is not in progress.
 Unit* GetSharkkisPet(Player* bot);
-// From Karathress's KARATHRESS_BLESSING_HOLD_HEALTH_PCT until Caribdis dies, whatever the bot's
-// role.
 bool IsKarathressBlessingHoldWindowActive(Player* bot);
-// The Blessing hold window, for non-healer melee other than the main tank.
 bool IsKarathressBlessingHoldActive(Player* bot);
-// The first KARATHRESS_DPS_HOLD_MS of the fight, regardless of the bot's role.
 bool IsKarathressStartHoldWindowActive(Player* bot);
-// The start hold window, for non-tanks.
 bool IsKarathressStartDpsHoldActive(Player* bot);
-// Either window, for every pet. A defensive pet would otherwise attack if its owner was hit.
 bool IsKarathressPetHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
-// Pets don't follow their owner's switches while their own target lives (AttackAction doesn't send
-// them), so they are sent to the owner's target. Nothing during the start hold, and not Karathress
-// while Caribdis lives with him under KARATHRESS_BLESSING_HOLD_HEALTH_PCT.
 Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet);
 
 // Morogrim Tidewalker
@@ -456,7 +430,6 @@ inline constexpr float TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE = 50.0f;
 inline Position const TIDEWALKER_PHASE_1_TANK_POSITION = { 410.925f, -741.916f, -7.146f };
 inline Position const TIDEWALKER_PHASE_2_TANK_POSITION = { 446.571f, -767.155f, -7.144f };
 
-// The stack point is directly across Tidewalker from his tank to keep it stable.
 Position GetTidewalkerStackPoint(Player& bot, Unit& tidewalker);
 
 // Lady Vashj <Coilfang Matron>
@@ -466,9 +439,9 @@ Position GetTidewalkerStackPoint(Player& bot, Unit& tidewalker);
 // The dais is a regular dodecagon, so the apothem for each side is identical.
 inline constexpr float VASHJ_DAIS_APOTHEM = 57.05f;
 inline constexpr float VASHJ_STAIR_BASE_APOTHEM = 90.19f;
-// This is the closest that Vashj's tank will come to the North rock (to keep Vashj from evading).
+// This is the closest that Vashj's tank will come to the north rock (to keep Vashj from evading).
 inline constexpr float VASHJ_NORTH_ROCK_CLEARANCE = 5.0f;
-// The minimum distance from the North rock for bots other than Vashj's tank.
+// The minimum distance from the north rock for bots other than Vashj's tank.
 inline constexpr float VASHJ_STANDING_ROCK_CLEARANCE = 2.0f;
 // Vashj follows her tank, so keeping the tank on the dais keeps her on it, but this is some slack.
 inline constexpr float VASHJ_DAIS_MARGIN = 1.0f;
@@ -496,10 +469,9 @@ inline constexpr float VASHJ_STATIC_CHARGE_HAZARD_RADIUS = 10.0f;
 inline constexpr float VASHJ_STATIC_CHARGE_CLEARANCE = VASHJ_STATIC_CHARGE_HAZARD_RADIUS + 1.0f;
 // Vashj's Entangle has a 15 yd range, so ranged bots stay at least this far back from her.
 inline constexpr float VASHJ_PHASE_3_RANGED_DISTANCE = 15.0f;
-// A step toward Vashj to get her in sight stops here, not at RANGED_DISTANCE. Path steps end a
-// little inside their stop distance so that a bot moving to a position always counts as arrived.
-// Here, the stop is a minimum to stay OUTSIDE, so that margin would leave the bot just inside it.
-// The extra half yard also covers path steps measuring in 3D, while the minimum is checked in 2D.
+// A step toward Vashj to get her in sight stops here, not at RANGED_DISTANCE: path steps stop a
+// little inside their stop distance, which would put the bot just inside Entangle's range. The
+// extra half yard also covers path steps measured in 3D against this 2D minimum.
 inline constexpr float VASHJ_PHASE_3_RANGED_STEP_STOP_DISTANCE =
     VASHJ_PHASE_3_RANGED_DISTANCE + 0.5f;
 inline constexpr float VASHJ_PHASE_3_RANGED_SPREAD_DISTANCE = 4.0f;
@@ -510,19 +482,18 @@ bool ShouldAvoidVashjStaticCharge(Player* bot, Unit* vashj);
 bool IsInVashjStaticChargeReach(Player* bot, Unit* vashj);
 Player* GetVashjHandOfFreedomTarget(PlayerbotAI* botAI, Unit* vashj);
 Player* GetVashjGroundingShaman(Player* bot);
-// Vashj's Shock Blast (38509) stuns her tank for 5s. It can be absorbed by Grounding Totem Effect,
-// but it is party only, so the totem must be placed by a Shaman in the main tank's subgroup.
 Player* FindVashjGroundingShaman(Player* bot);
 
 // Vashj: Toxic Spores
 
-inline constexpr float TOXIC_SPORES_HAZARD_RADIUS = 6.5f; // 5 yd + the target's combat reach
+// 5 yd plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust).
+inline constexpr float TOXIC_SPORES_HAZARD_RADIUS = 6.5f;
 inline constexpr float TOXIC_SPORES_AVOID_RADIUS = TOXIC_SPORES_HAZARD_RADIUS + 1.0f;
-// Vashj's tank has a greater avoidance radius to keep melee dps on the far side of Vashj clear
+// Vashj's tank has a greater avoidance radius to keep melee DPS on the far side of Vashj clear
 // as well. She is ~3.5 yd from the tank and melee ~3.75 yd past her (7.25 total + 0.25 slack).
 inline constexpr float TOXIC_SPORES_TANK_AVOID_RADIUS = TOXIC_SPORES_AVOID_RADIUS + 7.5f;
 inline constexpr float TOXIC_SPORES_SEARCH_RADIUS = 50.0f;
-// Melee dps that are this close to a toxic pool have their standard movement overriden by the
+// Melee DPS that are this close to a toxic pool have their standard movement overridden by the
 // melee spore action to keep them from running through pools to reach Vashj.
 inline constexpr float TOXIC_SPORES_MELEE_CONTROL_RADIUS = 10.0f;
 
@@ -541,7 +512,6 @@ bool IsVashjRingMelee(Player* bot, Unit* vashj);
 bool IsNearToxicSpores(PlayerbotAI* botAI, float radius);
 bool IsInMeleeRangeClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius);
-// If a bot has Divine Shield or Dispersion, it may walk through pools (but not stop in them).
 bool CanWalkThroughToxicSpores(Player* bot);
 bool GetMeleeRingStepClearOfSpores(
     Player* bot, Unit* target, std::vector<Position> const& spores, float radius, float& stepX,
@@ -566,7 +536,7 @@ struct VashjStation
     Position healer;
 };
 
-// A bot's station and its slot there: 0-2 for ranged dps, VASHJ_STATION_HEALER_SLOT for the healer.
+// A bot's station and its slot there: 0-2 for ranged DPS, VASHJ_STATION_HEALER_SLOT for the healer.
 struct VashjStationSlot
 {
     int8 station = -1;
@@ -574,7 +544,7 @@ struct VashjStationSlot
 };
 
 inline std::array const VASHJ_STATIONS = {
-    // Slots at -156, -178, and -134 degrees
+    // Slots at -156°, -178°, and -134°
     VashjStation{
         {
             Position{ -17.87f, -944.69f, 41.30f },
@@ -583,7 +553,7 @@ inline std::array const VASHJ_STATIONS = {
         },
         Position{ -6.91f, -939.81f, 41.65f },
     },
-    // Slots at 116, 102, and 130 degrees
+    // Slots at 116°, 102°, and 130°
     VashjStation{
         {
             Position{   6.84f, -876.80f, 41.30f },
@@ -592,7 +562,7 @@ inline std::array const VASHJ_STATIONS = {
         },
         Position{ 12.10f, -887.59f, 41.65f },
     },
-    // Slots at -68, -80, and -56 degrees
+    // Slots at -68°, -80°, and -56°
     VashjStation{
         {
             Position{  49.11f, -971.75f, 41.30f },
@@ -601,7 +571,7 @@ inline std::array const VASHJ_STATIONS = {
         },
         Position{ 44.62f, -960.63f, 41.65f },
     },
-    // Slots at 43, 37, and 49 degrees
+    // Slots at 43°, 37°, and 49°
     VashjStation{
         {
             Position{  67.66f, -888.08f, 41.30f },
@@ -613,8 +583,8 @@ inline std::array const VASHJ_STATIONS = {
 };
 
 inline constexpr size_t VASHJ_STATION_COUNT = VASHJ_STATIONS.size();
-// The Northeast station is filled first because it has the farthest potential run to a Tainted
-// Elemental (the spawn point just east of the North rock), so it is the first to get a 3rd dps.
+// The northeast station is filled first because it has the farthest potential run to a Tainted
+// Elemental (the spawn point just east of the north rock), so it is the first to get a 3rd DPS.
 inline constexpr std::array VASHJ_STATION_FILL_ORDER = {
     int8{ 2 }, int8{ 0 }, int8{ 1 }, int8{ 3 },
 };
@@ -627,8 +597,6 @@ bool IsLiveVashjStationHolder(Player* bot, ObjectGuid guid);
 bool HasVashjStationVacancy(Player* bot);
 VashjStationSlot GetVashjStationSlot(Player* bot);
 Position const* GetVashjStationPositionToReturnTo(Player* bot, Unit* currentTarget);
-// One subtlety: the Tainted Elemental spawn spot just east of the North rock is closest to the NW
-// station in a straight line, but NW is blocked by the rock, so the NE station gets it instead.
 int8 GetNearestVashjStation(Unit* unit);
 
 // Vashj: Adds and Target Priority
@@ -659,7 +627,7 @@ struct VashjTargetFacts
     float maxPursueRange = 0.0f;
     float maxSearchRange = 0.0f;
     float spellRange = 0.0f;
-    // Phase 2 ranged dps at stations shoot only what's in range of their slot, except the station
+    // Phase 2 ranged DPS at stations shoot only what's in range of their slot, except the station
     // sent after a Tainted Elemental.
     bool holdsStationSlot = false;
     // Phase 2: everyone but tanks leaves an Elite or Strider alone until a tank has it, so nobody
@@ -668,12 +636,12 @@ struct VashjTargetFacts
     // Tanks: one per Elite or Strider, so the others stay free for the next ones. A new one goes
     // to the nearest free tank.
     bool oneTankEach = false;
-    // The living Striders. Melee dps attack targets only outside their Panic radius.
+    // The living Striders. Melee DPS attack targets only outside their Panic radius.
     std::vector<Unit*> panicStriders;
 };
 
 inline constexpr uint32 VASHJ_ADDS_CACHE_INTERVAL_MS = 200;
-// Around the platform center. Enchanted Elementals spawn up to 93 yd away.
+// Measured from the platform center. Enchanted Elementals spawn up to 93 yd from it.
 inline constexpr float VASHJ_ADD_SEARCH_RADIUS = 100.0f;
 // Pets are sent only to Enchanted Elementals within this distance of their owner.
 inline constexpr float VASHJ_PET_ENCHANTED_MAX_DISTANCE = 100.0f;
@@ -739,21 +707,20 @@ inline std::vector<VashjTargetTier> const VASHJ_PHASE_3_MELEE_TIERS = {
     VashjTargetTier{ VashjTarget::LadyVashj },
 };
 
-// Each position is between two ranged stations, 16 yd+ from every station slot and healer post and
-// 18 yd+ from each generator.
+// Each position is between two ranged stations, at least 16 yd from every station slot and healer
+// post and at least 18 yd from each generator.
 inline std::array const VASHJ_STRIDER_HOLD_POSITIONS = {
     Position{ -6.0f, -913.5f, 41.9f },
     Position{  9.5f, -963.5f, 41.5f },
     Position{ 33.5f, -889.5f, 41.9f },
 };
-// Each position is in range of all three ranged dps slots of one ranged station and 18 yd+ from
-// every Strider holding position.
+// Each position is in range of all three ranged DPS slots of one ranged station and at least 18 yd
+// from every Strider holding position.
 inline std::array const VASHJ_ELITE_TANK_POSITIONS = {
     Position{ 57.0f, -913.0f, 42.0f },
     Position{  5.5f, -934.0f, 42.1f },
 };
 
-// Enchanted Elementals, Coilfang Elites and Striders, and Toxic Sporebats.
 GuidVector FindVashjAddGuids(Player* bot);
 GuidVector const& GetVashjAdds(Player* bot);
 std::vector<VashjTargetTier> const& GetVashjTargetTiers(Player* bot, int8 phase, bool killsTainted);
@@ -767,8 +734,6 @@ Position const& GetVashjStriderHoldPosition(Unit& strider);
 Position const& GetVashjEliteTankPosition(Unit& elite);
 bool ShouldPositionVashjStrider(Player* bot, Unit* strider, Unit* vashj, int8 phase);
 bool IsTankedStriderInStepInReach(Player* bot, Unit* unit);
-// Pets skip targets they're useless on: Vashj while she's immune in Phase 2, Striders (Panic fears
-// any pet in melee range), Sporebats (out of reach), and any target the pet can't attack.
 Unit* GetVashjPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* vashj);
 bool ShouldVashjPetsBePassive(PlayerbotAI* botAI, Unit* vashj);
 
@@ -798,7 +763,7 @@ struct VashjCoreCatcher
     Position spot;
     ObjectGuid bot = ObjectGuid::Empty;
     // The first catcher is released when the plan is made, the second when the first starts moving,
-    // each later one when the one before reaches its spot, delayed by readyDelay for realism.
+    // each later one when the one before reaches its position, delayed by readyDelay for realism.
     bool released = false;
     uint32 releaseTime = 0;
     uint32 readyDelay = 0;
@@ -826,7 +791,7 @@ struct VashjCorePassingChain
     uint32 throwTime = 0;
     uint8 failedThrows = 0;
     // The catcher the holder is waiting on, when that wait started, and when the catcher started
-    // standing on its spot but out of throw range.
+    // standing in its position but out of throw range.
     ObjectGuid waitTarget;
     uint32 waitStart = 0;
     uint32 blockedStart = 0;
@@ -850,8 +815,8 @@ inline constexpr float VASHJ_CORE_SPOT_GENERATOR_CLEARANCE = 5.0f;
 // Five players should be able to get from every Tainted Elemental spawn position to every
 // generator while following the passing rules (e.g., collision, distance from add lanes).
 inline constexpr size_t VASHJ_CORE_MAX_CATCHERS = 5;
-// A chain member needs to be within this distance of its calculated spot to be considered in
-// position. The use spot has less tolerance to ensure the bot is truly within use distance.
+// A chain member needs to be within this distance of its calculated position to be considered in
+// position. The use position has less tolerance to ensure the bot is truly within use distance.
 inline constexpr float VASHJ_CORE_SPOT_ARRIVAL_DISTANCE = 1.0f;
 inline constexpr float VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr std::array VASHJ_SHIELD_GENERATOR_SPAWN_IDS = {

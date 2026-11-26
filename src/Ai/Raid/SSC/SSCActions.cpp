@@ -381,7 +381,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     float const lurkerY = lurker->GetPositionY();
     float const lurkerZ = lurker->GetPositionZ();
 
-    // Lurker is spinning: Bots will not advance more than 30 degrees past directly behind the boss
+    // Lurker is spinning: Bots will not advance more than 30° past directly behind the boss
     // because bots are smart and can otherwise lap the spin with Sprint/Spirit Walk.
     if (int8 const spin = GetLurkerSpoutSpin(lurker))
     {
@@ -421,7 +421,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
     }
 
     // Lurker is winding-up, and the bot is in front of it: make one far move to the nearer arc
-    // edge, at a lower movement priority than the run during the spin so this can be overriden.
+    // edge, at a lower movement priority than the run during the spin so this can be overridden.
     int8 const direction = relative < pi ? 1 : -1;
     float const edgeAngle =
         lurker->GetOrientation() + pi - direction * LURKER_SPOUT_RUN_ARC_HALF_WIDTH;
@@ -965,8 +965,8 @@ bool LeotherasTheBlindManageDpsHoldTimersAction::Execute(Event /*event*/)
     return changed;
 }
 
-// Whirlwind resets threat on every tick. Hold dps for a moment after it ends. But do not hold
-// dps while Whirlwind is active.
+// Whirlwind resets threat on every tick. Hold DPS for a moment after it ends. But do not hold
+// DPS while Whirlwind is active.
 bool LeotherasTheBlindManageDpsHoldTimersAction::TrackWhirlwindEnd(
     Unit* leotheras, std::optional<uint32>& whirlwindEnd, uint32 now)
 {
@@ -1322,7 +1322,7 @@ bool MorogrimTidewalkerPositionMainTankAction::Execute(Event /*event*/)
     return MoveToPhase2TankPosition(tidewalker);
 }
 
-// Phase 1: Position up against the Northeast pillar.
+// Phase 1: Position up against the northeast pillar.
 bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase1TankPosition(Unit* tidewalker)
 {
     constexpr float arrivalDist = 1.0f;
@@ -1341,7 +1341,7 @@ bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase1TankPosition(Unit* ti
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Phase 2: Move around the pillar and back up into the Northeast corner to get max distance from
+// Phase 2: Move around the pillar and back up into the northeast corner to get max distance from
 // the Water Globules.
 bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* tidewalker)
 {
@@ -1370,7 +1370,7 @@ bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* ti
         MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
-// Ranged stack behind the boss in the Northeast corner in phase 2. Melee do this automatically.
+// Ranged stack behind the boss in the northeast corner in phase 2. Melee do this automatically.
 bool MorogrimTidewalkerStackRangedBehindBossAction::Execute(Event /*event*/)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
@@ -1486,7 +1486,7 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
             tooClose = true;
     }
 
-    // Panic fears within 11 yd, so this tries to keep melee dps behind Vashj out of range as well.
+    // Panic fears within 11 yd, so this tries to keep melee DPS behind Vashj out of range as well.
     constexpr float striderSafeDistance = 18.0f;
     for (ObjectGuid const& guid : adds)
     {
@@ -2341,7 +2341,7 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
         return false;
     }
 
-    // Throw Key (38134) throws the Core when used and has a 40 yd range (3D edge-to-edge).
+    // Throw Key (38134) throws the Core when used and has a 40 yd range (3D, edge to edge).
     constexpr float throwKeyRange = 40.0f;
     if (bot->GetDistance(player) > throwKeyRange || !bot->IsWithinLOSInMap(player))
     {
@@ -2465,7 +2465,7 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     std::vector<Position> const& spores = GetToxicSporePositions(botAI);
     bool const isTanking = vashj->GetVictim() == bot;
 
-    // Breakout = the tank is pinned in and has to run through Toxic Spores to get to a safe spot.
+    // Breakout = the tank is pinned in and must run through Toxic Spores to reach a safe position.
     if (_hasBreakoutSpot)
     {
         constexpr uint32 maxBreakoutMs = 12 * IN_MILLISECONDS;
@@ -2557,8 +2557,8 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
         MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
-// Melee dps stay in reach at the nearest angle that isn't covered by a pool. If all angles are
-// covered, stay back. If there is no safe path, walk straight out from the nearest pool.
+// Melee DPS stay in reach at the nearest angle that isn't covered by a pool. If all angles are
+// covered, stay back. If there is no safe path, move straight out from the nearest pool.
 bool LadyVashjMeleeMoveAroundToxicSporesAction::Execute(Event event)
 {
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
