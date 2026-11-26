@@ -430,7 +430,7 @@ bool TryGetFelmystFogOfCorruptionStageState(Unit* felmyst, FogOfCorruptionState&
     return true;
 }
 
-bool TryFindSpotPastFogThreshold(
+bool TryFindPositionPastFogThreshold(
     Player* bot, FogLane lane, Position const& projectFrom, Position& destination)
 {
     if (lane == FogLane::None)
@@ -1076,7 +1076,7 @@ bool TryGetFelmystLandingApproachDestination(
     Position const projectFrom(
         felmyst->GetPositionX(), felmyst->GetPositionY(), felmyst->GetPositionZ());
 
-    return TryFindSpotPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
+    return TryFindPositionPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
 }
 
 bool IsFelmystLandingHoldWindowActive(Player* bot)

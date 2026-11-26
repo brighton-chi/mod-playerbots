@@ -618,7 +618,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToCoreSpot(SscHelpers::VashjCorePassingChain& chain, int8 index);
+    bool MoveToCorePosition(SscHelpers::VashjCorePassingChain& chain, int8 index);
     bool ThrowCore(
         SscHelpers::VashjCorePassingChain& chain, size_t next, Item* core, GameObject* generator);
     bool UseCoreOnGenerator(Item* core, GameObject* generator);
@@ -669,9 +669,9 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool StepTowardBreakoutSpot(Unit* vashj);
-    Position _breakoutSpot;
-    bool _hasBreakoutSpot = false;
+    bool StepTowardBreakoutPosition(Unit* vashj);
+    Position _breakoutPosition;
+    bool _hasBreakoutPosition = false;
     uint32 _breakoutStartTime = 0;
 };
 

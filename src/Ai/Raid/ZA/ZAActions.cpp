@@ -254,7 +254,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
     float stepY;
     float stepZ;
     if (!FindSafeStepInJanalaiZone(
-            bot, bombs, JANALAI_SAFE_ZONE, JANALAI_FIRE_BOMB_SAFE_SPOT_SEARCH_RADIUS,
+            bot, bombs, JANALAI_SAFE_ZONE, JANALAI_FIRE_BOMB_SAFE_POSITION_SEARCH_RADIUS,
             JANALAI_FIRE_BOMB_CLEARANCE, moveDist, stepX, stepY, stepZ))
     {
         return false;

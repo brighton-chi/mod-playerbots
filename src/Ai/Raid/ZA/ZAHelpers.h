@@ -161,7 +161,7 @@ inline constexpr float JANALAI_RANGED_SPREAD_RADIUS = 15.0f;
 // Measured from Jan'alai's tank position, where he teleports for each Fire Bomb event. All bombs
 // and the Fire Wall are within 34 yd of it.
 inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 40.0f;
-inline constexpr float JANALAI_FIRE_BOMB_SAFE_SPOT_SEARCH_RADIUS = 30.0f;
+inline constexpr float JANALAI_FIRE_BOMB_SAFE_POSITION_SEARCH_RADIUS = 30.0f;
 // Fire Bomb (42630) has a 4 yd radius. The 1.5 yd extra padding is added for realism.
 inline constexpr float JANALAI_FIRE_BOMB_HAZARD_RADIUS = 4.0f;
 inline constexpr float JANALAI_FIRE_BOMB_CLEARANCE = JANALAI_FIRE_BOMB_HAZARD_RADIUS + 1.5f;
@@ -261,7 +261,7 @@ inline constexpr float ZULJIN_DRAGONHAWK_RANGED_SPREAD_DISTANCE = 6.0f;
 inline Position const ZULJIN_TANK_POSITION = { 120.210f, 705.564f, 45.111f };
 
 // Ranged are ordered by healers first. The healer positions are centered at (1) the bottom of the
-// stairs leading to Zul'jin's starting spot and (2) the top of the stairs leading to his battle
+// stairs leading to Zul'jin's starting position and (2) the top of the stairs leading to his battle
 // area. The intent is to allow each healer to reach every other bot's position (accordingly, every
 // position is within 39 yd of both healer positions).
 inline std::array<Position, 8> const ZULJIN_SPREAD_POSITIONS = {{

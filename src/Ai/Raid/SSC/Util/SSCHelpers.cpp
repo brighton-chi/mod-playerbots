@@ -1423,7 +1423,7 @@ float GetVashjGroundZ(Map* map, uint32 phaseMask, float x, float y)
     return map->GetHeight(phaseMask, x, y, slopeZ + searchAbove, true, maxSearch);
 }
 
-bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
+bool IsVashjCorePositionClear(float x, float y, bool usePosition)
 {
     constexpr float stairBaseMargin = 2.0f;
     if (GetVashjEdgeNormalDistance(x, y) > VASHJ_STAIR_BASE_APOTHEM - stairBaseMargin)
@@ -1439,15 +1439,15 @@ bool IsVashjCoreSpotClear(float x, float y, bool useSpot)
 
     for (Position const& spawn : VASHJ_ADD_SPAWN_POSITIONS)
     {
-        if (spawn.GetExactDist2d(x, y) < VASHJ_CORE_SPOT_SPAWN_CLEARANCE)
+        if (spawn.GetExactDist2d(x, y) < VASHJ_CORE_POSITION_SPAWN_CLEARANCE)
             return false;
     }
 
-    if (!useSpot)
+    if (!usePosition)
     {
         for (Position const& generator : VASHJ_SHIELD_GENERATOR_POSITIONS)
         {
-            if (generator.GetExactDist2d(x, y) < VASHJ_CORE_SPOT_GENERATOR_CLEARANCE)
+            if (generator.GetExactDist2d(x, y) < VASHJ_CORE_POSITION_GENERATOR_CLEARANCE)
                 return false;
         }
     }
@@ -1464,10 +1464,11 @@ bool IsVashjCoreThrowInSight(
         phaseMask, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
 }
 
-bool FindVashjGeneratorUseSpot(GameObject* generator, uint32 phaseMask, float angle, Position& spot)
+bool FindVashjGeneratorUsePosition(
+    GameObject* generator, uint32 phaseMask, float angle, Position& position)
 {
-    constexpr float useSpotMargin = 0.5f;
-    float const useRange = generator->GetInteractionDistance() - useSpotMargin; // 4.5 yd
+    constexpr float usePositionMargin = 0.5f;
+    float const useRange = generator->GetInteractionDistance() - usePositionMargin; // 4.5 yd
     constexpr float stepLength = 0.25f;
     constexpr int steps = 48;
 
@@ -1476,7 +1477,7 @@ bool FindVashjGeneratorUseSpot(GameObject* generator, uint32 phaseMask, float an
         float const reach = step * stepLength;
         float const x = generator->GetPositionX() + std::cos(angle) * reach;
         float const y = generator->GetPositionY() + std::sin(angle) * reach;
-        if (!IsVashjCoreSpotClear(x, y, true))
+        if (!IsVashjCorePositionClear(x, y, true))
             continue;
 
         float const z = GetVashjGroundZ(generator->GetMap(), phaseMask, x, y);
@@ -1486,7 +1487,7 @@ bool FindVashjGeneratorUseSpot(GameObject* generator, uint32 phaseMask, float an
         Position const candidate(x, y, z);
         if (generator->IsAtInteractDistance(candidate, useRange))
         {
-            spot = candidate;
+            position = candidate;
             return true;
         }
     }
@@ -1495,20 +1496,20 @@ bool FindVashjGeneratorUseSpot(GameObject* generator, uint32 phaseMask, float an
 }
 
 bool PlanVashjCoreLegs(
-    Map* map, uint32 phaseMask, std::vector<Position> const& useSpots, Position const& from,
-    float leg, float fromEyeHeight, std::vector<Position>& spots)
+    Map* map, uint32 phaseMask, std::vector<Position> const& usePositions, Position const& from,
+    float leg, float fromEyeHeight, std::vector<Position>& positions)
 {
-    for (Position const& useSpot : useSpots)
+    for (Position const& usePosition : usePositions)
     {
-        if (from.GetExactDist(useSpot) <= leg &&
-            IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, useSpot))
+        if (from.GetExactDist(usePosition) <= leg &&
+            IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, usePosition))
         {
-            spots.push_back(useSpot);
+            positions.push_back(usePosition);
             return true;
         }
     }
 
-    if (spots.size() + 2 > VASHJ_CORE_MAX_CATCHERS)
+    if (positions.size() + 2 > VASHJ_CORE_MAX_CATCHERS)
         return false;
 
     constexpr float minGain = 5.0f;
@@ -1517,7 +1518,7 @@ bool PlanVashjCoreLegs(
     constexpr int angles = 6;
     constexpr float angleStep = static_cast<float>(M_PI) / 18.0f;
 
-    Position const& aim = useSpots.front();
+    Position const& aim = usePositions.front();
     float const toAim = from.GetAngle(&aim);
     float const maxDistance = from.GetExactDist2d(aim) - minGain;
     std::vector<std::pair<float, Position>> candidates;
@@ -1539,7 +1540,7 @@ bool PlanVashjCoreLegs(
                 float const x = from.GetPositionX() + std::cos(angle) * reach;
                 float const y = from.GetPositionY() + std::sin(angle) * reach;
                 float const distance = aim.GetExactDist2d(x, y);
-                if (distance >= maxDistance || !IsVashjCoreSpotClear(x, y, false))
+                if (distance >= maxDistance || !IsVashjCorePositionClear(x, y, false))
                     continue;
 
                 float const z = GetVashjGroundZ(map, phaseMask, x, y);
@@ -1564,14 +1565,15 @@ bool PlanVashjCoreLegs(
         if (!IsVashjCoreThrowInSight(map, phaseMask, from, fromEyeHeight, candidate))
             continue;
 
-        spots.push_back(candidate);
-        if (PlanVashjCoreLegs(map, phaseMask, useSpots, candidate, VASHJ_CORE_THROW_PLAN_DISTANCE,
-                VASHJ_CORE_PLAN_EYE_HEIGHT, spots))
+        positions.push_back(candidate);
+        if (PlanVashjCoreLegs(
+                map, phaseMask, usePositions, candidate, VASHJ_CORE_THROW_PLAN_DISTANCE,
+                VASHJ_CORE_PLAN_EYE_HEIGHT, positions))
         {
             return true;
         }
 
-        spots.pop_back();
+        positions.pop_back();
         if (++followed == branches)
             break;
     }
@@ -1579,7 +1581,7 @@ bool PlanVashjCoreLegs(
     return false;
 }
 
-std::vector<Position> PlanVashjCoreSpots(
+std::vector<Position> PlanVashjCorePositions(
     Player* bot, GameObject* generator, Position const& origin, float firstLeg,
     float originEyeHeight)
 {
@@ -1588,7 +1590,7 @@ std::vector<Position> PlanVashjCoreSpots(
     constexpr int useAngles = 6;
     constexpr float useAngleStep = static_cast<float>(M_PI) / 12.0f;
     float const toOrigin = generator->GetAngle(&origin);
-    std::vector<Position> useSpots;
+    std::vector<Position> usePositions;
     for (int i = 0; i <= useAngles; ++i)
     {
         for (int sign : { 1, -1 })
@@ -1596,26 +1598,26 @@ std::vector<Position> PlanVashjCoreSpots(
             if (i == 0 && sign < 0)
                 continue;
 
-            Position spot;
+            Position position;
             float const angle = toOrigin + sign * i * useAngleStep;
-            if (FindVashjGeneratorUseSpot(generator, phaseMask, angle, spot))
-                useSpots.push_back(spot);
+            if (FindVashjGeneratorUsePosition(generator, phaseMask, angle, position))
+                usePositions.push_back(position);
         }
     }
 
-    std::vector<Position> spots;
-    if (useSpots.empty() || !PlanVashjCoreLegs(bot->GetMap(), phaseMask, useSpots, origin,
-            firstLeg, originEyeHeight, spots))
+    std::vector<Position> positions;
+    if (usePositions.empty() || !PlanVashjCoreLegs(bot->GetMap(), phaseMask, usePositions, origin,
+            firstLeg, originEyeHeight, positions))
     {
         return {};
     }
 
-    return spots;
+    return positions;
 }
 
 GameObject* PlanVashjCoreRoute(
     Player* bot, Position const& origin, float firstLeg, float originEyeHeight,
-    ObjectGuid preferred, std::vector<Position>& spots)
+    ObjectGuid preferred, std::vector<Position>& positions)
 {
     std::vector<GameObject*> generators = GetUsableVashjGenerators(bot->GetMap());
     std::sort(generators.begin(), generators.end(), [&](GameObject* a, GameObject* b)
@@ -1629,8 +1631,8 @@ GameObject* PlanVashjCoreRoute(
 
     for (GameObject* generator : generators)
     {
-        spots = PlanVashjCoreSpots(bot, generator, origin, firstLeg, originEyeHeight);
-        if (!spots.empty())
+        positions = PlanVashjCorePositions(bot, generator, origin, firstLeg, originEyeHeight);
+        if (!positions.empty())
             return generator;
     }
 
@@ -1638,7 +1640,7 @@ GameObject* PlanVashjCoreRoute(
 }
 
 Player* FindVashjCoreCatcher(
-    Player* bot, VashjCorePassingChain const& chain, Position const& spot, bool attackersOnly,
+    Player* bot, VashjCorePassingChain const& chain, Position const& position, bool attackersOnly,
     ObjectGuid excluded)
 {
     Group* group = bot->GetGroup();
@@ -1662,7 +1664,7 @@ Player* FindVashjCoreCatcher(
             continue;
         }
 
-        float const distance = member->GetExactDist2d(spot);
+        float const distance = member->GetExactDist2d(position);
         if (distance >= nearestDistance ||
             (attackersOnly && !GetTaintedElementalToKill(member)) || HasTaintedCore(member))
         {
@@ -1693,9 +1695,9 @@ void AssignVashjCoreCatchers(Player* bot, VashjCorePassingChain& chain)
         return;
 
     VashjCoreCatcher& first = chain.catchers.front();
-    Player* player = FindVashjCoreCatcher(bot, chain, first.spot, true, ObjectGuid::Empty);
+    Player* player = FindVashjCoreCatcher(bot, chain, first.position, true, ObjectGuid::Empty);
     if (!player)
-        player = FindVashjCoreCatcher(bot, chain, first.spot, false, ObjectGuid::Empty);
+        player = FindVashjCoreCatcher(bot, chain, first.position, false, ObjectGuid::Empty);
 
     SetVashjCoreCatcher(first, player);
     first.released = true;
@@ -2002,8 +2004,8 @@ bool FindVashjDaisStepAwayFromUnits(
         sporeRadius);
 }
 
-bool FindVashjTankBreakoutSpot(
-    Player* bot, std::vector<Position> const& spores, Position& spot)
+bool FindVashjTankBreakoutPosition(
+    Player* bot, std::vector<Position> const& spores, Position& position)
 {
     constexpr uint8 directions = 24;
     constexpr uint8 rings = 7;
@@ -2049,7 +2051,7 @@ bool FindVashjTankBreakoutSpot(
             if (cost < bestCost)
             {
                 bestCost = cost;
-                spot = candidate;
+                position = candidate;
                 found = true;
             }
         }
@@ -2552,21 +2554,21 @@ bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase)
 }
 
 bool GetStepToBringTankedUnitTo(
-    Player* bot, Unit* add, Position const& spot, float arrivalDistance, float& stepX, float& stepY,
-    bool& backwards)
+    Player* bot, Unit* add, Position const& position, float arrivalDistance, float& stepX,
+    float& stepY, bool& backwards)
 {
     if (!add)
         return false;
 
-    float const addDistance = add->GetExactDist2d(spot);
+    float const addDistance = add->GetExactDist2d(position);
     if (addDistance <= arrivalDistance)
         return false;
 
     float const lead = bot->GetExactDist2d(add) / addDistance;
     Position const destination(
-        spot.GetPositionX() + (spot.GetPositionX() - add->GetPositionX()) * lead,
-        spot.GetPositionY() + (spot.GetPositionY() - add->GetPositionY()) * lead,
-        spot.GetPositionZ());
+        position.GetPositionX() + (position.GetPositionX() - add->GetPositionX()) * lead,
+        position.GetPositionY() + (position.GetPositionY() - add->GetPositionY()) * lead,
+        position.GetPositionZ());
 
     return GetStepToPosition(bot, destination, arrivalDistance, add, stepX, stepY, backwards);
 }
@@ -2794,14 +2796,14 @@ void PlanVashjCorePassingChain(Player* bot, Unit* tainted, Player* looter)
     chain.tainted = tainted->GetGUID();
     chain.originBot = looter->GetGUID();
 
-    std::vector<Position> spots;
+    std::vector<Position> positions;
     if (GameObject* generator = PlanVashjCoreRoute(bot, tainted->GetPosition(),
             VASHJ_CORE_THROW_PLAN_DISTANCE - VASHJ_CORE_LOOTER_OFFSET, VASHJ_CORE_PLAN_EYE_HEIGHT,
-            ObjectGuid::Empty, spots))
+            ObjectGuid::Empty, positions))
     {
         chain.generator = generator->GetGUID();
-        for (Position const& spot : spots)
-            chain.catchers.push_back(VashjCoreCatcher{ spot });
+        for (Position const& position : positions)
+            chain.catchers.push_back(VashjCoreCatcher{ position });
     }
 
     AssignVashjCoreCatchers(bot, chain);
@@ -2821,13 +2823,14 @@ bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, O
     chain.catchers.clear();
     ResetVashjCoreThrows(chain);
 
-    std::vector<Position> spots;
-    if (GameObject* generator = PlanVashjCoreRoute(holder, holder->GetPosition(),
-            VASHJ_CORE_THROW_PLAN_DISTANCE, holder->GetCollisionHeight(), chain.generator, spots))
+    std::vector<Position> positions;
+    if (GameObject* generator = PlanVashjCoreRoute(
+            holder, holder->GetPosition(), VASHJ_CORE_THROW_PLAN_DISTANCE,
+            holder->GetCollisionHeight(), chain.generator, positions))
     {
         chain.generator = generator->GetGUID();
-        for (Position const& spot : spots)
-            chain.catchers.push_back(VashjCoreCatcher{ spot });
+        for (Position const& position : positions)
+            chain.catchers.push_back(VashjCoreCatcher{ position });
     }
 
     chain.failed = chain.catchers.empty();
@@ -2840,7 +2843,7 @@ bool ReplanVashjCorePassingChain(Player* holder, VashjCorePassingChain& chain, O
 bool ReassignVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t index)
 {
     VashjCoreCatcher& catcher = chain.catchers[index];
-    Player* player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, catcher.bot);
+    Player* player = FindVashjCoreCatcher(bot, chain, catcher.position, false, catcher.bot);
 
     chain.waitTarget.Clear();
     chain.blockedStart = 0;
@@ -2857,7 +2860,7 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t i
     if (catcher.released)
         return;
 
-    Player* player = FindVashjCoreCatcher(bot, chain, catcher.spot, false, ObjectGuid::Empty);
+    Player* player = FindVashjCoreCatcher(bot, chain, catcher.position, false, ObjectGuid::Empty);
     SetVashjCoreCatcher(catcher, player);
     catcher.released = true;
 }
@@ -2899,10 +2902,10 @@ bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, i
     return IsVashjCorePassingChainLive(bot, chain);
 }
 
-float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index)
+float GetVashjCorePositionArrivalDistance(VashjCorePassingChain const& chain, int8 index)
 {
     return static_cast<size_t>(index) + 1 == chain.catchers.size() ?
-        VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE : VASHJ_CORE_SPOT_ARRIVAL_DISTANCE;
+        VASHJ_CORE_USE_POSITION_ARRIVAL_DISTANCE : VASHJ_CORE_POSITION_ARRIVAL_DISTANCE;
 }
 
 // Shared encounter state

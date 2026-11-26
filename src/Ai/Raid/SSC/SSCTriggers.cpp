@@ -771,7 +771,7 @@ bool LadyVashjCorePassingChainMemberTrigger::IsActiveInEncounter()
 
     VashjCoreCatcher const& catcher = chain->catchers[index];
     if (catcher.arrived &&
-        bot->GetExactDist2d(catcher.spot) <= GetVashjCoreSpotArrivalDistance(*chain, index))
+        bot->GetExactDist2d(catcher.position) <= GetVashjCorePositionArrivalDistance(*chain, index))
     {
         return false;
     }

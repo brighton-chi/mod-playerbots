@@ -2245,7 +2245,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     Item* core =
         HasTaintedCore(bot) ? bot->GetItemByEntry(Id(SscItems::ITEM_TAINTED_CORE)) : nullptr;
     if (!core)
-        return index >= 0 && MoveToCoreSpot(*chain, index);
+        return index >= 0 && MoveToCorePosition(*chain, index);
 
     GameObject* generator = botAI->GetGameObject(chain->generator);
 
@@ -2271,18 +2271,18 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     return ThrowCore(*chain, next, core, generator);
 }
 
-bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCorePassingChain& chain, int8 index)
+bool LadyVashjPassTheTaintedCoreAction::MoveToCorePosition(VashjCorePassingChain& chain, int8 index)
 {
     size_t const next = static_cast<size_t>(index + 1);
     bool const last = next == chain.catchers.size();
-    float const arrival = GetVashjCoreSpotArrivalDistance(chain, index);
+    float const arrival = GetVashjCorePositionArrivalDistance(chain, index);
     VashjCoreCatcher& catcher = chain.catchers[index];
 
     // The second catcher is picked and moves to position simultaneously with the first.
     if (index == 0 && !last)
         ReleaseVashjCoreCatcher(bot, chain, next);
 
-    if (bot->GetExactDist2d(catcher.spot) <= arrival)
+    if (bot->GetExactDist2d(catcher.position) <= arrival)
     {
         // Any third catcher (or later) does not move until the prior catcher is in position. This
         // is just to try to preserve some realism.
@@ -2296,11 +2296,11 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCoreSpot(VashjCorePassingChain& ch
         return false;
     }
 
-    Position const& spot = catcher.spot;
+    Position const& position = catcher.position;
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardPoint(bot, spot, arrival / 2.0f, PATH_STEP_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardPoint(bot, position, arrival / 2.0f, PATH_STEP_DISTANCE, stepX, stepY))
         return false;
 
     return MoveTo(
@@ -2328,11 +2328,11 @@ bool LadyVashjPassTheTaintedCoreAction::ThrowCore(
     }
 
     bool const last = next + 1 == chain.catchers.size();
-    constexpr float onSpotDistance = 1.5f;
-    bool const onSpot = last ?
+    constexpr float atPositionDistance = 1.5f;
+    bool const atPosition = last ?
         generator->IsAtInteractDistance(*player, generator->GetInteractionDistance()) :
-        player->GetExactDist2d(catcher.spot) <= onSpotDistance;
-    if (!onSpot)
+        player->GetExactDist2d(catcher.position) <= atPositionDistance;
+    if (!atPosition)
     {
         constexpr uint32 lateMs = 10 * IN_MILLISECONDS;
         if (getMSTimeDiff(chain.waitStart, now) > lateMs)
@@ -2466,17 +2466,17 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
     bool const isTanking = vashj->GetVictim() == bot;
 
     // Breakout = the tank is pinned in and must run through Toxic Spores to reach a safe position.
-    if (_hasBreakoutSpot)
+    if (_hasBreakoutPosition)
     {
         constexpr uint32 maxBreakoutMs = 12 * IN_MILLISECONDS;
-        _hasBreakoutSpot = isTanking &&
+        _hasBreakoutPosition = isTanking &&
             getMSTimeDiff(_breakoutStartTime, getMSTime()) < maxBreakoutMs &&
             std::none_of(spores.begin(), spores.end(), [this](Position const& spore)
             {
-                return spore.GetExactDist2d(_breakoutSpot) < TOXIC_SPORES_TANK_AVOID_RADIUS;
+                return spore.GetExactDist2d(_breakoutPosition) < TOXIC_SPORES_TANK_AVOID_RADIUS;
             });
 
-        if (_hasBreakoutSpot && StepTowardBreakoutSpot(vashj))
+        if (_hasBreakoutPosition && StepTowardBreakoutPosition(vashj))
             return true;
     }
 
@@ -2505,11 +2505,11 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         }
     }
 
-    if (!found && isTanking && FindVashjTankBreakoutSpot(bot, spores, _breakoutSpot))
+    if (!found && isTanking && FindVashjTankBreakoutPosition(bot, spores, _breakoutPosition))
     {
-        _hasBreakoutSpot = true;
+        _hasBreakoutPosition = true;
         _breakoutStartTime = getMSTime();
-        return StepTowardBreakoutSpot(vashj);
+        return StepTowardBreakoutPosition(vashj);
     }
 
     if (!found)
@@ -2522,21 +2522,21 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
         SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
-bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
+bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutPosition(Unit* vashj)
 {
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
-    float const distance = bot->GetExactDist2d(_breakoutSpot);
+    float const distance = bot->GetExactDist2d(_breakoutPosition);
 
     constexpr float arrivalDistance = 1.5f;
     if (distance <= arrivalDistance)
     {
-        _hasBreakoutSpot = false;
+        _hasBreakoutPosition = false;
         return false;
     }
 
-    float const dirX = (_breakoutSpot.GetPositionX() - botX) / distance;
-    float const dirY = (_breakoutSpot.GetPositionY() - botY) / distance;
+    float const dirX = (_breakoutPosition.GetPositionX() - botX) / distance;
+    float const dirY = (_breakoutPosition.GetPositionY() - botY) / distance;
     bool const backwards = dirX * (vashj->GetPositionX() - botX) +
         dirY * (vashj->GetPositionY() - botY) < 0.0f;
     float const moveDist = backwards ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
@@ -2545,10 +2545,10 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutSpot(Unit* vashj)
     float stepY;
     float stepZ;
     if (!CanTakeStepTowards(
-            bot, _breakoutSpot.GetPositionX(), _breakoutSpot.GetPositionY(), moveDist, stepX,
-            stepY, stepZ))
+            bot, _breakoutPosition.GetPositionX(), _breakoutPosition.GetPositionY(), moveDist,
+            stepX, stepY, stepZ))
     {
-        _hasBreakoutSpot = false;
+        _hasBreakoutPosition = false;
         return false;
     }
 

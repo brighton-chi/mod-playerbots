@@ -385,9 +385,9 @@ float TheLurkerBelowMeleeWaitToSetBehindMultiplier::GetValueInEncounter(Action* 
     if (AI_VALUE(Unit*, "current target") != lurker)
         return 1.0f;
 
-    constexpr float tankSpotTolerance = 3.0f;
+    constexpr float tankPositionTolerance = 3.0f;
     Unit* victim = lurker->GetVictim();
-    return victim && victim->GetExactDist2d(LURKER_MAIN_TANK_POSITION) <= tankSpotTolerance ?
+    return victim && victim->GetExactDist2d(LURKER_MAIN_TANK_POSITION) <= tankPositionTolerance ?
         1.0f : 0.0f;
 }
 

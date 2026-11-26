@@ -506,8 +506,8 @@ bool FindVashjDaisStepAwayFromUnits(
     Player* bot, std::vector<Unit*> const& units, Unit* facing, float rockClearance,
     float& stepX, float& stepY, float& stepZ, bool& backwards,
     std::vector<Position> const* spores = nullptr, float sporeRadius = TOXIC_SPORES_AVOID_RADIUS);
-bool FindVashjTankBreakoutSpot(
-    Player* bot, std::vector<Position> const& spores, Position& spot);
+bool FindVashjTankBreakoutPosition(
+    Player* bot, std::vector<Position> const& spores, Position& position);
 bool IsVashjRingMelee(Player* bot, Unit* vashj);
 bool IsNearToxicSpores(PlayerbotAI* botAI, float radius);
 bool IsInMeleeRangeClearOfSpores(
@@ -728,7 +728,7 @@ bool IsVashjAddHeldByTank(Unit* unit);
 Player* GetVashjAddOwningTank(Player* bot, Unit* add);
 bool IsNearestFreeVashjTank(Player* bot, Unit* add, Unit* vashj, int8 phase);
 bool GetStepToBringTankedUnitTo(
-    Player* bot, Unit* add, Position const& spot, float arrivalDistance, float& stepX,
+    Player* bot, Unit* add, Position const& position, float arrivalDistance, float& stepX,
     float& stepY, bool& backwards);
 Position const& GetVashjStriderHoldPosition(Unit& strider);
 Position const& GetVashjEliteTankPosition(Unit& elite);
@@ -760,7 +760,7 @@ bool HasTaintedCore(Player* player);
 
 struct VashjCoreCatcher
 {
-    Position spot;
+    Position position;
     ObjectGuid bot = ObjectGuid::Empty;
     // The first catcher is released when the plan is made, the second when the first starts moving,
     // each later one when the one before reaches its position, delayed by readyDelay for realism.
@@ -808,17 +808,17 @@ inline constexpr float VASHJ_CORE_PLAN_EYE_HEIGHT = 1.2f;
 // Upon spawn, Elites and Striders move toward Vashj and attack the first player found within 20 yd
 // of them. To keep bots from being donked, the goal is to keep non-tanks more than 20 yd away from
 // the lanes from spawn to Vashj.
-inline constexpr float VASHJ_CORE_SPOT_SPAWN_CLEARANCE = 22.0f;
+inline constexpr float VASHJ_CORE_POSITION_SPAWN_CLEARANCE = 22.0f;
 // The generators have display id 7265 at size 2.1. The widest point of the generator's base,
 // measured from its bounding box, is about 3.2 yd. I don't know the exact collision radius.
-inline constexpr float VASHJ_CORE_SPOT_GENERATOR_CLEARANCE = 5.0f;
+inline constexpr float VASHJ_CORE_POSITION_GENERATOR_CLEARANCE = 5.0f;
 // Five players should be able to get from every Tainted Elemental spawn position to every
 // generator while following the passing rules (e.g., collision, distance from add lanes).
 inline constexpr size_t VASHJ_CORE_MAX_CATCHERS = 5;
 // A chain member needs to be within this distance of its calculated position to be considered in
 // position. The use position has less tolerance to ensure the bot is truly within use distance.
-inline constexpr float VASHJ_CORE_SPOT_ARRIVAL_DISTANCE = 1.0f;
-inline constexpr float VASHJ_CORE_USE_SPOT_ARRIVAL_DISTANCE = 0.5f;
+inline constexpr float VASHJ_CORE_POSITION_ARRIVAL_DISTANCE = 1.0f;
+inline constexpr float VASHJ_CORE_USE_POSITION_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr std::array VASHJ_SHIELD_GENERATOR_SPAWN_IDS = {
     uint32{ 47482 }, // NW
     uint32{ 47483 }, // NE
@@ -857,7 +857,7 @@ void ReleaseVashjCoreCatcher(Player* bot, VashjCorePassingChain& chain, size_t i
 VashjCorePassingChain* GetVashjCorePassingChain(Player* bot);
 int8 GetVashjCoreCatcherIndex(VashjCorePassingChain const& chain, Player* bot);
 bool IsVashjCoreCatcherActive(Player* bot, VashjCorePassingChain const& chain, int8 index);
-float GetVashjCoreSpotArrivalDistance(VashjCorePassingChain const& chain, int8 index);
+float GetVashjCorePositionArrivalDistance(VashjCorePassingChain const& chain, int8 index);
 
 // Shared encounter state
 struct SscInstanceState

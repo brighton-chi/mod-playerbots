@@ -226,7 +226,7 @@ std::vector<Unit*> GetFireBombs(Player* bot)
     return bombs;
 }
 
-// Shortest move to a spot that is safe from Fire Bombs, within the measured area.
+// Shortest move to a position that is safe from Fire Bombs, within the measured area.
 bool FindSafeStepInJanalaiZone(
     Player* bot, std::vector<Unit*> const& hazards, std::vector<Position> const& safeZone,
     float maxSearchDistance, float hazardRadius, float moveDist,
