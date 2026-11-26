@@ -15,7 +15,6 @@
 
 // Shared
 
-// Without a boss, gated on any SSC encounter in progress (for the shared multipliers).
 class SscEncounterMultiplier : public Multiplier
 {
 public:

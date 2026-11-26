@@ -268,7 +268,7 @@ inline std::array<Position, 8> const ZULJIN_SPREAD_POSITIONS = {{
     // Healer positions.
     Position(120.462f, 728.502f, ZULJIN_SPREAD_Z),
     Position(119.984f, 693.188f, ZULJIN_SPREAD_Z),
-    // Ranged dps positions. Three positions each at opposite ends of the platform.
+    // Ranged DPS positions. Three positions each at opposite ends of the platform.
     Position(94.939f, 713.698f, ZULJIN_SPREAD_Z),
     Position(145.286f, 713.034f, ZULJIN_SPREAD_Z),
     Position(103.869f, 728.703f, ZULJIN_SPREAD_Z),

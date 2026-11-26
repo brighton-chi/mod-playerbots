@@ -675,8 +675,8 @@ Unit* GetLesserDoomguard(PlayerbotAI* botAI)
     return nullptr;
 }
 
-// Only ranged dps within 70 yd attack a Lesser Doomguard, and not during Azgalor's burn phase.
-// Enough ranged are usually within 70 yd to get decent dps on the adds, and bots farther out risk
+// Only ranged DPS within 70 yd attack a Lesser Doomguard, and not during Azgalor's burn phase.
+// Enough ranged are usually within 70 yd to get decent DPS on the adds, and bots farther out risk
 // running in front of Azgalor to get to the Doomguard or just wasting time.
 Unit* GetAzgalorRangedTarget(PlayerbotAI* botAI, Unit* azgalor)
 {

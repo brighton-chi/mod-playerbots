@@ -392,7 +392,7 @@ bool AlarJumpFromPlatformAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (PlayerbotAI::IsMelee(bot)) // Melee dps
+    if (PlayerbotAI::IsMelee(bot)) // Melee DPS
     {
         return MoveTo(
             TK_MAP_ID, ALAR_ROOM_S_CENTER.GetPositionX(), ALAR_ROOM_S_CENTER.GetPositionY(),
@@ -421,7 +421,7 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
             return false;
     }
 
-    // On the other hand, melee dps jumps off at 5% HP because TBC hates them.
+    // On the other hand, melee DPS jumps off at 5% HP because TBC hates them.
     if (bot->GetPositionZ() > ALAR_BALCONY_Z)
     {
         Position const ground = GetClosestGroundPosition(bot->GetPosition());
@@ -1049,9 +1049,9 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     if (findIt == ring.end())
         return false;
 
-    // The spread is a 90° arc for healers and a 120° arc for ranged dps.
+    // The spread is a 90° arc for healers and a 120° arc for ranged DPS.
     float const arcSpan = isHeal ? M_PI / 2.0f : 2.0f * M_PI / 3.0f;
-    // Healers stand 42 yd and ranged dps 34 yd from Capernian's center: 36 and 28 yd edge to edge,
+    // Healers stand 42 yd and ranged DPS 34 yd from Capernian's center: 36 and 28 yd edge to edge,
     // after her 4.5 yd combat reach and a player's 1.5 yd (Bloodlust is held in this phase). 28 yd
     // leaves some margin under 30 yd, the most common spell range.
     float const radius = isHeal ? 42.0f : 34.0f;
@@ -1272,7 +1272,7 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
     if (isTank)
         return didAvoidDevastation;
 
-    // Melee dps obviously has to stand near a weapon to hit it, so any weapon too close to the axe
+    // Melee DPS obviously has to stand near a weapon to hit it, so any weapon too close to the axe
     // is skipped temporarily.
     constexpr float safeDistance = 12.0f;
     auto const isTooCloseToAxe = [&](Unit* candidate)
@@ -1430,7 +1430,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(TkNpcs we
             return PlayerbotAI::IsHeal(bot);
 
         // Fury Warriors could use the axe, but their DPS is terrible at 70 so they're better off
-        // looting the dagger to break MC (and DW 1H is better dps than Titan Grip at 70 anyway!?)
+        // looting the dagger to break MC (and DW 1H is better DPS than Titan Grip at 70 anyway!?)
         case TkNpcs::NPC_DEVASTATION: // Arms Warrior, Blood/Unholy DK, Ret Paladin
             return isArmsWarrior || (isDk && !isFrostDk) || (isPaladin && PlayerbotAI::IsDps(bot));
 

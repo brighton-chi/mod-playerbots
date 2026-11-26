@@ -15,7 +15,6 @@
 
 // Shared
 
-// Without a boss, gated on any SWP encounter in progress (for the shared multipliers).
 class SunwellEncounterMultiplier : public Multiplier
 {
 public:

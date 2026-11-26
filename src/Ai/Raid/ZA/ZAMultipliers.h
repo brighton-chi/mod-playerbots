@@ -13,7 +13,8 @@
 #include <optional>
 #include <string>
 
-// Without a boss, gated on any ZA encounter in progress (for the shared multipliers).
+// Shared
+
 class ZulAmanEncounterMultiplier : public Multiplier
 {
 public:
@@ -43,8 +44,6 @@ protected:
 private:
     std::optional<ZaHelpers::ZaBosses> const _boss;
 };
-
-// Shared
 
 class ZulAmanDelayDpsCooldownsMultiplier : public ZulAmanEncounterMultiplier
 {

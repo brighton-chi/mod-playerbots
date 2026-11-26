@@ -83,7 +83,7 @@ inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID = 90981;
 // Measured from Magtheridon's spawn. The Channelers are all within about 40 yd of it, so 100 yd
 // covers the whole room.
 inline constexpr float BURNING_ABYSSAL_SEARCH_RADIUS = 100.0f;
-// Hold dps for this long after Magtheridon first becomes attackable.
+// Hold DPS for this long after Magtheridon first becomes attackable.
 inline constexpr float MAG_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
 // Blast Nova is cast 55.65s after Magtheridon joins the fight (marked by the Shadow Cage aura
 // coming off of him) and is repeated every 54.35-55.4s. This is the number of milliseconds since

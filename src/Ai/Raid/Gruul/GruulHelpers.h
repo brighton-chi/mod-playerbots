@@ -104,7 +104,7 @@ inline constexpr float KROSH_BLAST_WAVE_HAZARD_RADIUS = 15.0f;
 inline constexpr float KROSH_BLAST_WAVE_CLEARANCE = KROSH_BLAST_WAVE_HAZARD_RADIUS + 2.0f;
 // Whirlwind's padding is greater than usual. The tl;dr is MoveAway()'s math results in its fallback
 // candidates (when running straight away is blocked) moving the bot less than the specified
-// distance. Melee dps often ends up between Maulgar and a wall and needing fallback escape angles.
+// distance. Melee DPS often ends up between Maulgar and a wall and needing fallback escape angles.
 inline constexpr float MAULGAR_WHIRLWIND_HAZARD_RADIUS = 8.0f;
 inline constexpr float MAULGAR_WHIRLWIND_CLEARANCE = MAULGAR_WHIRLWIND_HAZARD_RADIUS + 4.0f;
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;

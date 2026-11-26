@@ -15,7 +15,6 @@
 
 // Shared
 
-// Without a boss, gated on any Gruul's Lair encounter in progress (for the shared multipliers).
 class GruulsLairEncounterMultiplier : public Multiplier
 {
 public:

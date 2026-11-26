@@ -15,7 +15,6 @@
 
 // Shared
 
-// Without a boss, gated on any BT encounter in progress (for the shared multipliers).
 class BlackTempleEncounterMultiplier : public Multiplier
 {
 public:

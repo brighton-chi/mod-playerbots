@@ -15,7 +15,6 @@
 
 // Shared
 
-// Without a boss, gated on any Hyjal encounter in progress (for the shared multipliers).
 class HyjalEncounterMultiplier : public Multiplier
 {
 public:

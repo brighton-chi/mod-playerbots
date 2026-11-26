@@ -15,7 +15,6 @@
 
 // Shared
 
-// Without a boss, gated on any Karazhan encounter in progress (for the shared multipliers).
 class KarazhanEncounterMultiplier : public Multiplier
 {
 public:

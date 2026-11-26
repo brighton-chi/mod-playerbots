@@ -310,7 +310,7 @@ struct LegendaryWeaponPriority
 {
     TkNpcs entry;
     // The axe is marked with a cross instead of skull as it is outside the full priority chain
-    // (only ranged dps attacks it).
+    // (only ranged DPS attacks it).
     bool markWithCross;
     bool rangedDpsOnly;
 };
