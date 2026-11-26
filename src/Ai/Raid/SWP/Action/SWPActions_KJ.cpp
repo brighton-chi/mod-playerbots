@@ -258,8 +258,8 @@ bool KiljaedenPositionAndMoveTanksAction::PickUpSinisterReflections(Creature* re
     }
 }
 
-// The stock move to a target goes straight, so an off-tank whose Reflection is across Kil'jaeden
-// goes round him on the ring until the straight line clears, then the stock move takes over.
+// The standard move to a target goes straight, so an off-tank whose Reflection is across Kil'jaeden
+// goes around him on the ring until the straight line clears, then the standard move takes over.
 bool KiljaedenPositionAndMoveTanksAction::MoveAroundKiljaedenToReflection()
 {
     Unit* target = AI_VALUE(Unit*, "current target");

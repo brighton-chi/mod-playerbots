@@ -59,7 +59,7 @@ inline constexpr float BRUTALLUS_DRAG_DISTANCE = 20.5f;
 // close enough that he does not follow.
 inline constexpr float BRUTALLUS_TANK_LINE_UP_RADIUS = 17.0f;
 inline constexpr float BRUTALLUS_TANK_LINE_UP_ANGLE = 12.0f * M_PI / 180.0f;
-// Brutallus backs away from a victim within 9.75 yd of his center.
+// Brutallus backs away from a victim within 9.75 yd of his center (9.98 yd with Bloodlust).
 inline constexpr float BRUTALLUS_TANK_MIN_RADIUS = 12.0f;
 // The main tank steps forwards only within this angle of Brutallus, and backwards only within
 // this angle of straight away from him, so he is never behind the tank (more than 90°).

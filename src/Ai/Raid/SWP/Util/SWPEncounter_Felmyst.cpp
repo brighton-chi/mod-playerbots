@@ -19,7 +19,7 @@ using namespace EncounterHelpers;
 namespace SwpHelpers
 {
 
-// Note: Felmyst's CombatReach is 10.0f
+// Felmyst's combat reach is 10 yd.
 
 namespace
 {
@@ -542,6 +542,7 @@ bool TryFindPositionPastFogThreshold(
 
 } // end anonymous namespace
 
+// Demonic Vapor heads and their trails.
 GuidVector FindFelmystDemonicVaporGuids(Player* bot)
 {
     return FindCreatureGuidsAround(
@@ -727,7 +728,7 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
             ++stackIndex;
     }
 
-    // Healers spread across all three stacks; ranged dps alternates between the two sides
+    // Healers spread across all three stacks; ranged DPS alternates between the two sides
     FelmystGroundStack const stack = botIsHealer ?
         static_cast<FelmystGroundStack>(stackIndex % 3) :
         (stackIndex % 2 == 0 ? FelmystGroundStack::Left : FelmystGroundStack::Right);
@@ -735,6 +736,7 @@ bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position)
     return TryGetFelmystGroundStackPosition(bot, felmyst, stack, position);
 }
 
+// The ranged stack rule, apart from the early move, which the stack trigger checks itself.
 bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst)
 {
     if (!felmyst || felmyst->IsFlying() || !PlayerbotAI::IsRanged(bot) ||
@@ -1079,6 +1081,8 @@ bool TryGetFelmystLandingApproachDestination(
     return TryFindPositionPastFogThreshold(bot, lastCompletedLane, projectFrom, destination);
 }
 
+// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, whatever
+// the bot's role.
 bool IsFelmystLandingHoldWindowActive(Player* bot)
 {
     Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
@@ -1089,12 +1093,14 @@ bool IsFelmystLandingHoldWindowActive(Player* bot)
     return state && state->landingDpsWaitStartMs;
 }
 
+// The landing hold window, for everyone but the main tank.
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
     return !PlayerbotAI::IsMainTank(bot) && IsFelmystLandingHoldWindowActive(bot);
 }
 
+// While Felmyst is flying and through the landing hold window, whatever the bot's role.
 // TEST: pets are held for the whole air phase, so they stop starting chases after Felmyst that
 // fail partway. Held pets don't fight the Unyielding Dead either.
 bool IsFelmystPetHoldActive(Player* bot)

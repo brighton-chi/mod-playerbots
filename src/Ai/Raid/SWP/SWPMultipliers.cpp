@@ -131,8 +131,8 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action));
 
-    // If the boss cannot be found but the encounter is in progress, it is probably because the
-    // bot was rezzed and zone combat hasn't reapplied, so block cooldowns.
+    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
+    // on the boss's threat list yet, so hold cooldowns.
     switch (static_cast<SwpBosses>(*bossId))
     {
         case SwpBosses::DATA_KILJAEDEN:
@@ -166,7 +166,7 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             if (isBloodlust) // Bloodlust is saved for Entropius.
                 return 0.0f;
 
-            // Other dps cooldowns can be used on M'uru after the pull.
+            // Other DPS cooldowns can be used on M'uru after the pull.
             return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
         }
         case SwpBosses::DATA_EREDAR_TWINS:
@@ -339,7 +339,7 @@ float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
         IsRepositionAction(bot, action) ? 0.0f : 1.0f;
 }
 
-// Don't use KS if any melee member (other than the Brutallus tanks) has Burn
+// Don't use Killing Spree if any melee member (other than the Brutallus tanks) has Burn
 float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValueInEncounter(Action* action)
 {
     if (bot->getClass() != CLASS_ROGUE)

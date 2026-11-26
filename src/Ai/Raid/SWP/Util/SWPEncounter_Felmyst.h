@@ -111,7 +111,7 @@ struct FogSafeThreshold
 };
 
 inline constexpr uint32 DEMONIC_VAPOR_CACHE_INTERVAL_MS = 200;
-// Around FELMYST_ROOM_CENTER.
+// Measured from the center of Felmyst's room.
 inline constexpr float DEMONIC_VAPOR_SEARCH_RADIUS = 110.0f;
 // A trail patch's reach, center to center.
 inline constexpr float DEMONIC_VAPOR_HAZARD_RADIUS = 3.0f;
@@ -263,7 +263,6 @@ inline std::vector<Position> const FELMYST_EAST_SECOND_VAPOR_ROUTE = {
     Position{ 1469.6f, 624.5f, 22.0f },
 };
 
-// Demonic Vapor heads and their trails.
 GuidVector FindFelmystDemonicVaporGuids(Player* bot);
 std::vector<Creature*> GetDemonicVaporHazards(Player* bot);
 Creature* GetFelmystOwnDemonicVapor(Player* bot);
@@ -275,7 +274,6 @@ bool TryGetFelmystGroundStackPosition(
 FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Player* reference);
 float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
 bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
-// The ranged stack rule, apart from the early move, which the stack trigger checks itself.
 bool IsFelmystRangedStackActive(Player* bot, Unit* felmyst);
 bool IsFelmystLanding(Unit* felmyst);
 void AdvanceFelmystEncounterState(Unit* felmyst);
@@ -299,12 +297,8 @@ bool IsFelmystFogMovementSuppressed(Unit* felmyst);
 bool IsFelmystAirPhaseTargetSuppressed(Unit* felmyst);
 bool TryGetFelmystLandingApproachDestination(
     Player* bot, FogLane lastCompletedLane, Unit* felmyst, Position& destination);
-// From the pull or the landing approach to FELMYST_GROUNDED_DPS_WAIT_MS after touchdown, whatever
-// the bot's role.
 bool IsFelmystLandingHoldWindowActive(Player* bot);
-// The landing hold window, for everyone but the main tank.
 bool IsFelmystLandingDpsHoldActive(PlayerbotAI* botAI);
-// While Felmyst is flying and through the landing hold window, whatever the bot's role.
 bool IsFelmystPetHoldActive(Player* bot);
 bool TryGetActiveFogOfCorruptionState(Player* bot, Unit* felmyst, FogOfCorruptionState& state);
 void RecordFelmystIncomingEncapsulateTarget(

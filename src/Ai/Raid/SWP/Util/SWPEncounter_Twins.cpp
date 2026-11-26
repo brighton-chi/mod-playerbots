@@ -26,7 +26,7 @@ using namespace EncounterHelpers;
 namespace SwpHelpers
 {
 
-// Note: Alythess and Sacrolash each have a CombatReach of 2.5f
+// Alythess and Sacrolash each have a combat reach of 2.5 yd.
 
 namespace
 {
@@ -106,6 +106,8 @@ bool HasClosedOnTankThreat(Unit* boss, Player* bot, float tankThreat, float thre
 
 } // end anonymous namespace
 
+// Each twin, if it is on the bot's threat list. Alythess also stands for the encounter boss, so
+// she is found only while the encounter is in progress.
 Unit* FindAlythess(Player* bot)
 {
     return GetSwpBoss(bot, SwpBosses::DATA_EREDAR_TWINS);
@@ -124,6 +126,7 @@ Position GetAlythessTankPosition(Unit* alythess, uint8 index)
     return GetAdjustedPosition(alythess, ALYTHESS_TANK_POSITIONS[index]);
 }
 
+// The stack, or the hunters' position for a hunter.
 Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess)
 {
     return GetAdjustedPosition(
@@ -131,6 +134,8 @@ Position GetEredarTwinsPhase2Position(Player* bot, Unit* alythess)
             EREDAR_TWINS_P2_HUNTER_POSITION : EREDAR_TWINS_P2_STACK_POSITION);
 }
 
+// The first clear fallback while a Blaze patch is on the bot's phase 2 position; empty otherwise,
+// and while every fallback has a patch too.
 std::optional<Position> GetEredarTwinsPhase2Fallback(PlayerbotAI* botAI, Unit* alythess)
 {
     Player* bot = botAI->GetBot();
@@ -148,15 +153,18 @@ std::optional<Position> GetEredarTwinsPhase2Fallback(PlayerbotAI* botAI, Unit* a
     return std::nullopt;
 }
 
+// Where a bot holding Alythess waits: on the balcony, or on the floor.
 Position GetEredarTwinsStepAsidePosition(Unit* alythess, bool onBalcony)
 {
     return onBalcony ? EREDAR_TWINS_P1_RANGED_ASIDE_POSITION :
         GetAdjustedPosition(alythess, EREDAR_TWINS_FLOOR_ASIDE_POSITION);
 }
 
+// A fallback, else the bot's phase 2 position, or the next waypoint while the straight line to it
+// crosses the Alythess tank positions.
 // Every waypoint leads to the stack waypoint, from which the straight line to the bot's position is
 // clear. The position 4 waypoint serves the landing and the floor step-aside; from Sacrolash's
-// side its line crosses the tank positions, so bots there go round position 0.
+// side its line crosses the tank positions, so bots there go around position 0.
 Position GetEredarTwinsPhase2RouteTarget(PlayerbotAI* botAI, Unit* alythess)
 {
     if (std::optional<Position> const fallback = GetEredarTwinsPhase2Fallback(botAI, alythess))
@@ -234,6 +242,7 @@ bool IsAlythessTank(Player* player)
     return player && PlayerbotAI::IsTank(player) && GetAlythessTank(player) == player;
 }
 
+// Alythess is attacking the player, who isn't her tank.
 bool IsHoldingAlythessAggro(Player* player, Unit* alythess)
 {
     return player && alythess && alythess->GetVictim() == player && !IsAlythessTank(player);
@@ -349,6 +358,7 @@ Player* GetSacrolashSecondTank(Player* bot, Unit* sacrolash)
     return secondTank ? secondTank : highestTank;
 }
 
+// The first living bot hunter in group order, who misdirects Alythess at the pull.
 bool IsAlythessPullMisdirectHunter(Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -368,6 +378,8 @@ bool IsAlythessPullMisdirectHunter(Player* bot)
     return false;
 }
 
+// The first EREDAR_TWINS_DPS_HOLD_MS of Sacrolash's fight, which the tanks spend taking aggro,
+// whatever the bot's role. For pets.
 bool IsEredarTwinsStartHoldWindowActive(Player* bot)
 {
     if (!FindSacrolash(bot))
@@ -380,6 +392,7 @@ bool IsEredarTwinsStartHoldWindowActive(Player* bot)
     return getMSTimeDiff(*state->dpsHoldStartMs, getMSTime()) < EREDAR_TWINS_DPS_HOLD_MS;
 }
 
+// The start hold window, for everyone but the tanks.
 bool IsEredarTwinsStartHoldActive(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
@@ -427,6 +440,8 @@ bool IsAlythessTankPositionSafe(PlayerbotAI* botAI, Position const& position)
     return IsClearOfBlaze(botAI, position, BLAZE_CLEARANCE);
 }
 
+// The target of a twin's Conflagration cast, once the reaction delay has passed; empty otherwise.
+// A Vanish that stops the cast ends it at once.
 // Alythess casts Conflagration while Sacrolash lives; Sacrolash casts it if Alythess dies first.
 // The cast is read live; once it ends, the twin's next cast replaces it, so the missile's flight
 // comes from the record the spell listener writes.
@@ -460,6 +475,7 @@ bool IsEredarTwinsConflagrationTarget(Player* bot, Unit* alythess, Unit* sacrola
     return !targetGuid.IsEmpty() && targetGuid == bot->GetGUID();
 }
 
+// For the spell listener, when a Conflagration cast completes (a Vanish that stops it never does).
 void RecordEredarTwinsConflagrationImpact(Player* target)
 {
     EredarTwinsState(target->GetInstanceId()).conflagrationImpact = EredarTwinsConflagrationImpact{

@@ -25,7 +25,7 @@ using namespace EncounterHelpers;
 namespace SwpHelpers
 {
 
-// Note: Kil'jaeden's CombatReach is 15.0f
+// Kil'jaeden's combat reach is 15 yd.
 
 namespace
 {
@@ -91,7 +91,7 @@ bool ShouldRebuildKiljaedenAssignments(uint32& lastRebuildMs, uint32 intervalMs)
     return true;
 }
 
-// A point on the ring round Kil'jaeden to aim for when the straight line to the destination would
+// A point on the ring around Kil'jaeden to aim for when the straight line to the destination would
 // pass through his Knockback: a little past the bot's tangent to the ring, on the side nearer the
 // destination.
 bool TryGetKiljaedenDetourPoint(Player* bot, Position const& destination, Position& detourPoint)
@@ -154,6 +154,7 @@ bool SayKiljaedenDragonOrbUser(PlayerbotAI* botAI, ClassRoleChoice const& choice
 
 } // end anonymous namespace
 
+// Hands of the Deceiver and Sinister Reflections.
 GuidVector FindKiljaedenAddGuids(Player* bot)
 {
     GuidVector guids = FindCreatureGuidsAround(
@@ -602,7 +603,7 @@ bool IsMeleeBlockedByKiljaedenKnockback(Position const& from, Position const& ta
         IsLineThroughKiljaedenKnockback(from, target);
 }
 
-// One step toward the destination, going round Kil'jaeden's Knockback when the straight line would
+// One step toward the destination, going around Kil'jaeden's Knockback when the straight line would
 // cross it. Returns false once the bot is within arrivalDist (2D) of the destination.
 bool GetKiljaedenStepToPosition(
     Player* bot, Position const& destination, float arrivalDist, float& stepX, float& stepY)
@@ -619,7 +620,7 @@ bool GetKiljaedenStepToPosition(
 }
 
 // Where a bot with Fire Bloom waits during Darkness: FIRE_BLOOM_STANDOFF from the stack toward the
-// bot, turned round the stack to just outside the Knockback ring when it would fall inside it.
+// bot, rotated around the stack to just outside the Knockback ring when it would fall inside it.
 Position GetKiljaedenFireBloomWaitPosition(Player* bot)
 {
     Position const& stack = KILJAEDEN_TANK_POSITION;

@@ -170,11 +170,13 @@ bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target)
         muru->GetExactDist2d(target) <= MURU_DARKNESS_MELEE_TARGET_DISTANCE;
 }
 
+// Phase 1 Darkness, from the pre-effect, whatever the owner's role.
 bool IsMuruPetHoldActive(Unit* muru)
 {
     return IsMuruPhaseActive(muru) && IsMuruDarknessActive(muru);
 }
 
+// The owner's current target, but never a Dark Fiend, and during Darkness never one inside it.
 // Damage can't kill a Dark Fiend, so a pet is never sent onto one, even when its owner targets it.
 Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru)
 {
@@ -214,6 +216,7 @@ bool IsEntropiusDpsHoldActive(Player* bot)
     return getMSTimeDiff(*state->entropiusFirstSeenMs, getMSTime()) < ENTROPIUS_DPS_HOLD_MS;
 }
 
+// M'uru, Entropius, their adds, the void zones (Darkness), the Dark Fiends, and the Singularity.
 GuidVector FindMuruUnitGuids(Player* bot)
 {
     return FindCreatureGuidsAround(
@@ -396,6 +399,7 @@ bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI)
     return false;
 }
 
+// The nearest to the bot within SINGULARITY_SEARCH_RADIUS.
 Creature* GetMuruSingularity(Player* bot)
 {
     Creature* nearest = nullptr;

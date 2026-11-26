@@ -214,18 +214,10 @@ inline constexpr float SELF_AOE_RACIAL_RADIUS = 8.0f;
 inline constexpr float TAUNT_SHOUT_RADIUS = 10.0f;
 
 Unit* GetSwpBoss(Player* bot, SwpBosses boss);
-// Offset from the center of an arc for assigning positioning slots, filling outward and
-// alternating sides. Slot 0 is the center when the count is odd and straddles it when even.
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
-// The minimum interval between spells cast by a charmed creature. This is in effect a manually
-// enforced cooldown because the path being used for the spellcast skips cooldowns.
 uint32 GetManualCastCooldown(uint32 spellId);
-// Same as above, except for enforcing a GCD for abilities with no cooldowns.
 uint32 GetManualCastGlobalCooldown(uint32 spellId);
-// Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
-// The Spell Lock rank a living Felhunter can cast at the target now. This is needed because
-// PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
 uint32 GetReadySpellLock(Creature* pet, Unit* target);
 // A path step for a tank that keeps the unit it is tanking in front of it. While the bot is
 // tankedUnit's victim and in melee range, the step takes the shorter backward length and is moved
@@ -237,8 +229,8 @@ bool GetTankPathStep(
 
 // Volatile Fiends: one entry, two types:
 // (1) a gauntlet (summoned) fiend explodes 2s after it engages, dealing from itself and every other
-// mob in combat reach (!) 6013+ fire damage within 12 yds of their centers, and
-// (2) a static fiend explodes on death, dealing 2025+ fire damage within 10 yds of its center.
+// mob in combat reach (!) 6013+ fire damage within 12 yd of their centers, and
+// (2) a static fiend explodes on death, dealing 2025+ fire damage within 10 yd of its center.
 
 inline constexpr uint32 VOLATILE_FIEND_CACHE_INTERVAL_MS = 200;
 // A fiend's aggro radius against a level 70 player.

@@ -69,19 +69,20 @@ inline constexpr float KILJAEDEN_ORB_USER_REARM_DISTANCE = 150.0f;
 
 // Knockback (47115) hits everyone within 9 yd of KJ's center (3D, no combat reach) every second.
 inline constexpr float KILJAEDEN_KNOCKBACK_RADIUS = 9.0f;
-// Bots go round him on this ring when a straight line would pass through the Knockback.
+// Bots go around him on this ring when a straight line would pass through the Knockback.
 inline constexpr float KILJAEDEN_KNOCKBACK_CLEARANCE = KILJAEDEN_KNOCKBACK_RADIUS + 1.5f;
 // A straight line that keeps at least this far from his center is taken as is.
 inline constexpr float KILJAEDEN_ROUTE_LINE_CLEARANCE = KILJAEDEN_KNOCKBACK_RADIUS + 1.0f;
-// How far past its tangent a bot going round him aims along the ring, in radians.
+// How far past its tangent a bot going around him aims along the ring, in radians.
 inline constexpr float KILJAEDEN_ROUTE_LEAD_ANGLE = 0.3f;
 
-// Around SUNWELL_CENTER_POSITION. The Hands are summoned within 20 yd of it, and every raid
-// position is within 42 yd.
+// Measured from the center of the Sunwell. The Hands are summoned within 20 yd of it, and every
+// raid position is within 42 yd.
 inline constexpr float KILJAEDEN_ADD_SEARCH_RADIUS = 80.0f;
 // Hammer of Justice is a single-target spell that counts both combat reaches so its actual range is
-// its tooltip range of 10 yd + 1.5 (player) + 2.5 (Hand) = 14 yd. Holding a little inside that
-// threshold leaves room for the Hand to shift between the range check and the cast landing.
+// its tooltip range of 10 yd + a player's 1.5 yd (1.95 yd with Bloodlust) + 2.5 yd (Hand) = 14 yd
+// (14.45 yd with Bloodlust). Holding a little inside that threshold leaves room for the Hand to
+// shift between the range check and the cast landing.
 inline constexpr float HAND_HOLY_PALADIN_STANDOFF = 12.0f;
 // Timing between stuns for bots to coordinate them. A gate based purely on UNIT_STATE_STUNNED
 // still results in spam stuns due to the delay between a spell casting and resolving.
@@ -148,7 +149,6 @@ inline std::array const KILJAEDEN_RANGED_POSITIONS = {
 inline constexpr uint8 KILJAEDEN_TOTAL_RANGED_SLOT_COUNT =
     std::tuple_size_v<decltype(KILJAEDEN_RANGED_POSITIONS)>;
 
-// Hands of the Deceiver and Sinister Reflections.
 GuidVector FindKiljaedenAddGuids(Player* bot);
 std::vector<Unit*> GetKiljaedenHands(PlayerbotAI* botAI);
 Creature* GetNearestSinisterReflection(Player* bot);

@@ -59,6 +59,8 @@ Unit* GetSwpBoss(Player* bot, SwpBosses boss)
     return FindThreatTarget(bot, BossName(boss));
 }
 
+// Offset from the center of an arc for assigning positioning slots, filling outward and
+// alternating sides. Slot 0 is the center when the count is odd and straddles it when even.
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth)
 {
     if (slotCount <= 1)
@@ -87,6 +89,8 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
     return angleOffset;
 }
 
+// The minimum interval between spells cast by a charmed creature. This is in effect a manually
+// enforced cooldown because the path being used for the spellcast skips cooldowns.
 uint32 GetManualCastCooldown(uint32 spellId)
 {
     constexpr uint32 minGlobalCooldown = 1000; // Spell.cpp MIN_GCD
@@ -104,6 +108,7 @@ uint32 GetManualCastCooldown(uint32 spellId)
     return cooldownMs ? cooldownMs : minGlobalCooldown;
 }
 
+// Same as above, except for enforcing a GCD for abilities with no cooldowns.
 uint32 GetManualCastGlobalCooldown(uint32 spellId)
 {
     constexpr uint32 minGlobalCooldown = 1000; // Spell.cpp MIN_GCD
@@ -119,6 +124,7 @@ uint32 GetManualCastGlobalCooldown(uint32 spellId)
     return spellInfo->RecoveryTime || spellInfo->CategoryRecoveryTime ? 0 : minGlobalCooldown;
 }
 
+// Misdirection on the tank, then Steady Shot on the target while it is up, to spend it.
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
 {
     if (!target || !tank)
@@ -133,6 +139,8 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank)
     return botAI->CanCastSpell("steady shot", target) && botAI->CastSpell("steady shot", target);
 }
 
+// The Spell Lock rank a living Felhunter can cast at the target now. This is needed because
+// PlayerbotAI::CanCastSpell passes any spell the pet knows without checking range or cooldown.
 uint32 GetReadySpellLock(Creature* pet, Unit* target)
 {
     if (!pet || !target || !pet->IsAlive() || pet->GetEntry() != NPC_FELHUNTER)
@@ -289,6 +297,8 @@ SwpInstanceState* FindSwpState(uint32 instanceId)
     return it != swpStates.end() ? &it->second : nullptr;
 }
 
+// Clears every boss's state and creature list but keeps the class roles and the orb user. Returns
+// true if any boss state was set.
 bool SwpResetInstance(uint32 instanceId)
 {
     std::lock_guard lock(swpStateMutex);
@@ -306,6 +316,8 @@ bool SwpResetInstance(uint32 instanceId)
     return wasSet;
 }
 
+// Picks every class role player, and Kil'jaeden's orb user, again out of encounters; during one,
+// only fills an empty role or replaces a player who died or left.
 bool UpdateSwpClassRoles(PlayerbotAI* botAI)
 {
     SwpInstanceState& state = SwpState(botAI->GetBot()->GetInstanceId());

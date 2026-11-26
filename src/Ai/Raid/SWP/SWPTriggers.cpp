@@ -379,6 +379,7 @@ bool FelmystTakeoffIsNearTrigger::ResetEarlyMove()
     return true;
 }
 
+// Read by the ground-position triggers and Felmyst's update hook.
 bool HasFelmystEarlyMoveStarted(PlayerbotAI* botAI)
 {
     Trigger* trigger = botAI->GetAiObjectContext()->GetTrigger("felmyst takeoff is near");

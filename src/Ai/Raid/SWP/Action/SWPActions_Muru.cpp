@@ -390,7 +390,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
 
     std::vector<Creature*> darkFiends = GetMuruDarkFiends(botAI);
 
-    // Mass Dispel on M'uru reaches 15 yd round him, whatever the bot's distance to the fiends.
+    // Mass Dispel on M'uru reaches 15 yd around him, whatever the bot's distance to the fiends.
     constexpr float massDispelRadius = 15.0f;
     bool const isFiendNearMuru = IsMuruPhaseActive(muru) &&
         std::ranges::any_of(darkFiends, [&](Creature* darkFiend)

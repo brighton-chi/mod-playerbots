@@ -18,7 +18,7 @@ using namespace EncounterHelpers;
 namespace SwpHelpers
 {
 
-// Note: Brutallus's CombatReach is 18.0f
+// Brutallus's combat reach is 18 yd.
 
 namespace
 {

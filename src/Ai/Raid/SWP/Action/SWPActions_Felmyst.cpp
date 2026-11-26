@@ -232,7 +232,7 @@ bool FelmystMoveToAirGroupPositionAction::Execute(Event /*event*/)
     if (IsWaitingForLastMove(priority))
         return false;
 
-    // Hold rather than cross a patch: it is gone within 20 s, and the sidestep keeps the bot safe.
+    // Hold rather than cross a patch: it is gone within 20s, and the sidestep keeps the bot safe.
     float stepX;
     float stepY;
     if (TryGetFelmystAirStep(

@@ -355,7 +355,6 @@ private:
     uint32 _earlyMoveTouchdownMs = 0;
 };
 
-// Read by the ground-position triggers and Felmyst's update hook.
 bool HasFelmystEarlyMoveStarted(PlayerbotAI* botAI);
 
 class FelmystAirPhaseHasStartedTrigger : public SunwellEncounterTrigger

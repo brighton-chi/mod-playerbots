@@ -37,8 +37,8 @@ inline constexpr float MURU_MISDIRECT_MIN_TARGET_HP_PERCENT = 80.0f;
 inline constexpr float MURU_MAX_DPS_HP_PERCENT = 97.0f;
 
 inline constexpr uint32 MURU_UNIT_CACHE_INTERVAL_MS = 200;
-// Around MURU_CENTER_POSITION. The Shadowsword adds are summoned 55 yd away, and the Void Sentinel
-// portals are within 41 yd.
+// Measured from the center of M'uru's platform. The Shadowsword adds are summoned 55 yd away, and
+// the Void Sentinel portals are within 41 yd.
 inline constexpr float MURU_ROOM_SEARCH_RADIUS = 70.0f;
 
 // Darkness cycle: 45998 ticks every 45s and triggers the 3s pre-effect 45999 on M'uru, whose own
@@ -48,7 +48,8 @@ inline constexpr uint32 MURU_DARKNESS_PRE_EFFECT_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 MURU_DARKNESS_DURATION_MS = 20 * IN_MILLISECONDS;
 // This is an arbitrary window to allow tanks a bit more time to get positioned after Darkness.
 inline constexpr uint32 MURU_DARKNESS_EARLY_WINDOW_MS = 10 * IN_MILLISECONDS;
-// The zone hits a player whose center is within 16.5 yd of M'uru's (15 yd plus the player's reach).
+// The zone hits a player whose center is within 16.5 yd of M'uru's (15 yd plus a player's 1.5 yd
+// combat reach; Bloodlust is held for Entropius).
 inline constexpr float MURU_DARKNESS_RADIUS = 15.0f;
 inline constexpr float MURU_DARKNESS_CLEARANCE = MURU_DARKNESS_RADIUS + 5.0f;
 // Melee don't attack a unit this close to M'uru during Darkness: 1.5 yd for their reach, 5 yd for
@@ -56,7 +57,7 @@ inline constexpr float MURU_DARKNESS_CLEARANCE = MURU_DARKNESS_RADIUS + 5.0f;
 inline constexpr float MURU_DARKNESS_MELEE_TARGET_DISTANCE = MURU_DARKNESS_RADIUS + 8.0f;
 // Tanks won't try to pick up anything farther than this distance from the ranged stack.
 inline constexpr float MURU_MAX_TARGET_DIST_FROM_STACK = 30.0f;
-// The maximum distance from the melee dps holding spot that they wander to attack during Darkness.
+// How far melee DPS wander from their holding position to attack during Darkness.
 inline constexpr float MURU_HOLDING_POSITION_RADIUS = 25.0f;
 // Targeting is based on the nearest mob; this buffer is to keep targets sticky.
 inline constexpr float MURU_TARGET_SWITCH_MARGIN = 10.0f;
@@ -109,13 +110,10 @@ bool IsMuruPhaseActive(Unit* muru);
 bool IsMuruDarknessActive(Unit* muru);
 bool IsMuruDarknessEarly(Unit* muru);
 bool IsMeleeTargetInMuruDarkness(Unit* muru, Unit* target);
-// Phase 1 Darkness, from the pre-effect, whatever the owner's role.
 bool IsMuruPetHoldActive(Unit* muru);
-// The owner's current target, but never a Dark Fiend, and during Darkness never one inside it.
 Unit* GetMuruPetTarget(PlayerbotAI* botAI, Creature* pet, Unit* muru);
 bool IsSpellFuryReservedForMages(Unit* furyMage);
 bool IsEntropiusDpsHoldActive(Player* bot);
-// M'uru, Entropius, their adds, the void zones (Darkness), the Dark Fiends, and the Singularity.
 GuidVector FindMuruUnitGuids(Player* bot);
 GuidVector const& GetMuruUnits(Player* bot);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
@@ -128,7 +126,6 @@ Unit* FindMuruFuryMageToInterrupt(PlayerbotAI* botAI);
 Unit* FindMuruFuryMageToSpellsteal(PlayerbotAI* botAI);
 Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 bool IsTankingMuruVoidSentinel(PlayerbotAI* botAI);
-// The nearest to the bot within SINGULARITY_SEARCH_RADIUS.
 Creature* GetMuruSingularity(Player* bot);
 std::vector<Creature*> GetMuruDarkFiends(PlayerbotAI* botAI);
 Creature* GetNearestMuruDarkFiend(PlayerbotAI* botAI, float radius);

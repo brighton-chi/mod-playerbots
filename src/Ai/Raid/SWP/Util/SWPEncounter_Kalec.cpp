@@ -19,7 +19,7 @@
 namespace SwpHelpers
 {
 
-// Note: Kalecgos's CombatReach is 10.5f, and Sathrovarr's CombatReach is 4.5f.
+// Kalecgos's combat reach is 10.5 yd, and Sathrovarr's is 4.5 yd.
 // Note: Kalecgos remains on player threat lists for the duration of the encounter, even for
 // players in the Spectral Realm and after he turns friendly after Sathrovarr is killed.
 
@@ -522,6 +522,7 @@ bool IsKalecgosDecurser(Player* bot)
     return botAI->HasStrategy("cure", BOT_STATE_COMBAT);
 }
 
+// Returns true if the assignments were rebuilt.
 bool EnsureKalecgosRaidAssignments(Player* player)
 {
     Group* group = player->GetGroup();
@@ -644,6 +645,8 @@ bool EnsureKalecgosRaidAssignments(Player* player)
     return true;
 }
 
+// The tracker's once-a-second upkeep: the start time, an expired rift, and the assignments. Returns
+// true if anything changed.
 bool UpdateKalecgosEncounterState(Player* player)
 {
     KalecgosEncounterState& state = KalecgosState(player->GetInstanceId());
@@ -688,6 +691,7 @@ ObjectGuid FindKalecgosSpectralRiftGuid(Player* bot)
     return rift ? rift->GetGUID() : ObjectGuid::Empty;
 }
 
+// Kalecgos (the dragon) on the surface and Kalec (the humanoid) in the Spectral Realm.
 GuidVector FindKalecgosUnitGuids(Player* bot)
 {
     return EncounterHelpers::FindCreatureGuidsAround(
@@ -826,6 +830,7 @@ void RecordSpectralRealmEnter(Player* player)
     }
 }
 
+// Kalecgos for a surface bot, Sathrovarr for a bot in the Spectral Realm.
 Unit* GetKalecgosSideBoss(Player* bot)
 {
     if (IsInSpectralRealm(bot))
@@ -878,6 +883,7 @@ KalecgosCall GetDueKalecgosCall(Player* bot)
         KalecgosCall::EndHold : KalecgosCall::None;
 }
 
+// The hold on one side of the realms, whatever the role.
 // Each side of the realms has one enemy, so a held side holds everything.
 KalecgosDpsHold GetKalecgosSideHoldWindow(uint32 instanceId, bool isRealmSide)
 {
@@ -897,16 +903,19 @@ KalecgosDpsHold GetKalecgosSideHoldWindow(uint32 instanceId, bool isRealmSide)
     return KalecgosDpsHold::None;
 }
 
+// The hold on the bot's side of the realms, whatever its role. For cooldowns.
 KalecgosDpsHold GetKalecgosDpsHoldWindow(Player* bot)
 {
     return GetKalecgosSideHoldWindow(bot->GetInstanceId(), IsInSpectralRealm(bot));
 }
 
+// The hold that applies to the bot itself. Tanks are never held.
 KalecgosDpsHold GetKalecgosDpsHold(Player* bot)
 {
     return PlayerbotAI::IsTank(bot) ? KalecgosDpsHold::None : GetKalecgosDpsHoldWindow(bot);
 }
 
+// True if any of the bot's controllable minions is on a held side.
 // The portal unsummons a player's pet and resummons it beside its owner, but a guardian (Feral
 // Spirit, Force of Nature, Army of the Dead) has no path through the floor and stays on the
 // surface, so each minion's own side decides.
