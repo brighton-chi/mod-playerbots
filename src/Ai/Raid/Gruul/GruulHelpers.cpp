@@ -30,8 +30,6 @@ std::unordered_map<uint32, GruulInstanceState> gruulStates;
 
 } // end anonymous namespace (Shared)
 
-// The ogre council members are found with a grid search (see GetMaulgarCouncilMember) and Gruul
-// with the bot's threat list.
 Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss)
 {
     if (boss == GruulBosses::DATA_HIGH_KING_MAULGAR)
@@ -188,8 +186,8 @@ Unit* GetMaulgarCouncilMember(Player* bot, GruulNpcs npc)
     return nullptr;
 }
 
-// Pets follow the ranged kill order. Krosh can be attacked because he casts Blast Wave only when
-// a player is within 15 yd, not a pet.
+// Pets follow the ranged kill order, Krosh included: he casts Blast Wave only when a player is
+// within 15 yd, so a pet next to him is safe.
 Unit* GetMaulgarPetTarget(Player* bot, Creature* pet)
 {
     if (!pet)
@@ -263,8 +261,8 @@ bool HasGroundSlam(Player* bot)
         bot->HasAura(Id(GruulSpells::SPELL_GROUND_SLAM_2));
 }
 
-// MoveTo follows the navmesh, which is built without gameobjects, so its path runs through the shut
-// portcullis. The core's collision check includes gameobjects and fails on that line.
+// The navmesh is built without gameobjects, so a MoveTo path can run straight through the closed
+// portcullis. The core's collision check does include gameobjects and rejects a step through it.
 bool CanMoveStraightTo(Player* bot, Position const& destination)
 {
     float x = destination.GetPositionX();
@@ -276,7 +274,8 @@ bool CanMoveStraightTo(Player* bot, Position const& destination)
     if (!bot->GetMap()->CanReachPositionAndGetValidCoords(bot, x, y, z, true, false))
         return false;
 
-    // An incomplete path can cut the point short without counting as a collision.
+    // On an incomplete path, the check moves the point short of the destination without failing, so
+    // also make sure it stayed close.
     return std::hypot(x - destination.GetPositionX(), y - destination.GetPositionY()) <=
         GRUUL_SHATTER_STEP_TOLERANCE;
 }

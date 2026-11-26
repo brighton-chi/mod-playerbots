@@ -108,8 +108,8 @@ inline constexpr float KROSH_BLAST_WAVE_CLEARANCE = KROSH_BLAST_WAVE_HAZARD_RADI
 inline constexpr float MAULGAR_WHIRLWIND_HAZARD_RADIUS = 8.0f;
 inline constexpr float MAULGAR_WHIRLWIND_CLEARANCE = MAULGAR_WHIRLWIND_HAZARD_RADIUS + 4.0f;
 inline constexpr float MAULGAR_WHIRLWIND_HOLD_DISTANCE = 15.0f;
-// Around Maulgar's spawn. The ogres' tank positions are within about 60 yd of it; 100 yd covers the
-// room.
+// Measured from Maulgar's spawn. The ogre tank positions are all within about 60 yd of it, so
+// 100 yd covers the whole room.
 inline constexpr float MAULGAR_COUNCIL_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 MAULGAR_COUNCIL_CACHE_INTERVAL_MS = 1000;
 // Olm summons a Wild Fel Stalker every 48.5s (practically, that means you're not going to see more
@@ -141,28 +141,29 @@ Unit* GetMaulgarPetTarget(Player* bot, Creature* pet);
 // Gruul the Dragonkiller
 
 inline constexpr uint32 CAVE_IN_CACHE_INTERVAL_MS = 100;
-// Radius is 8 yd, plus player CombatReach, rounded up. The pool lasts 15s and is cast as often as
-// every 3.5s, so up to 5 can be on the ground at once.
+// Cave In's radius is 8 yd, plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust), rounded
+// up. Pools last 15s and can be cast as often as every 3.5s, so up to 5 can be down at once.
 inline constexpr float CAVE_IN_RADIUS = 10.0f;
 // Distance for the multiplier. As usual, wider than the avoidance to prevent running back in.
 inline constexpr float CAVE_IN_CONTROL_RADIUS = CAVE_IN_RADIUS + 5.0f;
 inline constexpr float CAVE_IN_SEARCH_RADIUS = CAVE_IN_CONTROL_RADIUS + 2.0f;
-// Shatter hits players within 20 yd edge-to-edge of a stoned player: 23 yd center-to-center.
-// Damage falls off linearly with distance.
+// Shatter hits players within 20 yd of a stoned player, edge to edge: 23 yd center to center
+// (23.9 yd with Bloodlust). Damage falls off linearly with distance.
 inline constexpr float GRUUL_SHATTER_HAZARD_RADIUS = 23.0f;
-// Others are still landing and moving while a bot spreads, so it aims past the hazard radius.
+// Players are still landing from Ground Slam and moving when bots start to spread, so bots aim 5 yd
+// past the hazard radius, which also covers Bloodlust.
 inline constexpr float GRUUL_SHATTER_CLEARANCE = GRUUL_SHATTER_HAZARD_RADIUS + 5.0f;
 inline constexpr float GRUUL_SHATTER_STEP_DISTANCE = 3.5f;
 inline constexpr float GRUUL_SHATTER_STEP_TOLERANCE = 0.5f;
-// The portcullis (x 170.2) shuts during the fight, but bot movement paths through doors. Spread
-// steps never end south of this line.
+// The portcullis (x 170.2) closes during the fight, but bot pathing ignores doors, so spread steps
+// never end south of this line.
 inline constexpr float GRUUL_ROOM_MIN_X = 172.0f;
 
-// Center of Gruul's room, where the tank holds him: the point with the most open floor (42 yd to
-// the nearest navmesh edge). The ranged positions are a ring around it.
+// Where the tank holds Gruul: the center of his room, with the most open floor (42 yd to the
+// nearest navmesh edge). Ranged bots spread in a ring around it.
 inline Position const GRUUL_POSITION = { 231.217f, 363.233f, -4.420f };
-// Gruul stops a fixed distance from the tank, so however far short of its spot the tank stops, he
-// stops that far short of the center.
+// Gruul follows the tank at a fixed distance, so however far the tank stops from its position,
+// Gruul stops that far from the center.
 inline constexpr float GRUUL_TANK_ARRIVAL_DISTANCE = 0.5f;
 
 bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool);

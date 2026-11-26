@@ -379,7 +379,8 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     if (distToPosition <= GRUUL_ARRIVAL_DISTANCE)
         return false;
 
-    // Gruul stops this far from a tank he follows. Growth adds 1 yd to his reach per stack.
+    // The tank stands this far past the center so Gruul, following at this distance, stops on it.
+    // Each Growth stack adds 1 yd to his reach.
     float const leadDistance = CONTACT_DISTANCE + gruul->GetCombatReach() + bot->GetCombatReach();
     float const ratio = leadDistance / distToPosition;
     Position const destination(
@@ -481,9 +482,9 @@ bool GruulTheDragonkillerGetOutOfCaveInAction::Execute(Event /*event*/)
     return FleePosition(pool, CAVE_IN_RADIUS, minInterval);
 }
 
-// Each group member inside the clearance pushes the bot directly away from them, harder the closer
-// they are. Note that this is different from moving away from the group's average position, which
-// would send players standing together the same way instead of splitting them up.
+// Every group member inside the clearance pushes the bot directly away from them, harder the closer
+// they are. Moving away from the group's average position instead would send bots standing together
+// off in the same direction.
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
@@ -513,7 +514,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 
     float const pushAngle = std::atan2(pushY, pushX);
     constexpr float angleStep = static_cast<float>(M_PI) / 8.0f;
-    // Steps of 22.5 degrees off the push direction, alternating sides, out to 90 degrees.
+    // If the push direction is blocked, try 22.5° steps to either side, alternating, out to 90°.
     for (int const offset : { 0, 1, -1, 2, -2, 3, -3, 4, -4 })
     {
         float const angle = pushAngle + offset * angleStep;
