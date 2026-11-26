@@ -392,6 +392,18 @@ inline constexpr float CARIBDIS_RANGED_SPREAD_DISTANCE = 4.0f;
 // about 1.5 yd, and a bot standing on the ground is well under 1 yd from the navmesh.
 inline constexpr float CARIBDIS_CYCLONE_DROP_HEIGHT = 1.0f;
 
+// A Cyclone can leave a bot on the ledge of either lower-floor pillar's base. The navmesh doesn't
+// connect the ledge to the floor, so no pathed move can take the bot off it.
+inline std::array const KARATHRESS_LEDGE_PILLARS = {
+    Position{ 478.9f, -487.4f, -13.0f },
+    Position{ 521.6f, -487.4f, -13.0f },
+};
+// The floor's navmesh starts within 8.3 yd of a pillar's centre on every bearing.
+inline constexpr float KARATHRESS_PILLAR_BASE_RADIUS = 8.5f;
+inline constexpr float KARATHRESS_PILLAR_STEP_OFF_DISTANCE = KARATHRESS_PILLAR_BASE_RADIUS + 1.0f;
+// The ledge is 3 to 4 yd above the floor.
+inline constexpr float KARATHRESS_PILLAR_LEDGE_HEIGHT = 2.0f;
+
 inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
 inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
 inline Position const SHARKKIS_TANK_POSITION =   { 508.057f, -541.109f, -10.133f };
@@ -411,6 +423,7 @@ bool IsKarathressPetHoldActive(Player* bot);
 bool IsHoldingAnotherTanksCouncilMember(PlayerbotAI* botAI, Unit* ownTarget);
 bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range);
 Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet);
+Position const* GetKarathressLedgePillar(Player* bot);
 
 // Morogrim Tidewalker
 

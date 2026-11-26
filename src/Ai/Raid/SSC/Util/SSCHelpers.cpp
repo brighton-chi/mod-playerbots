@@ -1202,6 +1202,21 @@ Unit* GetKarathressPetTarget(PlayerbotAI* botAI, Creature* pet)
     return target;
 }
 
+// The pillar whose base the bot is standing on or hanging above.
+Position const* GetKarathressLedgePillar(Player* bot)
+{
+    for (Position const& pillar : KARATHRESS_LEDGE_PILLARS)
+    {
+        if (bot->GetPositionZ() - pillar.GetPositionZ() > KARATHRESS_PILLAR_LEDGE_HEIGHT &&
+            bot->GetExactDist2d(pillar) < KARATHRESS_PILLAR_BASE_RADIUS)
+        {
+            return &pillar;
+        }
+    }
+
+    return nullptr;
+}
+
 // Morogrim Tidewalker
 
 // The stack point is directly across Tidewalker from his tank to keep it stable.

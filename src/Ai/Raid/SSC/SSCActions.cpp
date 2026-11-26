@@ -105,15 +105,6 @@ bool SscStopAttackingAction::Execute(Event /*event*/)
     return StopAttackingAndChanneling(bot);
 }
 
-bool HydrossTheUnstableStopAttackingAction::Execute(Event event)
-{
-    if (!PlayerbotAI::IsTank(bot))
-        return SscStopAttackingAction::Execute(event);
-
-    Unit* hydross = GetSscBoss(bot, SscBosses::DATA_HYDROSS_THE_UNSTABLE);
-    return hydross && StopAttackingTarget(bot, hydross);
-}
-
 bool SscSelectTargetForHoldAction::isUseful()
 {
     return botAI->GetState() == BOT_STATE_NON_COMBAT;
@@ -122,19 +113,6 @@ bool SscSelectTargetForHoldAction::isUseful()
 bool SscSelectTargetForHoldAction::Execute(Event /*event*/)
 {
     return SelectTarget(botAI, AI_VALUE(Unit*, "dps target"));
-}
-
-bool HydrossTheUnstableSelectTargetForHoldAction::Execute(Event event)
-{
-    if (!IsHydrossAddTank(bot))
-        return SscSelectTargetForHoldAction::Execute(event);
-
-    return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
-}
-
-bool LeotherasTheBlindSelectTargetForHoldAction::isUseful()
-{
-    return SscSelectTargetForHoldAction::isUseful() && !PlayerbotAI::IsTank(bot);
 }
 
 bool SscSpreadRangedAction::Execute(Event /*event*/)
@@ -249,6 +227,23 @@ bool HydrossTheUnstableMisdirectToTankAction::Execute(Event /*event*/)
         return false;
 
     return MisdirectTargetToTank(botAI, hydross, tank);
+}
+
+bool HydrossTheUnstableStopAttackingAction::Execute(Event event)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return SscStopAttackingAction::Execute(event);
+
+    Unit* hydross = GetSscBoss(bot, SscBosses::DATA_HYDROSS_THE_UNSTABLE);
+    return hydross && StopAttackingTarget(bot, hydross);
+}
+
+bool HydrossTheUnstableSelectTargetForHoldAction::Execute(Event event)
+{
+    if (!IsHydrossAddTank(bot))
+        return SscSelectTargetForHoldAction::Execute(event);
+
+    return SelectTarget(botAI, AI_VALUE(Unit*, "tank target"));
 }
 
 bool HydrossTheUnstableManagePhaseTimersAction::Execute(Event /*event*/)
@@ -929,6 +924,11 @@ bool LeotherasTheBlindMisdirectDemonFormToTankAction::Execute(Event /*event*/)
     return MisdirectTargetToTank(botAI, leotherasDemon, tank);
 }
 
+bool LeotherasTheBlindSelectTargetForHoldAction::isUseful()
+{
+    return SscSelectTargetForHoldAction::isUseful() && !PlayerbotAI::IsTank(bot);
+}
+
 bool LeotherasTheBlindManageDpsHoldTimersAction::Execute(Event /*event*/)
 {
     Unit* leotheras = GetSscBoss(bot, SscBosses::DATA_LEOTHERAS_THE_BLIND);
@@ -1287,6 +1287,9 @@ bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/
         bot->StopMoving();
     }
 
+    if (Position const* pillar = GetKarathressLedgePillar(bot))
+        return StepOffPillarLedge(*pillar);
+
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
     float const floorZ = bot->GetMapHeight(x, y, bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
@@ -1300,6 +1303,41 @@ bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/
     return MoveTo(
         SSC_MAP_ID, x, y, floorZ, false, false, false, true,
         MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+// Move the bot straight out past the base, then straight down. This skips the core's pathfinding,
+// which would start the path on the ledge and end it at the ledge's edge.
+bool FathomLordKarathressDropToGroundAfterCycloneAction::StepOffPillarLedge(Position const& pillar)
+{
+    if (!botAI->CanMove() || !bot->movespline->Finalized())
+        return false;
+
+    float const angle = pillar.GetAngle(bot);
+    float const x = pillar.GetPositionX() + KARATHRESS_PILLAR_STEP_OFF_DISTANCE * std::cos(angle);
+    float const y = pillar.GetPositionY() + KARATHRESS_PILLAR_STEP_OFF_DISTANCE * std::sin(angle);
+    float const startZ = bot->GetPositionZ();
+    float const floorZ = bot->GetMapHeight(x, y, startZ, true, MAX_FALL_DISTANCE);
+    if (floorZ <= INVALID_HEIGHT)
+        return false;
+
+    Movement::PointsArray path = {
+        G3D::Vector3(bot->GetPositionX(), bot->GetPositionY(), startZ),
+        G3D::Vector3(x, y, startZ),
+        G3D::Vector3(x, y, floorZ),
+    };
+
+    MotionMaster* mm = bot->GetMotionMaster();
+    mm->Clear();
+    mm->MoveSplinePath(&path);
+
+    float const distance = bot->GetExactDist2d(x, y) + (startZ - floorZ);
+    float const delay = std::clamp(
+        IN_MILLISECONDS * MoveDelay(distance) - static_cast<float>(botAI->GetReactDelay()),
+        0.0f, static_cast<float>(sPlayerbotAIConfig.MaxWaitForMove));
+
+    AI_VALUE(LastMovement&, "last movement").Set(
+        SSC_MAP_ID, x, y, floorZ, bot->GetOrientation(), delay, MovementPriority::MOVEMENT_FORCED);
+    return true;
 }
 
 // Morogrim Tidewalker

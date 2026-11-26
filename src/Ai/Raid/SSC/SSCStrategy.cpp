@@ -146,6 +146,10 @@ void RaidSscStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction(
             "fathom-lord karathress drop to ground after cyclone", ACTION_EMERGENCY + 9) }));
 
+    triggers.push_back(new TriggerNode("fathom-lord karathress stranded on pillar ledge",
+        { NextAction(
+            "fathom-lord karathress drop to ground after cyclone", ACTION_EMERGENCY + 9) }));
+
     // Morogrim Tidewalker
     triggers.push_back(new TriggerNode("morogrim tidewalker should be tanked",
         { NextAction("morogrim tidewalker position main tank", ACTION_RAID) }));

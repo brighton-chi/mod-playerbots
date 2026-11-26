@@ -234,8 +234,7 @@ bool LeotherasTheBlindRangedShouldSpreadUponPullTrigger::IsActive()
     if (bot->GetExactDist(LEOTHERAS_SPAWN_POSITION) > LEOTHERAS_SEARCH_DISTANCE)
         return false;
 
-    Creature* leotheras = GetLeotheras(botAI);
-    if (!leotheras || !IsSpellbinderPhase(leotheras))
+    if (!FindThreatTarget(bot, "greyheart spellbinder"))
         return false;
 
     return GetNearestPlayerInRadius(bot, LEOTHERAS_RANGED_SPREAD_DISTANCE);
@@ -476,6 +475,11 @@ bool FathomLordKarathressStuckMidairAfterCycloneTrigger::IsActiveInEncounter()
     float const floorZ = bot->GetMapHeight(
         bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), true, MAX_FALL_DISTANCE);
     return floorZ > INVALID_HEIGHT && bot->GetPositionZ() - floorZ > CARIBDIS_CYCLONE_DROP_HEIGHT;
+}
+
+bool FathomLordKarathressStrandedOnPillarLedgeTrigger::IsActiveInEncounter()
+{
+    return !bot->HasAura(Id(SscSpells::SPELL_CYCLONE)) && GetKarathressLedgePillar(bot);
 }
 
 // Morogrim Tidewalker

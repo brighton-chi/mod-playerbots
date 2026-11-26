@@ -245,8 +245,9 @@ protected:
 
 // Leotheras the Blind
 
-// Not encounter gated because the encounter does not start during the Spellbinder phase unless he
-// is hit by something (it's likely he'll get hit by an AoE spell in practice).
+// Not encounter gated because Leotheras is set to engaged only once something hostile hits him,
+// which might not happen until the Spellbinders are dead since he is immune and not intended to be
+// attacked while the Spellbinders are up.
 class LeotherasTheBlindRangedShouldSpreadUponPullTrigger : public Trigger
 {
 public:
@@ -503,6 +504,18 @@ public:
     FathomLordKarathressStuckMidairAfterCycloneTrigger(PlayerbotAI* botAI)
         : SscEncounterTrigger(
             botAI, "fathom-lord karathress stuck midair after cyclone",
+            SscHelpers::SscBosses::DATA_FATHOM_LORD_KARATHRESS, 1000) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class FathomLordKarathressStrandedOnPillarLedgeTrigger : public SscEncounterTrigger
+{
+public:
+    FathomLordKarathressStrandedOnPillarLedgeTrigger(PlayerbotAI* botAI)
+        : SscEncounterTrigger(
+            botAI, "fathom-lord karathress stranded on pillar ledge",
             SscHelpers::SscBosses::DATA_FATHOM_LORD_KARATHRESS, 1000) {}
 
 protected:

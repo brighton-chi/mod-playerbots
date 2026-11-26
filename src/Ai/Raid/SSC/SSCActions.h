@@ -59,15 +59,6 @@ public:
     bool Execute(Event event) override;
 };
 
-// Add tanks stop attacking Hydross only, so they keep tanking adds.
-class HydrossTheUnstableStopAttackingAction : public SscStopAttackingAction
-{
-public:
-    HydrossTheUnstableStopAttackingAction(PlayerbotAI* botAI)
-        : SscStopAttackingAction(botAI, "hydross the unstable stop attacking") {}
-    bool Execute(Event event) override;
-};
-
 // Select the target that dps assist would select, without attacking it. Used for Hydross the
 // Unstable, Leotheras the Blind, and Fathom-Lord Karathress (for healers, as everyone else gets a
 // target from the dps priority action).
@@ -78,24 +69,6 @@ public:
         : Action(botAI, name) {}
     bool isUseful() override;
     bool Execute(Event event) override;
-};
-
-// Add tanks select the target tank assist would, which is Hydross if no adds are up.
-class HydrossTheUnstableSelectTargetForHoldAction : public SscSelectTargetForHoldAction
-{
-public:
-    HydrossTheUnstableSelectTargetForHoldAction(PlayerbotAI* botAI)
-        : SscSelectTargetForHoldAction(botAI, "hydross the unstable select target for hold") {}
-    bool Execute(Event event) override;
-};
-
-// For bots with no target. Tanks pick up Leotheras themselves.
-class LeotherasTheBlindSelectTargetForHoldAction : public SscSelectTargetForHoldAction
-{
-public:
-    LeotherasTheBlindSelectTargetForHoldAction(PlayerbotAI* botAI)
-        : SscSelectTargetForHoldAction(botAI, "leotheras the blind select target for hold") {}
-    bool isUseful() override;
 };
 
 // Used for Hydross the Unstable, Leotheras the Blind, and Fathom-Lord Karathress.
@@ -148,6 +121,22 @@ class HydrossTheUnstableMisdirectToTankAction : public Action
 public:
     HydrossTheUnstableMisdirectToTankAction(PlayerbotAI* botAI)
         : Action(botAI, "hydross the unstable misdirect to tank") {}
+    bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableStopAttackingAction : public SscStopAttackingAction
+{
+public:
+    HydrossTheUnstableStopAttackingAction(PlayerbotAI* botAI)
+        : SscStopAttackingAction(botAI, "hydross the unstable stop attacking") {}
+    bool Execute(Event event) override;
+};
+
+class HydrossTheUnstableSelectTargetForHoldAction : public SscSelectTargetForHoldAction
+{
+public:
+    HydrossTheUnstableSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "hydross the unstable select target for hold") {}
     bool Execute(Event event) override;
 };
 
@@ -307,6 +296,15 @@ public:
     bool Execute(Event event) override;
 };
 
+// For bots with no target. Tanks pick up Leotheras themselves.
+class LeotherasTheBlindSelectTargetForHoldAction : public SscSelectTargetForHoldAction
+{
+public:
+    LeotherasTheBlindSelectTargetForHoldAction(PlayerbotAI* botAI)
+        : SscSelectTargetForHoldAction(botAI, "leotheras the blind select target for hold") {}
+    bool isUseful() override;
+};
+
 class LeotherasTheBlindManageDpsHoldTimersAction : public Action
 {
 public:
@@ -417,6 +415,9 @@ public:
     FathomLordKarathressDropToGroundAfterCycloneAction(PlayerbotAI* botAI)
         : MovementAction(botAI, "fathom-lord karathress drop to ground after cyclone") {}
     bool Execute(Event event) override;
+
+private:
+    bool StepOffPillarLedge(Position const& pillar);
 };
 
 // Morogrim Tidewalker

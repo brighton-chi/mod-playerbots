@@ -141,6 +141,9 @@ public:
         creators["fathom-lord karathress stuck midair after cyclone"] =
             &RaidSscTriggerContext::fathom_lord_karathress_stuck_midair_after_cyclone;
 
+        creators["fathom-lord karathress stranded on pillar ledge"] =
+            &RaidSscTriggerContext::fathom_lord_karathress_stranded_on_pillar_ledge;
+
         // Morogrim Tidewalker
         creators["morogrim tidewalker should be tanked"] =
             &RaidSscTriggerContext::morogrim_tidewalker_should_be_tanked;
@@ -413,6 +416,10 @@ private:
     static Trigger* fathom_lord_karathress_stuck_midair_after_cyclone(PlayerbotAI* botAI)
     {
         return new FathomLordKarathressStuckMidairAfterCycloneTrigger(botAI);
+    }
+    static Trigger* fathom_lord_karathress_stranded_on_pillar_ledge(PlayerbotAI* botAI)
+    {
+        return new FathomLordKarathressStrandedOnPillarLedgeTrigger(botAI);
     }
 
     // Morogrim Tidewalker
