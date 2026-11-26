@@ -665,7 +665,7 @@ float FathomLordKarathressDisableTankActionsMultiplier::GetValueInEncounter(Acti
     return IsAnotherCouncilMemberWithin(botAI, KARATHRESS_AOE_THREAT_CLEARANCE) ? 0.0f : 1.0f;
 }
 
-float FathomLordKarathressDisableAutoTargetMultiplier::GetValueInEncounter(Action* action)
+float FathomLordKarathressDisableAssistTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -933,7 +933,7 @@ float LadyVashjCoreHandlersPrioritizePositioningMultiplier::GetValueInEncounter(
     return index >= 0 && IsVashjCoreCatcherActive(bot, *chain, index) ? 0.0f : 1.0f;
 }
 
-float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action* action)
+float LadyVashjPhase2ControlTargetingAndMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isAlwaysBlocked =
         dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
@@ -995,7 +995,7 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     return 1.0f;
 }
 
-float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Action* action)
+float LadyVashjPhase3ControlTargetingAndMovementMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isAssistAction =
         dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action);

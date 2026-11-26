@@ -125,13 +125,7 @@ float ZulAmanAvoidWhirlwindMultiplier::GetValueInEncounter(Action* action)
         whirlwind = Id(ZaSpells::SPELL_HEX_LORD_WHIRLWIND);
     }
 
-    if (!boss)
-        return 1.0f;
-
-    if (boss->GetVictim() == bot)
-        return 1.0f;
-
-    if (!boss->HasAura(whirlwind))
+    if (!boss || !boss->HasAura(whirlwind) || boss->GetVictim() == bot)
         return 1.0f;
 
     return bot->GetExactDist2d(boss) <= ZA_WHIRLWIND_HOLD_DISTANCE ? 0.0f : 1.0f;
@@ -245,10 +239,7 @@ float AkilzonStayInEyeOfTheStormMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     std::optional<uint32> const& stormTimer = ZaState(bot->GetInstanceId()).akilzonStormTimer;
-    if (!stormTimer)
-        return 1.0f;
-
-    return IsInStormWindow(*stormTimer) ? 0.0f : 1.0f;
+    return stormTimer && IsInStormWindow(*stormTimer) ? 0.0f : 1.0f;
 }
 
 // Nalorakk <Bear Avatar>
@@ -266,10 +257,7 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValueInEncounter(Action* action
         return 1.0f;
 
     Unit* janalai = GetEncounterBoss();
-    if (!janalai)
-        return 1.0f;
-
-    return IsJanalaiBombing(janalai) ? 0.0f : 1.0f;
+    return janalai && IsJanalaiBombing(janalai) ? 0.0f : 1.0f;
 }
 
 float JanalaiDoNotCrowdControlHatchersMultiplier::GetValueInEncounter(Action* action)
@@ -283,15 +271,12 @@ float JanalaiDoNotCrowdControlHatchersMultiplier::GetValueInEncounter(Action* ac
 
 // Halazzi <Lynx Avatar>
 
-float HalazziDisableAutoDpsTargetingMultiplier::GetValueInEncounter(Action* action)
+float HalazziDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    if (!PlayerbotAI::IsDps(bot))
-        return 1.0f;
-
-    return dynamic_cast<DpsAssistAction*>(action) ||
+    return dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ? 0.0f : 1.0f;
 }
 
@@ -345,10 +330,8 @@ float HexLordMalacrassSpellReflectionMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
 
     Unit* malacrass = GetEncounterBoss();
-    if (!malacrass)
-        return 1.0f;
-
-    return malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
+    return malacrass &&
+        malacrass->HasAura(Id(ZaSpells::SPELL_HEX_LORD_SPELL_REFLECTION)) ? 0.0f : 1.0f;
 }
 
 float HexLordMalacrassStayAwayFromFreezingTrapMultiplier::GetValueInEncounter(Action* action)
@@ -393,8 +376,5 @@ float ZuljinEagleDisableAvoidAoeMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     Unit* zuljin = GetEncounterBoss();
-    if (!zuljin)
-        return 1.0f;
-
-    return zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
+    return zuljin && zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
 }

@@ -329,8 +329,9 @@ void RaidSwpStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Kil'jaeden <The Deceiver>
     multipliers.push_back(new KiljaedenSingleTargetHandsMultiplier(botAI));
+    multipliers.push_back(new KiljaedenDisableMainTankAssistMultiplier(botAI));
     multipliers.push_back(new KiljaedenHoldDpsAtStartMultiplier(botAI));
-    multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
+    multipliers.push_back(new KiljaedenControlMovementMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
 }

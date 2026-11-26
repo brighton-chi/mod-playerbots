@@ -190,7 +190,7 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new KarazhanDisableCombatFormationMoveMultiplier(
         botAI, "attumen the huntsman disable combat formation move",
         KaraHelpers::KaraBosses::DATA_ATTUMEN));
-    multipliers.push_back(new AttumenTheHuntsmanDisableAutoTargetingMultiplier(botAI));
+    multipliers.push_back(new AttumenTheHuntsmanFocusMidnightMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanHoldDpsMultiplier(botAI));
     multipliers.push_back(new KarazhanDisableCombatFormationMoveMultiplier(

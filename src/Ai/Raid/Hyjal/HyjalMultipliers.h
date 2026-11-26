@@ -176,12 +176,12 @@ protected:
 
 // Azgalor
 
-class AzgalorDisableAutoTargetingAndPositioningMultiplier : public HyjalEncounterMultiplier
+class AzgalorDisableAssistTargetingAndPositioningMultiplier : public HyjalEncounterMultiplier
 {
 public:
-    AzgalorDisableAutoTargetingAndPositioningMultiplier(PlayerbotAI* botAI)
+    AzgalorDisableAssistTargetingAndPositioningMultiplier(PlayerbotAI* botAI)
         : HyjalEncounterMultiplier(
-            botAI, "azgalor disable auto targeting and positioning",
+            botAI, "azgalor disable assist targeting and positioning",
             HyjalHelpers::HyjalBosses::DATA_AZGALOR) {}
 
 protected:

@@ -870,11 +870,10 @@ bool IsHeldIllidanHeal(Player* bot, Unit* illidan, Action* action)
     return !DoIllidanTanksHaveAggro(bot, illidan, phase);
 }
 
-bool IsIllidanAoeAction(Player* bot, Action* action)
+bool IsAoeAction(Player* bot, Action* action)
 {
-    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
     return IsAoeThreatAction(bot, action) ||
-        (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe);
+        action->getThreatType() == Action::ActionThreatType::Aoe;
 }
 
 bool IsGuardianSummon(Player* bot, Action* action)
@@ -1182,10 +1181,12 @@ float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Acti
         AI_VALUE(Unit*, "current target") : action->GetTarget();
     bool const isOnShadowfiend =
         target && target->GetEntry() == Id(BtNpcs::NPC_PARASITIC_SHADOWFIEND);
-    bool const isAoeSpell = IsIllidanAoeAction(bot, action);
 
-    if (!isOnShadowfiend && !isAoeSpell && !dynamic_cast<CastHealingSpellAction*>(action))
+    if (!isOnShadowfiend && !IsAoeAction(bot, action) &&
+        !dynamic_cast<CastHealingSpellAction*>(action))
+    {
         return 1.0f;
+    }
 
     return IsNearNewParasiticShadowfiend(botAI) ? 0.0f : 1.0f;
 }
@@ -1341,7 +1342,7 @@ float IllidanStormrageDisableAoeOnShadowDemonsMultiplier::GetValueInEncounter(Ac
     if (dynamic_cast<CastHealingSpellAction*>(action))
         return 1.0f;
 
-    if (!IsIllidanAoeAction(bot, action))
+    if (!IsAoeAction(bot, action))
         return 1.0f;
 
     Unit* illidan = GetEncounterBoss();

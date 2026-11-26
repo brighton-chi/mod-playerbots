@@ -283,7 +283,7 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Fathom-Lord Karathress
     multipliers.push_back(new FathomLordKarathressDisableTankActionsMultiplier(botAI));
-    multipliers.push_back(new FathomLordKarathressDisableAutoTargetMultiplier(botAI));
+    multipliers.push_back(new FathomLordKarathressDisableAssistTargetingMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressDisableAoeMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressStartHoldDpsMultiplier(botAI));
     multipliers.push_back(new FathomLordKarathressBlessingHoldDpsMultiplier(botAI));
@@ -302,8 +302,8 @@ void RaidSscStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjNoUnauthorizedLootingMultiplier(botAI));
     multipliers.push_back(new LadyVashjCoreHandlersPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new LadyVashjPhase2DisableAutoTargetAndMoveMultiplier(botAI));
-    multipliers.push_back(new LadyVashjPhase3DisableAutoTargetAndMoveMultiplier(botAI));
+    multipliers.push_back(new LadyVashjPhase2ControlTargetingAndMovementMultiplier(botAI));
+    multipliers.push_back(new LadyVashjPhase3ControlTargetingAndMovementMultiplier(botAI));
     multipliers.push_back(new LadyVashjSaveHandOfFreedomMultiplier(botAI));
     multipliers.push_back(new LadyVashjMeleeControlSporeAvoidanceMultiplier(botAI));
     multipliers.push_back(new LadyVashjRangedDoNotReachThroughSporesMultiplier(botAI));

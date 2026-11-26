@@ -413,6 +413,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class KiljaedenDisableMainTankAssistMultiplier : public SunwellEncounterMultiplier
+{
+public:
+    KiljaedenDisableMainTankAssistMultiplier(PlayerbotAI* botAI)
+        : SunwellEncounterMultiplier(
+            botAI, "kil'jaeden disable main tank assist", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 class KiljaedenHoldDpsAtStartMultiplier : public SunwellEncounterMultiplier
 {
 public:
@@ -424,19 +435,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KiljaedenControlMovementAndTargetingMultiplier : public SunwellEncounterMultiplier
+class KiljaedenControlMovementMultiplier : public SunwellEncounterMultiplier
 {
 public:
-    KiljaedenControlMovementAndTargetingMultiplier(PlayerbotAI* botAI)
+    KiljaedenControlMovementMultiplier(PlayerbotAI* botAI)
         : SunwellEncounterMultiplier(
-            botAI, "kil'jaeden control movement and targeting",
-            SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
+            botAI, "kil'jaeden control movement", SwpHelpers::SwpBosses::DATA_KILJAEDEN) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 
 private:
-    bool IsReachHeld(Action* action);
+    bool IsReachTargetHeld(Action* action);
 };
 
 class KiljaedenPrioritizeDarknessProtectionMultiplier : public SunwellEncounterMultiplier

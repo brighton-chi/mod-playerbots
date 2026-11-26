@@ -44,10 +44,8 @@ float MagtheridonUseManticronCubeMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     std::optional<uint32> const& blastNovaTimer = MagState(bot->GetInstanceId()).blastNovaTimer;
-    if (!blastNovaTimer)
-        return 1.0f;
-
-    return getMSTimeDiff(*blastNovaTimer, getMSTime()) >= BLAST_NOVA_INTERIM_MS ? 0.0f : 1.0f;
+    return blastNovaTimer && getMSTimeDiff(*blastNovaTimer, getMSTime()) >= BLAST_NOVA_INTERIM_MS ?
+        0.0f : 1.0f;
 }
 
 float MagtheridonHoldDpsMultiplier::GetValueInEncounter(Action* action)
@@ -83,7 +81,7 @@ float MagtheridonKeepInCombatBeforeReleaseMultiplier::GetValueInEncounter(Action
     }
 
     Unit* magtheridon = GetMagtheridon(bot);
-    return IsMagtheridonReleasePending(bot, magtheridon) ? 0.0f : 1.0f;
+    return magtheridon && IsMagtheridonReleasePending(bot, magtheridon) ? 0.0f : 1.0f;
 }
 
 float MagtheridonControlTankActionsMultiplier::GetValueInEncounter(Action* action)

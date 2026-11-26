@@ -59,12 +59,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class AlarDisableAutomaticTargetingMultiplier : public TempestKeepEncounterMultiplier
+class AlarDisableAssistTargetingMultiplier : public TempestKeepEncounterMultiplier
 {
 public:
-    AlarDisableAutomaticTargetingMultiplier(PlayerbotAI* botAI)
+    AlarDisableAssistTargetingMultiplier(PlayerbotAI* botAI)
         : TempestKeepEncounterMultiplier(
-            botAI, "al'ar disable automatic targeting", TkHelpers::TkBosses::DATA_ALAR) {}
+            botAI, "al'ar disable assist targeting", TkHelpers::TkBosses::DATA_ALAR) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
@@ -218,12 +218,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class KaelthasSunstriderManageAutomaticTargetingMultiplier : public TempestKeepEncounterMultiplier
+class KaelthasSunstriderManageAssistTargetingMultiplier : public TempestKeepEncounterMultiplier
 {
 public:
-    KaelthasSunstriderManageAutomaticTargetingMultiplier(PlayerbotAI* botAI)
+    KaelthasSunstriderManageAssistTargetingMultiplier(PlayerbotAI* botAI)
         : TempestKeepEncounterMultiplier(
-            botAI, "kael'thas sunstrider manage automatic targeting",
+            botAI, "kael'thas sunstrider manage assist targeting",
             TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:

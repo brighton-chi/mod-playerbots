@@ -122,7 +122,7 @@ void RaidZulAmanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new JanalaiDoNotCrowdControlHatchersMultiplier(botAI));
 
     // Halazzi <Lynx Avatar>
-    multipliers.push_back(new HalazziDisableAutoDpsTargetingMultiplier(botAI));
+    multipliers.push_back(new HalazziDisableAutoTargetingMultiplier(botAI));
 
     // Hex Lord Malacrass
     multipliers.push_back(new HexLordMalacrassUnstableAfflictionMultiplier(botAI));

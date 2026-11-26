@@ -157,7 +157,7 @@ void RaidHyjalStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new KazrogalKeepAspectOfTheViperActiveMultiplier(botAI));
 
     // Azgalor
-    multipliers.push_back(new AzgalorDisableAutoTargetingAndPositioningMultiplier(botAI));
+    multipliers.push_back(new AzgalorDisableAssistTargetingAndPositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
     multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));
     multipliers.push_back(new AzgalorRangedControlAvoidanceMultiplier(botAI));

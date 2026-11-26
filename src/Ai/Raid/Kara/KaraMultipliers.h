@@ -85,12 +85,12 @@ public:
 
 // Attumen the Huntsman
 
-class AttumenTheHuntsmanDisableAutoTargetingMultiplier : public KarazhanEncounterMultiplier
+class AttumenTheHuntsmanFocusMidnightMultiplier : public KarazhanEncounterMultiplier
 {
 public:
-    AttumenTheHuntsmanDisableAutoTargetingMultiplier(PlayerbotAI* botAI)
+    AttumenTheHuntsmanFocusMidnightMultiplier(PlayerbotAI* botAI)
         : KarazhanEncounterMultiplier(
-            botAI, "attumen the huntsman disable auto targeting",
+            botAI, "attumen the huntsman focus midnight",
             KaraHelpers::KaraBosses::DATA_ATTUMEN) {}
 
 protected:

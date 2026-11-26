@@ -66,13 +66,10 @@ float AlarControlMovementMultiplier::GetValueInEncounter(Action* action)
         return 0.0f;
 
     Unit* alar = GetEncounterBoss();
-    if (!alar)
-        return 0.0f;
-
-    return IsAlarInPhase2(alar->GetInstanceId()) ? 1.0f : 0.0f;
+    return alar && IsAlarInPhase2(alar->GetInstanceId()) ? 1.0f : 0.0f;
 }
 
-float AlarDisableAutomaticTargetingMultiplier::GetValueInEncounter(Action* action)
+float AlarDisableAssistTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -92,7 +89,7 @@ float AlarStayAwayFromRebirthMultiplier::GetValueInEncounter(Action* action)
     if (dynamic_cast<AlarMoveAwayFromRebirthAction*>(action))
         return 1.0f;
 
-    // Don't block Flame Quills avoidance in case of bad timing for the transition.
+    // Also don't block Flame Quills avoidance in case of bad timing for the transition.
     if (dynamic_cast<AlarJumpFromPlatformAction*>(action))
         return 1.0f;
 
@@ -214,10 +211,8 @@ float KaelthasSunstriderHoldDpsMultiplier::GetValueInEncounter(Action* action)
     }
 
     Unit* kaelthas = GetEncounterBoss();
-    if (!kaelthas)
-        return 1.0f;
-
-    return IsKaelthasAdvisorDpsHoldActive(botAI, kaelthas) ? GetDpsHoldValue(bot, action) : 1.0f;
+    return kaelthas && IsKaelthasAdvisorDpsHoldActive(botAI, kaelthas) ?
+        GetDpsHoldValue(bot, action) : 1.0f;
 }
 
 float KaelthasSunstriderKiteThaladredMultiplier::GetValueInEncounter(Action* action)
@@ -335,10 +330,9 @@ float KaelthasSunstriderSuppressEquipUpgradeMultiplier::GetValueInEncounter(Acti
         dynamic_cast<EquipUpgradesPacketAction*>(action) ? 0.0f : 1.0f;
 }
 
-float KaelthasSunstriderManageAutomaticTargetingMultiplier::GetValueInEncounter(Action* action)
+float KaelthasSunstriderManageAssistTargetingMultiplier::GetValueInEncounter(Action* action)
 {
     bool const isDpsAssist = dynamic_cast<DpsAssistAction*>(action);
-
     if (!isDpsAssist && !dynamic_cast<TankAssistAction*>(action))
         return 1.0f;
 

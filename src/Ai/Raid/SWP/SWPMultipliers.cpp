@@ -166,7 +166,7 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             if (isBloodlust) // Bloodlust is saved for Entropius.
                 return 0.0f;
 
-            // Other DPS cooldowns can be used on M'uru after the pull.
+            // Other DPS cooldowns can be used on M'uru just after the pull.
             return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
         }
         case SwpBosses::DATA_EREDAR_TWINS:
@@ -250,7 +250,7 @@ float KalecgosControlMovementMultiplier::GetValueInEncounter(Action* action)
     return kalecgos && !kalecgos->IsFriendlyTo(bot) ? 0.0f : 1.0f;
 }
 
-// Avoid dueling taunts in the surface and spectral realms
+// Avoid dueling taunts in the surface and spectral realms.
 float KalecgosRestrictTauntMultiplier::GetValueInEncounter(Action* action)
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -296,11 +296,11 @@ float KalecgosEnterSpectralRiftMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
     }
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<KalecgosEnterSpectralRiftAction*>(action))
+    {
         return 1.0f;
-
-    if (dynamic_cast<KalecgosEnterSpectralRiftAction*>(action))
-        return 1.0f;
+    }
 
     if (!ShouldEnterKalecgosPortal(bot))
         return 1.0f;
@@ -333,10 +333,8 @@ float BrutallusControlMovementMultiplier::GetValueInEncounter(Action* action)
         return brutallus && brutallus->GetVictim() == bot ? 0.0f : 1.0f;
     }
 
-    return dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        dynamic_cast<FleeAction*>(action) ||
-        IsRepositionAction(bot, action) ? 0.0f : 1.0f;
+    return dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+        IsRepositionAction(bot, action) || dynamic_cast<FollowAction*>(action) ? 0.0f : 1.0f;
 }
 
 // Don't use Killing Spree if any melee member (other than the Brutallus tanks) has Burn
@@ -454,11 +452,11 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValueInEncounter(Action* actio
         return 1.0f;
     }
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<FelmystMoveToSafeFogLaneAction*>(action))
+    {
         return 1.0f;
-
-    if (dynamic_cast<FelmystMoveToSafeFogLaneAction*>(action))
-        return 1.0f;
+    }
 
     Unit* felmyst = GetEncounterBoss();
     if (!felmyst || !felmyst->IsFlying())
@@ -794,6 +792,18 @@ float KiljaedenSingleTargetHandsMultiplier::GetValueInEncounter(Action* action)
     return FindThreatTarget(bot, "hand of the deceiver") ? 0.0f : 1.0f;
 }
 
+float KiljaedenDisableMainTankAssistMultiplier::GetValueInEncounter(Action* action)
+{
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    if (!dynamic_cast<TankAssistAction*>(action))
+        return 1.0f;
+
+    Unit* kiljaeden = GetEncounterBoss();
+    return kiljaeden && kiljaeden->GetVictim() == bot ? 0.0f : 1.0f;
+}
+
 // Only Kil'jaeden is held, so Volatile Felfire Fiends still left from the Hands are killed.
 float KiljaedenHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
 {
@@ -810,13 +820,10 @@ float KiljaedenHoldDpsAtStartMultiplier::GetValueInEncounter(Action* action)
     return GetDpsHoldValue(bot, action);
 }
 
-float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action* action)
+float KiljaedenControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    // Killing Spree carries the rogue into KJ's Knockback.
-    if (IsKillingSpree(bot, action))
-        return 0.0f;
-
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+    // Don't hold during the Hands phase.
+    if (!GetEncounterBoss())
         return 1.0f;
 
     // Charges go straight to their target, into KJ's Knockback if he is in the way.
@@ -826,20 +833,25 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValueInEncounter(Action
         return target && IsLineThroughKiljaedenKnockback(*bot, *target) ? 0.0f : 1.0f;
     }
 
-    if (dynamic_cast<ReachTargetAction*>(action))
-        return IsReachHeld(action) ? 0.0f : 1.0f;
+    // Killing Spree teleports the rogue into KJ's Knockback.
+    if (IsKillingSpree(bot, action))
+        return 0.0f;
 
-    return dynamic_cast<FleeAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
-        IsRepositionAction(bot, action) ||
-        (dynamic_cast<TankAssistAction*>(action) && PlayerbotAI::IsMainTank(bot)) ? 0.0f : 1.0f;
+    if (!dynamic_cast<MovementAction*>(action))
+        return 1.0f;
+
+    if (dynamic_cast<ReachTargetAction*>(action))
+        return IsReachTargetHeld(action) ? 0.0f : 1.0f;
+
+    return dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+        IsRepositionAction(bot, action) ? 0.0f : 1.0f;
 }
 
 // Once Kil'jaeden is up, everyone but the tanks has a fixed position, and a reach goes straight to
 // its target, often through his Knockback. The Hands of the Deceiver phase has no positions.
-bool KiljaedenControlMovementAndTargetingMultiplier::IsReachHeld(Action* action)
+bool KiljaedenControlMovementMultiplier::IsReachTargetHeld(Action* action)
 {
-    if (PlayerbotAI::IsTank(bot) || !GetEncounterBoss())
+    if (PlayerbotAI::IsTank(bot))
         return false;
 
     // Demo Locks in Metamorphosis leave their positions to melee Reflections.
@@ -858,20 +870,17 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValueInEncounter(Actio
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<KiljaedenStackForShieldOfTheBlueAction*>(action))
+    {
         return 1.0f;
-
-    if (dynamic_cast<KiljaedenStackForShieldOfTheBlueAction*>(action))
-        return 1.0f;
-
-    Unit* kiljaeden = GetEncounterBoss();
-    if (!kiljaeden)
-        return 1.0f;
+    }
 
     if (HasKiljaedenDragonAura(bot))
         return 1.0f;
 
-    return IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ? 0.0f : 1.0f;
+    Unit* kiljaeden = GetEncounterBoss();
+    return kiljaeden && IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ? 0.0f : 1.0f;
 }
 
 float KiljaedenControlDragonMultiplier::GetValueInEncounter(Action* action)
@@ -879,8 +888,6 @@ float KiljaedenControlDragonMultiplier::GetValueInEncounter(Action* action)
     if (!HasKiljaedenDragonAura(bot))
         return 1.0f;
 
-    if (dynamic_cast<KiljaedenDragonBuffAndProtectRaidAction*>(action))
-        return 1.0f;
-
-    return dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
+    return dynamic_cast<KiljaedenDragonBuffAndProtectRaidAction*>(action) ||
+        dynamic_cast<WipeAction*>(action) ? 1.0f : 0.0f;
 }

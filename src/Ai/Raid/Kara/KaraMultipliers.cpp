@@ -241,7 +241,7 @@ float ManaWarpSaveStunsMultiplier::GetValue(Action* action)
 
 // Attumen the Huntsman
 
-float AttumenTheHuntsmanDisableAutoTargetingMultiplier::GetValueInEncounter(Action* action)
+float AttumenTheHuntsmanFocusMidnightMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;

@@ -301,12 +301,12 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class FathomLordKarathressDisableAutoTargetMultiplier : public SscEncounterMultiplier
+class FathomLordKarathressDisableAssistTargetingMultiplier : public SscEncounterMultiplier
 {
 public:
-    FathomLordKarathressDisableAutoTargetMultiplier(PlayerbotAI* botAI)
+    FathomLordKarathressDisableAssistTargetingMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(
-            botAI, "fathom-lord karathress disable auto target",
+            botAI, "fathom-lord karathress disable assist targeting",
             SscHelpers::SscBosses::DATA_FATHOM_LORD_KARATHRESS) {}
 
 protected:
@@ -485,24 +485,24 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjPhase2DisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
+class LadyVashjPhase2ControlTargetingAndMovementMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjPhase2DisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
+    LadyVashjPhase2ControlTargetingAndMovementMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(
-            botAI, "lady vashj phase 2 disable auto target and move",
+            botAI, "lady vashj phase 2 control targeting and movement",
             SscHelpers::SscBosses::DATA_LADY_VASHJ) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-class LadyVashjPhase3DisableAutoTargetAndMoveMultiplier : public SscEncounterMultiplier
+class LadyVashjPhase3ControlTargetingAndMovementMultiplier : public SscEncounterMultiplier
 {
 public:
-    LadyVashjPhase3DisableAutoTargetAndMoveMultiplier(PlayerbotAI* botAI)
+    LadyVashjPhase3ControlTargetingAndMovementMultiplier(PlayerbotAI* botAI)
         : SscEncounterMultiplier(
-            botAI, "lady vashj phase 3 disable auto target and move",
+            botAI, "lady vashj phase 3 control targeting and movement",
             SscHelpers::SscBosses::DATA_LADY_VASHJ) {}
 
 protected:

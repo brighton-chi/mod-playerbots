@@ -142,7 +142,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Alar <Phoenix God>
     multipliers.push_back(new AlarSuppressGapClosersMultiplier(botAI));
     multipliers.push_back(new AlarControlMovementMultiplier(botAI));
-    multipliers.push_back(new AlarDisableAutomaticTargetingMultiplier(botAI));
+    multipliers.push_back(new AlarDisableAssistTargetingMultiplier(botAI));
     multipliers.push_back(new AlarStayAwayFromRebirthMultiplier(botAI));
     multipliers.push_back(new AlarControlTauntingMultiplier(botAI));
 
@@ -161,7 +161,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderDisableWarlockTankSoulshatterMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageWeaponTankingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderSuppressEquipUpgradeMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderManageAutomaticTargetingMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderManageAssistTargetingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderKeepMeleeInCombatMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));

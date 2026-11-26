@@ -78,17 +78,14 @@ float RageWinterchillMeleeControlAvoidanceMultiplier::GetValueInEncounter(Action
         return 1.0f;
     }
 
-    Unit* winterchill = GetEncounterBoss();
-    if (!winterchill)
-        return 1.0f;
-
     if (!IsNearDeathAndDecay(botAI, DEATH_AND_DECAY_CONTROL_RADIUS))
         return 1.0f;
 
     if (isAvoidAoe)
         return 0.0f;
 
-    if (winterchill->GetVictim() == bot)
+    Unit* winterchill = GetEncounterBoss();
+    if (!winterchill || winterchill->GetVictim() == bot)
         return 1.0f;
 
     return PlayerbotAI::IsMainTank(bot) ? 1.0f : 0.0f;
@@ -121,12 +118,10 @@ float AnetheronDisableAssistTargetingMultiplier::GetValueInEncounter(Action* act
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
 
-    bool const isTankAssist = dynamic_cast<TankAssistAction*>(action);
+    if (dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
 
-    if (!isTankAssist && !dynamic_cast<DpsAssistAction*>(action))
-        return 1.0f;
-
-    return isTankAssist && IsInfernalTank(bot) ? 1.0f : 0.0f;
+    return !dynamic_cast<TankAssistAction*>(action) || IsInfernalTank(bot) ? 1.0f : 0.0f;
 }
 
 // Keep non-Infernal tanks from inadvertently grabbing aggro with Consecration, Thunder Clap, etc.
@@ -229,7 +224,7 @@ float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValueInEncounter(Action* 
 
 // Azgalor
 
-float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValueInEncounter(Action* action)
+float AzgalorDisableAssistTargetingAndPositioningMultiplier::GetValueInEncounter(Action* action)
 {
     if (botAI->GetState() == BOT_STATE_NON_COMBAT)
         return 1.0f;
@@ -242,7 +237,7 @@ float AzgalorDisableAutoTargetingAndPositioningMultiplier::GetValueInEncounter(A
         return 1.0f;
     }
 
-    // Set Behind Target is still disabled in RoF (in AzgalorMeleeDpsControlAvoidanceMultiplier)
+    // Set behind is still disabled in Rain of Fire (in AzgalorMeleeDpsControlAvoidanceMultiplier).
     return dynamic_cast<SetBehindTargetAction*>(action) ? 1.0f : 0.0f;
 }
 
@@ -254,10 +249,8 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValueInEncounter(Actio
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action))
-        return 1.0f;
-
-    return dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action) ? 1.0f : 0.0f;
+    return dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<AzgalorMoveToDoomguardTankAction*>(action) ? 1.0f : 0.0f;
 }
 
 float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValueInEncounter(Action* action)

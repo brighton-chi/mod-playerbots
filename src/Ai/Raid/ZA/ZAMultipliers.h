@@ -137,12 +137,12 @@ protected:
 
 // Halazzi <Lynx Avatar>
 
-class HalazziDisableAutoDpsTargetingMultiplier : public ZulAmanEncounterMultiplier
+class HalazziDisableAutoTargetingMultiplier : public ZulAmanEncounterMultiplier
 {
 public:
-    HalazziDisableAutoDpsTargetingMultiplier(PlayerbotAI* botAI)
+    HalazziDisableAutoTargetingMultiplier(PlayerbotAI* botAI)
         : ZulAmanEncounterMultiplier(
-            botAI, "halazzi disable auto dps targeting", ZaHelpers::ZaBosses::DATA_HALAZZI) {}
+            botAI, "halazzi disable auto targeting", ZaHelpers::ZaBosses::DATA_HALAZZI) {}
 
 protected:
     float GetValueInEncounter(Action* action) override;
