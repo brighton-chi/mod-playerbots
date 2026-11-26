@@ -150,7 +150,7 @@ uint32 GetAuraElapsedMs(Aura const* aura)
     return aura ? static_cast<uint32>(aura->GetMaxDuration() - aura->GetDuration()) : 0;
 }
 
-// Turn the bot to the unit unless it is already in the bot's front 90 degrees.
+// Turn the bot to the unit unless it is already in the bot's front 90°.
 void FaceUnit(Player* bot, Unit* unit)
 {
     if (unit && !bot->HasInArc(static_cast<float>(M_PI) / 2.0f, unit))
@@ -173,7 +173,7 @@ bool IsMagicDamageSpell(SpellInfo const* spellInfo)
 
 // Check a spell and the spells it triggers. Spell Absorption's charge proc ignores triggered spells
 // without NOT_A_PROC and DoT ticks, but counts a dummy effect that can hit an enemy, because a
-// script casts the real spell after it (e.g. Holy Shock, which heals or damages by target).
+// script casts the real spell after it (e.g., Holy Shock, which heals or damages by target).
 bool CanBuildChaoticCharge(SpellInfo const* spellInfo, bool triggered, uint8 depth, bool& area)
 {
     constexpr uint8 maxDepth = 3;
@@ -284,6 +284,7 @@ Unit* GetLinkedSisterOfPain(Unit* pleasure)
     return pain && pain->IsAlive() ? pain : nullptr;
 }
 
+// Find any Sister of Pleasure that still has a living linked Sister of Pain.
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
 {
     for (ObjectGuid const& sisterGuid :
@@ -297,6 +298,7 @@ Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI)
     return nullptr;
 }
 
+// Find the Sister of Pleasure linked to a specific Sister of Pain.
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain)
 {
     for (ObjectGuid const& sisterGuid :
@@ -350,12 +352,15 @@ bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain)
     return false;
 }
 
+// A living Sister of Pain that non-tanks are held off (see IsSisterOfPainHeld).
 bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit)
 {
     return unit && unit->IsAlive() && unit->GetEntry() == Id(BtNpcs::NPC_SISTER_OF_PAIN) &&
         IsSisterOfPainHeld(botAI, unit);
 }
 
+// Where a pet on a held Sister of Pain goes: the Pleasure linked to her, else the owner's DPS
+// target unless it is a held Pain too. Null if neither, and the pet waits passive.
 Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature* pet)
 {
     if (!pet)
@@ -888,6 +893,7 @@ GuidVector FindShadeOfAkamaAddGuids(Player* bot)
     return guids;
 }
 
+// Empty while the bot is outside Shade's room.
 GuidVector const& GetShadeOfAkamaAdds(Player* bot)
 {
     static GuidVector const none;
@@ -1187,6 +1193,7 @@ Position GetBotPointInGurtoggRectangle(
 
 // Reliquary of Souls
 
+// Null until the essence is in combat, about 4s after it emerges.
 Unit* GetReliquaryEssence(Player* bot, std::string_view essence)
 {
     return FindThreatTarget(bot, essence);
@@ -1213,7 +1220,7 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering)
 
 // Mother Shahraz
 
-// Melee dps hold at the ranged position while this is true.
+// Melee DPS hold at the ranged position while this is true.
 bool IsShahrazBeingPositioned(Unit* shahraz)
 {
     if (!shahraz || shahraz->GetHealthPct() < SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT)
@@ -1229,9 +1236,9 @@ namespace
 {
 
 // A blocked ray stops at the obstacle and still counts as success, so a point that returns short
-// means the move is blocked. Both callers compute the spot rather than using a fixed position (mage
-// tank healer, Malande tank) and need it clear of the council patches, so a candidate that clamps
-// short is rejected instead of handed to MoveTo, which would stop the bot inside a patch.
+// means the move is blocked. Both callers compute the point rather than using a fixed position
+// (mage tank healer, Malande tank) and need it clear of the council patches, so a candidate that
+// clamps short is rejected instead of handed to MoveTo, which would stop the bot inside a patch.
 bool CanMoveStraightTo(Player* bot, Position const& point)
 {
     constexpr float clampTolerance = 0.5f;
@@ -1329,6 +1336,8 @@ bool IsIllidariCouncilDpsHoldActive(Player* bot)
         PlayerbotAI::IsAssistTankOfIndex(bot, 1, false) || IsZerevorMageTank(bot));
 }
 
+// The pull hold's window, whatever the bot's role, from engage until COUNCIL_DPS_WAIT_MS after the
+// tracker stamps it. Every pet is held for all of it, the Zerevor mage tank's included.
 bool IsIllidariCouncilPetHoldActive(Player* bot)
 {
     BtInstanceState const* state = FindBtState(bot->GetInstanceId());
@@ -1686,7 +1695,7 @@ bool IsAnotherCouncilMemberWithin(PlayerbotAI* botAI, float range)
 }
 
 // Felhunters stay on Malande for Spell Lock; other pets attack their master's target, or Gathios
-// when the master has none the pet can attack. Nothing during the pull hold.
+// when the master has no target the pet can attack. Nothing during the pull hold.
 Unit* GetCouncilPetTarget(PlayerbotAI* botAI, Creature* pet)
 {
     if (!pet || IsIllidariCouncilPetHoldActive(botAI->GetBot()))
@@ -1821,6 +1830,7 @@ std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(ui
     return state && state->illidanInfections ? &*state->illidanInfections : nullptr;
 }
 
+// Illidan, the Flames of Azzinoth, the Parasitic Shadowfiends, and the Eye Blast trigger.
 GuidVector FindIllidanUnitGuids(Player* bot)
 {
     return FindCreatureGuidsAround(

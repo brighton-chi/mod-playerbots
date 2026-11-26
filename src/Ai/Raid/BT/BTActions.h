@@ -50,8 +50,8 @@ private:
 };
 
 // Used for High Warlord Naj'entus, Teron Gorefiend and Gurtogg Bloodboil, including his Fel Rage
-// target. The boss's victim walks it to the position. With _allTanks, every tank does while the
-// boss is on any tank. A tank walks only while in melee range; a non-tank leads from anywhere.
+// target. The boss's victim moves it to the position. With _allTanks, every tank does while the
+// boss is on any tank. A tank moves only while in melee range; a non-tank leads from anywhere.
 class BlackTemplePositionBossAction : public AttackAction
 {
 public:
@@ -284,7 +284,7 @@ private:
 // Shade of Akama
 
 // Channelers stand on a platform out of sight from below, and Attack refuses a target out of
-// sight, so a bot walks the path toward its target until it can see it.
+// sight, so a bot follows the path toward its target until it can see it.
 class ShadeOfAkamaAttackChannelersAndSorcerersAction : public AttackAction
 {
 public:
@@ -351,7 +351,7 @@ public:
 };
 
 // Steps sideways off his line to the Fel Rage target, the axis of Arcing Smash, so a bot ahead
-// of a walking target isn't pushed along in front of it.
+// of a moving target isn't pushed along in front of it.
 class GurtoggBloodboilRangedMoveOutOfFrontalConeAction : public MovementAction
 {
 public:

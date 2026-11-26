@@ -54,7 +54,7 @@ bool SisterOfPleasureShouldBeFocusedTrigger::IsActive()
     return pain && IsSisterOfPainHeld(botAI, pain);
 }
 
-// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it needs commanding.
+// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it has to be commanded.
 bool SisterOfPainShouldControlPetTrigger::IsActive()
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -75,7 +75,7 @@ bool ShadowmoonReaverWandBuildsChargesTrigger::IsActive()
     return IsShadowmoonReaverUnsafeForMagic(wand->m_targets.GetUnitTarget());
 }
 
-// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it needs commanding.
+// A pet keeps its victim when its owner switches (PetAI::OwnerAttacked), so it has to be commanded.
 bool ShadowmoonReaverShouldControlCasterPetTrigger::IsActive()
 {
     Guardian* pet = bot->GetGuardianPet();

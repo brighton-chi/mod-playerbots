@@ -1041,7 +1041,7 @@ float IllidanStormrageControlMovementAndTargetingMultiplier::GetTargetingValue(
     if (action->getThreatType() == Action::ActionThreatType::None)
         return 1.0f;
 
-    // A dot on an attacker would go on something other than the add, and the add must be focused.
+    // A DoT on an attacker would go on something other than the add, and the add must be focused.
     return IsTargetingIllidanAdd(botAI) ? 0.0f : 1.0f;
 }
 
@@ -1177,7 +1177,7 @@ float IllidanStormrageHoldNearNewShadowfiendMultiplier::GetValueInEncounter(Acti
     if (!castSpellAction && !isAttackAction)
         return 1.0f;
 
-    // A dot on an attacker picks its own target, which can be a Shadowfiend while Illidan is selected.
+    // A DoT on an attacker picks its own target, possibly a Shadowfiend while Illidan is selected.
     Unit* target = castSpellAction && !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ?
         AI_VALUE(Unit*, "current target") : action->GetTarget();
     bool const isOnShadowfiend =

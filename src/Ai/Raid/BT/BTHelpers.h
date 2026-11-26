@@ -241,17 +241,12 @@ inline constexpr uint32 SISTER_OF_PLEASURE_CACHE_INTERVAL_MS = 1000;
 
 GuidVector FindSisterOfPleasureGuids(Player* bot);
 Unit* GetLinkedSisterOfPain(Unit* pleasure);
-// Find any Sister of Pleasure that still has a living linked Sister of Pain.
 Unit* FindLinkedSisterOfPleasure(PlayerbotAI* botAI);
-// Find the Sister of Pleasure linked to a specific Sister of Pain.
 Unit* FindSisterOfPleasureLinkedTo(PlayerbotAI* botAI, Unit* pain);
 Unit* GetSkulledSisterOfPain(Player* bot);
 Unit* FindEngagedSisterOfPain(PlayerbotAI* botAI);
 bool IsSisterOfPainHeld(PlayerbotAI* botAI, Unit* pain);
-// A living Sister of Pain that non-tanks are held off (see IsSisterOfPainHeld).
 bool IsHeldSisterOfPain(PlayerbotAI* botAI, Unit* unit);
-// Where a pet on a held Sister of Pain goes: the Pleasure linked to her, else the owner's dps
-// target unless it is a held Pain too. Null if neither, and the pet waits passive.
 Unit* GetSisterOfPainPetTarget(PlayerbotAI* botAI, Unit* pain, Creature* pet);
 
 enum class ChaoticChargeReach : uint8
@@ -328,7 +323,8 @@ inline constexpr uint32 SUPREMUS_HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float SUPREMUS_RANGED_SPREAD_DISTANCE = 6.0f;
 inline constexpr float SUPREMUS_VOLCANO_HAZARD_RADIUS = 15.0f;
 inline constexpr float SUPREMUS_VOLCANO_CLEARANCE = SUPREMUS_VOLCANO_HAZARD_RADIUS + 3.0f;
-inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f; // 5 yd + victim's combat reach
+// 5 yd plus a player's 1.5 yd combat reach (1.95 yd with Bloodlust).
+inline constexpr float SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS = 6.5f;
 inline constexpr float SUPREMUS_MOLTEN_FLAME_CLEARANCE =
     SUPREMUS_MOLTEN_FLAME_HAZARD_RADIUS + 1.0f;
 // Supremus fixates on a new target every 10s from the start of the kite phase.
@@ -370,14 +366,13 @@ inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_X = 406.8f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_X = 564.0f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MIN_Y = 327.9f;
 inline constexpr float SHADE_OF_AKAMA_BOUNDARY_MAX_Y = 473.5f;
-// Around SHADE_OF_AKAMA_SPAWN_POSITION. The room's far corners are 136 yd away.
+// Measured from Shade's spawn position. The room's far corners are 136 yd away; 140 yd covers them.
 inline constexpr float SHADE_OF_AKAMA_ADD_SEARCH_RADIUS = 140.0f;
 inline constexpr uint32 SHADE_OF_AKAMA_ADD_CACHE_INTERVAL_MS = 1000;
 
 inline Position const SHADE_OF_AKAMA_SPAWN_POSITION = { 449.595f, 401.194f, 118.621f };
 
 GuidVector FindShadeOfAkamaAddGuids(Player* bot);
-// Empty while the bot is outside Shade's room.
 GuidVector const& GetShadeOfAkamaAdds(Player* bot);
 Unit* GetShadeOfAkamaKillTarget(PlayerbotAI* botAI);
 
@@ -408,7 +403,7 @@ GuidVector const& GetShadowyConstructGuids(Player* bot);
 // The timing allows each group's debuff to lapse by the time its turn comes again.
 inline constexpr size_t GURTOGG_ROTATION_GROUP_COUNT = 3;
 inline constexpr size_t GURTOGG_ROTATION_GROUP_SIZE = 5;
-// Each ranged group stands in a rectangle, with its depth axis pointing toward the tank spot.
+// Each ranged group stands in a rectangle, with its depth axis pointing toward the tank position.
 // Width is across that axis and, obviously, depth along it.
 inline constexpr float GURTOGG_RANGED_HALF_WIDTH = 5.0f;
 inline constexpr float GURTOGG_RANGED_HALF_DEPTH = 2.0f;
@@ -467,7 +462,6 @@ inline constexpr float SUFFERING_RANGED_DISTANCE = 15.0f;
 // to Spellsteal.
 inline constexpr uint32 RUNE_SHIELD_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
 
-// Null until the essence is in combat, about 4s after it emerges.
 Unit* GetReliquaryEssence(Player* bot, std::string_view essence);
 bool IsSufferingFixateTank(Player* bot);
 bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
@@ -475,14 +469,14 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 // Mother Shahraz
 
 inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
-// How far her victim may stand from the tank spot and still count as her being positioned for
+// How far her victim may stand from the tank position and still count as her being positioned for
 // purposes of melee DPS joining the fight.
 inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
 inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
 inline constexpr float SHAHRAZ_RANGED_POSITION_TOLERANCE = 1.0f;
 // Below this HP percent, Shahraz is considered positioned regardless of whether she is at the tank
-// position. This exists so that a human tank who does not take her to the designated spot does not
-// cause melee DPS to wait out of range the whole fight.
+// position. This exists so that a human tank who does not take her to the designated position
+// does not cause melee DPS to wait out of range the whole fight.
 inline constexpr float SHAHRAZ_MELEE_ENGAGE_HEALTH_PCT = 90.0f;
 inline constexpr float SHAHRAZ_FATAL_ATTRACTION_STEP_DISTANCE = 5.0f;
 
@@ -511,20 +505,20 @@ inline constexpr float COUNCIL_AOE_THREAT_CLEARANCE = 15.0f;
 inline constexpr float COUNCIL_RANGED_SPREAD_DISTANCE = 4.0f;
 // HealDistance is 38.5 yd by default. This is the mage tank healer's manually imposed version.
 inline constexpr float MAGE_TANK_HEALER_MAX_DISTANCE = 38.0f;
-// Far enough that a patch centered on the mage tank can't reach the healer. Patches reach 11.5 yd
-// (10 yd radius plus a player's combat reach), and this leaves another yard.
+// Far enough that a patch centered on the mage tank can't reach the healer: 11.5 yd (10 yd radius
+// plus a player's 1.5 yd combat reach, 11.95 yd with Bloodlust), with another yard of margin.
 inline constexpr float MAGE_TANK_HEALER_MIN_DISTANCE = 12.5f;
-// A step toward the mage tank stops here, not at MIN_DISTANCE. Path steps end a little inside their
-// stop distance so that a bot moving to a position always counts as arrived. Here, the stop is a
-// minimum to stay OUTSIDE, so that margin would leave the healer just inside it. The extra half
-// yard also covers path steps measuring in 3D, while the minimum is checked in 2D.
+// A step toward the mage tank stops here, not at MIN_DISTANCE: path steps stop a little inside
+// their stop distance, which would put the healer just inside the minimum. The extra half yard
+// also covers path steps measured in 3D against this 2D minimum.
 inline constexpr float MAGE_TANK_HEALER_STEP_STOP_DISTANCE = MAGE_TANK_HEALER_MIN_DISTANCE + 0.5f;
-// Zerevor casts Arcane Explosion when anyone is within 10 yd, plus both combat reaches (14.65 yd).
-inline constexpr float ZEREVOR_ARCANE_EXPLOSION_CLEARANCE = 15.0f;
+// Zerevor casts Arcane Explosion when anyone is within 10 yd, plus both combat reaches (14.65 yd,
+// 15.1 yd with Bloodlust).
+inline constexpr float ZEREVOR_ARCANE_EXPLOSION_CLEARANCE = 16.0f;
 // Non-tanks closer than the safe distance move away to this distance from Zerevor.
 inline constexpr float ZEREVOR_AVOID_DISTANCE = 18.0f;
-// A patch hits a player whose center is within its radius plus the player's 1.5 yd combat reach,
-// and we add another yard for good measure.
+// A patch hits a player whose center is within its radius plus the player's 1.5 yd combat reach
+// (1.95 yd with Bloodlust), and we add another yard for good measure.
 inline constexpr float COUNCIL_PATCH_MARGIN = 2.5f;
 // Manual delay to interrupt a Circle of Healing cast in progress.
 inline constexpr int32 CIRCLE_OF_HEALING_REACTION_MS = 200;
@@ -565,8 +559,6 @@ bool UpdateIllidariCouncilClassRoleAnnouncement(PlayerbotAI* botAI);
 Player* GetZerevorMageTank(Player* bot);
 bool IsZerevorMageTank(Player* player);
 bool IsIllidariCouncilDpsHoldActive(Player* bot);
-// The pull hold's window, whatever the bot's role, from engage until COUNCIL_DPS_WAIT_MS after the
-// tracker stamps it. Every pet is held for all of it, the Zerevor mage tank's included.
 bool IsIllidariCouncilPetHoldActive(Player* bot);
 bool HasDangerousCouncilAura(Player* bot);
 bool IsVerasVanished(Unit* veras);
@@ -690,7 +682,7 @@ inline constexpr uint32 ILLIDAN_SHADOW_DEMON_CACHE_INTERVAL_MS = 200;
 inline constexpr float ILLIDAN_PHASE_2_HEALTH_PCT = 65.0f;
 inline constexpr float ILLIDAN_PHASE_5_HEALTH_PCT = 30.0f;
 inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
-// Around ILLIDAN_GRATE_CENTER, except for the Frost Trap search around the bot.
+// Measured from the grate center, except the Frost Trap search, which is around the bot.
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_POSITION_TOLERANCE = 0.5f;
@@ -715,9 +707,9 @@ inline constexpr float ILLIDAN_TANK_OFFSET = 6.0f;
 inline constexpr float ILLIDAN_MAIEV_SCENE_TANK_OFFSET = 6.0f;
 // Creatures step back from a victim whose center passes inside the distance from the creature's
 // center that is equal to half of the combined combat reaches. Creatures check for that distance
-// every 2 to 6s (random). Illidan's combat reach is 7.5 yd, resulting in a back-off distance of
-// (7.5 + 1.5)/2.
-inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 4.5f;
+// every 2 to 6s (random). Illidan's combat reach is 7.5 yd, so he backs off at (7.5 + 1.5) / 2 =
+// 4.5 yd, or 4.73 yd with Bloodlust. 5 yd covers both.
+inline constexpr float ILLIDAN_BACK_OFF_DISTANCE = 5.0f;
 // If the closest point of a main tank movement through Illidan is within ILLIDAN_BACK_OFF_DISTANCE,
 // the tank aims at a point 6 yd from him instead, one 60° leg round toward its destination, so the
 // tank never triggers the back step, which can cause Illidan to step past the ring and screw up the
@@ -898,7 +890,6 @@ inline std::array const ILLIDAN_W_GLAIVE_TANK_POSITIONS = {
 };
 
 std::unordered_map<ObjectGuid, IllidanInfection> const* FindIllidanInfections(uint32 instanceId);
-// Illidan, the Flames of Azzinoth, the Parasitic Shadowfiends, and the Eye Blast trigger.
 GuidVector FindIllidanUnitGuids(Player* bot);
 GuidVector const& GetIllidanUnits(Player* bot);
 Creature* GetLivingIllidanUnit(Player* bot, BtNpcs npc);

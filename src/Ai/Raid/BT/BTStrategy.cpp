@@ -374,7 +374,7 @@ void AppendShadowmoonReaverExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
     }
 }
 
-// Tanks and ranged other than shadow priests leave channelers and sorcerers to melee DPS while
+// Tanks and ranged other than shadow priests leave Channelers and Sorcerers to melee DPS while
 // another add is up. The exclusion ensures the skull doesn't affect targeting.
 void AppendShadeOfAkamaChannelerExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
@@ -434,7 +434,7 @@ void AppendIllidanMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         exclusions.insert(demon->GetGUID());
 }
 
-// Exclude secondary DoTs on Zerevor to not take aggro from the Mage tank at pull (and after pull,
+// Exclude secondary DoTs on Zerevor to not take aggro from the mage tank at pull (and after pull,
 // Zerevor will be out of range anyway).
 void AppendZerevorDebuffExclusion(Player* bot, GuidSet& exclusions)
 {
