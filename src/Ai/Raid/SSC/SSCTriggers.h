@@ -245,9 +245,7 @@ protected:
 
 // Leotheras the Blind
 
-// Not encounter gated because Leotheras is set to engaged only once something hostile hits him,
-// which might not happen until the Spellbinders are dead since he is immune and not intended to be
-// attacked while the Spellbinders are up.
+// Not encounter gated. See IsSpellbinderPhase.
 class LeotherasTheBlindRangedShouldSpreadUponPullTrigger : public Trigger
 {
 public:

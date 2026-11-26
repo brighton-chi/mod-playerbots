@@ -931,7 +931,7 @@ bool LeotherasTheBlindSelectTargetForHoldAction::isUseful()
 
 bool LeotherasTheBlindManageDpsHoldTimersAction::Execute(Event /*event*/)
 {
-    Unit* leotheras = GetSscBoss(bot, SscBosses::DATA_LEOTHERAS_THE_BLIND);
+    Unit* leotheras = GetLeotheras(botAI);
     if (!leotheras)
         return false;
 
@@ -993,7 +993,7 @@ bool LeotherasTheBlindManageDpsHoldTimersAction::TrackWhirlwindEnd(
 
 bool LeotherasTheBlindSetPetStanceAction::Execute(Event /*event*/)
 {
-    Unit* leotheras = GetSscBoss(bot, SscBosses::DATA_LEOTHERAS_THE_BLIND);
+    Unit* leotheras = GetLeotheras(botAI);
     return leotheras && SetMinionStancesForHold(
         bot, IsLeotherasPetHoldActive(botAI, leotheras), _previousReactStates);
 }

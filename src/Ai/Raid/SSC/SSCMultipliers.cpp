@@ -98,11 +98,8 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
             if (HasInnerDemon(bot))
                 return 0.0f;
 
-            if (IsLeotherasChannelingWhirlwind(
-                    GetSscBoss(bot, SscBosses::DATA_LEOTHERAS_THE_BLIND)))
-            {
+            if (IsLeotherasChannelingWhirlwind(GetLeotheras(botAI)))
                 return 0.0f;
-            }
 
             return GetLeotherasDemonOrShadow(botAI) && GetLeotherasWarlockTank(bot) ? 0.0f : 1.0f;
         }
@@ -125,9 +122,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     std::optional<uint32> const bossId = GetBossInProgress(bot, SSC_MAP_ID);
     if (!bossId)
     {
-        // Leotheras's boss state becomes IN_PROGRESS only once something hostile hits him, which
-        // may not happen until his Spellbinders are dead, so the hold also covers bots near him
-        // during their pull.
+        // Leotheras's Spellbinder pull, before his encounter starts. See IsSpellbinderPhase.
         if (bot->GetExactDist(LEOTHERAS_SPAWN_POSITION) > LEOTHERAS_SEARCH_DISTANCE)
             return 1.0f;
 
@@ -138,7 +133,6 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
-    // Leotheras is found by his grid search, as on the Spellbinder pull, not his threat list.
     SscBosses const bossKey = static_cast<SscBosses>(*bossId);
     Unit* boss = bossKey == SscBosses::DATA_LEOTHERAS_THE_BLIND ?
         GetLeotheras(botAI) : GetSscBoss(bot, bossKey);
@@ -164,7 +158,6 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
         {
             if (isBloodlust)
                 return boss->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 1.0f : 0.0f;
-
             break;
         }
         // Karathress: Hold until Tidalvess, first in the kill order, is under 95%.
@@ -178,7 +171,6 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
         {
             if (!IsLurkerSurfacedAndCalm(boss))
                 return 0.0f;
-
             break;
         }
         // Hydross and Leotheras: Only the standard hold on pull until 95%.
@@ -213,11 +205,11 @@ float UnderbogColossusHoldNearToxicPoolMultiplier::GetValue(Action* action)
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
+    {
         return 1.0f;
-
-    if (dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
-        return 1.0f;
+    }
 
     return IsNearToxicPool(botAI, TOXIC_POOL_HOLDING_RADIUS) ? 0.0f : 1.0f;
 }
@@ -306,11 +298,11 @@ float TheLurkerBelowStayAwayFromSpoutMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action)||
+        dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
+    {
         return 1.0f;
-
-    if (dynamic_cast<TheLurkerBelowRunAroundBehindBossAction*>(action))
-        return 1.0f;
+    }
 
     Unit* lurker = GetEncounterBoss();
     return lurker && IsLurkerSpouting(lurker) ? 0.0f : 1.0f;
@@ -412,13 +404,13 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValueInEncounter(Action* act
         return 1.0f;
     }
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
+    {
         return 1.0f;
+    }
 
-    if (dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
-        return 1.0f;
-
-    Unit* leotheras = GetEncounterBoss();
+    Unit* leotheras = GetLeotheras(botAI);
     return leotheras && IsLeotherasChannelingWhirlwind(leotheras) ? 0.0f : 1.0f;
 }
 
@@ -635,7 +627,7 @@ float LeotherasTheBlindHoldDpsMultiplier::GetValueInEncounter(Action* action)
     if (HasInnerDemon(bot))
         return 1.0f;
 
-    Unit* leotheras = GetEncounterBoss();
+    Unit* leotheras = GetLeotheras(botAI);
     if (!leotheras || !IsLeotherasDpsHoldActive(botAI, leotheras))
         return 1.0f;
 
@@ -818,11 +810,11 @@ float MorogrimTidewalkerStayStackedMultiplier::GetValueInEncounter(Action* actio
     if (!dynamic_cast<MovementAction*>(action))
         return 1.0f;
 
-    if (dynamic_cast<AttackAction*>(action))
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<MorogrimTidewalkerStackRangedBehindBossAction*>(action))
+    {
         return 1.0f;
-
-    if (dynamic_cast<MorogrimTidewalkerStackRangedBehindBossAction*>(action))
-        return 1.0f;
+    }
 
     Unit* tidewalker = GetEncounterBoss();
     if (!tidewalker || tidewalker->GetHealthPct() > TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT)
@@ -946,7 +938,6 @@ float LadyVashjPhase2DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     bool const isAlwaysBlocked =
         dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
         dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action);
-
     bool const isReachAction = dynamic_cast<ReachTargetAction*>(action);
     bool const isHealSpell = dynamic_cast<CastHealingSpellAction*>(action);
     bool const isCombatFormationAction = dynamic_cast<CombatFormationMoveAction*>(action);
@@ -1011,7 +1002,6 @@ float LadyVashjPhase3DisableAutoTargetAndMoveMultiplier::GetValueInEncounter(Act
     bool const isDebuffOnAttacker = dynamic_cast<CastDebuffSpellOnAttackerAction*>(action);
     bool const isHealerSpellReach =
         dynamic_cast<ReachSpellAction*>(action) && PlayerbotAI::IsHeal(bot);
-
     bool const isDropTarget = dynamic_cast<DropTargetAction*>(action);
 
     if (!isAssistAction && !isDebuffOnAttacker && !isHealerSpellReach && !isDropTarget &&

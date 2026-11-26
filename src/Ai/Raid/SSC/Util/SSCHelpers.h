@@ -289,12 +289,14 @@ inline constexpr float LEOTHERAS_CLASS_ROLE_ANNOUNCE_DISTANCE = 100.0f;
 // Karathress's spawn point.
 inline constexpr float LEOTHERAS_CLASS_ROLE_REARM_DISTANCE = 150.0f;
 
-inline constexpr float LEOTHERAS_SEARCH_DISTANCE = 100.0f;
+inline constexpr float LEOTHERAS_SEARCH_DISTANCE = LEOTHERAS_CLASS_ROLE_REARM_DISTANCE;
 inline constexpr uint32 LEOTHERAS_CACHE_INTERVAL_MS = 200;
+
 inline constexpr uint32 LEOTHERAS_HUMANOID_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_DEMON_DPS_HOLD_MS = 10 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_FINAL_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 inline constexpr uint32 LEOTHERAS_WHIRLWIND_DPS_HOLD_MS = 3 * IN_MILLISECONDS;
+
 inline constexpr float LEOTHERAS_WHIRLWIND_HAZARD_RADIUS = 10.0f;
 // Ranged stay this distance from Leo during Humanoid phase until Whirlwind begins.
 inline constexpr float LEOTHERAS_RANGED_CLEARANCE = LEOTHERAS_WHIRLWIND_HAZARD_RADIUS + 5.0f;
@@ -401,8 +403,8 @@ inline std::array const KARATHRESS_LEDGE_PILLARS = {
 // The floor's navmesh starts within 8.3 yd of a pillar's centre on every bearing.
 inline constexpr float KARATHRESS_PILLAR_BASE_RADIUS = 8.5f;
 inline constexpr float KARATHRESS_PILLAR_STEP_OFF_DISTANCE = KARATHRESS_PILLAR_BASE_RADIUS + 1.0f;
-// The ledge is 3 to 4 yd above the floor.
-inline constexpr float KARATHRESS_PILLAR_LEDGE_HEIGHT = 2.0f;
+// A bot this far above the floor near a pillar is on the ledge, 3 to 4 yd up, or in the air.
+inline constexpr float KARATHRESS_PILLAR_ABOVE_FLOOR_HEIGHT = 2.0f;
 
 inline Position const KARATHRESS_TANK_POSITION = { 474.403f, -531.118f,  -7.548f };
 inline Position const CARIBDIS_TANK_POSITION =   { 464.462f, -475.820f, -13.158f };
@@ -430,6 +432,7 @@ Position const* GetKarathressLedgePillar(Player* bot);
 inline constexpr float TIDEWALKER_PHASE_2_HEALTH_PCT = 25.0f;
 // The move to the corner starts a little early so it is done before the first Globules arrive.
 inline constexpr float TIDEWALKER_PHASE_2_MOVE_HEALTH_PCT = TIDEWALKER_PHASE_2_HEALTH_PCT + 2.0f;
+
 // Non-tanks farther than this range in phase 1, such as one sent out by Watery Grave, are brought
 // back. Every grave is inside this range, so a healer going to a grave victim isn't pulled back.
 inline constexpr float TIDEWALKER_MAX_DISTANCE_FROM_BOSS = 45.0f;

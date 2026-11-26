@@ -55,7 +55,7 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
-// Not encounter gated because of Leotheras. See LeotherasTheBlindRangedShouldSpreadUponPullTrigger.
+// Not encounter gated because of Leotheras. See IsSpellbinderPhase.
 class SscDelayDpsCooldownsMultiplier : public Multiplier
 {
 public:

@@ -256,7 +256,7 @@ bool LeotherasTheBlindRangedShouldKeepDistanceTrigger::IsActiveInEncounter()
     if (!PlayerbotAI::IsRanged(bot))
         return false;
 
-    Unit* leotheras = GetEncounterBoss();
+    Unit* leotheras = GetLeotheras(botAI);
     if (!leotheras || IsSpellbinderPhase(leotheras))
         return false;
 
@@ -271,7 +271,7 @@ bool LeotherasTheBlindChannelingWhirlwindTrigger::IsActiveInEncounter()
     if (PlayerbotAI::IsTank(bot))
         return false;
 
-    Unit* leotheras = GetEncounterBoss();
+    Unit* leotheras = GetLeotheras(botAI);
     if (!IsLeotherasChannelingWhirlwind(leotheras))
         return false;
 
@@ -348,13 +348,13 @@ bool LeotherasTheBlindDpsHoldIsActiveTrigger::IsActiveInEncounter()
     if (HasInnerDemon(bot))
         return false;
 
-    Unit* leotheras = GetEncounterBoss();
+    Unit* leotheras = GetLeotheras(botAI);
     return leotheras && IsLeotherasDpsHoldActive(botAI, leotheras);
 }
 
 bool LeotherasTheBlindShouldManageDpsHoldTimersTrigger::IsActiveInEncounter()
 {
-    return IsMechanicTrackerBot(bot, SSC_MAP_ID) && GetEncounterBoss();
+    return IsMechanicTrackerBot(bot, SSC_MAP_ID) && GetLeotheras(botAI);
 }
 
 bool LeotherasTheBlindShouldManagePetAggressionTrigger::IsActiveInEncounter()
@@ -362,7 +362,7 @@ bool LeotherasTheBlindShouldManagePetAggressionTrigger::IsActiveInEncounter()
     if (!HasControllableMinion(bot))
         return false;
 
-    Unit* leotheras = GetEncounterBoss();
+    Unit* leotheras = GetLeotheras(botAI);
     return leotheras &&
         IsMinionStanceWrongForHold(bot, IsLeotherasPetHoldActive(botAI, leotheras));
 }

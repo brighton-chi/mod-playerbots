@@ -609,6 +609,8 @@ Creature* GetLeotheras(PlayerbotAI* botAI)
     return GetLivingLeotherasUnit(botAI, SscNpcs::NPC_LEOTHERAS_THE_BLIND);
 }
 
+// Leo is not IN_PROGRESS until the last Spellbinder dies or something hits him. Multipliers and
+// triggers relevant to the Spellbinder phase are therefore not encounter gated.
 bool IsSpellbinderPhase(Unit* leotheras)
 {
     return leotheras && leotheras->HasAura(Id(SscSpells::SPELL_LEOTHERAS_BANISHED));
@@ -1207,7 +1209,7 @@ Position const* GetKarathressLedgePillar(Player* bot)
 {
     for (Position const& pillar : KARATHRESS_LEDGE_PILLARS)
     {
-        if (bot->GetPositionZ() - pillar.GetPositionZ() > KARATHRESS_PILLAR_LEDGE_HEIGHT &&
+        if (bot->GetPositionZ() - pillar.GetPositionZ() > KARATHRESS_PILLAR_ABOVE_FLOOR_HEIGHT &&
             bot->GetExactDist2d(pillar) < KARATHRESS_PILLAR_BASE_RADIUS)
         {
             return &pillar;
