@@ -158,8 +158,8 @@ bool IsNalorakkInBearForm(Unit* nalorakk);
 
 inline constexpr float JANALAI_PLATFORM_Z = 19.146f;
 inline constexpr float JANALAI_RANGED_SPREAD_RADIUS = 15.0f;
-// Around JANALAI_TANK_POSITION, where Jan'alai is moved for each Fire Bomb event. All Bombs and the
-// Fire Wall are within 34 yd of it.
+// Measured from Jan'alai's tank position, where he teleports for each Fire Bomb event. All bombs
+// and the Fire Wall are within 34 yd of it.
 inline constexpr float JANALAI_FIRE_BOMB_SEARCH_RADIUS = 40.0f;
 inline constexpr float JANALAI_FIRE_BOMB_SAFE_SPOT_SEARCH_RADIUS = 30.0f;
 // Fire Bomb (42630) has a 4 yd radius. The 1.5 yd extra padding is added for realism.
@@ -188,16 +188,15 @@ inline std::vector<Position> const JANALAI_SAFE_ZONE = {
     Position(-12.115170f, 1167.6681f, JANALAI_PLATFORM_Z)
 };
 
-// Around JANALAI_TANK_POSITION. Every egg and both Hatcher spawns are within 70 yd of it.
+// Measured from Jan'alai's tank position. Every egg and both Hatcher spawns are within 70 yd of it,
+// so 100 yd covers them.
 inline constexpr float JANALAI_ADD_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 JANALAI_ADD_CACHE_INTERVAL_MS = 200;
 
-// Living Hatchers and Hatchlings.
 GuidVector FindJanalaiAddGuids(Player* bot);
 std::vector<Unit*> GetJanalaiAdds(Player* bot, ZaNpcs npc);
 std::pair<Unit*, Unit*> GetAmanishiHatcherPair(Player* bot);
 uint32 CountJanalaiHatchlingsByEntry(Player* bot);
-// Jan'alai casts Fire Bomb Channel at the beginning of each Fire Bomb event until bombs detonate.
 bool IsJanalaiBombing(Unit* janalai);
 GuidVector FindFireBombGuids(Player* bot);
 std::vector<Unit*> GetFireBombs(Player* bot);
@@ -208,8 +207,8 @@ bool FindSafeStepInJanalaiZone(
 
 // Halazzi <Lynx Avatar>
 
-// Around HALAZZI_TANK_POSITION. He summons the totem where he stands; 100 yd leaves room for
-// wherever he is tanked.
+// Measured from Halazzi's tank position. He drops the totem where he stands, and 100 yd leaves room
+// for wherever he is tanked.
 inline constexpr float HALAZZI_TOTEM_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 HALAZZI_TOTEM_CACHE_INTERVAL_MS = 200;
 
@@ -226,8 +225,8 @@ Creature* GetNearestCorruptedLightningTotem(Player* bot);
 inline constexpr float ZA_FREEZING_TRAP_CLEARANCE = 11.0f;
 inline constexpr float ZA_FREEZING_TRAP_SEARCH_RADIUS = 16.0f;
 inline constexpr uint32 FREEZING_TRAP_CACHE_INTERVAL_MS = 200;
-// Around Malacrass's spawn. The adds spawn in a row within 12 yd of it; 100 yd leaves room for
-// wherever they are tanked.
+// Measured from Malacrass's spawn. His adds stand in a row within 12 yd of it, and 100 yd leaves
+// room for wherever they are tanked.
 inline constexpr float HEX_LORD_MALACRASS_DPS_TARGET_SEARCH_RADIUS = 100.0f;
 inline constexpr uint32 HEX_LORD_MALACRASS_DPS_TARGET_CACHE_INTERVAL_MS = 200;
 

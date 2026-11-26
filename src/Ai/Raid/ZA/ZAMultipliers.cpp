@@ -46,7 +46,7 @@ bool IsHazardousMovement(Action* action)
         dynamic_cast<CastDisengageAction*>(action);
 }
 
-// The boss in progress, with null for the unit if the bot can't find it.
+// Returns the boss in progress and its unit, which is null if the bot can't find it.
 std::pair<Unit*, ZaBosses> GetZulAmanBoss(Player* bot)
 {
     std::optional<uint32> const bossId = GetBossInProgress(bot, ZA_MAP_ID);
@@ -69,8 +69,8 @@ float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    // If the boss cannot be found but the encounter is in progress, it is probably because the bot
-    // was rezzed and zone combat hasn't reapplied, so block cooldowns.
+    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
+    // on the boss's threat list yet, so hold cooldowns.
     auto const [boss, bossKey] = GetZulAmanBoss(bot);
     if (!boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
         return 0.0f;
@@ -216,7 +216,6 @@ float ZulAmanControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
         IsBossInProgress(bot, ZA_MAP_ID, Id(ZaBosses::DATA_HALAZZI)) ? 0.0f : 1.0f;
 }
 
-// CombatFormationMoveAction is the action for the "disperse" command.
 float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)
 {
     if (!dynamic_cast<CombatFormationMoveAction*>(action))

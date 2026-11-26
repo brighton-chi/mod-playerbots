@@ -196,6 +196,7 @@ uint32 CountJanalaiHatchlingsByEntry(Player* bot)
         GetJanalaiAdds(bot, ZaNpcs::NPC_AMANI_DRAGONHAWK_HATCHLING).size());
 }
 
+// Jan'alai casts Fire Bomb Channel at the beginning of each Fire Bomb event until bombs detonate.
 bool IsJanalaiBombing(Unit* janalai)
 {
     return janalai && janalai->HasAura(Id(ZaSpells::SPELL_FIRE_BOMB_CHANNEL));
