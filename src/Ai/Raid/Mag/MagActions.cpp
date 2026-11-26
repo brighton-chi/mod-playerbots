@@ -40,7 +40,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
     if (channeler)
         return AI_VALUE(Unit*, "current target") != channeler && Attack(channeler);
 
-    // After first three channelers are dead, wait for Magtheridon to activate.
+    // After the first three Channelers are dead, wait for Magtheridon to activate.
     Position const& position = WAITING_FOR_MAGTHERIDON_POSITION;
     if (bot->GetExactDist2d(position) <= 2.0f)
     {
@@ -355,8 +355,8 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(GameObject* cube)
         return true;
 
     ObjectGuid const cubeGuid = cube->GetGUID();
-    // Stagger the run from the waiting spot so the clickers do not all move on the same tick, which
-    // looks stupid.
+    // Stagger the run from the waiting position so the clickers do not all move on the same
+    // tick, which looks stupid.
     constexpr uint32 minRunDelayMs = 200;
     constexpr uint32 maxRunDelayMs = 1000;
     uint32 const runDelay = urand(minRunDelayMs, maxRunDelayMs);

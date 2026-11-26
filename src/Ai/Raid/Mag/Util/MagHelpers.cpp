@@ -66,7 +66,7 @@ std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> con
     return cubes;
 }
 
-// Identify channelers by their database GUIDs
+// Identify Channelers by their database GUIDs.
 Creature* GetChanneler(Player* bot, uint32 dbGuid)
 {
     Map* map = bot->GetMap();

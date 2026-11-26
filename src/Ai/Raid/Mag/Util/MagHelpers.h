@@ -69,7 +69,8 @@ struct CubeInfo
     float x, y, z;
 };
 
-// Magtheridon's CombatReach is 12 yards.
+// Magtheridon's combat reach is 12 yd.
+
 inline constexpr uint32 MAG_MAP_ID = 544;
 inline constexpr uint32 MAG_CACHE_INTERVAL_MS = 200;
 
@@ -79,7 +80,8 @@ inline constexpr uint32 NORTHWEST_CHANNELER_DB_GUID = 90980;
 inline constexpr uint32 EAST_CHANNELER_DB_GUID      = 90982;
 inline constexpr uint32 NORTHEAST_CHANNELER_DB_GUID = 90981;
 
-// Around Magtheridon's spawn. The Channelers are within about 40 yd of it; 100 yd covers the room.
+// Measured from Magtheridon's spawn. The Channelers are all within about 40 yd of it, so 100 yd
+// covers the whole room.
 inline constexpr float BURNING_ABYSSAL_SEARCH_RADIUS = 100.0f;
 // Hold dps for this long after Magtheridon first becomes attackable.
 inline constexpr float MAG_DPS_HOLD_MS = 8 * IN_MILLISECONDS;
@@ -97,7 +99,7 @@ inline constexpr float CONFLAGRATION_HAZARD_RADIUS = 5.0f;
 // Quake is cast 28.3s after Magtheridon joins the fight and is repeated every 56.3-64.3s. Each
 // cast delays Blast Nova by ~7s.
 inline constexpr float QUAKE_DELAY_MS = 6999;
-// At 30% HP, Magtheridon causes the ceiling to fall on players, dealing 5,250+ damage and 2s stun.
+// At 30% HP, Magtheridon brings the ceiling down on players, dealing 5,250+ damage and a 2s stun.
 inline constexpr float CEILING_COLLAPSE_HP_PCT = 30.0f;
 // The ceiling collapse delays Quake and Blast Nova by 18s.
 inline constexpr uint32 CEILING_COLLAPSE_DELAY_MS = 18 * IN_MILLISECONDS;

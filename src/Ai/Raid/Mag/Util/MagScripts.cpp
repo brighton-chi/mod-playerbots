@@ -70,7 +70,7 @@ private:
 };
 
 // Not to be confused with the 30% ceiling collapse, which is also called "Debris." This is for the
-// small patches that fall from time-to-time after the ceiling collapses, which deal 87,500 to
+// small patches that fall from time to time after the ceiling collapses, which deal 87,500 to
 // 112,500 damage on hit (!!!)
 class MagtheridonDebrisDynamicObjectScript : public DynamicObjectScript
 {
