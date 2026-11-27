@@ -151,6 +151,8 @@ public:
     bool Execute(Event event) override;
 
 private:
+    bool IsDiveBombSequence(Unit* alar);
+    bool IsTankWithoutAggro(Unit* alar);
     bool AvoidFlamePatch();
     bool HandleDiveBomb(Unit* alar);
     Position FindSafestNearbyPosition(

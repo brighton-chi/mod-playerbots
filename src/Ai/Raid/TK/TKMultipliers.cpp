@@ -11,6 +11,7 @@
 #include "FollowActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
+#include "MovementActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
 #include "ReachTargetActions.h"
@@ -102,8 +103,11 @@ float AlarSuppressGapClosersMultiplier::GetValueInEncounter(Action* action)
 
 float AlarControlMovementMultiplier::GetValueInEncounter(Action* action)
 {
-    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action))
+    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<AvoidAoeAction*>(action))
+    {
         return 0.0f;
+    }
 
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
@@ -181,6 +185,25 @@ float AlarControlTauntingMultiplier::GetValueInEncounter(Action* action)
 
     // Second Al'ar tank.
     return platformIndex == PLATFORM_1_IDX || platformIndex == PLATFORM_3_IDX ? 1.0f : 0.0f;
+}
+
+// In phase 1, melee shamans drop totems only up on the platforms. This keeps them from pointlessly
+// dropping new totems after jumping off for Flame Quills.
+float AlarDisableTotemsBelowPlatformsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastTotemAction*>(action) &&
+        !dynamic_cast<CastCallOfTheElementsAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    if (!PlayerbotAI::IsMelee(bot) || IsAlarInPhase2(bot->GetInstanceId()))
+        return 1.0f;
+
+    return bot->GetPositionZ() > ALAR_BALCONY_Z ? 1.0f : 0.0f;
 }
 
 // Void Reaver

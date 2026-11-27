@@ -110,6 +110,17 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class AlarDisableTotemsBelowPlatformsMultiplier : public TempestKeepEncounterMultiplier
+{
+public:
+    AlarDisableTotemsBelowPlatformsMultiplier(PlayerbotAI* botAI)
+        : TempestKeepEncounterMultiplier(
+            botAI, "al'ar disable totems below platforms", TkHelpers::TkBosses::DATA_ALAR) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Void Reaver
 
 class VoidReaverMaintainPositionsMultiplier : public TempestKeepEncounterMultiplier

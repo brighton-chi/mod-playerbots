@@ -473,7 +473,37 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    return AvoidFlamePatch() || HandleDiveBomb(alar);
+    // A tank that does not yet have aggro on its assigned target can move through Flame Patches.
+    if (!IsTankWithoutAggro(alar) && AvoidFlamePatch())
+        return true;
+
+    return IsDiveBombSequence(alar) && HandleDiveBomb(alar);
+}
+
+// From Al'ar's flight to the dive point until it reappears after Dive Bomb.
+bool AlarAvoidFlamePatchesAndDiveBombsAction::IsDiveBombSequence(Unit* alar)
+{
+    return alar->HasAura(Id(TkSpells::SPELL_MODEL_INVISIBILITY)) ||
+        alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_DIVE)) ||
+        GetAlarCurrentLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX ||
+        GetAlarDestinationLocationIndex(alar) == POINT_QUILL_OR_DIVE_IDX;
+}
+
+// The tank's assigned target (Al'ar or an Ember) is not yet attacking it.
+bool AlarAvoidFlamePatchesAndDiveBombsAction::IsTankWithoutAggro(Unit* alar)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* assignedTarget = nullptr;
+    if (IsPrimaryEmberTank(bot))
+        assignedTarget = GetTargetUnitPair(botAI, TkNpcs::NPC_EMBER_OF_ALAR).first;
+    else if (GetSecondaryEmberTank(bot) == bot)
+        assignedTarget = GetTargetUnitPair(botAI, TkNpcs::NPC_EMBER_OF_ALAR).second;
+    else if (IsFirstAlarTank(bot) || IsSecondAlarTank(bot))
+        assignedTarget = alar;
+
+    return assignedTarget && assignedTarget->GetVictim() != bot;
 }
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
@@ -589,12 +619,6 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
 
         bot->CastStop();
         return MoveAway(alar, safeDistance - currentDistance);
-    }
-
-    if (GetAlarCurrentLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX &&
-        GetAlarDestinationLocationIndex(alar) != POINT_QUILL_OR_DIVE_IDX)
-    {
-        return false;
     }
 
     // Avoidance during Dive Bomb sequence
