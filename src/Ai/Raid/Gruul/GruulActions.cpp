@@ -376,7 +376,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
 
     Position const& position = GRUUL_TANKING_POSITION;
     float const distToPosition = gruul->GetExactDist2d(position);
-    if (distToPosition <= GRUUL_ARRIVAL_DISTANCE)
+    if (distToPosition <= GRUUL_BOSS_ARRIVAL_DISTANCE)
         return false;
 
     // The tank stands this far past the center so Gruul, following at this distance, stops on it.
@@ -392,7 +392,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, destination, GRUUL_TANK_ARRIVAL_DISTANCE, gruul, moveX, moveY, backwards))
+            bot, destination, GRUUL_ARRIVAL_DISTANCE, gruul, moveX, moveY, backwards))
     {
         return false;
     }

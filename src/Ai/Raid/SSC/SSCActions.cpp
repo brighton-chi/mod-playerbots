@@ -1301,8 +1301,8 @@ bool FathomLordKarathressDropToGroundAfterCycloneAction::Execute(Event /*event*/
         return false;
 
     return MoveTo(
-        SSC_MAP_ID, x, y, floorZ, false, false, false, true,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        SSC_MAP_ID, x, y, floorZ, false, false, false, true, MovementPriority::MOVEMENT_FORCED,
+        true, false);
 }
 
 // Move the bot straight out past the base, then straight down. This skips the core's pathfinding,

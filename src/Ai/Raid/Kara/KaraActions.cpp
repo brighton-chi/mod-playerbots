@@ -392,7 +392,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
 
     Position const& position = MAIDEN_OF_VIRTUE_TANKING_POSITION;
     float const distToPosition = maiden->GetExactDist2d(position);
-    if (distToPosition <= MAIDEN_OF_VIRTUE_POSITION_TOLERANCE)
+    if (distToPosition <= MAIDEN_OF_VIRTUE_BOSS_ARRIVAL_DISTANCE)
         return false;
 
     float const ratio = MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE / distToPosition;
@@ -405,7 +405,8 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, destination, MAIDEN_OF_VIRTUE_POSITION_TOLERANCE, maiden, moveX, moveY, backwards))
+            bot, destination, MAIDEN_OF_VIRTUE_TANK_ARRIVAL_DISTANCE, maiden, moveX, moveY,
+            backwards))
     {
         return false;
     }

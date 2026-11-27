@@ -241,9 +241,12 @@ GuidVector FindMoroesGuestGuids(Player* bot);
 
 // Maiden of Virtue
 
-// For both Maiden's distance to her position and the tank's distance to its destination. These are
-// checked at different steps and don't have to be identical, but they are for simplicity.
-inline constexpr float MAIDEN_OF_VIRTUE_POSITION_TOLERANCE = 2.0f;
+// While the tank is moving and still within Maiden's melee range, Maiden chases to her reach minus
+// half the tank's speed, not to the tank's lead distance, so she can stop up to 4 yd past her
+// position. At 5 yd, the nearest ranged position is still 14.5 yd from her, outside Holy Ground.
+inline constexpr float MAIDEN_OF_VIRTUE_BOSS_ARRIVAL_DISTANCE = 5.0f;
+// Below Maiden's tolerance, so the tank never stops with her still out of position.
+inline constexpr float MAIDEN_OF_VIRTUE_TANK_ARRIVAL_DISTANCE = 3.0f;
 // Maiden stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
 // Holy Ground hits a player within 12 yd of Maiden's center and breaks Repentance.

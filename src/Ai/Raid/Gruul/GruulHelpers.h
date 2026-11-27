@@ -158,13 +158,14 @@ inline constexpr float GRUUL_SHATTER_STEP_TOLERANCE = 0.5f;
 // The portcullis (x 170.2) closes during the fight, but bot pathing ignores doors, so spread steps
 // never end south of this line.
 inline constexpr float GRUUL_ROOM_MIN_X = 172.0f;
+// While the tank is moving and still within Gruul's melee range, Gruul chases to his reach minus
+// half the tank's speed, not to the tank's lead distance, so Gruul can stop up to 4 yd past the
+// center.
+inline constexpr float GRUUL_BOSS_ARRIVAL_DISTANCE = 5.0f;
 
 // Where the tank holds Gruul: the center of his room, with the most open floor (42 yd to the
 // nearest navmesh edge). Ranged bots spread in a ring around it.
 inline Position const GRUUL_TANKING_POSITION = { 231.217f, 363.233f, -4.420f };
-// Gruul follows the tank at a fixed distance, so however far the tank stops from its position,
-// Gruul stops that far from the center.
-inline constexpr float GRUUL_TANK_ARRIVAL_DISTANCE = 0.5f;
 
 bool GetNearestCaveInPosition(PlayerbotAI* botAI, Position& pool);
 bool IsNearCaveIn(PlayerbotAI* botAI, float radius);

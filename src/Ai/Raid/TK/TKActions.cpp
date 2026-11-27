@@ -76,26 +76,6 @@ bool TempestKeepAssignClassRolesAction::Execute(Event /*event*/)
     return UpdateTkClassRoles(botAI);
 }
 
-bool TempestKeepTankPositionAction::MoveToTankPosition(
-    Unit* target, Position const& position, float tolerance, bool shouldAttack)
-{
-    if (shouldAttack && AI_VALUE(Unit*, "current target") != target)
-        return Attack(target);
-
-    if (target->GetVictim() != bot || !bot->IsWithinMeleeRange(target))
-        return false;
-
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(bot, position, tolerance, target, moveX, moveY, backwards))
-        return false;
-
-    return MoveTo(
-        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
-}
-
 // Trash
 
 bool CrimsonHandCenturionCastPolymorphAction::Execute(Event /*event*/)
@@ -654,7 +634,6 @@ bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
 
 // Void Reaver
 
-// Pounding is part of why the spot is fixed, though tanking is needed in any case.
 bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* voidReaver = GetTkBoss(bot, TkBosses::DATA_VOID_REAVER);
@@ -667,14 +646,11 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
     if (voidReaver->GetVictim() != bot || !bot->IsWithinMeleeRange(voidReaver))
         return false;
 
-    constexpr float arrivalDistance = 2.0f;
     Position const& position = VOID_REAVER_TANKING_POSITION;
     float const distToPosition = voidReaver->GetExactDist2d(position);
-    if (distToPosition <= arrivalDistance)
+    if (distToPosition <= VOID_REAVER_BOSS_ARRIVAL_DISTANCE)
         return false;
 
-    // The tank stands this far past the center so Void Reaver, following at this distance, stops on
-    // it.
     float const leadDistance =
         CONTACT_DISTANCE + voidReaver->GetCombatReach() + bot->GetCombatReach();
     float const ratio = leadDistance / distToPosition;
@@ -683,13 +659,11 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
         position.GetPositionY() + (position.GetPositionY() - voidReaver->GetPositionY()) * ratio,
         bot->GetPositionZ());
 
-    // However far the tank stops from its destination, Void Reaver stops that far from the center.
-    constexpr float tankArrivalDistance = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, destination, tankArrivalDistance, voidReaver, moveX, moveY, backwards))
+            bot, destination, TK_TANK_ARRIVAL_DISTANCE, voidReaver, moveX, moveY, backwards))
     {
         return false;
     }
@@ -812,7 +786,7 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
         Position const& chosen = bestCandidates[urand(0, bestCandidates.size() - 1)];
         return MoveTo(
             TK_MAP_ID, chosen.GetPositionX(), chosen.GetPositionY(), chosen.GetPositionZ(),
-            false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
     constexpr uint32 minInterval = 0;
@@ -1003,8 +977,24 @@ bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/
     if (!advisor)
         return false;
 
-    constexpr float tolerance = 2.0f;
-    return MoveToTankPosition(advisor, position, tolerance);
+    if (AI_VALUE(Unit*, "current target") != advisor)
+        return Attack(advisor);
+
+    if (advisor->GetVictim() != bot || !bot->IsWithinMeleeRange(advisor))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, position, TK_TANK_ARRIVAL_DISTANCE, advisor, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event*/)
@@ -1870,9 +1860,25 @@ bool KaelthasSunstriderTanksPositionBossAction::Execute(Event /*event*/)
         return false;
 
     // Off-tanks are repositioned if Kael aggroes them, but only the main tank picks him up.
-    constexpr float tolerance = 4.0f;
-    return MoveToTankPosition(
-        kaelthas, KAELTHAS_TANK_POSITION, tolerance, PlayerbotAI::IsMainTank(bot));
+    if (PlayerbotAI::IsMainTank(bot) && AI_VALUE(Unit*, "current target") != kaelthas)
+        return Attack(kaelthas);
+
+    if (kaelthas->GetVictim() != bot || !bot->IsWithinMeleeRange(kaelthas))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, KAELTHAS_TANK_POSITION, TK_TANK_ARRIVAL_DISTANCE, kaelthas, moveX, moveY,
+            backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)

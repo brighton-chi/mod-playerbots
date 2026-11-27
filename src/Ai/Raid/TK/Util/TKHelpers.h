@@ -123,6 +123,8 @@ enum class TkItems : uint32
 
 inline constexpr uint32 TK_MAP_ID = 550;
 inline constexpr uint32 TK_CACHE_INTERVAL_MS = 200;
+// How close a tank gets to its tanking position (or Void Reaver's tank to its destination).
+inline constexpr float TK_TANK_ARRIVAL_DISTANCE = 3.0f;
 
 Unit* GetTkBoss(Player* bot, TkBosses boss);
 std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc);
@@ -229,6 +231,10 @@ inline constexpr uint32 ARCANE_ORB_DURATION_MS = 7000;
 inline constexpr float ARCANE_ORB_HAZARD_RADIUS = 20.0f;
 inline constexpr float ARCANE_ORB_CLEARANCE = ARCANE_ORB_HAZARD_RADIUS + 2.0f;
 inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 10.0f;
+// While the tank is moving and still within Void Reaver's melee range, Void Reaver chases to its
+// reach minus half the tank's speed, not to the tank's lead distance, so it can stop up to 4 yd
+// past the center.
+inline constexpr float VOID_REAVER_BOSS_ARRIVAL_DISTANCE = 5.0f;
 
 // Center of the room: the point with the most open floor (57 yd to the nearest navmesh edge).
 inline Position const VOID_REAVER_TANKING_POSITION = { 433.545f, 370.833f, 14.975f };
@@ -239,7 +245,7 @@ bool IsNearActiveArcaneOrb(Player* bot, float radius);
 
 // High Astromancer Solarian
 
-// Measured from Solarian's spawn. 100 yd covers her room.
+// Measured from Solarian's spawn position. 100 yd covers her room.
 inline constexpr float SOLARIAN_ROOM_SEARCH_RADIUS = 100.0f;
 
 inline Position const SOLARIAN_SPAWN_POSITION = { 432.740f, -373.645f, 18.014f };

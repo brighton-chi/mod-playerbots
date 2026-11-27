@@ -210,9 +210,6 @@ float AlarDisableTotemsBelowPlatformsMultiplier::GetValueInEncounter(Action* act
 
 float VoidReaverMaintainPositionsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!dynamic_cast<CombatFormationMoveAction*>(action))
         return 1.0f;
 

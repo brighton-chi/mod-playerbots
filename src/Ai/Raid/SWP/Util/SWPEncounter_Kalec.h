@@ -63,8 +63,9 @@ inline constexpr float KALECGOS_HEALTH_GAP_HOLD_PCT = 20.0f;
 // surface holds DPS on Kalecgos under this health until Sathrovarr is banished.
 inline constexpr float KALECGOS_END_HOLD_PCT = 5.0f;
 
-inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
-inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
+// Measured from Kalecgos's spawn position. The tank and ranged positions are within 29 yd of it.
+inline constexpr float KALECGOS_UNIT_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 KALECGOS_UNIT_CACHE_INTERVAL_MS = 1000;
 
 // The Spectral Realm is the same arena, 128 yd under the surface; it is neither a separate place
 // nor a phase. Teleport Spectral Realm (46019) and Teleport Normal Realm (46020) land at the same X
@@ -73,10 +74,9 @@ inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 
 // (46021) makes a player invisible and lets it see invisibility, and Kalec and Sathrovarr carry
 // Spectral Invisibility (44801). A grid search ignores both Z and visibility, so one search around
 // Kalecgos's spawn finds the units of both realms.
-inline Position const KALECGOS_SPAWN_POSITION = { 1704.220f, 924.758f, 53.161f };
-// Measured from Kalecgos's spawn. The tank and ranged positions are within 29 yd of it.
-inline constexpr float KALECGOS_UNIT_SEARCH_RADIUS = 100.0f;
-inline constexpr uint32 KALECGOS_UNIT_CACHE_INTERVAL_MS = 1000;
+inline Position const KALECGOS_SPAWN_POSITION =          { 1704.220f, 924.758f, 53.161f };
+inline Position const KALECGOS_TANK_POSITION =           { 1703.584f, 895.626f, 53.076f };
+inline Position const KALECGOS_INITIAL_RANGED_POSITION = { 1704.634f, 938.080f, 53.076f };
 
 enum class KalecgosBoss : uint8
 {
