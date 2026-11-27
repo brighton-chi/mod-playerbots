@@ -390,7 +390,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     if (GetNearestRepentantHealer(bot, maiden))
         return false;
 
-    Position const& position = MAIDEN_OF_VIRTUE_POSITION;
+    Position const& position = MAIDEN_OF_VIRTUE_TANKING_POSITION;
     float const distToPosition = maiden->GetExactDist2d(position);
     if (distToPosition <= MAIDEN_OF_VIRTUE_POSITION_TOLERANCE)
         return false;

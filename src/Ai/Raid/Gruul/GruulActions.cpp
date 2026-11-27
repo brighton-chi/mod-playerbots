@@ -374,7 +374,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     if (gruul->GetVictim() != bot || !bot->IsWithinMeleeRange(gruul))
         return false;
 
-    Position const& position = GRUUL_POSITION;
+    Position const& position = GRUUL_TANKING_POSITION;
     float const distToPosition = gruul->GetExactDist2d(position);
     if (distToPosition <= GRUUL_ARRIVAL_DISTANCE)
         return false;
@@ -408,7 +408,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    Position const& position = GRUUL_POSITION;
+    Position const& position = GRUUL_TANKING_POSITION;
 
     if (!_hasInitialPosition)
     {

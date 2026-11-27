@@ -161,7 +161,7 @@ inline constexpr float GRUUL_ROOM_MIN_X = 172.0f;
 
 // Where the tank holds Gruul: the center of his room, with the most open floor (42 yd to the
 // nearest navmesh edge). Ranged bots spread in a ring around it.
-inline Position const GRUUL_POSITION = { 231.217f, 363.233f, -4.420f };
+inline Position const GRUUL_TANKING_POSITION = { 231.217f, 363.233f, -4.420f };
 // Gruul follows the tank at a fixed distance, so however far the tank stops from its position,
 // Gruul stops that far from the center.
 inline constexpr float GRUUL_TANK_ARRIVAL_DISTANCE = 0.5f;

@@ -230,8 +230,8 @@ inline constexpr float ARCANE_ORB_HAZARD_RADIUS = 20.0f;
 inline constexpr float ARCANE_ORB_CLEARANCE = ARCANE_ORB_HAZARD_RADIUS + 2.0f;
 inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 10.0f;
 
-// Center of the room
-inline Position const VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
+// Center of the room: the point with the most open floor (57 yd to the nearest navmesh edge).
+inline Position const VOID_REAVER_TANKING_POSITION = { 433.545f, 370.833f, 14.975f };
 
 std::vector<Position> GetActiveArcaneOrbs(uint32 instanceId);
 bool IsNearArcaneOrb(Player* bot, std::vector<Position> const& orbs, float radius);

@@ -661,8 +661,42 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    constexpr float tolerance = 2.0f;
-    return MoveToTankPosition(voidReaver, VOID_REAVER_TANK_POSITION, tolerance);
+    if (AI_VALUE(Unit*, "current target") != voidReaver)
+        return Attack(voidReaver);
+
+    if (voidReaver->GetVictim() != bot || !bot->IsWithinMeleeRange(voidReaver))
+        return false;
+
+    constexpr float arrivalDistance = 2.0f;
+    Position const& position = VOID_REAVER_TANKING_POSITION;
+    float const distToPosition = voidReaver->GetExactDist2d(position);
+    if (distToPosition <= arrivalDistance)
+        return false;
+
+    // The tank stands this far past the center so Void Reaver, following at this distance, stops on
+    // it.
+    float const leadDistance =
+        CONTACT_DISTANCE + voidReaver->GetCombatReach() + bot->GetCombatReach();
+    float const ratio = leadDistance / distToPosition;
+    Position const destination(
+        position.GetPositionX() + (position.GetPositionX() - voidReaver->GetPositionX()) * ratio,
+        position.GetPositionY() + (position.GetPositionY() - voidReaver->GetPositionY()) * ratio,
+        bot->GetPositionZ());
+
+    // However far the tank stops from its destination, Void Reaver stops that far from the center.
+    constexpr float tankArrivalDistance = 0.5f;
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, destination, tankArrivalDistance, voidReaver, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool VoidReaverUseAggroDumpAbilityAction::Execute(Event /*event*/)

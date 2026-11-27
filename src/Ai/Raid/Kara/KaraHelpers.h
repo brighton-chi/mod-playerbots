@@ -251,7 +251,7 @@ inline constexpr float HOLY_GROUND_RADIUS = 12.0f;
 inline constexpr float MAIDEN_REPENTANCE_BREAK_DISTANCE = HOLY_GROUND_RADIUS - 1.0f;
 
 // Maiden's spawn point. The ranged positions are a ring around it.
-inline Position const MAIDEN_OF_VIRTUE_POSITION = { -10945.881f, -2103.782f, 92.712f };
+inline Position const MAIDEN_OF_VIRTUE_TANKING_POSITION = { -10945.881f, -2103.782f, 92.712f };
 inline std::array const MAIDEN_OF_VIRTUE_RANGED_POSITIONS = {
     Position{ -10959.242f, -2119.617f, 92.180f }, // SE (opposite entrance)
     Position{ -10944.495f, -2123.857f, 92.180f }, // E
