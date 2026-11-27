@@ -71,11 +71,10 @@ bool ZulAmanTanksPositionBossAction::Execute(Event /*event*/)
     if (boss->GetVictim() != bot || !bot->IsWithinMeleeRange(boss))
         return false;
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, _position, ZA_ARRIVAL_DISTANCE, boss, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -125,8 +124,7 @@ bool AkilzonMoveToEyeOfTheStormAction::Execute(Event /*event*/)
     if (!target && !PlayerbotAI::IsMainTank(bot))
         target = GetGroupMainTank(bot);
 
-    constexpr float arrivalDist = 3.0f;
-    if (!target || bot->GetExactDist2d(target) <= arrivalDist)
+    if (!target || bot->GetExactDist2d(target) <= ZA_ARRIVAL_DISTANCE)
         return false;
 
     bot->CastStop();
@@ -166,14 +164,11 @@ bool NalorakkTanksPositionBossAction::Execute(Event event)
             return false;
     }
 
-    // Both always move to the position but should back to it only when holding Nalorakk, so
-    // whether movement is forwards or backwards is determined by GetStepToPosition().
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, NALORAKK_TANK_POSITION, arrivalDist, nalorakk, moveX, moveY, backwards))
+            bot, NALORAKK_TANK_POSITION, ZA_ARRIVAL_DISTANCE, nalorakk, moveX, moveY, backwards))
     {
         return false;
     }
@@ -216,8 +211,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
     float targetY =
         JANALAI_TANK_POSITION.GetPositionY() + JANALAI_RANGED_SPREAD_RADIUS * std::sin(angle);
 
-    constexpr float arrivalDist = 2.0f;
-    if (bot->GetExactDist2d(targetX, targetY) <= arrivalDist)
+    if (bot->GetExactDist2d(targetX, targetY) <= ZA_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -290,9 +284,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
 
     Position const& position = HALAZZI_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
-    constexpr float arrivalDist = 2.0f;
-
-    if (distToPosition <= arrivalDist)
+    if (distToPosition <= ZA_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -380,11 +372,10 @@ bool ZuljinPositionRangedForCyclonesAction::Execute(Event /*event*/)
 
     Position const& position = ZULJIN_SPREAD_POSITIONS[slotIndex];
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, ZA_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(

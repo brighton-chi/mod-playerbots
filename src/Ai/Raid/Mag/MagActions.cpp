@@ -42,7 +42,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
 
     // After the first three Channelers are dead, wait for Magtheridon to activate.
     Position const& position = WAITING_FOR_MAGTHERIDON_POSITION;
-    if (bot->GetExactDist2d(position) <= 2.0f)
+    if (bot->GetExactDist2d(position) <= MAG_ARRIVAL_DISTANCE)
     {
         if (std::fabs(bot->GetOrientation() - position.GetOrientation()) > 0.1f)
             bot->SetFacingTo(position.GetOrientation());
@@ -80,16 +80,15 @@ bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*
         return false;
 
     // Movement is intentionally forwards only, so no facing is passed.
-    constexpr float arrivalDist = 3.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, MAG_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
-        MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool MagtheridonMisdirectChannelersToMainTankAction::Execute(Event /*event*/)
@@ -245,19 +244,19 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
         return false;
     }
 
-    constexpr float arrivalDist = 3.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, MAGTHERIDON_TANK_POSITION, arrivalDist, magtheridon, moveX, moveY, backwards))
+            bot, MAGTHERIDON_TANK_POSITION, MAG_ARRIVAL_DISTANCE, magtheridon, moveX, moveY,
+            backwards))
     {
         return false;
     }
 
     return MoveTo(
-        MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        MAG_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)

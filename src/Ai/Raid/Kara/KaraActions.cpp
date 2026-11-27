@@ -302,11 +302,10 @@ bool AttumenTheHuntsmanTankPositionMountedAction::Execute(Event /*event*/)
         return false;
     }
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, attumen, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, KARA_ARRIVAL_DISTANCE, attumen, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -410,8 +409,7 @@ bool MaidenOfVirtueTankPositionBossAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, destination, MAIDEN_OF_VIRTUE_TANK_ARRIVAL_DISTANCE, maiden, moveX, moveY,
-            backwards))
+            bot, destination, KARA_ARRIVAL_DISTANCE, maiden, moveX, moveY, backwards))
     {
         return false;
     }
@@ -434,11 +432,10 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
     if (maiden->GetExactDist2d(healer) <= MAIDEN_REPENTANCE_BREAK_DISTANCE)
         return false;
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, *healer, arrivalDist, maiden, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, *healer, KARA_ARRIVAL_DISTANCE, maiden, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -448,10 +445,9 @@ bool MaidenOfVirtueMoveBossToStunnedHealerAction::Execute(Event /*event*/)
 
 bool MaidenOfVirtuePositionRangedBetweenPillarsAction::Execute(Event /*event*/)
 {
-    constexpr float arrivalDist = 2.0f;
     for (Position const& position : MAIDEN_OF_VIRTUE_RANGED_POSITIONS)
     {
-        if (bot->GetExactDist2d(position) <= arrivalDist)
+        if (bot->GetExactDist2d(position) <= KARA_ARRIVAL_DISTANCE)
             return false;
     }
 
@@ -505,13 +501,14 @@ bool BigBadWolfTankPositionBossAction::Execute(Event /*event*/)
     if (wolf->GetVictim() != bot || !bot->IsWithinMeleeRange(wolf))
         return false;
 
-    Position const& position = BIG_BAD_WOLF_TANK_POSITION;
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, wolf, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, BIG_BAD_WOLF_TANK_POSITION, KARA_ARRIVAL_DISTANCE, wolf, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
@@ -718,13 +715,14 @@ bool TheCuratorTankPositionBossAction::Execute(Event /*event*/)
     if (curator->GetVictim() != bot || !bot->IsWithinMeleeRange(curator))
         return false;
 
-    Position const& position = THE_CURATOR_TANK_POSITION;
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, curator, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, CURATOR_TANK_POSITION, KARA_ARRIVAL_DISTANCE, curator, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -733,9 +731,9 @@ bool TheCuratorTankPositionBossAction::Execute(Event /*event*/)
 
 bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 {
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, THE_CURATOR_RANGED_SPREAD_DISTANCE);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, CURATOR_RANGED_SPREAD_DISTANCE);
     return nearestPlayer &&
-        FleePosition(nearestPlayer->GetPosition(), THE_CURATOR_RANGED_SPREAD_DISTANCE);
+        FleePosition(nearestPlayer->GetPosition(), CURATOR_RANGED_SPREAD_DISTANCE);
 }
 
 // Terestian Illhoof
@@ -1791,12 +1789,14 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
         TERRACE_DOME_CENTER.GetPositionY() + TERRACE_ARC_RADIUS * std::sin(angle),
         bot->GetPositionZ());
 
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, destination, arrivalDist, nightbane, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, destination, NIGHTBANE_ARRIVAL_DISTANCE, nightbane, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority, true,
@@ -1818,7 +1818,7 @@ bool NightbaneRangedMoveFromCharredEarthAction::Execute(Event /*event*/)
     bool backwards;
     if (!GetStepToPosition(
             bot, GetTerraceWalkPosition(*bot, *state->nightbaneRangedPosition),
-            NIGHTBANE_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
+            NIGHTBANE_HAZARD_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1844,8 +1844,8 @@ bool NightbaneMeleeMoveFromCharredEarthAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GetTerraceWalkPosition(*bot, position), NIGHTBANE_ARRIVAL_DISTANCE, nightbane,
-            moveX, moveY, backwards))
+            bot, GetTerraceWalkPosition(*bot, position), NIGHTBANE_HAZARD_ARRIVAL_DISTANCE,
+            nightbane, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1910,17 +1910,19 @@ bool NightbaneStackAwayFromRainOfBonesAction::Execute(Event /*event*/)
 
     Position const walkPosition =
         GetTerraceWalkPosition(*bot, *state->nightbaneFlightStackPosition);
-    constexpr float arrivalDist = 0.5f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, walkPosition, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, walkPosition, NIGHTBANE_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     bot->CastStop();
     return MoveTo(
-        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_FORCED, true, backwards);
+        KARA_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, backwards);
 }
 
 // Nightbane does not attack or cast as he goes to land. Allow bots to drop into their non-combat

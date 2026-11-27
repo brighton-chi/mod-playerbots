@@ -162,6 +162,7 @@ enum class KaraNpcs : uint32
 // Shared
 
 inline constexpr uint32 KARA_MAP_ID = 532;
+inline constexpr float KARA_ARRIVAL_DISTANCE = 2.0f;
 
 Unit* GetKaraBoss(Player* bot, KaraBosses boss);
 Unit* GetOperaActor(Player* bot, std::string_view name);
@@ -245,8 +246,6 @@ GuidVector FindMoroesGuestGuids(Player* bot);
 // half the tank's speed, not to the tank's lead distance, so she can stop up to 4 yd past her
 // position. At 5 yd, the nearest ranged position is still 14.5 yd from her, outside Holy Ground.
 inline constexpr float MAIDEN_OF_VIRTUE_BOSS_ARRIVAL_DISTANCE = 5.0f;
-// Below Maiden's tolerance, so the tank never stops with her still out of position.
-inline constexpr float MAIDEN_OF_VIRTUE_TANK_ARRIVAL_DISTANCE = 3.0f;
 // Maiden stops 6.8 yd from a tank she follows, so the tank aims this far past her position.
 inline constexpr float MAIDEN_OF_VIRTUE_TANK_LEAD_DISTANCE = 7.0f;
 // Holy Ground hits a player within 12 yd of Maiden's center and breaks Repentance.
@@ -340,9 +339,9 @@ inline std::array const OZ_TARGETS = {
 
 // Arcing Sear jumps 13 yd center-to-center between players. Requiring that great of a spread is
 // impractical, so we enforce a smaller spread to at least reduce the jumps.
-inline constexpr float THE_CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
+inline constexpr float CURATOR_RANGED_SPREAD_DISTANCE = 7.0f;
 // Toward the far end of the Menagerie, near the Library entrance, in the middle of the corridor.
-inline Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
+inline Position const CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
 // Terestian Illhoof
 
@@ -595,8 +594,7 @@ inline constexpr float INFERNAL_SEARCH_RADIUS = 100.0f;
 inline constexpr float MALCHEZAAR_SEARCH_RADIUS = 60.0f;
 // Bounds the pathfinding cost of each position search.
 inline constexpr uint8 MALCHEZAAR_MAX_WALK_CHECKS = 64;
-// Smaller than the usual arrival distance, because this fight's hazard margins are small and the
-// safe floor keeps shrinking.
+// Smaller than usual arrival distance because hazard margins are small and the safe floor shrinks.
 inline constexpr float MALCHEZAAR_ARRIVAL_DISTANCE = 0.5f;
 inline constexpr uint32 INFERNALS_CACHE_INTERVAL_MS = 200;
 
@@ -652,7 +650,9 @@ inline constexpr float CHARRED_EARTH_CLEARANCE = CHARRED_EARTH_HAZARD_RADIUS + 0
 inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
 // A bot can stop this far short of its position, so it must stay below the clearance's margin.
-inline constexpr float NIGHTBANE_ARRIVAL_DISTANCE = 0.1f;
+inline constexpr float NIGHTBANE_HAZARD_ARRIVAL_DISTANCE = 0.1f;
+// A shorter-than-usual arrival distance, even for the tank. Also for the flight position stack.
+inline constexpr float NIGHTBANE_ARRIVAL_DISTANCE = 0.5f;
 // Each Rain of Bones tick hits everyone within 6 yd of a random point up to 8 yd from its center
 // (no combat reach added), so the rain reaches 14 yd.
 inline constexpr float RAIN_OF_BONES_HAZARD_RADIUS = 14.0f;

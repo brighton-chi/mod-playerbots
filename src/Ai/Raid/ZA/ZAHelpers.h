@@ -128,6 +128,7 @@ inline constexpr float ZA_WHIRLWIND_CLEARANCE = 12.0f;
 inline constexpr float ZA_WHIRLWIND_HOLD_DISTANCE = 15.0f;
 // For Medicine Man totems, Halazzi totem, and Jan'alai Hatchers.
 inline constexpr float ZA_CREATURE_SEARCH_RADIUS = 40.0f;
+inline constexpr float ZA_ARRIVAL_DISTANCE = 2.0f;
 
 Unit* GetZaBoss(Player* bot, ZaBosses boss);
 

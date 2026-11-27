@@ -73,6 +73,7 @@ struct CubeInfo
 
 inline constexpr uint32 MAG_MAP_ID = 544;
 inline constexpr uint32 MAG_CACHE_INTERVAL_MS = 200;
+inline constexpr float MAG_ARRIVAL_DISTANCE = 3.0f;
 
 inline constexpr uint32 SOUTH_CHANNELER_DB_GUID     = 90978;
 inline constexpr uint32 WEST_CHANNELER_DB_GUID      = 90979;
