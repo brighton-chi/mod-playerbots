@@ -113,7 +113,9 @@ float SscControlMisdirectionMultiplier::GetValueInEncounter(Action* action)
 
 float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
-    if (bot->GetMapId() != SSC_MAP_ID || botAI->GetState() == BOT_STATE_NON_COMBAT)
+    // The map and engine are checked because this multiplier is not an SscEncounterMultiplier, and
+    // it cannot be because it needs to apply to Leotheras before he is IN_PROGRESS.
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT || bot->GetMapId() != SSC_MAP_ID)
         return 1.0f;
 
     if (!IsDpsCooldownAction(bot, action))
@@ -133,16 +135,15 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
     bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action));
 
-    SscBosses const bossKey = static_cast<SscBosses>(*bossId);
-    Unit* boss = bossKey == SscBosses::DATA_LEOTHERAS_THE_BLIND ?
-        GetLeotheras(botAI) : GetSscBoss(bot, bossKey);
+    SscBosses const bossInProgress = static_cast<SscBosses>(*bossId);
+    Unit* boss = GetSscBoss(bot, bossInProgress);
 
     // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
     // on the boss's threat list yet, so hold cooldowns.
     if (!boss)
         return 0.0f;
 
-    switch (bossKey)
+    switch (bossInProgress)
     {
         // Vashj: Bloodlust/Heroism are phase 3 only; other DPS cooldowns can be used from phase 2.
         case SscBosses::DATA_LADY_VASHJ:
@@ -160,7 +161,7 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
                 return boss->GetHealthPct() <= TIDEWALKER_PHASE_2_HEALTH_PCT ? 1.0f : 0.0f;
             break;
         }
-        // Karathress: Hold until Tidalvess, first in the kill order, is under 95%.
+        // Karathress: Hold until Tidalvess, first in the kill order, is under 95%. Do not break.
         case SscBosses::DATA_FATHOM_LORD_KARATHRESS:
         {
             Unit* tidalvess = GetKarathressCouncilMember(bot, SscNpcs::NPC_FATHOM_GUARD_TIDALVESS);
@@ -173,11 +174,12 @@ float SscDelayDpsCooldownsMultiplier::GetValue(Action* action)
                 return 0.0f;
             break;
         }
-        // Hydross and Leotheras: Only the standard hold on pull until 95%.
+        // Hydross and Leotheras
         default:
             break;
     }
 
+    // Everybody but Karathress: standard hold on pull until 95%.
     return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 

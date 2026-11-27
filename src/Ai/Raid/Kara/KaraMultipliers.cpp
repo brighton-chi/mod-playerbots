@@ -83,18 +83,39 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
     if (!bossId)
         return 1.0f;
 
+    KaraBosses const bossInProgress = static_cast<KaraBosses>(*bossId);
     Unit* boss = nullptr;
-    switch (static_cast<KaraBosses>(*bossId))
+    switch (bossInProgress)
     {
-        case KaraBosses::DATA_ATTUMEN:
-            boss = FindThreatTarget(bot, "midnight");
+        case KaraBosses::DATA_NIGHTBANE:
+        {
+            boss = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
+            if (IsNightbaneFlying(boss))
+                return 0.0f;
             break;
-        case KaraBosses::DATA_MOROES:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_MOROES);
+        }
+        case KaraBosses::DATA_NETHERSPITE:
+        {
+            boss = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
+            if (IsBanishPhase(boss))
+                return 0.0f;
             break;
-        case KaraBosses::DATA_MAIDEN:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_MAIDEN);
+        }
+        case KaraBosses::DATA_MALCHEZAAR:
+        {
+            constexpr float finalPhaseHealthPct = 30.0f;
+            boss = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
+            if (boss && isBloodlust)
+                return boss->GetHealthPct() > finalPhaseHealthPct ? 0.0f : 1.0f;
             break;
+        }
+        case KaraBosses::DATA_CURATOR:
+        {
+            boss = GetKaraBoss(bot, KaraBosses::DATA_CURATOR);
+            if (boss && isBloodlust)
+                return !boss->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)) ? 0.0f : 1.0f;
+            break;
+        }
         case KaraBosses::DATA_OPERA_PERFORMANCE:
         {
             static constexpr std::array operaLeads = {
@@ -119,55 +140,26 @@ float KarazhanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
             }
             break;
         }
-        case KaraBosses::DATA_CURATOR:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_CURATOR);
+        case KaraBosses::DATA_ATTUMEN:
+        {
+            boss = FindThreatTarget(bot, "midnight");
             break;
+        }
+        case KaraBosses::DATA_MOROES:
+        case KaraBosses::DATA_MAIDEN:
         case KaraBosses::DATA_TERESTIAN:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_TERESTIAN);
-            break;
         case KaraBosses::DATA_ARAN:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_ARAN);
+        {
+            boss = GetKaraBoss(bot, bossInProgress);
             break;
-        case KaraBosses::DATA_NETHERSPITE:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_NETHERSPITE);
-            break;
-        case KaraBosses::DATA_MALCHEZAAR:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_MALCHEZAAR);
-            break;
-        case KaraBosses::DATA_NIGHTBANE:
-            boss = GetKaraBoss(bot, KaraBosses::DATA_NIGHTBANE);
-            break;
-        default:
+        }
+        default: // Exempt Chess, if it were to set IN_PROGRESS in AC (it currently never does).
             return 1.0f;
     }
 
-    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
-    // on the boss's threat list yet, so hold cooldowns.
-    if (!boss)
-        return 0.0f;
-
-    if (isBloodlust)
-    {
-        if (boss->GetEntry() == Id(KaraNpcs::NPC_PRINCE_MALCHEZAAR))
-        {
-            constexpr float finalPhaseHealthPct = 30.0f;
-            return boss->GetHealthPct() > finalPhaseHealthPct ? 0.0f : 1.0f;
-        }
-
-        if (boss->GetEntry() == Id(KaraNpcs::NPC_THE_CURATOR))
-            return !boss->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)) ? 0.0f : 1.0f;
-    }
-
-    if (boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
-        return 0.0f;
-
-    if (boss->GetEntry() == Id(KaraNpcs::NPC_NIGHTBANE))
-        return IsNightbaneFlying(boss) ? 0.0f : 1.0f;
-
-    if (boss->GetEntry() == Id(KaraNpcs::NPC_NETHERSPITE))
-        return IsBanishPhase(boss) ? 0.0f : 1.0f;
-
-    return 1.0f;
+    // For all bosses, hold cooldowns until 95%. Also hold if the boss is not on the bot's threat
+    // list, which likely means the bot was just resurrected.
+    return !boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 float KarazhanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* action)

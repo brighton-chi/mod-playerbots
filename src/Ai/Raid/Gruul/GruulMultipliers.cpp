@@ -22,9 +22,6 @@ using namespace EncounterHelpers;
 
 float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
@@ -34,15 +31,16 @@ float GruulsLairDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 
     switch (static_cast<GruulBosses>(*bossId))
     {
-        case GruulBosses::DATA_HIGH_KING_MAULGAR:
-        {
-            Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
-            return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-        }
         case GruulBosses::DATA_GRUUL_THE_DRAGONKILLER:
         {
             Unit* gruul = GetGruulsLairBoss(bot, GruulBosses::DATA_GRUUL_THE_DRAGONKILLER);
             return !gruul || gruul->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+        }
+        case GruulBosses::DATA_HIGH_KING_MAULGAR:
+        {
+            // Measure the cooldown threshold from Blindeye, the first ogre in the kill order.
+            Unit* blindeye = GetMaulgarCouncilMember(bot, GruulNpcs::NPC_BLINDEYE_THE_SEER);
+            return blindeye && blindeye->GetHealthPct() > BLINDEYE_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
         default:
             return 1.0f;

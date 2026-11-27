@@ -20,7 +20,7 @@
 #include "WarriorActions.h"
 #include "ZAActions.h"
 #include "ZAHelpers.h"
-#include <utility>
+#include <optional>
 
 using namespace ZaHelpers;
 using namespace EncounterHelpers;
@@ -46,64 +46,51 @@ bool IsHazardousMovement(Action* action)
         dynamic_cast<CastDisengageAction*>(action);
 }
 
-// Returns the boss in progress and its unit, which is null if the bot can't find it.
-std::pair<Unit*, ZaBosses> GetZulAmanBoss(Player* bot)
-{
-    std::optional<uint32> const bossId = GetBossInProgress(bot, ZA_MAP_ID);
-    if (!bossId)
-        return { nullptr, ZaBosses::DATA_AKILZON };
-
-    ZaBosses const boss = static_cast<ZaBosses>(*bossId);
-    return { GetZaBoss(bot, boss), boss };
-}
-
 }
 
 // Shared
 
 float ZulAmanDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+    if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    if (!IsDpsCooldownAction(bot, action))
+    std::optional<uint32> const bossId = GetBossInProgress(bot, ZA_MAP_ID);
+    if (!bossId)
         return 1.0f;
 
     // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
     // on the boss's threat list yet, so hold cooldowns.
-    auto const [boss, bossKey] = GetZulAmanBoss(bot);
-    if (!boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT)
+    ZaBosses const bossInProgress = static_cast<ZaBosses>(*bossId);
+    Unit* boss = GetZaBoss(bot, bossInProgress);
+    if (!boss)
         return 0.0f;
 
-    // Further restrictions on Bloodlust for Zul'jin and Jan'alai.
-    if (bot->getClass() != CLASS_SHAMAN)
-        return 1.0f;
-
-    if (!dynamic_cast<CastBloodlustAction*>(action) &&
-        !dynamic_cast<CastHeroismAction*>(action))
+    // Special Bloodlust/Heroism rules apply for Zul'jin and Jan'alai only. Other bosses treat it
+    // the same as other DPS cooldowns.
+    if (bot->getClass() == CLASS_SHAMAN &&
+        (dynamic_cast<CastBloodlustAction*>(action) || dynamic_cast<CastHeroismAction*>(action)))
     {
-        return 1.0f;
+        // Zul'jin: hold until Phase 3 (or later).
+        if (bossInProgress == ZaBosses::DATA_ZULJIN &&
+            !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) &&
+            !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_LYNX)) &&
+            !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)))
+        {
+            return 0.0f;
+        }
+
+        // Jan'alai: hold until time to burn Hatchlings (see comments to constants in ZAHelpers.h).
+        if (bossInProgress == ZaBosses::DATA_JANALAI &&
+            boss->GetHealthPct() > JANALAI_HATCH_ALL_HEALTH_PCT &&
+            CountJanalaiHatchlingsByEntry(bot) < JANALAI_BLOODLUST_HATCHLING_COUNT)
+        {
+            return 0.0f;
+        }
     }
 
-    // Zul'jin: hold until Phase 3 (or later).
-    if (bossKey == ZaBosses::DATA_ZULJIN)
-    {
-        return (boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ||
-            boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_LYNX)) ||
-            boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK))) ? 1.0f : 0.0f;
-    }
-
-    // Jan'alai: hold until time to burn Hatchlings (see comments to the constants in ZAHelpers.h).
-    if (bossKey == ZaBosses::DATA_JANALAI)
-    {
-        if (boss->GetHealthPct() <= JANALAI_HATCH_ALL_HEALTH_PCT)
-            return 1.0f;
-
-        return CountJanalaiHatchlingsByEntry(bot) >= JANALAI_BLOODLUST_HATCHLING_COUNT ?
-            1.0f : 0.0f;
-    }
-
-    return 1.0f;
+    // For all bosses, hold cooldowns until 95%.
+    return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Malacrass siphoning a Warrior soul and Zul'jin in troll form have very similar Whirlwinds.
@@ -146,13 +133,18 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     if (!isTankFace && !isTankAssist && !isTaunt)
         return 1.0f;
 
-    auto const [boss, bossKey] = GetZulAmanBoss(bot);
+    std::optional<uint32> const bossId = GetBossInProgress(bot, ZA_MAP_ID);
+    if (!bossId)
+        return 1.0f;
+
+    ZaBosses const bossInProgress = static_cast<ZaBosses>(*bossId);
+    Unit* boss = GetZaBoss(bot, bossInProgress);
     if (!boss)
         return 1.0f;
 
     // Nalorakk: A tank swap is used by form, so only the tank assigned to the current form may
     // taunt. Same as NalorakkTanksPositionBossAction: main tank gets bear, assist tank gets troll.
-    if (bossKey == ZaBosses::DATA_NALORAKK)
+    if (bossInProgress == ZaBosses::DATA_NALORAKK)
     {
         if (!isTaunt)
             return 0.0f;
@@ -164,7 +156,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     }
 
     // Halazzi: The assist tank picks up the lynx so disable the main tank from taunting it.
-    if (bossKey == ZaBosses::DATA_HALAZZI)
+    if (bossInProgress == ZaBosses::DATA_HALAZZI)
     {
         if (!isTaunt)
             return 0.0f;
@@ -180,7 +172,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
         return 1.0f;
 
     // Zul'jin: Allow tank face in Phase 5 for the tank to turn him away from the raid.
-    if (bossKey == ZaBosses::DATA_ZULJIN)
+    if (bossInProgress == ZaBosses::DATA_ZULJIN)
     {
         return isTankFace &&
             !boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)) ? 0.0f : 1.0f;
@@ -189,7 +181,7 @@ float ZulAmanDisableTankActionsMultiplier::GetValueInEncounter(Action* action)
     // Jan'alai: Allow tank assist for the assist tank to pick up the Hatchlings. Tank face is
     // already disabled as part of ZulAmanDisableCombatFormationMoveMultiplier so the addition here
     // is just belt-and-suspenders for no cost.
-    if (bossKey == ZaBosses::DATA_JANALAI)
+    if (bossInProgress == ZaBosses::DATA_JANALAI)
         return isTankFace || PlayerbotAI::IsMainTank(bot) ? 0.0f : 1.0f;
 
     // Akil'zon disables only tank face action, and that is already handled by
@@ -218,14 +210,25 @@ float ZulAmanDisableCombatFormationMoveMultiplier::GetValueInEncounter(Action* a
     if (dynamic_cast<SetBehindTargetAction*>(action))
         return 1.0f;
 
-    auto const [boss, bossKey] = GetZulAmanBoss(bot);
+    std::optional<uint32> const bossId = GetBossInProgress(bot, ZA_MAP_ID);
+    if (!bossId)
+        return 1.0f;
+
+    ZaBosses const bossInProgress = static_cast<ZaBosses>(*bossId);
+    Unit* boss = GetZaBoss(bot, bossInProgress);
     if (!boss)
         return 1.0f;
 
-    if (bossKey == ZaBosses::DATA_ZULJIN)
-        return boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
-
-    return bossKey == ZaBosses::DATA_JANALAI || bossKey == ZaBosses::DATA_AKILZON ? 0.0f : 1.0f;
+    switch (bossInProgress)
+    {
+        case ZaBosses::DATA_ZULJIN:
+            return boss->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) ? 0.0f : 1.0f;
+        case ZaBosses::DATA_JANALAI:
+        case ZaBosses::DATA_AKILZON:
+            return 0.0f;
+        default:
+            return 1.0f;
+    }
 }
 
 // Akil'zon <Eagle Avatar>

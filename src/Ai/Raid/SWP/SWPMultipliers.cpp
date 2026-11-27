@@ -132,33 +132,28 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
         (dynamic_cast<CastHeroismAction*>(action) || dynamic_cast<CastBloodlustAction*>(action));
 
     // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
-    // on the boss's threat list yet, so hold cooldowns.
-    switch (static_cast<SwpBosses>(*bossId))
+    // on the boss's threat list yet, so hold cooldowns. Kil'jaeden is also not found while the
+    // Hands are up, as he is summoned only when the last Hand dies.
+    SwpBosses const bossInProgress = static_cast<SwpBosses>(*bossId);
+    Unit* boss = GetSwpBoss(bot, bossInProgress);
+    if (!boss)
+        return 0.0f;
+
+    switch (bossInProgress)
     {
         case SwpBosses::DATA_KILJAEDEN:
         {
-            // Kil'jaeden is summoned only when the last Hand dies.
-            if (FindThreatTarget(bot, "hand of the deceiver"))
-                return 0.0f;
-
-            Unit* kiljaeden = GetSwpBoss(bot, SwpBosses::DATA_KILJAEDEN);
-            if (!kiljaeden)
-                return 0.0f;
-
-            if (kiljaeden->GetHealthPct() <= KILJAEDEN_PHASE5_HP_THRESHOLD)
+            if (boss->GetHealthPct() <= KILJAEDEN_PHASE5_HP_THRESHOLD)
                 return 1.0f;
 
-            if (isBloodlust)
+            if (isBloodlust) // Bloodlust is saved for the final phase (25% HP).
                 return 0.0f;
 
-            return kiljaeden->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
+            // Other DPS cooldowns can be used beginning in phase 3 (85% HP).
+            return boss->GetHealthPct() > KILJAEDEN_PHASE3_HP_THRESHOLD ? 0.0f : 1.0f;
         }
         case SwpBosses::DATA_MURU:
         {
-            Unit* muru = GetSwpBoss(bot, SwpBosses::DATA_MURU);
-            if (!muru)
-                return 0.0f;
-
             Unit* entropius = FindThreatTarget(bot, "entropius");
             if (entropius && entropius->GetHealthPct() < BOSS_ENGAGED_HEALTH_PCT)
                 return 1.0f;
@@ -167,43 +162,34 @@ float SunwellDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
                 return 0.0f;
 
             // Other DPS cooldowns can be used on M'uru just after the pull.
-            return muru->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
+            return boss->GetHealthPct() > MURU_MAX_DPS_HP_PERCENT ? 0.0f : 1.0f;
         }
         case SwpBosses::DATA_EREDAR_TWINS:
         {
-            if (!FindAlythess(bot))
-                return 0.0f;
-
             Unit* sacrolash = FindSacrolash(bot);
             return sacrolash && sacrolash->GetHealthPct() > EREDAR_TWINS_MAX_DPS_HP_PERCENT ?
                 0.0f : 1.0f;
         }
-        case SwpBosses::DATA_FELMYST:
-        {
-            Unit* felmyst = GetSwpBoss(bot, SwpBosses::DATA_FELMYST);
-            if (!felmyst || felmyst->IsFlying())
-                return 0.0f;
-
-            return felmyst->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-        }
-        case SwpBosses::DATA_BRUTALLUS:
-        {
-            Unit* brutallus = GetSwpBoss(bot, SwpBosses::DATA_BRUTALLUS);
-            return !brutallus || brutallus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ?
-                0.0f : 1.0f;
-        }
         case SwpBosses::DATA_KALECGOS:
         {
-            if (!GetSwpBoss(bot, SwpBosses::DATA_KALECGOS))
-                return 0.0f;
-
-            // Use cooldowns against Sathrovarr only, and not while he is held.
+            // Use cooldowns against Sathrovarr only, and not if damage on him is being held due to
+            // damage on Kalecgos needing to catch up.
             return IsInSpectralRealm(bot) &&
                 GetKalecgosDpsHoldWindow(bot) == KalecgosDpsHold::None ? 1.0f : 0.0f;
         }
+        case SwpBosses::DATA_FELMYST:
+        {
+            if (boss->IsFlying())
+                return 0.0f;
+            break;
+        }
+        // Brutallus
         default:
-            return 1.0f;
+            break;
     }
+
+    // Brutallus and Felmyst: standard hold on pull until 95%.
+    return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Kalecgos

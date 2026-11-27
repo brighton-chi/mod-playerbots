@@ -59,9 +59,6 @@ bool IsKillingSpree(Player* bot, Action* action)
 
 } // end anonymous namespace (Shared)
 
-// Held for each boss's first 5% (excluding Shade of Akama and Illidan), and also through Supremus's
-// kite phase and between Reliquary essences. See below for Illidan's rules. In all cases, a boss
-// not on a threat list means hold (it probably means the bot was just battle rezzed).
 float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
 {
     if (!IsDpsCooldownAction(bot, action))
@@ -71,16 +68,23 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
     if (!bossId)
         return 1.0f;
 
-    switch (static_cast<BtBosses>(*bossId))
+    // Use cooldowns immediately during Shade of Akama.
+    BtBosses const bossInProgress = static_cast<BtBosses>(*bossId);
+    if (bossInProgress == BtBosses::DATA_SHADE_OF_AKAMA)
+        return 1.0f;
+
+    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
+    // on the boss's threat list yet, so hold cooldowns.
+    Unit* boss = GetBtBoss(bot, bossInProgress);
+    if (!boss)
+        return 0.0f;
+
+    switch (bossInProgress)
     {
         case BtBosses::DATA_ILLIDAN_STORMRAGE:
         {
-            Unit* illidan = GetBtBoss(bot, BtBosses::DATA_ILLIDAN_STORMRAGE);
-            if (!illidan)
-                return 0.0f;
-
             // At 62%, Bloodlust and all cooldowns are permanently freed.
-            if (illidan->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
+            if (boss->GetHealthPct() <= ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT)
                 return 1.0f;
 
             if (bot->getClass() == CLASS_SHAMAN &&
@@ -92,13 +96,10 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
 
             // Above 95%, cooldowns other than Bloodlust can be used, then disable them until 62%
             // (i.e., get one use in and then save until phase 3, when cooldowns should be back up).
-            return illidan->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 1.0f : 0.0f;
+            return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 1.0f : 0.0f;
         }
         case BtBosses::DATA_RELIQUARY_OF_SOULS:
         {
-            if (!GetBtBoss(bot, BtBosses::DATA_RELIQUARY_OF_SOULS))
-                return 0.0f;
-
             Unit* essence = nullptr;
             for (std::string_view name : {
                      "essence of suffering",
@@ -108,8 +109,7 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
             {
                 Unit* unit = GetReliquaryEssence(bot, name);
                 // After being defeated, an Essence stays on threat lists while it returns to the
-                // Reliquary with 1 HP. This check prevents cooldowns from being released during
-                // such period.
+                // Reliquary with 1 HP. This prevents cooldowns from being used during that period.
                 if (unit && !unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE))
                 {
                     essence = unit;
@@ -119,24 +119,19 @@ float BlackTempleDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action
 
             return !essence || essence->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
         }
+        // Supremus: The kite phase is mainly a survival phase so save cooldowns.
         case BtBosses::DATA_SUPREMUS:
         {
-            Unit* supremus = GetBtBoss(bot, BtBosses::DATA_SUPREMUS);
-            return !supremus || IsSupremusKitePhase(supremus) ||
-                supremus->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+            if (IsSupremusKitePhase(boss))
+                return 0.0f;
+            break;
         }
-        case BtBosses::DATA_HIGH_WARLORD_NAJENTUS:
-        case BtBosses::DATA_TERON_GOREFIEND:
-        case BtBosses::DATA_GURTOGG_BLOODBOIL:
-        case BtBosses::DATA_MOTHER_SHAHRAZ:
-        case BtBosses::DATA_ILLIDARI_COUNCIL:
-        {
-            Unit* boss = GetBtBoss(bot, static_cast<BtBosses>(*bossId));
-            return !boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
-        }
+        // For all remaining bosses (other than Shade of Akama), hold cooldowns until 95%.
         default:
-            return 1.0f;
+            break;
     }
+
+    return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
 
 // Supremus's bounding radius is 80 yd, far beyond his combat reach, and Killing Spree places the

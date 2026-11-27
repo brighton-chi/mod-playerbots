@@ -18,14 +18,15 @@ using namespace EncounterHelpers;
 
 float HyjalDelayDpsCooldownsMultiplier::GetValue(Action* action)
 {
-    // The map check is for a strategy that persists outside Hyjal, such as after a server reset.
+    // The map and engine are checked because this multiplier is not a HyjalEncounterMultiplier, and
+    // it cannot be because it includes trash suppression.
     if (botAI->GetState() == BOT_STATE_NON_COMBAT || bot->GetMapId() != HYJAL_MAP_ID)
         return 1.0f;
 
     if (!IsDpsCooldownAction(bot, action))
         return 1.0f;
 
-    // Suppress Bloodlust/Heroism during all trash waves. It's blown on CD otherwise.
+    // Suppress Bloodlust/Heroism during all trash waves. It's blown on cooldown otherwise.
     std::optional<uint32> const bossId = GetBossInProgress(bot, HYJAL_MAP_ID);
     if (!bossId)
     {
@@ -34,6 +35,8 @@ float HyjalDelayDpsCooldownsMultiplier::GetValue(Action* action)
              dynamic_cast<CastHeroismAction*>(action)) ? 0.0f : 1.0f;
     }
 
+    // For all bosses, hold cooldowns until 95%. Also hold if the boss is not on the bot's threat
+    // list, which likely means the bot was just resurrected.
     Unit* boss = GetHyjalBoss(bot, static_cast<HyjalBosses>(*bossId));
     return !boss || boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
 }
@@ -56,9 +59,15 @@ float HyjalDisableDisperseAndTankFaceMultiplier::GetValueInEncounter(Action* act
     if (!bossId)
         return 1.0f;
 
-    HyjalBosses const boss = static_cast<HyjalBosses>(*bossId);
-    return boss == HyjalBosses::DATA_ARCHIMONDE || boss == HyjalBosses::DATA_KAZROGAL ||
-        boss == HyjalBosses::DATA_RAGE_WINTERCHILL ? 0.0f : 1.0f;
+    switch (static_cast<HyjalBosses>(*bossId))
+    {
+        case HyjalBosses::DATA_ARCHIMONDE:
+        case HyjalBosses::DATA_KAZROGAL:
+        case HyjalBosses::DATA_RAGE_WINTERCHILL:
+            return 0.0f;
+        default:
+            return 1.0f;
+    }
 }
 
 // Rage Winterchill

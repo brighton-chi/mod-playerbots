@@ -10,6 +10,7 @@
 #include "EncounterHelpers.h"
 #include "Multiplier.h"
 #include "TKHelpers.h"
+#include <optional>
 #include <string>
 
 // Shared
@@ -17,22 +18,39 @@
 class TempestKeepEncounterMultiplier : public Multiplier
 {
 public:
+    TempestKeepEncounterMultiplier(PlayerbotAI* botAI, std::string const name)
+        : Multiplier(botAI, name) {}
     TempestKeepEncounterMultiplier(
         PlayerbotAI* botAI, std::string const name, TkHelpers::TkBosses boss)
         : Multiplier(botAI, name), _boss(boss) {}
 
     float GetValue(Action* action) final
     {
-        return EncounterHelpers::IsBossInProgress(
-            bot, TkHelpers::TK_MAP_ID, TkHelpers::Id(_boss)) ? GetValueInEncounter(action) : 1.0f;
+        bool const inProgress = _boss ?
+            EncounterHelpers::IsBossInProgress(bot, TkHelpers::TK_MAP_ID, TkHelpers::Id(*_boss)) :
+            EncounterHelpers::IsEncounterInProgress(bot, TkHelpers::TK_MAP_ID);
+        return inProgress ? GetValueInEncounter(action) : 1.0f;
     }
 
 protected:
     virtual float GetValueInEncounter(Action* action) = 0;
-    Unit* GetEncounterBoss() { return TkHelpers::GetTkBoss(bot, _boss); }
+    Unit* GetEncounterBoss()
+    {
+        return _boss ? TkHelpers::GetTkBoss(bot, *_boss) : nullptr;
+    }
 
 private:
-    TkHelpers::TkBosses const _boss;
+    std::optional<TkHelpers::TkBosses> const _boss;
+};
+
+class TempestKeepDelayDpsCooldownsMultiplier : public TempestKeepEncounterMultiplier
+{
+public:
+    TempestKeepDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
+        : TempestKeepEncounterMultiplier(botAI, "tempest keep delay dps cooldowns") {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
 };
 
 // Al'ar <Phoenix God>
@@ -260,18 +278,6 @@ public:
     KaelthasSunstriderPrepareForPhase3Multiplier(PlayerbotAI* botAI)
         : TempestKeepEncounterMultiplier(
             botAI, "kael'thas sunstrider prepare for phase 3",
-            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
-
-protected:
-    float GetValueInEncounter(Action* action) override;
-};
-
-class KaelthasSunstriderDelayDpsCooldownsMultiplier : public TempestKeepEncounterMultiplier
-{
-public:
-    KaelthasSunstriderDelayDpsCooldownsMultiplier(PlayerbotAI* botAI)
-        : TempestKeepEncounterMultiplier(
-            botAI, "kael'thas sunstrider delay dps cooldowns",
             TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
 
 protected:

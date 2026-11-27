@@ -139,6 +139,9 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
+    // Shared
+    multipliers.push_back(new TempestKeepDelayDpsCooldownsMultiplier(botAI));
+
     // Alar <Phoenix God>
     multipliers.push_back(new AlarSuppressGapClosersMultiplier(botAI));
     multipliers.push_back(new AlarControlMovementMultiplier(botAI));
@@ -165,6 +168,5 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderKeepMeleeInCombatMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDelayDpsCooldownsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
 }

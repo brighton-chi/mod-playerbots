@@ -137,9 +137,6 @@ enum class KaraNpcs : uint32
     NPC_TINHEAD                      = 17547,
     NPC_TITO                         = 17548,
 
-    // The Curator
-    NPC_THE_CURATOR                  = 15691,
-
     // Terestian Illhoof
     NPC_TERESTIAN_ILLHOOF            = 15688,
     NPC_KILREK                       = 17229,
@@ -150,18 +147,15 @@ enum class KaraNpcs : uint32
     NPC_CONJURED_ELEMENTAL           = 17167,
 
     // Netherspite
-    NPC_NETHERSPITE                  = 15689,
     NPC_VOID_ZONE                    = 16697,
     NPC_GREEN_PORTAL                 = 17367, // "Nether Portal - Serenity <Healing Portal>"
     NPC_BLUE_PORTAL                  = 17368, // "Nether Portal - Dominance <Damage Portal>"
     NPC_RED_PORTAL                   = 17369, // "Nether Portal - Perseverance <Tanking Portal>"
 
     // Prince Malchezaar
-    NPC_PRINCE_MALCHEZAAR            = 15690,
     NPC_NETHERSPITE_INFERNAL         = 17646,
 
     // Nightbane
-    NPC_NIGHTBANE                    = 17225,
     NPC_RESTLESS_SKELETON            = 17261,
 };
 

@@ -24,6 +24,53 @@
 using namespace TkHelpers;
 using namespace EncounterHelpers;
 
+// Shared
+
+float TempestKeepDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
+{
+    if (!IsDpsCooldownAction(bot, action))
+        return 1.0f;
+
+    std::optional<uint32> const bossId = GetBossInProgress(bot, TK_MAP_ID);
+    if (!bossId)
+        return 1.0f;
+
+    TkBosses const bossInProgress = static_cast<TkBosses>(*bossId);
+    Unit* boss = GetTkBoss(bot, bossInProgress);
+
+    // A boss the bot can't find mid-encounter usually means the bot was just resurrected and isn't
+    // on the boss's threat list yet, so hold cooldowns.
+    if (!boss)
+        return 0.0f;
+
+    switch (bossInProgress)
+    {
+        case TkBosses::DATA_KAELTHAS_SUNSTRIDER:
+        {
+            uint32 const phase = GetKaelthasTkPhase(boss);
+            if (phase == PHASE_NONE)
+                return 1.0f;
+
+            bool const isBloodlust = bot->getClass() == CLASS_SHAMAN &&
+                (dynamic_cast<CastBloodlustAction*>(action) ||
+                 dynamic_cast<CastHeroismAction*>(action));
+
+            // Cooldowns other than Bloodlust become available during phase 2.
+            if (isBloodlust && phase == PHASE_WEAPONS)
+                return 0.0f;
+
+            // Bloodlust is not available until phase 3. Other cooldowns are suppressed during the
+            // phase 2->3 transition.
+            return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION ? 0.0f : 1.0f;
+        }
+        // For bosses other than Kael'thas, hold cooldowns until 95%.
+        default:
+            break;
+    }
+
+    return boss->GetHealthPct() > BOSS_ENGAGED_HEALTH_PCT ? 0.0f : 1.0f;
+}
+
 // Al'ar <Phoenix God>
 
 float AlarSuppressGapClosersMultiplier::GetValueInEncounter(Action* action)
@@ -413,33 +460,6 @@ float KaelthasSunstriderPrepareForPhase3Multiplier::GetValueInEncounter(Action* 
 
     return PlayerbotAI::IsMainTank(bot) || PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) ||
         IsCapernianTank(bot) ? 0.0f : 1.0f;
-}
-
-// Bloodlust/Heroism and other major cooldowns should be saved until Phase 3.
-float KaelthasSunstriderDelayDpsCooldownsMultiplier::GetValueInEncounter(Action* action)
-{
-    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
-        return 1.0f;
-
-    if (!IsDpsCooldownAction(bot, action))
-        return 1.0f;
-
-    Unit* kaelthas = GetEncounterBoss();
-    if (!kaelthas)
-        return 0.0f;
-
-    uint32 const phase = GetKaelthasTkPhase(kaelthas);
-    if (phase == PHASE_NONE)
-        return 1.0f;
-
-    bool const isLustAction = bot->getClass() == CLASS_SHAMAN &&
-        (dynamic_cast<CastBloodlustAction*>(action) ||
-         dynamic_cast<CastHeroismAction*>(action));
-
-    if (isLustAction && phase == PHASE_WEAPONS)
-        return 0.0f;
-
-    return phase == PHASE_SINGLE_ADVISOR || phase == PHASE_TRANSITION ? 0.0f : 1.0f;
 }
 
 float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValueInEncounter(Action* action)
