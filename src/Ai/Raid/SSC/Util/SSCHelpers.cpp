@@ -156,6 +156,31 @@ bool FindHazardEscapeStep(
     return false;
 }
 
+bool GetTankPathStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* tankedUnit, float& stepX,
+    float& stepY, bool& backwards)
+{
+    backwards = false;
+    if (bot->GetExactDist2d(position) <= arrivalDist)
+        return false;
+
+    // Whether the step is backwards is known only once the path is, so a tank takes the backward
+    // length either way rather than paying for a second path.
+    bool const tanking = tankedUnit && tankedUnit->GetVictim() == bot &&
+        bot->IsWithinMeleeRange(tankedUnit);
+    float const stepDistance = tanking ? PATH_BACKWARD_STEP_DISTANCE : PATH_STEP_DISTANCE;
+    if (!GetPathStepTowardPoint(bot, position, arrivalDist, stepDistance, stepX, stepY))
+        return false;
+
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    backwards = tanking &&
+        (stepX - botX) * (tankedUnit->GetPositionX() - botX) +
+        (stepY - botY) * (tankedUnit->GetPositionY() - botY) < 0.0f;
+
+    return true;
+}
+
 bool IsDryGround(Player* bot, float x, float y)
 {
     float const ground = bot->GetMapHeight(x, y, bot->GetPositionZ());

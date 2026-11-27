@@ -515,3 +515,43 @@ float KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier::GetValueInEncoun
 
     return dynamic_cast<KaelthasSunstriderSpreadOutInMidairAction*>(action) ? 1.0f : 0.0f;
 }
+
+// Kael doesn't follow anyone out of a Flame Strike, so melee wait it out instead of walking back.
+float KaelthasSunstriderStayOutOfFlameStrikeMultiplier::GetValueInEncounter(Action* action)
+{
+    bool const isReach = dynamic_cast<ReachMeleeAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action);
+    if (!isReach && !dynamic_cast<CombatFormationMoveAction*>(action))
+        return 1.0f;
+
+    Unit* kaelthas = GetEncounterBoss();
+    if (!kaelthas || GetKaelthasTkPhase(kaelthas) != PHASE_FINAL)
+        return 1.0f;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target)
+        return 1.0f;
+
+    float const meleeRange = bot->GetMeleeRange(target);
+
+    // Formation moves circle the target to a spot this can't see, so any fire near it blocks them.
+    if (!isReach)
+    {
+        return IsFlameStrikeNearSegment(
+            bot, target->GetPosition(), target->GetPosition(),
+            FLAME_STRIKE_RADIUS + meleeRange) ? 0.0f : 1.0f;
+    }
+
+    float const distance = bot->GetExactDist2d(target);
+    if (distance <= meleeRange)
+        return 1.0f;
+
+    float const ratio = meleeRange / distance;
+    Position const arrival(
+        target->GetPositionX() + (bot->GetPositionX() - target->GetPositionX()) * ratio,
+        target->GetPositionY() + (bot->GetPositionY() - target->GetPositionY()) * ratio,
+        target->GetPositionZ());
+
+    return IsFlameStrikeNearSegment(bot, bot->GetPosition(), arrival, FLAME_STRIKE_RADIUS) ?
+        0.0f : 1.0f;
+}

@@ -320,4 +320,16 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class KaelthasSunstriderStayOutOfFlameStrikeMultiplier : public TempestKeepEncounterMultiplier
+{
+public:
+    KaelthasSunstriderStayOutOfFlameStrikeMultiplier(PlayerbotAI* botAI)
+        : TempestKeepEncounterMultiplier(
+            botAI, "kael'thas sunstrider stay out of flame strike",
+            TkHelpers::TkBosses::DATA_KAELTHAS_SUNSTRIDER) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 #endif

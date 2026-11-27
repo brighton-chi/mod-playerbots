@@ -1862,47 +1862,24 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
     return true;
 }
 
-bool KaelthasSunstriderTanksPositionBossAction::Execute(Event /*event*/)
+bool KaelthasSunstriderMainTankAttackBossAction::Execute(Event /*event*/)
 {
-    if (!PlayerbotAI::IsTank(bot))
+    if (!PlayerbotAI::IsMainTank(bot))
         return false;
 
     Unit* kaelthas = GetTkBoss(bot, TkBosses::DATA_KAELTHAS_SUNSTRIDER);
-    if (!kaelthas)
-        return false;
-
-    // Off-tanks are repositioned if Kael aggroes them, but only the main tank picks him up.
-    if (PlayerbotAI::IsMainTank(bot) && AI_VALUE(Unit*, "current target") != kaelthas)
-        return Attack(kaelthas);
-
-    if (kaelthas->GetVictim() != bot || !bot->IsWithinMeleeRange(kaelthas))
-        return false;
-
-    float moveX;
-    float moveY;
-    bool backwards;
-    if (!GetStepToPosition(
-            bot, KAELTHAS_TANK_POSITION, TK_ARRIVAL_DISTANCE, kaelthas, moveX, moveY,
-            backwards))
-    {
-        return false;
-    }
-
-    return MoveTo(
-        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+    return kaelthas && AI_VALUE(Unit*, "current target") != kaelthas && Attack(kaelthas);
 }
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
-    constexpr float hazardRadius = 10.0f;
-    Unit* flameStrike = GetNearestFlameStrikeInRadius(bot, hazardRadius);
+    Unit* flameStrike = GetNearestFlameStrikeInRadius(bot, FLAME_STRIKE_RADIUS);
     if (!flameStrike)
         return false;
 
     bot->CastStop();
     constexpr uint32 minInterval = 0;
-    return FleePosition(flameStrike->GetPosition(), hazardRadius, minInterval);
+    return FleePosition(flameStrike->GetPosition(), FLAME_STRIKE_RADIUS, minInterval);
 }
 
 bool KaelthasSunstriderAssignFinalPhaseTargetAction::Execute(Event /*event*/)

@@ -175,6 +175,11 @@ bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
 bool CastTankTaunt(PlayerbotAI* botAI, Unit* target);
 bool FindHazardEscapeStep(
     Player* bot, Position const& hazard, float moveDist, float& stepX, float& stepY, float& stepZ);
+// A path step that keeps tankedUnit in front of a tank holding it, moving backwards when the step
+// leads away from it. Pass the bot's Z to MoveTo().
+bool GetTankPathStep(
+    Player* bot, Position const& position, float arrivalDist, Unit* tankedUnit, float& stepX,
+    float& stepY, bool& backwards);
 bool IsDryGround(Player* bot, float x, float y);
 bool GetRangedArcAngle(Player* bot, float arcCenter, float arcSpan, float& angle);
 std::vector<Unit*> GetOtherLivingGroupMembers(Player* bot);

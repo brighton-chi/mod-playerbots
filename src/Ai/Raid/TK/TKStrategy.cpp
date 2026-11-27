@@ -122,7 +122,7 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("kael'thas sunstrider reequip gear", ACTION_EMERGENCY + 11) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider has entered the fight",
-        { NextAction("kael'thas sunstrider tanks position boss", ACTION_RAID),
+        { NextAction("kael'thas sunstrider main tank attack boss", ACTION_RAID),
           NextAction("kael'thas sunstrider avoid flame strike", ACTION_EMERGENCY + 8) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider should assign final phase target",
@@ -175,4 +175,5 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderPrepareForPhase3Multiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
+    multipliers.push_back(new KaelthasSunstriderStayOutOfFlameStrikeMultiplier(botAI));
 }

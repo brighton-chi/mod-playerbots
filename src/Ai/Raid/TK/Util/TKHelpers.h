@@ -277,6 +277,7 @@ inline constexpr uint32 ADVISOR_DPS_HOLD_NOT_STARTED = 0;
 inline constexpr uint32 ADVISOR_DPS_HOLD_MS = 10 * IN_MILLISECONDS;
 inline constexpr float CAPERNIAN_LIFE_TAP_MANA_PCT = 20.0f;
 inline constexpr float CAPERNIAN_LIFE_TAP_HEALTH_PCT = 75.0f;
+inline constexpr float FLAME_STRIKE_RADIUS = 10.0f;
 
 inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
     .playerClass = CLASS_WARLOCK,
@@ -304,8 +305,6 @@ inline Position const TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f
 inline Position const CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
 // A bit aways from the Sanguinar and Telonicus tanking positions.
 inline Position const ADVISOR_HEAL_POSITION      = { 752.171f,  19.494f, 46.779f };
-// Towards the front-center of the platform to ensure an open area for Gravity Lapse.
-inline Position const KAELTHAS_TANK_POSITION     = { 774.008f,  -0.631f, 48.729f };
 
 enum class KaelthasAdvisorDpsHold : uint8
 {
@@ -354,6 +353,8 @@ bool HasEquippableItemForSlot(Player* bot, uint8 slot);
 Item* GetEquippedItemInSlot(Player* bot, uint8 slot, uint32 itemId);
 GuidVector FindFlameStrikeGuids(Player* bot);
 Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius);
+bool IsFlameStrikeNearSegment(
+    Player* bot, Position const& start, Position const& end, float radius);
 GuidVector FindPhoenixEggGuids(Player* bot);
 Creature* GetPhoenixEgg(Player* bot);
 std::vector<Unit*> GetActivePhoenixes(PlayerbotAI* botAI);

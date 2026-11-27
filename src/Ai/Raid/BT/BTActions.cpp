@@ -1373,9 +1373,18 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
     Position const& position = distToTankPosition <= finalLegDistance ?
         tankPosition : transitionPosition;
 
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, position, SHAHRAZ_TANK_POSITION_TOLERANCE, shahraz, moveX, moveY, backwards))
+    {
+        return false;
+    }
+
     return MoveTo(
-        BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), bot->GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        BT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)

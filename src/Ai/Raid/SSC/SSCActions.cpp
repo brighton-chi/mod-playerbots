@@ -1233,6 +1233,10 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 
 bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdis)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     float stepX;
     float stepY;
     if (!GetPathStepTowardUnit(
@@ -1242,8 +1246,8 @@ bool FathomLordKarathressAssignDpsPriorityAction::ApproachCaribdis(Unit* caribdi
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        false);
 }
 
 bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
@@ -1362,50 +1366,46 @@ bool MorogrimTidewalkerPositionMainTankAction::Execute(Event /*event*/)
 // Phase 1: Position up against the northeast pillar.
 bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase1TankPosition(Unit* tidewalker)
 {
-    float moveX;
-    float moveY;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    float stepX;
+    float stepY;
     bool backwards;
-    if (!GetStepToPosition(
-            bot, TIDEWALKER_PHASE_1_TANK_POSITION, SSC_ARRIVAL_DISTANCE, tidewalker, moveX, moveY,
+    if (!GetTankPathStep(
+            bot, TIDEWALKER_PHASE_1_TANK_POSITION, SSC_ARRIVAL_DISTANCE, tidewalker, stepX, stepY,
             backwards))
     {
         return false;
     }
 
     return MoveTo(
-        SSC_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 // Phase 2: Move around the pillar and back up into the northeast corner to get max distance from
 // the Water Globules.
 bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* tidewalker)
 {
-    Position const& phase2 = TIDEWALKER_PHASE_2_TANK_POSITION;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardPoint(
-            bot, phase2, SSC_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
-    {
-        return false;
-    }
-
-    float const botX = bot->GetPositionX();
-    float const botY = bot->GetPositionY();
-    bool const backwards =
-        (stepX - botX) * (tidewalker->GetPositionX() - botX) +
-        (stepY - botY) * (tidewalker->GetPositionY() - botY) < 0.0f;
-
-    if (backwards && !GetPathStepTowardPoint(
-            bot, phase2, SSC_ARRIVAL_DISTANCE, PATH_BACKWARD_STEP_DISTANCE, stepX, stepY))
+    bool backwards;
+    if (!GetTankPathStep(
+            bot, TIDEWALKER_PHASE_2_TANK_POSITION, SSC_ARRIVAL_DISTANCE, tidewalker, stepX, stepY,
+            backwards))
     {
         return false;
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        backwards);
 }
 
 // Ranged stack behind the boss in the northeast corner in phase 2. Melee do this automatically.
@@ -2192,14 +2192,18 @@ bool LadyVashjAttackTaintedElementalAction::Execute(Event /*event*/)
     if (!bot->IsWithinCombatRange(tainted, botAI->GetRange("spell")) ||
         !bot->IsWithinLOSInMap(tainted))
     {
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+        if (IsWaitingForLastMove(priority))
+            return bot->isMoving();
+
         float stepX;
         float stepY;
         if (!GetPathStepTowardUnit(bot, tainted, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         bool const moved = MoveTo(
-            SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
+            true, false);
 
         return moved || bot->isMoving();
     }
@@ -2224,14 +2228,18 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event /*event*/)
         float const stopDistance =
             VASHJ_CORE_LOOT_RANGE + bot->GetCombatReach() + tainted->GetCombatReach() - rangeMargin;
 
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+        if (IsWaitingForLastMove(priority))
+            return false;
+
         float stepX;
         float stepY;
         if (!GetPathStepTowardUnit(bot, tainted, stopDistance, PATH_STEP_DISTANCE, stepX, stepY))
             return false;
 
         return MoveTo(
-            SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-            MovementPriority::MOVEMENT_FORCED, true, false);
+            SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority,
+            true, false);
     }
 
     if (tainted->IsAlive())
@@ -2332,6 +2340,10 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCorePosition(VashjCorePassingChain
         return false;
     }
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Position const& position = catcher.position;
 
     float stepX;
@@ -2340,8 +2352,8 @@ bool LadyVashjPassTheTaintedCoreAction::MoveToCorePosition(VashjCorePassingChain
         return false;
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        SSC_MAP_ID, stepX, stepY, bot->GetPositionZ(), false, false, false, false, priority, true,
+        false);
 }
 
 bool LadyVashjPassTheTaintedCoreAction::ThrowCore(

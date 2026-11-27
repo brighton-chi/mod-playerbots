@@ -129,8 +129,8 @@ public:
         creators["kael'thas sunstrider reequip gear"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_reequip_gear;
 
-        creators["kael'thas sunstrider tanks position boss"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_tanks_position_boss;
+        creators["kael'thas sunstrider main tank attack boss"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_attack_boss;
 
         creators["kael'thas sunstrider avoid flame strike"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_avoid_flame_strike;
@@ -310,9 +310,9 @@ private:
     {
         return new KaelthasSunstriderReequipGearAction(botAI);
     }
-    static Action* kaelthas_sunstrider_tanks_position_boss(PlayerbotAI* botAI)
+    static Action* kaelthas_sunstrider_main_tank_attack_boss(PlayerbotAI* botAI)
     {
-        return new KaelthasSunstriderTanksPositionBossAction(botAI);
+        return new KaelthasSunstriderMainTankAttackBossAction(botAI);
     }
     static Action* kaelthas_sunstrider_avoid_flame_strike(PlayerbotAI* botAI)
     {
