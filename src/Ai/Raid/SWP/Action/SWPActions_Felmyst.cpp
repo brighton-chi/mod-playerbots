@@ -28,7 +28,6 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
         return false;
     }
 
-    constexpr float arrivalDist = 3.0f;
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
@@ -37,7 +36,7 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetTankPathStep(
-            bot, GetFelmystMainTankGroundPosition(bot), arrivalDist, felmyst, moveX, moveY,
+            bot, GetFelmystMainTankGroundPosition(bot), SWP_ARRIVAL_DISTANCE, felmyst, moveX, moveY,
             backwards))
     {
         return false;
@@ -85,6 +84,7 @@ bool FelmystMeleeStackBehindBossAction::Execute(Event /*event*/)
     if (!TryGetFelmystGroundStackPosition(bot, felmyst, FelmystGroundStack::Melee, position))
         return false;
 
+    // The stack is 12.5 yd behind her, only 0.33 yd inside her melee range.
     constexpr float arrivalDist = 0.25f;
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
@@ -203,14 +203,14 @@ bool FelmystMoveIntoMassDispelReachAction::Execute(Event /*event*/)
         return false;
     }
 
-    constexpr float arrivalDist = MASS_DISPEL_REACH - 2.0f;
+    constexpr float stopDistance = MASS_DISPEL_REACH - 2.0f;
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
 
     float moveX;
     float moveY;
-    if (!GetPathStepTowardUnit(bot, gasNovaTarget, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+    if (!GetPathStepTowardUnit(bot, gasNovaTarget, stopDistance, PATH_STEP_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(

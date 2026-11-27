@@ -168,6 +168,7 @@ inline constexpr uint32 SSC_MAP_ID = 548;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
+inline constexpr float SSC_ARRIVAL_DISTANCE = 2.0f;
 
 Unit* GetSscBoss(Player* bot, SscBosses boss);
 bool MisdirectTargetToTank(PlayerbotAI* botAI, Unit* target, Player* tank);
@@ -235,6 +236,8 @@ bool HasNoMarkOfCorruption(Player* bot);
 
 inline constexpr float LURKER_WHIRL_RADIUS = 25.0f;
 inline constexpr float LURKER_RANGED_CLEARANCE = LURKER_WHIRL_RADIUS + 2.0f;
+// Below the clearance's 2 yd margin past Whirl, since a stepping bot stops up to this far short.
+inline constexpr float LURKER_RANGED_ARRIVAL_DISTANCE = 0.5f;
 // Melee returning to Lurker from an islet stop this far from Lurker, on the walkway.
 inline constexpr float LURKER_WALKWAY_RADIUS = 21.0f;
 // A melee bot farther than this from Lurker is out on an islet. The Ambushers' islets are
@@ -440,6 +443,7 @@ inline constexpr float TIDEWALKER_RANGED_BEHIND_DISTANCE = 5.0f;
 // Hunters can't shoot inside Tidewalker's melee range (about 8.8 yd center to center), so they get
 // a farther stack distance than everybody else.
 inline constexpr float TIDEWALKER_HUNTER_BEHIND_DISTANCE = 13.0f;
+// The stack point follows him, so the radius absorbs his drift.
 inline constexpr float TIDEWALKER_RANGED_STACK_RADIUS = 3.0f;
 inline constexpr float TIDEWALKER_MURLOC_MAX_TARGET_DISTANCE = 50.0f;
 
@@ -544,7 +548,6 @@ bool GetStepToCastRangeAroundSpores(
 
 inline constexpr size_t VASHJ_STATION_RANGED_SLOTS = 3;
 inline constexpr int8 VASHJ_STATION_HEALER_SLOT = 3;
-inline constexpr float VASHJ_STATION_ARRIVAL_DISTANCE = 2.0f;
 
 struct VashjStation
 {

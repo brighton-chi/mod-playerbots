@@ -63,8 +63,7 @@ bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
         float moveY;
         bool backwards;
         if (!GetStepToPosition(
-                bot, MURU_STACK_POSITION, MURU_RANGED_STACK_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
-                backwards))
+                bot, MURU_STACK_POSITION, SWP_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         {
             return false;
         }
@@ -89,7 +88,7 @@ bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
         if (!TryGetEntropiusInitialRangedPosition(position))
             return false;
 
-        if (bot->GetExactDist2d(position) <= ENTROPIUS_RANGED_ARRIVAL_DISTANCE)
+        if (bot->GetExactDist2d(position) <= SWP_ARRIVAL_DISTANCE)
         {
             _entropiusRangedPositionReached = true;
             return false;
@@ -99,7 +98,7 @@ bool MuruPositionRangedByPhaseAction::Execute(Event /*event*/)
         float moveY;
         bool backwards;
         if (!GetStepToPosition(
-                bot, position, ENTROPIUS_RANGED_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
+                bot, position, SWP_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         {
             return false;
         }
@@ -439,8 +438,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
         float moveY;
         bool backwards;
         if (!GetStepToPosition(
-                bot, MURU_STACK_POSITION, MURU_TANK_STACK_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
-                backwards))
+                bot, MURU_STACK_POSITION, SWP_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         {
             return false;
         }
@@ -464,7 +462,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     bool backwards;
     if (!GetStepToPosition(
             bot, GetAssignedVoidSentinelTankPosition(voidSentinel),
-            MURU_VOID_SENTINEL_TANK_ARRIVAL_DISTANCE, voidSentinel, moveX, moveY, backwards))
+            SWP_ARRIVAL_DISTANCE, voidSentinel, moveX, moveY, backwards))
     {
         return false;
     }
@@ -480,8 +478,7 @@ bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, MURU_ENTRANCE_POSITION, MURU_ENTRANCE_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
-            backwards))
+            bot, MURU_ENTRANCE_POSITION, SWP_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
     {
         return false;
     }
@@ -518,7 +515,7 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         {
             Position const& holdingPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
                 entrancePosition : stackPosition;
-            return StepToPosition(holdingPosition, MURU_TANK_HOLDING_ARRIVAL_DISTANCE);
+            return StepToPosition(holdingPosition);
         }
 
         constexpr uint32 minInterval = 0;
@@ -528,15 +525,15 @@ bool MuruMeleeFleeTheDarknessAction::Execute(Event /*event*/)
         return FleePosition(muru->GetPosition(), MURU_DARKNESS_CLEARANCE, minInterval);
     }
 
-    return StepToPosition(stackPosition, MURU_MELEE_STACK_ARRIVAL_DISTANCE);
+    return StepToPosition(stackPosition);
 }
 
-bool MuruMeleeFleeTheDarknessAction::StepToPosition(Position const& position, float arrivalDistance)
+bool MuruMeleeFleeTheDarknessAction::StepToPosition(Position const& position)
 {
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDistance, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, SWP_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         return false;
 
     return MoveTo(

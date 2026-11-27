@@ -97,7 +97,6 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
         Position const position = GetBrutallusPositionAtAngle(
             bot, *brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
 
-        constexpr float arrivalDist = BRUTALLUS_TANK_ARRIVAL_DISTANCE;
         constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
         if (IsWaitingForLastMove(priority))
             return false;
@@ -105,8 +104,11 @@ bool BrutallusTanksPositionAndSwapAction::Execute(Event event)
         float moveX;
         float moveY;
         bool backwards;
-        if (!GetTankPathStep(bot, position, arrivalDist, brutallus, moveX, moveY, backwards))
+        if (!GetTankPathStep(
+                bot, position, BRUTALLUS_ARRIVAL_DISTANCE, brutallus, moveX, moveY, backwards))
+        {
             return false;
+        }
 
         return MoveTo(
             SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
@@ -133,15 +135,17 @@ bool BrutallusPositionMeleeAtRearCenterAction::Execute(Event /*event*/)
     if (!TryGetBrutallusMeleePosition(brutallus, mainTank, assistTank, meleeIndex, position))
         return false;
 
-    constexpr float arrivalDist = 1.0f;
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
 
     float moveX;
     float moveY;
-    if (!GetPathStepTowardPoint(bot, position, arrivalDist, PATH_STEP_DISTANCE, moveX, moveY))
+    if (!GetPathStepTowardPoint(
+            bot, position, BRUTALLUS_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, moveX, moveY))
+    {
         return false;
+    }
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
@@ -256,7 +260,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
         Position const position = GetBrutallusPositionAtAngle(
             bot, *brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
-        if (bot->GetExactDist2d(position) <= 1.0f)
+        if (bot->GetExactDist2d(position) <= BRUTALLUS_ARRIVAL_DISTANCE)
         {
             burnStates[guid] = BrutallusRangedBurnState::TraversingOuterLane;
             return false;
@@ -284,10 +288,10 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(returnTargetPosition) <= 1.0f)
+        if (bot->GetExactDist2d(returnTargetPosition) <= BRUTALLUS_ARRIVAL_DISTANCE)
             burnStates[guid] = BrutallusRangedBurnState::ReturningToNormalPosition;
 
-        if (bot->GetExactDist2d(position) <= 1.0f)
+        if (bot->GetExactDist2d(position) <= BRUTALLUS_ARRIVAL_DISTANCE)
             return false;
 
         return MoveTo(
@@ -305,7 +309,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position) <= 1.0f)
+        if (bot->GetExactDist2d(position) <= BRUTALLUS_ARRIVAL_DISTANCE)
         {
             ReleaseBrutallusBurnPad(bot);
             burnStates.erase(guid);
@@ -323,7 +327,7 @@ bool BrutallusPositionRangedInTwoGroupsAction::Execute(Event /*event*/)
         return false;
     }
 
-    return StepToPosition(position, 1.0f);
+    return StepToPosition(position, BRUTALLUS_ARRIVAL_DISTANCE);
 }
 
 bool BrutallusPositionRangedInTwoGroupsAction::StepToPosition(
@@ -394,7 +398,7 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position) <= 1.0f)
+        if (bot->GetExactDist2d(position) <= BRUTALLUS_ARRIVAL_DISTANCE)
         {
             burnStates[guid] = BrutallusRangedBurnState::TraversingInnerLane;
             return false;
@@ -422,10 +426,10 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(padIngressPosition) <= 1.0f)
+        if (bot->GetExactDist2d(padIngressPosition) <= BRUTALLUS_ARRIVAL_DISTANCE)
             burnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
 
-        if (bot->GetExactDist2d(position) <= 1.0f)
+        if (bot->GetExactDist2d(position) <= BRUTALLUS_ARRIVAL_DISTANCE)
             return false;
 
         return MoveTo(
@@ -440,7 +444,7 @@ bool BrutallusIsolateBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position) <= 1.0f)
+    if (bot->GetExactDist2d(position) <= BRUTALLUS_ARRIVAL_DISTANCE)
     {
         burnStates[guid] = BrutallusRangedBurnState::AtBurnPosition;
         return false;

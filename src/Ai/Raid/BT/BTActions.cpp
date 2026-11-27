@@ -1381,7 +1381,7 @@ bool MotherShahrazTanksPositionBossUnderPillarAction::Execute(Event /*event*/)
 bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 {
     Position const& position = SHAHRAZ_RANGED_POSITION;
-    if (bot->GetExactDist2d(position) <= SHAHRAZ_RANGED_POSITION_TOLERANCE)
+    if (bot->GetExactDist2d(position) <= BT_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -1395,7 +1395,7 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
 {
     Position const& position = SHAHRAZ_RANGED_POSITION;
-    if (bot->GetExactDist2d(position) <= SHAHRAZ_RANGED_POSITION_TOLERANCE)
+    if (bot->GetExactDist2d(position) <= BT_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(

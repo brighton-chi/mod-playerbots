@@ -345,8 +345,7 @@ bool GetRangedRingStep(
         return false;
     }
 
-    constexpr float arrivalDist = 2.0f;
-    if (bot->GetExactDist2d(chosenX, chosenY) <= arrivalDist)
+    if (bot->GetExactDist2d(chosenX, chosenY) <= HYJAL_ARRIVAL_DISTANCE)
     {
         reached = true;
         return false;

@@ -203,11 +203,13 @@ bool KiljaedenPositionAndMoveTanksAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
-    if (!GetKiljaedenStepToPosition(bot, KILJAEDEN_TANK_POSITION, arrivalDist, moveX, moveY))
+    if (!GetKiljaedenStepToPosition(
+            bot, KILJAEDEN_TANK_POSITION, SWP_ARRIVAL_DISTANCE, moveX, moveY))
+    {
         return false;
+    }
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -291,10 +293,9 @@ bool KiljaedenPositionMeleeAndAvoidArmageddonsAction::Execute(Event /*event*/)
     if (!TryAdjustMeleeForArmageddon(position))
         return false;
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
-    if (!GetKiljaedenStepToPosition(bot, position, arrivalDist, moveX, moveY))
+    if (!GetKiljaedenStepToPosition(bot, position, SWP_ARRIVAL_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(
@@ -388,10 +389,9 @@ bool KiljaedenPositionRangedAndAvoidArmageddonsAction::Execute(Event /*event*/)
     if (!TryAdjustRangedForArmageddon(position))
         return false;
 
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
-    if (!GetKiljaedenStepToPosition(bot, position, arrivalDist, moveX, moveY))
+    if (!GetKiljaedenStepToPosition(bot, position, SWP_ARRIVAL_DISTANCE, moveX, moveY))
         return false;
 
     return MoveTo(
@@ -446,10 +446,9 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float arrivalDist = 1.0f;
     float moveX;
     float moveY;
-    if (!GetKiljaedenStepToPosition(bot, destination, arrivalDist, moveX, moveY))
+    if (!GetKiljaedenStepToPosition(bot, destination, SWP_ARRIVAL_DISTANCE, moveX, moveY))
         return false;
 
     bot->CastStop();

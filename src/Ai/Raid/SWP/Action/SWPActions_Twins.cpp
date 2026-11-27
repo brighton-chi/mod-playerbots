@@ -25,14 +25,13 @@ bool EredarTwinsJumpFromBalconyAction::Execute(Event /*event*/)
         FindSacrolash(bot) && !IsAlythessTank(bot) ?
         EREDAR_TWINS_SACROLASH_LANDING_POSITION : EREDAR_TWINS_ALYTHESS_LANDING_POSITION;
 
-    constexpr float arrivalDistance = 2.0f;
-    if (bot->GetExactDist2d(jumpPosition) > arrivalDistance)
+    if (bot->GetExactDist2d(jumpPosition) > SWP_ARRIVAL_DISTANCE)
     {
         float moveX;
         float moveY;
         bool backwards;
         if (!GetStepToPosition(
-                bot, jumpPosition, arrivalDistance, nullptr, moveX, moveY, backwards))
+                bot, jumpPosition, SWP_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
         {
             return false;
         }

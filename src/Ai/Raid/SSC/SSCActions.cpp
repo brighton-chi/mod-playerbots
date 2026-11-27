@@ -203,11 +203,10 @@ bool HydrossTheUnstablePositionAndSwapTanksAction::Execute(Event /*event*/)
 
 bool HydrossTheUnstablePositionAndSwapTanksAction::StepTo(Position const& position, Unit* hydross)
 {
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, hydross, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, SSC_ARRIVAL_DISTANCE, hydross, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -453,8 +452,7 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
         return false;
 
     Position const& position = LURKER_MAIN_TANK_POSITION;
-    constexpr float arrivalDist = 1.0f;
-    if (bot->GetExactDist2d(position) <= arrivalDist)
+    if (bot->GetExactDist2d(position) <= SSC_ARRIVAL_DISTANCE)
         return false;
 
     constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
@@ -504,12 +502,14 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
     }
 
     Position const& position = _rangedPosition;
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, nullptr, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, position, LURKER_RANGED_ARRIVAL_DISTANCE, nullptr, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     // Incremental movement does not work if the bot is in the water (there is no walkable height
     // and MoveTo returns false). Therefore, this block calls a path directly to the final position.
@@ -1065,11 +1065,10 @@ bool FathomLordKarathressTanksPositionTargetsAction::Execute(Event /*event*/)
     if (IsHoldingAnotherTanksCouncilMember(botAI, target))
         return false;
 
-    constexpr float arrivalDist = 4.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, target, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, position, SSC_ARRIVAL_DISTANCE, target, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -1363,12 +1362,11 @@ bool MorogrimTidewalkerPositionMainTankAction::Execute(Event /*event*/)
 // Phase 1: Position up against the northeast pillar.
 bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase1TankPosition(Unit* tidewalker)
 {
-    constexpr float arrivalDist = 1.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, TIDEWALKER_PHASE_1_TANK_POSITION, arrivalDist, tidewalker, moveX, moveY,
+            bot, TIDEWALKER_PHASE_1_TANK_POSITION, SSC_ARRIVAL_DISTANCE, tidewalker, moveX, moveY,
             backwards))
     {
         return false;
@@ -1384,12 +1382,14 @@ bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase1TankPosition(Unit* ti
 bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* tidewalker)
 {
     Position const& phase2 = TIDEWALKER_PHASE_2_TANK_POSITION;
-    constexpr float arrivalDist = 1.0f;
 
     float stepX;
     float stepY;
-    if (!GetPathStepTowardPoint(bot, phase2, arrivalDist, PATH_STEP_DISTANCE, stepX, stepY))
+    if (!GetPathStepTowardPoint(
+            bot, phase2, SSC_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
+    {
         return false;
+    }
 
     float const botX = bot->GetPositionX();
     float const botY = bot->GetPositionY();
@@ -1398,7 +1398,7 @@ bool MorogrimTidewalkerPositionMainTankAction::MoveToPhase2TankPosition(Unit* ti
         (stepY - botY) * (tidewalker->GetPositionY() - botY) < 0.0f;
 
     if (backwards && !GetPathStepTowardPoint(
-            bot, phase2, arrivalDist, PATH_BACKWARD_STEP_DISTANCE, stepX, stepY))
+            bot, phase2, SSC_ARRIVAL_DISTANCE, PATH_BACKWARD_STEP_DISTANCE, stepX, stepY))
     {
         return false;
     }
@@ -1480,12 +1480,12 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
 // Phase 1: Position Vashj in the center of the dais.
 bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
 {
-    constexpr float arrivalDistance = 3.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, VASHJ_PLATFORM_CENTER_POSITION, arrivalDistance, vashj, moveX, moveY, backwards))
+            bot, VASHJ_PLATFORM_CENTER_POSITION, SSC_ARRIVAL_DISTANCE, vashj, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -1587,8 +1587,7 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
         _hasRangedPosition = true;
     }
 
-    constexpr float arrivalDistance = 2.0f;
-    if (bot->GetExactDist2d(_rangedPosition) <= arrivalDistance)
+    if (bot->GetExactDist2d(_rangedPosition) <= SSC_ARRIVAL_DISTANCE)
     {
         _reachedRangedPosition = true;
         return false;
@@ -1601,7 +1600,7 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
     float stepX;
     float stepY;
     if (!GetPathStepTowardPoint(
-            bot, _rangedPosition, arrivalDistance, PATH_STEP_DISTANCE, stepX, stepY))
+            bot, _rangedPosition, SSC_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
     {
         return false;
     }
@@ -1682,8 +1681,7 @@ bool LadyVashjPhase2PositionAtStationAction::Execute(Event /*event*/)
     float stepX;
     float stepY;
     if (!GetPathStepTowardPoint(
-            bot, *stationPosition, VASHJ_STATION_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE,
-            stepX, stepY))
+            bot, *stationPosition, SSC_ARRIVAL_DISTANCE, PATH_STEP_DISTANCE, stepX, stepY))
     {
         return false;
     }
@@ -2566,8 +2564,7 @@ bool LadyVashjAvoidToxicSporesAction::StepTowardBreakoutPosition(Unit* vashj)
     float const botY = bot->GetPositionY();
     float const distance = bot->GetExactDist2d(_breakoutPosition);
 
-    constexpr float arrivalDistance = 1.5f;
-    if (distance <= arrivalDistance)
+    if (distance <= SSC_ARRIVAL_DISTANCE)
     {
         _hasBreakoutPosition = false;
         return false;

@@ -82,11 +82,10 @@ bool HyjalMainTankPositionBossAction::Execute(Event /*event*/)
     if (bot->GetHealthPct() < _bailBelowHealthPct)
         return false;
 
-    constexpr float arrivalDist = 4.0f;
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, _position, arrivalDist, boss, moveX, moveY, backwards))
+    if (!GetStepToPosition(bot, _position, HYJAL_ARRIVAL_DISTANCE, boss, moveX, moveY, backwards))
         return false;
 
     return MoveTo(
@@ -247,12 +246,12 @@ bool AnetheronMoveAwayFromInfernoTargetAction::Execute(Event /*event*/)
 
 bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 {
-    constexpr float arrivalDist = 2.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GetInfernalTankPosition(bot), arrivalDist, nullptr, moveX, moveY, backwards))
+            bot, GetInfernalTankPosition(bot), HYJAL_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -265,13 +264,12 @@ bool AnetheronBringInfernalToInfernalTankAction::Execute(Event /*event*/)
 // Note that Infernals cannot be taunted.
 bool AnetheronInfernalTankTakePositionAction::Execute(Event /*event*/)
 {
-    constexpr float arrivalDist = 3.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, GetInfernalTankPosition(bot), arrivalDist, GetInfernalTargetingBot(botAI), moveX,
-            moveY, backwards))
+            bot, GetInfernalTankPosition(bot), HYJAL_ARRIVAL_DISTANCE,
+            GetInfernalTargetingBot(botAI), moveX, moveY, backwards))
     {
         return false;
     }
@@ -321,6 +319,7 @@ bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
     if (!mainTank)
         return false;
 
+    // The main tank moves, so the radius absorbs the tank's drift.
     constexpr float arrivalDist = 4.0f;
     float moveX;
     float moveY;
@@ -507,12 +506,12 @@ bool AzgalorRangedGetOutOfRainOfFireAction::Execute(Event /*event*/)
 
 bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 {
-    constexpr float arrivalDist = 5.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, AZGALOR_DOOMGUARD_POSITION, arrivalDist, nullptr, moveX, moveY, backwards))
+            bot, AZGALOR_DOOMGUARD_POSITION, HYJAL_ARRIVAL_DISTANCE, nullptr, moveX, moveY,
+            backwards))
     {
         return false;
     }
@@ -525,7 +524,6 @@ bool AzgalorMoveToDoomguardTankAction::Execute(Event /*event*/)
 bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
 {
     Position const& position = AZGALOR_DOOMGUARD_POSITION;
-    constexpr float arrivalDist = 3.0f;
 
     Unit* doomguard = GetLesserDoomguard(botAI);
     if (doomguard)
@@ -536,7 +534,7 @@ bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
         if (doomguard->GetVictim() != bot || !bot->IsWithinMeleeRange(doomguard))
             return false;
     }
-    else if (bot->GetExactDist2d(position) <= arrivalDist)
+    else if (bot->GetExactDist2d(position) <= HYJAL_ARRIVAL_DISTANCE)
     {
         // If at position and still no Doomguard, just wait.
         return true;
@@ -546,8 +544,11 @@ bool AzgalorTankPositionDoomguardAction::Execute(Event /*event*/)
     float moveX;
     float moveY;
     bool backwards;
-    if (!GetStepToPosition(bot, position, arrivalDist, doomguard, moveX, moveY, backwards))
+    if (!GetStepToPosition(
+            bot, position, HYJAL_ARRIVAL_DISTANCE, doomguard, moveX, moveY, backwards))
+    {
         return false;
+    }
 
     return MoveTo(
         HYJAL_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,

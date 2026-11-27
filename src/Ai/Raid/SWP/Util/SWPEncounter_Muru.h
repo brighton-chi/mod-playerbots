@@ -92,14 +92,6 @@ inline constexpr uint32 SPELL_FURY_MAGE_PRIORITY_MS = 2 * IN_MILLISECONDS;
 // DPS hold Entropius this long after he first appears, so the main tank gets aggro first.
 inline constexpr uint32 ENTROPIUS_DPS_HOLD_MS = 5 * IN_MILLISECONDS;
 
-inline constexpr float MURU_RANGED_STACK_ARRIVAL_DISTANCE = 3.5f;
-inline constexpr float MURU_MELEE_STACK_ARRIVAL_DISTANCE = 4.5f;
-inline constexpr float MURU_TANK_STACK_ARRIVAL_DISTANCE = 3.0f;
-inline constexpr float MURU_TANK_HOLDING_ARRIVAL_DISTANCE = 2.5f;
-inline constexpr float MURU_ENTRANCE_ARRIVAL_DISTANCE = 1.0f;
-inline constexpr float MURU_VOID_SENTINEL_TANK_ARRIVAL_DISTANCE = 2.0f;
-inline constexpr float ENTROPIUS_RANGED_ARRIVAL_DISTANCE = 2.0f;
-
 inline Position const MURU_ENTRANCE_POSITION =             { 1840.567f, 605.769f, 71.250f };
 inline Position const MURU_CENTER_POSITION =               { 1816.250f, 625.484f, 69.604f };
 inline Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f, 71.222f };

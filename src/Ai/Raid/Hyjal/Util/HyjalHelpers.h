@@ -103,6 +103,7 @@ struct BlockedArc
 };
 
 inline constexpr uint32 HYJAL_MAP_ID = 534;
+inline constexpr float HYJAL_ARRIVAL_DISTANCE = 2.0f;
 inline constexpr uint32 HAZARD_CACHE_INTERVAL_MS = 200;
 // The additional distance beyond a hazard's edge in which movement is still suppressed by a
 // multiplier relating to such hazard. Used for Winterchill D&D and Azgalor RoF.

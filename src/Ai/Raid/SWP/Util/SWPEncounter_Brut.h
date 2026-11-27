@@ -42,7 +42,7 @@ inline constexpr uint32 BRUTALLUS_ASSIGNMENT_REBUILD_INTERVAL_MS = 1000;
 
 inline constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -(2.0f * M_PI / 3.0f);
 inline constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 15.0f;
-inline constexpr float BRUTALLUS_TANK_ARRIVAL_DISTANCE = 1.0f;
+inline constexpr float BRUTALLUS_ARRIVAL_DISTANCE = 1.0f;
 inline constexpr uint8 METEOR_SLASH_SWAP_STACKS = 3;
 
 // Main tank placement. Whatever the pull was, the main tank draws Brutallus onto the anchor
@@ -105,8 +105,9 @@ inline constexpr float BRUTALLUS_INNER_LANE_RADIUS =
 inline constexpr float BRUTALLUS_OUTER_LANE_RADIUS =
     BRUTALLUS_NORMAL_RANGED_RADIUS + BRUTALLUS_LANE_OFFSET;
 inline constexpr float BRUTALLUS_BURN_PAD_RADIUS = BRUTALLUS_NORMAL_RANGED_RADIUS;
-// Burn moves count a position as reached within 1 yd but step to within this distance of it. A step
-// that stopped at 1 yd would end right on the line on level ground and could leave the bot stuck.
+// Burn moves count a position as reached within BRUTALLUS_ARRIVAL_DISTANCE but step to within this
+// distance of it. A step that stopped at the arrival distance would end right on the line on level
+// ground and could leave the bot stuck.
 inline constexpr float BRUTALLUS_BURN_STEP_STOP_DISTANCE = 0.5f;
 
 // Where Brutallus is held: open floor 19 yd from his spawn, with room for the layout on all sides.

@@ -463,7 +463,7 @@ bool IsBrutallusMainTankInPlace(Player* bot, Unit* brutallus)
     }
 
     return bot->GetExactDist2d(GetMainTankStandInPosition(bot, *brutallus)) <=
-        BRUTALLUS_TANK_ARRIVAL_DISTANCE;
+        BRUTALLUS_ARRIVAL_DISTANCE;
 }
 
 bool TryGetBrutallusAssignedPositionIndex(Player* bot, uint8& positionIndex)

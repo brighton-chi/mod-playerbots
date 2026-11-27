@@ -136,7 +136,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::MoveToDesiredDistance(Unit* krosh
     constexpr float maxDistance = 30.0f;
 
     if (distanceKroshToPosition > minDistance && distanceKroshToPosition < maxDistance &&
-        bot->GetExactDist2d(position) > 1.0f)
+        bot->GetExactDist2d(position) > GRUUL_ARRIVAL_DISTANCE)
     {
         return MoveTo(
             GRUUL_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),

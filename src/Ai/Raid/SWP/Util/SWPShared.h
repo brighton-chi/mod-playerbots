@@ -194,6 +194,7 @@ inline constexpr uint32 SWP_MAP_ID = 580;
 // Steps short enough to navigate poor terrain, matching the standard in EncounterHelpers.
 inline constexpr float PATH_STEP_DISTANCE = 3.5f;
 inline constexpr float PATH_BACKWARD_STEP_DISTANCE = 2.25f;
+inline constexpr float SWP_ARRIVAL_DISTANCE = 2.0f;
 
 // Ability reaches from SpellRange.dbc (MaxRangeHostile). _REACH is the distance from the caster to
 // a target; _RADIUS is the area around the caster. Both are the raw dbc figures. A single-target

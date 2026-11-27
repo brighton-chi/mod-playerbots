@@ -68,7 +68,7 @@ enum class GruulNpcs : uint32
 // Shared
 
 inline constexpr uint32 GRUUL_MAP_ID = 565;
-inline constexpr float GRUUL_ARRIVAL_DISTANCE = 3.0f;
+inline constexpr float GRUUL_ARRIVAL_DISTANCE = 2.0f;
 
 Unit* GetGruulsLairBoss(Player* bot, GruulBosses boss);
 

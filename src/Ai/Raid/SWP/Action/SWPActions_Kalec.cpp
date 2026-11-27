@@ -148,12 +148,11 @@ bool KalecgosSurfaceTankPositionDragonAction::Execute(Event event)
     // This action also runs for a tank that does not have aggro on Kalecgos, so whether to move
     // backwards is kicked to GetStepToPosition(), which makes backwards movement contingent on
     // the bot being Kalecgos's victim.
-    constexpr float arrivalDist = 3.0f;
     float moveX;
     float moveY;
     bool backwards;
     if (GetStepToPosition(
-            bot, KALECGOS_TANK_POSITION, arrivalDist, kalecgos, moveX, moveY, backwards))
+            bot, KALECGOS_TANK_POSITION, SWP_ARRIVAL_DISTANCE, kalecgos, moveX, moveY, backwards))
     {
         return MoveTo(
             SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
@@ -210,7 +209,8 @@ bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
         return false;
 
     Position const& position = KALECGOS_TANK_POSITION;
-    return surfaceTank->GetExactDist2d(position) <= 3.0f && kalecgos->GetVictim() == surfaceTank;
+    return surfaceTank->GetExactDist2d(position) <= SWP_ARRIVAL_DISTANCE &&
+        kalecgos->GetVictim() == surfaceTank;
 }
 
 bool KalecgosSpreadRangedAction::Execute(Event /*event*/)

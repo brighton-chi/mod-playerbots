@@ -126,8 +126,7 @@ enum class TkItems : uint32
 
 inline constexpr uint32 TK_MAP_ID = 550;
 inline constexpr uint32 TK_CACHE_INTERVAL_MS = 200;
-// How close a tank gets to its tanking position (or Void Reaver's tank to its destination).
-inline constexpr float TK_TANK_ARRIVAL_DISTANCE = 3.0f;
+inline constexpr float TK_ARRIVAL_DISTANCE = 2.0f;
 
 Unit* GetTkBoss(Player* bot, TkBosses boss);
 std::vector<Unit*> GetTkAdds(PlayerbotAI* botAI, TkNpcs npc);

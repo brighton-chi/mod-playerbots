@@ -651,7 +651,8 @@ inline constexpr float CHARRED_EARTH_SEARCH_RADIUS = 80.0f;
 inline constexpr uint32 CHARRED_EARTH_CACHE_INTERVAL_MS = 200;
 // A bot can stop this far short of its position, so it must stay below the clearance's margin.
 inline constexpr float NIGHTBANE_HAZARD_ARRIVAL_DISTANCE = 0.1f;
-// A shorter-than-usual arrival distance, even for the tank. Also for the flight position stack.
+// The tank's sideways error turns Nightbane's facing off straight, 2.7° at most at this distance.
+// Also for the flight position stack.
 inline constexpr float NIGHTBANE_ARRIVAL_DISTANCE = 0.5f;
 // Each Rain of Bones tick hits everyone within 6 yd of a random point up to 8 yd from its center
 // (no combat reach added), so the rain reaches 14 yd.

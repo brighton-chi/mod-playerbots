@@ -468,12 +468,12 @@ bool IsOutOfSufferingPosition(Player* bot, Unit* suffering);
 
 // Mother Shahraz
 
+// The tank arrives from the statue side, so stopping short would leave Shahraz nearer the statue.
 inline constexpr float SHAHRAZ_TANK_POSITION_TOLERANCE = 0.5f;
 // How far her victim may stand from the tank position and still count as her being positioned for
 // purposes of melee DPS joining the fight.
 inline constexpr float SHAHRAZ_POSITIONED_DISTANCE = 3.0f;
 inline constexpr float SHAHRAZ_OFF_TANK_DISTANCE = 2.0f;
-inline constexpr float SHAHRAZ_RANGED_POSITION_TOLERANCE = 1.0f;
 // Below this HP percent, Shahraz is considered positioned regardless of whether she is at the tank
 // position. This exists so that a human tank who does not take her to the designated position
 // does not cause melee DPS to wait out of range the whole fight.
@@ -685,6 +685,8 @@ inline constexpr float ILLIDAN_DPS_COOLDOWN_RELEASE_HEALTH_PCT = 62.0f;
 // Measured from the grate center, except the Frost Trap search, which is around the bot.
 inline constexpr float ILLIDAN_ADD_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
 inline constexpr float ILLIDAN_SPEECH_SEARCH_RADIUS = ILLIDAN_CLASS_ROLE_ANNOUNCE_DISTANCE;
+// The main tank stands only 6 yd out from Illidan, so its sideways error turns his facing (4.8° at
+// most here). An infected bot that stopped short would stop nearer the raid.
 inline constexpr float ILLIDAN_POSITION_TOLERANCE = 0.5f;
 inline constexpr float ILLIDAN_MIN_SEGMENT_LENGTH = 0.1f;
 

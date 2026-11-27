@@ -594,7 +594,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool StepToPosition(Position const& position, float arrivalDistance);
+    bool StepToPosition(Position const& position);
 };
 
 class MuruCastStunOnBerserkerAction : public Action

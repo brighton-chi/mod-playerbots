@@ -2171,6 +2171,7 @@ bool GetMeleeRingStepClearOfSpores(
             if (!isClear(x, y))
                 continue;
 
+            // Below the 1 yd margin the avoid radius keeps over the hazard.
             constexpr float arrivalDistance = 0.5f;
             if (bot->GetExactDist2d(x, y) <= arrivalDistance)
                 return false;
@@ -2402,7 +2403,7 @@ Position const* GetVashjStationPositionToReturnTo(Player* bot, Unit* currentTarg
         return nullptr;
 
     Position const& stationPosition = GetVashjStationPosition(slot);
-    if (bot->GetExactDist2d(stationPosition) <= VASHJ_STATION_ARRIVAL_DISTANCE)
+    if (bot->GetExactDist2d(stationPosition) <= SSC_ARRIVAL_DISTANCE)
         return nullptr;
 
     if (IsDesignatedCoreLooter(bot) && IsTaintedCoreStillToLoot(GetAssignedTaintedElemental(bot)))

@@ -142,7 +142,7 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event event)
     }
 
     Position const& target = ALAR_TANK_PLATFORM_POSITIONS[tankPlatformIndex];
-    if (bot->GetExactDist2d(target) <= 2.0f)
+    if (bot->GetExactDist2d(target) <= TK_ARRIVAL_DISTANCE)
     {
         if (alar->GetVictim() != bot)
             return botAI->DoSpecificAction("taunt spell", event, true);
@@ -173,7 +173,7 @@ bool AlarMeleeDpsMoveBetweenPlatformsAction::Execute(Event /*event*/)
 
     Position const& target = ALAR_MELEE_DPS_PLATFORM_POSITIONS[platformIndex];
 
-    if (bot->GetExactDist2d(target) <= 2.0f)
+    if (bot->GetExactDist2d(target) <= TK_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -264,7 +264,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
     float targetX = position.GetPositionX() + (dx / distToCenter) * moveDist;
     float targetY = position.GetPositionY() + (dy / distToCenter) * moveDist;
 
-    if (bot->GetExactDist2d(targetX, targetY) <= 1.0f)
+    if (bot->GetExactDist2d(targetX, targetY) <= TK_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -663,7 +663,7 @@ bool VoidReaverTanksPositionBossAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, destination, TK_TANK_ARRIVAL_DISTANCE, voidReaver, moveX, moveY, backwards))
+            bot, destination, TK_ARRIVAL_DISTANCE, voidReaver, moveX, moveY, backwards))
     {
         return false;
     }
@@ -998,7 +998,7 @@ bool KaelthasSunstriderMeleeTanksPositionAdvisorsAction::Execute(Event /*event*/
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, position, TK_TANK_ARRIVAL_DISTANCE, advisor, moveX, moveY, backwards))
+            bot, position, TK_ARRIVAL_DISTANCE, advisor, moveX, moveY, backwards))
     {
         return false;
     }
@@ -1126,7 +1126,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     float targetY = capernian->GetPositionY() + radius * std::sin(angle);
     float targetZ = bot->GetPositionZ();
 
-    if (bot->GetExactDist2d(targetX, targetY) <= 1.0f)
+    if (bot->GetExactDist2d(targetX, targetY) <= TK_ARRIVAL_DISTANCE)
         return false;
 
     if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
@@ -1166,7 +1166,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
     else // IsCapernianTank(bot)
         position = CAPERNIAN_WAITING_POSITION;
 
-    if (bot->GetExactDist2d(position) <= 2.0f)
+    if (bot->GetExactDist2d(position) <= TK_ARRIVAL_DISTANCE)
         return false;
 
     return MoveTo(
@@ -1263,6 +1263,7 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::MeleeDpsPositionOutsideBo
     float const targetX = telonicus->GetPositionX() + desiredDist * std::cos(behindAngle);
     float const targetY = telonicus->GetPositionY() + desiredDist * std::sin(behindAngle);
 
+    // Within the 0.5 yd of slack left inside melee range.
     if (bot->GetExactDist2d(targetX, targetY) <= 0.25f)
         return false;
 
@@ -1881,7 +1882,7 @@ bool KaelthasSunstriderTanksPositionBossAction::Execute(Event /*event*/)
     float moveY;
     bool backwards;
     if (!GetStepToPosition(
-            bot, KAELTHAS_TANK_POSITION, TK_TANK_ARRIVAL_DISTANCE, kaelthas, moveX, moveY,
+            bot, KAELTHAS_TANK_POSITION, TK_ARRIVAL_DISTANCE, kaelthas, moveX, moveY,
             backwards))
     {
         return false;
