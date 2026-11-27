@@ -221,6 +221,15 @@ private:
         std::pair<Unit*, Unit*> const& priestsPair, std::vector<Player*> const& meleeMembers);
 };
 
+class HighAstromancerSolarianSetTremorTotemAction : public Action
+{
+public:
+    HighAstromancerSolarianSetTremorTotemAction(PlayerbotAI* botAI)
+        : Action(botAI, "high astromancer solarian set tremor totem") {}
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderKiteThaladredAction : public MovementAction

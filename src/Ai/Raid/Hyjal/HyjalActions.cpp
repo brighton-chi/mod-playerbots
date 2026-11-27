@@ -579,11 +579,13 @@ bool AzgalorCommandPetTargetAction::Execute(Event /*event*/)
 
 // Archimonde
 
+bool ArchimondeSetTremorTotemAction::isUseful()
+{
+    return !AI_VALUE2(bool, "has totem", "tremor totem");
+}
+
 bool ArchimondeSetTremorTotemAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE2(bool, "has totem", "tremor totem"))
-        return false;
-
     constexpr uint32 tremorTotem = Id(HyjalSpells::SPELL_TREMOR_TOTEM);
     return botAI->CanCastSpell(tremorTotem, bot) && botAI->CastSpell(tremorTotem, bot);
 }

@@ -256,6 +256,19 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class HighAstromancerSolarianShamanShouldProtectAgainstFearTrigger
+    : public TempestKeepEncounterTrigger
+{
+public:
+    HighAstromancerSolarianShamanShouldProtectAgainstFearTrigger(PlayerbotAI* botAI)
+        : TempestKeepEncounterTrigger(
+            botAI, "high astromancer solarian shaman should protect against fear",
+            TkHelpers::TkBosses::DATA_HIGH_ASTROMANCER_SOLARIAN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderChasedByThaladredTrigger : public TempestKeepEncounterTrigger

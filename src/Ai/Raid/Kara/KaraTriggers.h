@@ -44,11 +44,11 @@ public:
     bool IsActive() override;
 };
 
-class KarazhanEnemiesCastFearTrigger : public Trigger
+class KarazhanShamanShouldProtectAgainstFearTrigger : public Trigger
 {
 public:
-    KarazhanEnemiesCastFearTrigger(PlayerbotAI* botAI)
-        : Trigger(botAI, "karazhan enemies cast fear") {}
+    KarazhanShamanShouldProtectAgainstFearTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "karazhan shaman should protect against fear") {}
     bool IsActive() override;
 };
 

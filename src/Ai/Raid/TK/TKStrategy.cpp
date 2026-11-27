@@ -75,6 +75,10 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high astromancer solarian solarium priests spawned",
         { NextAction("high astromancer solarian target solarium priests", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode(
+        "high astromancer solarian shaman should protect against fear",
+        { NextAction("high astromancer solarian set tremor totem", ACTION_RAID) }));
+
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     triggers.push_back(new TriggerNode("kael'thas sunstrider chased by thaladred",
         { NextAction("kael'thas sunstrider kite thaladred", ACTION_EMERGENCY + 6) }));
@@ -156,6 +160,7 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // High Astromancer Solarian
     multipliers.push_back(new HighAstromancerSolarianDisableMeleeTargetingMultiplier(botAI));
     multipliers.push_back(new HighAstromancerSolarianWrathStayAwayMultiplier(botAI));
+    multipliers.push_back(new HighAstromancerSolarianKeepTremorTotemMultiplier(botAI));
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     multipliers.push_back(new KaelthasSunstriderHoldDpsMultiplier(botAI));

@@ -71,6 +71,9 @@ enum class TkSpells : uint32
     // Hunter
     SPELL_MISDIRECTION              = 34477,
     SPELL_MISDIRECTION_AURA         = 35079, // the aura on the hunter
+
+    // Shaman
+    SPELL_TREMOR_TOTEM              = 8143,
 };
 
 enum class TkNpcs : uint32
@@ -252,6 +255,7 @@ inline Position const SOLARIAN_SPAWN_POSITION = { 432.740f, -373.645f, 18.014f }
 
 bool HasWrathOfTheAstromancer(Player* bot);
 GuidVector FindSolarianAddGuids(Player* bot);
+bool IsInVoidwalkerForm(Unit* astromancer);
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 

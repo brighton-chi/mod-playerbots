@@ -19,8 +19,8 @@ public:
         creators["karazhan no encounter in progress"] =
             &RaidKarazhanTriggerContext::karazhan_no_encounter_in_progress;
 
-        creators["karazhan enemies cast fear"] =
-            &RaidKarazhanTriggerContext::karazhan_enemies_cast_fear;
+        creators["karazhan shaman should protect against fear"] =
+            &RaidKarazhanTriggerContext::karazhan_shaman_should_protect_against_fear;
 
         // Trash
         creators["mana warp incoming warp breach"] =
@@ -186,9 +186,9 @@ private:
     {
         return new KarazhanNoEncounterInProgressTrigger(botAI);
     }
-    static Trigger* karazhan_enemies_cast_fear(PlayerbotAI* botAI)
+    static Trigger* karazhan_shaman_should_protect_against_fear(PlayerbotAI* botAI)
     {
-        return new KarazhanEnemiesCastFearTrigger(botAI);
+        return new KarazhanShamanShouldProtectAgainstFearTrigger(botAI);
     }
 
     // Trash

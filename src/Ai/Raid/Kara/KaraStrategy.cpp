@@ -17,7 +17,7 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("karazhan no encounter in progress",
         { NextAction("karazhan reset encounter states", ACTION_EMERGENCY + 10) }));
 
-    triggers.push_back(new TriggerNode("karazhan enemies cast fear",
+    triggers.push_back(new TriggerNode("karazhan shaman should protect against fear",
         { NextAction("karazhan set tremor totem", ACTION_RAID) }));
 
     // Trash

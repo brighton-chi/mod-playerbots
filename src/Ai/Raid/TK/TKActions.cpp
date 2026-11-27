@@ -881,6 +881,17 @@ Unit* HighAstromancerSolarianTargetSolariumPriestsAction::AssignSolariumPriestsT
     return priestsPair.second;
 }
 
+bool HighAstromancerSolarianSetTremorTotemAction::isUseful()
+{
+    return !AI_VALUE2(bool, "has totem", "tremor totem");
+}
+
+bool HighAstromancerSolarianSetTremorTotemAction::Execute(Event /*event*/)
+{
+    constexpr uint32 tremorTotem = Id(TkSpells::SPELL_TREMOR_TOTEM);
+    return botAI->CanCastSpell(tremorTotem, bot) && botAI->CastSpell(tremorTotem, bot);
+}
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 bool KaelthasSunstriderKiteThaladredAction::Execute(Event /*event*/)

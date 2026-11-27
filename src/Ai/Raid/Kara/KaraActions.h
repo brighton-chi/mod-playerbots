@@ -29,6 +29,7 @@ class KarazhanSetTremorTotemAction : public Action
 {
 public:
     KarazhanSetTremorTotemAction(PlayerbotAI* botAI) : Action(botAI, "karazhan set tremor totem") {}
+    bool isUseful() override;
     bool Execute(Event event) override;
 };
 

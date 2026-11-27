@@ -86,6 +86,9 @@ public:
         creators["high astromancer solarian target solarium priests"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
 
+        creators["high astromancer solarian set tremor totem"] =
+            &RaidTempestKeepActionContext::high_astromancer_solarian_set_tremor_totem;
+
         // Kael'thas Sunstrider <Lord of the Blood Elves>
         creators["kael'thas sunstrider kite thaladred"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_kite_thaladred;
@@ -248,6 +251,10 @@ private:
     static Action* high_astromancer_solarian_target_solarium_priests(PlayerbotAI* botAI)
     {
         return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI);
+    }
+    static Action* high_astromancer_solarian_set_tremor_totem(PlayerbotAI* botAI)
+    {
+        return new HighAstromancerSolarianSetTremorTotemAction(botAI);
     }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>

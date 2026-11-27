@@ -160,6 +160,18 @@ protected:
     float GetValueInEncounter(Action* action) override;
 };
 
+class HighAstromancerSolarianKeepTremorTotemMultiplier : public TempestKeepEncounterMultiplier
+{
+public:
+    HighAstromancerSolarianKeepTremorTotemMultiplier(PlayerbotAI* botAI)
+        : TempestKeepEncounterMultiplier(
+            botAI, "high astromancer solarian keep tremor totem",
+            TkHelpers::TkBosses::DATA_HIGH_ASTROMANCER_SOLARIAN) {}
+
+protected:
+    float GetValueInEncounter(Action* action) override;
+};
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 class KaelthasSunstriderHoldDpsMultiplier : public TempestKeepEncounterMultiplier

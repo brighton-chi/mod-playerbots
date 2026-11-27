@@ -24,12 +24,12 @@ bool KarazhanNoEncounterInProgressTrigger::IsActive()
     return !IsEncounterInProgress(bot, KARA_MAP_ID);
 }
 
-bool KarazhanEnemiesCastFearTrigger::IsActive()
+bool KarazhanShamanShouldProtectAgainstFearTrigger::IsActive()
 {
     if (bot->getClass() != CLASS_SHAMAN)
         return false;
 
-    return IsKarazhanFearCasterActive(bot) && !AI_VALUE2(bool, "has totem", "tremor totem");
+    return IsKarazhanFearCasterActive(bot);
 }
 
 // Trash

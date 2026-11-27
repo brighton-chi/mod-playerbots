@@ -233,7 +233,7 @@ float HighAstromancerSolarianWrathStayAwayMultiplier::GetValueInEncounter(Action
     }
 
     Unit* astromancer = GetEncounterBoss();
-    if (!astromancer || astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM)))
+    if (!astromancer || IsInVoidwalkerForm(astromancer))
         return 1.0f;
 
     return HasWrathOfTheAstromancer(bot) ? 0.0f : 1.0f;
@@ -264,6 +264,23 @@ float HighAstromancerSolarianDisableMeleeTargetingMultiplier::GetValueInEncounte
     }
 
     return GetTkAdds(botAI, TkNpcs::NPC_SOLARIUM_PRIEST).empty() ? 1.0f : 0.0f;
+}
+
+float HighAstromancerSolarianKeepTremorTotemMultiplier::GetValueInEncounter(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!dynamic_cast<CastStrengthOfEarthTotemAction*>(action) &&
+        !dynamic_cast<CastStoneskinTotemAction*>(action) &&
+        !dynamic_cast<CastStoneclawTotemAction*>(action) &&
+        !dynamic_cast<CastEarthbindTotemAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* astromancer = GetEncounterBoss();
+    return astromancer && IsInVoidwalkerForm(astromancer) ? 0.0f : 1.0f;
 }
 
 // Kael'thas Sunstrider <Lord of the Blood Elves>

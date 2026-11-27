@@ -187,6 +187,15 @@ bool HighAstromancerSolarianSolariumPriestsSpawnedTrigger::IsActiveInEncounter()
     return !GetTkAdds(botAI, TkNpcs::NPC_SOLARIUM_PRIEST).empty();
 }
 
+bool HighAstromancerSolarianShamanShouldProtectAgainstFearTrigger::IsActiveInEncounter()
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    Unit* astromancer = GetEncounterBoss();
+    return astromancer && IsInVoidwalkerForm(astromancer);
+}
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 bool KaelthasSunstriderChasedByThaladredTrigger::IsActiveInEncounter()

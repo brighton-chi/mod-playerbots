@@ -415,6 +415,11 @@ GuidVector FindSolarianAddGuids(Player* bot)
         bot, SOLARIAN_SPAWN_POSITION, SOLARIAN_ROOM_SEARCH_RADIUS, entries));
 }
 
+bool IsInVoidwalkerForm(Unit* astromancer)
+{
+    return astromancer && astromancer->HasAura(Id(TkSpells::SPELL_SOLARIAN_TRANSFORM));
+}
+
 // Kael'thas Sunstrider <Lord of the Blood Elves>
 
 namespace

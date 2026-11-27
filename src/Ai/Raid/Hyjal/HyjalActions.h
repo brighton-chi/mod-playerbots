@@ -280,6 +280,7 @@ class ArchimondeSetTremorTotemAction : public Action
 public:
     ArchimondeSetTremorTotemAction(PlayerbotAI* botAI)
         : Action(botAI, "archimonde set tremor totem") {}
+    bool isUseful() override;
     bool Execute(Event event) override;
 };
 

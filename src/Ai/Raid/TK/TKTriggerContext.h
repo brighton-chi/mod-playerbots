@@ -76,6 +76,10 @@ public:
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
 
+        creators["high astromancer solarian shaman should protect against fear"] =
+            &RaidTempestKeepTriggerContext::
+                high_astromancer_solarian_shaman_should_protect_against_fear;
+
         // Kael'thas Sunstrider <Lord of the Blood Elves>
         creators["kael'thas sunstrider chased by thaladred"] =
             &RaidTempestKeepTriggerContext::kaelthas_sunstrider_chased_by_thaladred;
@@ -222,6 +226,10 @@ private:
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI)
     {
         return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI);
+    }
+    static Trigger* high_astromancer_solarian_shaman_should_protect_against_fear(PlayerbotAI* botAI)
+    {
+        return new HighAstromancerSolarianShamanShouldProtectAgainstFearTrigger(botAI);
     }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
