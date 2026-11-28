@@ -1862,24 +1862,46 @@ bool KaelthasSunstriderUseLegendaryWeaponsAction::UseEquippedItemWithPacket(Item
     return true;
 }
 
-bool KaelthasSunstriderMainTankAttackBossAction::Execute(Event /*event*/)
+bool KaelthasSunstriderTanksPositionBossAction::Execute(Event /*event*/)
 {
-    if (!PlayerbotAI::IsMainTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* kaelthas = GetTkBoss(bot, TkBosses::DATA_KAELTHAS_SUNSTRIDER);
-    return kaelthas && AI_VALUE(Unit*, "current target") != kaelthas && Attack(kaelthas);
+    if (!kaelthas)
+        return false;
+
+    // Off-tanks are repositioned if Kael aggroes them, but only the main tank picks him up.
+    if (PlayerbotAI::IsMainTank(bot) && AI_VALUE(Unit*, "current target") != kaelthas)
+        return Attack(kaelthas);
+
+    if (kaelthas->GetVictim() != bot || !bot->IsWithinMeleeRange(kaelthas))
+        return false;
+
+    float moveX;
+    float moveY;
+    bool backwards;
+    if (!GetStepToPosition(
+            bot, KAELTHAS_TANK_POSITION, TK_ARRIVAL_DISTANCE, kaelthas, moveX, moveY,
+            backwards))
+    {
+        return false;
+    }
+
+    return MoveTo(
+        TK_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
-    Unit* flameStrike = GetNearestFlameStrikeInRadius(bot, FLAME_STRIKE_RADIUS);
+    Unit* flameStrike = GetNearestFlameStrikeInRadius(bot, FLAME_STRIKE_CLEARANCE);
     if (!flameStrike)
         return false;
 
     bot->CastStop();
     constexpr uint32 minInterval = 0;
-    return FleePosition(flameStrike->GetPosition(), FLAME_STRIKE_RADIUS, minInterval);
+    return FleePosition(flameStrike->GetPosition(), FLAME_STRIKE_CLEARANCE, minInterval);
 }
 
 bool KaelthasSunstriderAssignFinalPhaseTargetAction::Execute(Event /*event*/)
@@ -1935,15 +1957,12 @@ bool KaelthasSunstriderAssignFinalPhaseTargetAction::NonTanksAssignTargetAndAvoi
 {
     std::vector<Unit*> const phoenixes = GetActivePhoenixes(botAI);
     Unit* phoenix = phoenixes.empty() ? nullptr : phoenixes.front();
-
     if (phoenix)
     {
         constexpr float safeDistance = 15.0f;
         float const currentDistance = bot->GetExactDist2d(phoenix);
-        constexpr float flameStrikeRadius = 15.0f;
-
         if (currentDistance < safeDistance &&
-            !GetNearestFlameStrikeInRadius(bot, flameStrikeRadius))
+            !GetNearestFlameStrikeInRadius(bot, FLAME_STRIKE_BUFFER_DISTANCE))
         {
             return MoveAway(phoenix, safeDistance - currentDistance);
         }

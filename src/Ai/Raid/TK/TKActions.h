@@ -363,11 +363,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderMainTankAttackBossAction : public AttackAction
+class KaelthasSunstriderTanksPositionBossAction : public AttackAction
 {
 public:
-    KaelthasSunstriderMainTankAttackBossAction(PlayerbotAI* botAI)
-        : AttackAction(botAI, "kael'thas sunstrider main tank attack boss") {}
+    KaelthasSunstriderTanksPositionBossAction(PlayerbotAI* botAI)
+        : AttackAction(botAI, "kael'thas sunstrider tanks position boss") {}
     bool Execute(Event event) override;
 };
 

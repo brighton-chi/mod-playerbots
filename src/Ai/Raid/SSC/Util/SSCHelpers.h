@@ -316,7 +316,7 @@ inline constexpr float LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS = 8.0f;
 inline constexpr float LEOTHERAS_CHAOS_BLAST_CLEARANCE =
     LEOTHERAS_CHAOS_BLAST_HAZARD_RADIUS + 2.0f;
 inline constexpr float LEOTHERAS_SHADOW_SEPARATION_DISTANCE = 20.0f;
-
+// The active warlock tank uses Life Tap when below this percent mana and above this percent health.
 inline constexpr float LEOTHERAS_LIFE_TAP_MANA_PCT = 20.0f;
 inline constexpr float LEOTHERAS_LIFE_TAP_HEALTH_PCT = 90.0f;
 

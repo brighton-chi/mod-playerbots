@@ -67,7 +67,7 @@ Creature* GetNearestInList(Player* bot, GuidVector const& guids, float radius)
         if (!creature || !creature->IsAlive())
             continue;
 
-        float const distance = bot->GetDistance(creature);
+        float const distance = bot->GetExactDist2d(creature);
         if (distance <= nearestDistance)
         {
             nearestDistance = distance;
@@ -694,40 +694,6 @@ Creature* GetNearestFlameStrikeInRadius(Player* bot, float radius)
         TkState(bot->GetInstanceId()).kaelthasFlameStrikes, TK_CACHE_INTERVAL_MS, bot,
         FindFlameStrikeGuids);
     return GetNearestInList(bot, guids, radius);
-}
-
-bool IsFlameStrikeNearSegment(
-    Player* bot, Position const& start, Position const& end, float radius)
-{
-    GuidVector const& guids = GetInstanceCreatureList(
-        TkState(bot->GetInstanceId()).kaelthasFlameStrikes, TK_CACHE_INTERVAL_MS, bot,
-        FindFlameStrikeGuids);
-
-    float const startX = start.GetPositionX();
-    float const startY = start.GetPositionY();
-    float const dx = end.GetPositionX() - startX;
-    float const dy = end.GetPositionY() - startY;
-    float const lengthSq = dx * dx + dy * dy;
-
-    for (ObjectGuid const& guid : guids)
-    {
-        Creature* flameStrike = ObjectAccessor::GetCreature(*bot, guid);
-        if (!flameStrike || !flameStrike->IsAlive())
-            continue;
-
-        float ratio = 0.0f;
-        if (lengthSq > 0.0f)
-        {
-            ratio = ((flameStrike->GetPositionX() - startX) * dx +
-                (flameStrike->GetPositionY() - startY) * dy) / lengthSq;
-            ratio = std::clamp(ratio, 0.0f, 1.0f);
-        }
-
-        if (flameStrike->GetExactDist2d(startX + dx * ratio, startY + dy * ratio) < radius)
-            return true;
-    }
-
-    return false;
 }
 
 GuidVector FindPhoenixEggGuids(Player* bot)
