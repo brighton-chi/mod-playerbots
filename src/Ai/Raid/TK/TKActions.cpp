@@ -1139,7 +1139,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
     bot->CastStop();
     return MoveTo(
         TK_MAP_ID, targetX, targetY, targetZ, false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::MeleeStayBackFromCapernian(
@@ -1171,7 +1171,7 @@ bool KaelthasSunstriderHandleAdvisorRolesInPhase3Action::Execute(Event /*event*/
 
     return MoveTo(
         TK_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool KaelthasSunstriderReequipGearAction::Execute(Event event)

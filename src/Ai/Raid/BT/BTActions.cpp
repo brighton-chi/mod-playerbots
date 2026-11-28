@@ -890,7 +890,7 @@ bool ShadeOfAkamaAttackChannelersAndSorcerersAction::Execute(Event /*event*/)
 
     if (!bot->IsWithinLOSInMap(target))
     {
-        constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+        constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
         if (IsWaitingForLastMove(priority))
             return false;
 
@@ -1395,7 +1395,7 @@ bool MotherShahrazMeleeDpsWaitAtSafePositionAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 // The standard strategy is to stand under something that keeps you from flying too high from
@@ -1409,7 +1409,7 @@ bool MotherShahrazPositionRangedUnderStatueAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool MotherShahrazBreakFatalAttractionAction::Execute(Event /*event*/)
@@ -1738,7 +1738,7 @@ bool IllidariCouncilMageTankPositionZerevorAction::Execute(Event /*event*/)
     {
         if (!bot->IsWithinCombatRange(zerevor, SPELLSTEAL_RANGE))
         {
-            constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+            constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
             if (IsWaitingForLastMove(priority))
                 return false;
 
@@ -2767,7 +2767,7 @@ bool IllidanStormragePositionForLandingAction::Execute(Event /*event*/)
 
     return MoveTo(
         BT_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool IllidanStormrageStopAttackingAction::Execute(Event /*event*/)

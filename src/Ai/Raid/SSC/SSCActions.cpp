@@ -606,6 +606,7 @@ bool TheLurkerBelowMeleeMoveDirectlyToTargetAction::Execute(Event /*event*/)
     float const destY = anchor->GetPositionY() + std::sin(angle) * anchorDistance;
     float const destZ = anchor->GetPositionZ();
 
+    // FORCED stops TheLurkerBelowMeleeCannotReachTargetTrigger from firing again during this move.
     MovementPriority const priority = entry == Id(SscNpcs::NPC_THE_LURKER_BELOW) ?
         MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
     return MoveTo(

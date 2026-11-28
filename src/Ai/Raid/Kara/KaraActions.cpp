@@ -1778,7 +1778,7 @@ bool NightbaneTankPositionBossAction::Execute(Event /*event*/)
     if (nightbane->GetVictim() != bot || !bot->IsWithinMeleeRange(nightbane))
         return false;
 
-    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
     if (IsWaitingForLastMove(priority))
         return false;
 

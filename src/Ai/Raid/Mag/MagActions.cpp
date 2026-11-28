@@ -52,7 +52,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
 
     return MoveTo(
         MAG_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+        false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool MagtheridonAssistTanksAttackLastTwoChannelersAction::Execute(Event /*event*/)

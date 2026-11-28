@@ -204,7 +204,7 @@ bool EredarTwinsRangedStackAtBalconyEdgeAction::Execute(Event /*event*/)
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
@@ -227,7 +227,7 @@ bool EredarTwinsStackBehindAlythessAction::Execute(Event /*event*/)
 
     return MoveTo(
         SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
 bool EredarTwinsStepAsideFromStackAction::Execute(Event /*event*/)
