@@ -293,13 +293,14 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Event const& event)
     if (ember->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
-    // The Rebirth hits within 15 yd, center to center, but more space is needed since this
-    // movement is tank-to-player, not Ember.
-    constexpr float safeDistance = 20.0f;
+    // The Ember follows a little behind the tank, toward the group, so add that gap.
+    float const leadDistance = CONTACT_DISTANCE + ember->GetCombatReach() + bot->GetCombatReach();
+    float const safeDistance = EMBER_OF_ALAR_CLEARANCE + leadDistance;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
 
-    return MoveFromGroup(safeDistance);
+    // MoveFromGroup measures edge to edge, while safeDistance is center to center.
+    return MoveFromGroup(safeDistance - bot->GetCombatReach() - DEFAULT_COMBAT_REACH);
 }
 
 bool AlarAssignNonTankTargetAction::Execute(Event /*event*/)
@@ -317,12 +318,11 @@ bool AlarAssignNonTankTargetAction::Execute(Event /*event*/)
         if (ember)
         {
             target = ember;
-            constexpr float safeDistance = 20.0f;
             float const currentDistance = bot->GetExactDist2d(ember);
-            if (currentDistance < safeDistance)
+            if (currentDistance < EMBER_OF_ALAR_CLEARANCE)
             {
                 bot->CastStop();
-                return MoveAway(ember, safeDistance - currentDistance);
+                return MoveAway(ember, EMBER_OF_ALAR_CLEARANCE - currentDistance);
             }
         }
     }
@@ -413,13 +413,14 @@ bool AlarMoveAwayFromRebirthAction::Execute(Event /*event*/)
 
     // Al'ar stays at its platform for the first 8 seconds of the pretend-death and is only then
     // moved to the middle for Rebirth, so move away from the room center, not Al'ar.
-    constexpr float safeDistance = 35.0f;
-    if (bot->GetExactDist2d(ALAR_ROOM_CENTER) >= safeDistance)
+    if (bot->GetExactDist2d(ALAR_ROOM_CENTER) >= ALAR_REBIRTH_CLEARANCE)
         return false;
 
     float const angle = ALAR_ROOM_CENTER.GetAngle(bot);
-    float const targetX = ALAR_ROOM_CENTER.GetPositionX() + std::cos(angle) * safeDistance;
-    float const targetY = ALAR_ROOM_CENTER.GetPositionY() + std::sin(angle) * safeDistance;
+    float const targetX =
+        ALAR_ROOM_CENTER.GetPositionX() + std::cos(angle) * ALAR_REBIRTH_CLEARANCE;
+    float const targetY =
+        ALAR_ROOM_CENTER.GetPositionY() + std::sin(angle) * ALAR_REBIRTH_CLEARANCE;
 
     return MoveTo(
         TK_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false, false, false,
@@ -490,12 +491,12 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
     std::vector<Unit*> const flamePatches = GetFlamePatches(botAI);
 
-    constexpr float hazardRadius = 8.0f;
-    constexpr float avoidRadius = 9.0f;
+    // Aim just past the clearance so arriving doesn't count as still being in the patch.
+    constexpr float avoidRadius = FLAME_PATCH_CLEARANCE + 1.0f;
 
     for (Unit* flamePatch : flamePatches)
     {
-        if (bot->GetExactDist2d(flamePatch) < hazardRadius)
+        if (bot->GetExactDist2d(flamePatch) < FLAME_PATCH_CLEARANCE)
         {
             Position safestPos = FindSafestNearbyPosition(flamePatches, avoidRadius);
             bot->CastStop();
@@ -592,23 +593,21 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
     if (alar->HasAura(Id(TkSpells::SPELL_MODEL_INVISIBILITY)) ||
         alar->FindCurrentSpellBySpellId(Id(TkSpells::SPELL_REBIRTH_DIVE)))
     {
-        constexpr float safeDistance = 25.0f;
         float const currentDistance = bot->GetExactDist2d(alar);
-        if (currentDistance >= safeDistance)
+        if (currentDistance >= ALAR_REBIRTH_CLEARANCE)
             return false;
 
         bot->CastStop();
-        return MoveAway(alar, safeDistance - currentDistance);
+        return MoveAway(alar, ALAR_REBIRTH_CLEARANCE - currentDistance);
     }
 
     // Avoidance during Dive Bomb sequence
-    constexpr float safeDistance = 15.0f;
-    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, DIVE_BOMB_CLEARANCE);
     if (!nearestPlayer)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(nearestPlayer);
-    return MoveAway(nearestPlayer, safeDistance - currentDistance);
+    return MoveAway(nearestPlayer, DIVE_BOMB_CLEARANCE - currentDistance);
 }
 
 bool AlarManagePhaseTrackerAction::Execute(Event /*event*/)
@@ -700,7 +699,8 @@ bool VoidReaverRangedBackOffAndSpreadAction::Execute(Event /*event*/)
     if (!voidReaver)
         return false;
 
-    constexpr float minDistFromBoss = 38.5f; // 22.0f GetDistance2d()
+    float const minDistFromBoss =
+        VOID_REAVER_RANGED_DISTANCE + voidReaver->GetCombatReach() + bot->GetCombatReach();
     constexpr uint32 minInterval = 0;
     if (bot->GetExactDist2d(voidReaver) < minDistFromBoss)
         return FleePosition(voidReaver->GetPosition(), minDistFromBoss, minInterval);
@@ -727,8 +727,10 @@ bool VoidReaverAvoidArcaneOrbAction::Execute(Event /*event*/)
     constexpr float searchStep = M_PI / 12.0f;
     constexpr float minSearchDist = 1.0f;
     constexpr float searchDistStep = 1.0f;
-    constexpr float minDistFromBoss = 35.5f;
-    constexpr float maxDistFromBoss = 43.5f;
+    // Both limits are edge to edge, so convert them to center distances for the search.
+    float const combatReaches = voidReaver->GetCombatReach() + bot->GetCombatReach();
+    float const minDistFromBoss = VOID_REAVER_RANGED_DISTANCE + combatReaches;
+    float const maxDistFromBoss = VOID_REAVER_RANGED_MAX_DISTANCE + combatReaches;
     constexpr uint8 numAngles = 24;
     constexpr uint8 numDistSteps = 39;
     constexpr float clearanceSq = ARCANE_ORB_CLEARANCE * ARCANE_ORB_CLEARANCE;
@@ -806,12 +808,13 @@ bool HighAstromancerSolarianMainTankPickUpBossAction::Execute(Event /*event*/)
 
 bool HighAstromancerSolarianMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
-    constexpr float safeDistance = 15.0f;
-    if (!GetNearestPlayerInRadius(bot, safeDistance))
+    if (!GetNearestPlayerInRadius(bot, WRATH_OF_THE_ASTROMANCER_CLEARANCE))
         return false;
 
     bot->CastStop();
-    return MoveFromGroup(safeDistance);
+    // MoveFromGroup measures edge to edge, while the clearance is center to center.
+    return MoveFromGroup(
+        WRATH_OF_THE_ASTROMANCER_CLEARANCE - bot->GetCombatReach() - DEFAULT_COMBAT_REACH);
 }
 
 bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event /*event*/)
@@ -1072,12 +1075,11 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
         if (FindThreatTarget(bot, "thaladred the darkener"))
             return false;
 
-        constexpr float safeDistance = 6.0f;
-        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        Player* nearestPlayer = GetNearestPlayerInRadius(bot, CONFLAGRATION_SPLASH_CLEARANCE);
         if (!nearestPlayer)
             return false;
 
-        return FleePosition(nearestPlayer->GetPosition(), safeDistance);
+        return FleePosition(nearestPlayer->GetPosition(), CONFLAGRATION_SPLASH_CLEARANCE);
     }
 
     Group* group = bot->GetGroup();
@@ -1334,10 +1336,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     // Melee DPS obviously has to stand near a weapon to hit it, so any weapon too close to the axe
     // is skipped temporarily.
-    constexpr float safeDistance = 12.0f;
     auto const isTooCloseToAxe = [&](Unit* candidate)
     {
-        return isMeleeDps && axe && candidate->GetExactDist2d(axe) <= safeDistance;
+        return isMeleeDps && axe && candidate->GetExactDist2d(axe) <= DEVASTATION_CLEARANCE;
     };
 
     Unit* target = nullptr;
@@ -1390,16 +1391,31 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::HandleDevastationAvoidance(
     Unit* axe, Unit* mace, Unit* dagger, Unit* sword, bool const isTank, bool const isMeleeDps)
 {
-    bool const hasAggroFromWeapon =
-        (mace && mace->GetVictim() == bot) ||
-        (dagger && dagger->GetVictim() == bot) ||
-        (sword && sword->GetVictim() == bot);
+    Unit* heldWeapon = nullptr;
+    for (Unit* weapon : { mace, dagger, sword })
+    {
+        if (weapon && weapon->GetVictim() == bot)
+        {
+            heldWeapon = weapon;
+            break;
+        }
+    }
 
     bool result = false;
 
-    if (!isTank || hasAggroFromWeapon)
+    if (!isTank || heldWeapon)
     {
-        float const safeDistance = isTank ? 17.0f : 12.0f;
+        float safeDistance = DEVASTATION_CLEARANCE;
+
+        // Tanks pull their weapon clear of the axe so melee can attack it. The weapon follows a
+        // little behind the tank, so the tank goes that much farther.
+        if (isTank)
+        {
+            constexpr float margin = 1.5f;
+            safeDistance +=
+                CONTACT_DISTANCE + heldWeapon->GetCombatReach() + bot->GetCombatReach() + margin;
+        }
+
         float const currentDistance = bot->GetExactDist2d(axe);
         if (currentDistance < safeDistance)
             result = MoveAway(axe, safeDistance - currentDistance);
@@ -1428,12 +1444,14 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (axe->GetVictim() != bot || !bot->IsWithinMeleeRange(axe))
         return false;
 
-    // Devastation's combat reach is 0 in the database, which the core raises to the 1.5 yd default.
-    constexpr float safeDistance = 15.0f;
+    // The axe follows a little behind the tank, toward the group, so add that gap.
+    float const leadDistance = CONTACT_DISTANCE + axe->GetCombatReach() + bot->GetCombatReach();
+    float const safeDistance = DEVASTATION_CLEARANCE + leadDistance;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
 
-    return MoveFromGroup(safeDistance);
+    // MoveFromGroup measures edge to edge, while safeDistance is center to center.
+    return MoveFromGroup(safeDistance - bot->GetCombatReach() - DEFAULT_COMBAT_REACH);
 }
 
 bool KaelthasSunstriderLootLegendaryWeaponsAction::Execute(Event /*event*/)
@@ -1943,11 +1961,15 @@ bool KaelthasSunstriderAssignFinalPhaseTargetAction::AssistTankPicksUpPhoenix(Un
     if (phoenix->GetVictim() != bot)
         return false;
 
-    constexpr float safeDistance = 12.0f;
+    // The Phoenix follows a little behind the tank, toward the group, so add that gap.
+    float const leadDistance =
+        CONTACT_DISTANCE + phoenix->GetCombatReach() + bot->GetCombatReach();
+    float const safeDistance = PHOENIX_CLEARANCE + leadDistance;
     if (!GetNearestNonTankPlayerInRadius(bot, safeDistance))
         return false;
 
-    return MoveFromGroup(safeDistance);
+    // MoveFromGroup measures edge to edge, while safeDistance is center to center.
+    return MoveFromGroup(safeDistance - bot->GetCombatReach() - DEFAULT_COMBAT_REACH);
 }
 
 // Priority: (1) Kael with Shock Barrier (to interrupt Pyroblast), (2) Eggs (ranged only so melee
@@ -1959,12 +1981,11 @@ bool KaelthasSunstriderAssignFinalPhaseTargetAction::NonTanksAssignTargetAndAvoi
     Unit* phoenix = phoenixes.empty() ? nullptr : phoenixes.front();
     if (phoenix)
     {
-        constexpr float safeDistance = 15.0f;
         float const currentDistance = bot->GetExactDist2d(phoenix);
-        if (currentDistance < safeDistance &&
+        if (currentDistance < PHOENIX_CLEARANCE &&
             !GetNearestFlameStrikeInRadius(bot, FLAME_STRIKE_BUFFER_DISTANCE))
         {
-            return MoveAway(phoenix, safeDistance - currentDistance);
+            return MoveAway(phoenix, PHOENIX_CLEARANCE - currentDistance);
         }
     }
 

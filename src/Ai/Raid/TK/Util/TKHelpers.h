@@ -156,6 +156,19 @@ enum AlarLocationIndex
 inline constexpr float ALAR_BALCONY_Z = 17.0f;
 inline constexpr uint8 TOTAL_ALAR_LOCATIONS = 6;
 
+// Radius of Flame Patch (35383). No combat reaches added.
+inline constexpr float FLAME_PATCH_HAZARD_RADIUS = 6.0f;
+inline constexpr float FLAME_PATCH_CLEARANCE = FLAME_PATCH_HAZARD_RADIUS + 2.0f;
+// Radius of Ember Blast (34133), cast when an Ember of Al'ar dies. No combat reaches added.
+inline constexpr float EMBER_OF_ALAR_HAZARD_RADIUS = 15.0f;
+inline constexpr float EMBER_OF_ALAR_CLEARANCE = EMBER_OF_ALAR_HAZARD_RADIUS + 5.0f;
+// Radius of Dive Bomb (35181) around its target. No combat reaches added.
+inline constexpr float DIVE_BOMB_HAZARD_RADIUS = 10.0f;
+inline constexpr float DIVE_BOMB_CLEARANCE = DIVE_BOMB_HAZARD_RADIUS + 5.0f;
+// Radius of Rebirth (34342 at the phase change, 35369 after Dive Bomb). No combat reaches added.
+inline constexpr float ALAR_REBIRTH_HAZARD_RADIUS = 15.0f;
+inline constexpr float ALAR_REBIRTH_CLEARANCE = ALAR_REBIRTH_HAZARD_RADIUS + 10.0f;
+
 inline Position const ALAR_LANDING_PLATFORM_0 = { 335.638f,  59.4879f, 17.9319f }; // West
 inline Position const ALAR_LANDING_PLATFORM_1 = { 388.751f,  31.7312f, 20.2636f }; // Northwest
 inline Position const ALAR_LANDING_PLATFORM_2 = { 388.791f, -33.1059f, 20.2636f }; // Northeast
@@ -230,9 +243,17 @@ struct ArcaneOrbData
 };
 
 inline constexpr uint32 ARCANE_ORB_DURATION_MS = 7000;
+// Radius of Arcane Orb (34190). No combat reaches added.
 inline constexpr float ARCANE_ORB_HAZARD_RADIUS = 20.0f;
 inline constexpr float ARCANE_ORB_CLEARANCE = ARCANE_ORB_HAZARD_RADIUS + 2.0f;
 inline constexpr float ARCANE_ORB_BUFFER_DISTANCE = ARCANE_ORB_HAZARD_RADIUS + 10.0f;
+// Arcane Orb targets players who are beyond this range, edge to edge. Ranged stay past it so the
+// orbs go to them and land away from melee.
+inline constexpr float ARCANE_ORB_MIN_TARGET_RANGE = 20.0f;
+inline constexpr float VOID_REAVER_RANGED_DISTANCE = ARCANE_ORB_MIN_TARGET_RANGE + 2.0f;
+// Based on generic ranged spell range of 30 yd, edge to edge. Ranged stay a little inside so they
+// can always hit Void Reaver.
+inline constexpr float VOID_REAVER_RANGED_MAX_DISTANCE = 28.0f;
 // While the tank is moving and still within Void Reaver's melee range, Void Reaver chases to its
 // reach minus half the tank's speed, not to the tank's lead distance, so it can stop up to 4 yd
 // past the center.
@@ -249,6 +270,10 @@ bool IsNearActiveArcaneOrb(Player* bot, float radius);
 
 // Measured from Solarian's spawn position. 100 yd covers her room.
 inline constexpr float SOLARIAN_ROOM_SEARCH_RADIUS = 100.0f;
+// Radius of the explosion (42787) around the afflicted player. No combat reaches added.
+inline constexpr float WRATH_OF_THE_ASTROMANCER_HAZARD_RADIUS = 10.0f;
+inline constexpr float WRATH_OF_THE_ASTROMANCER_CLEARANCE =
+    WRATH_OF_THE_ASTROMANCER_HAZARD_RADIUS + 5.0f;
 
 inline Position const SOLARIAN_SPAWN_POSITION = { 432.740f, -373.645f, 18.014f };
 
@@ -280,10 +305,22 @@ inline constexpr uint32 ADVISOR_DPS_HOLD_MS = 10 * IN_MILLISECONDS;
 inline constexpr float CAPERNIAN_LIFE_TAP_MANA_PCT = 20.0f;
 inline constexpr float CAPERNIAN_LIFE_TAP_HEALTH_PCT = 75.0f;
 
-inline constexpr float FLAME_STRIKE_HAZARD_RADIUS = 10.0f;
-inline constexpr float FLAME_STRIKE_CLEARANCE = FLAME_STRIKE_HAZARD_RADIUS + 3.0f;
+// Covers the 5 yd splash (37019) around each burning player, not Conflagration's 8 yd initial hit.
+// No combat reaches added.
+inline constexpr float CONFLAGRATION_SPLASH_RADIUS = 5.0f;
+inline constexpr float CONFLAGRATION_SPLASH_CLEARANCE = CONFLAGRATION_SPLASH_RADIUS + 1.0f;
+// Radius of Whirlwind (36982). No combat reaches added.
+inline constexpr float DEVASTATION_HAZARD_RADIUS = 8.0f;
+inline constexpr float DEVASTATION_CLEARANCE = DEVASTATION_HAZARD_RADIUS + 4.0f;
+// Radius of Flame Strike (36731): the blast (115,625 damage) is 6 yd, no combat reaches added. The
+// persistent area AoE (3000/s) is 10 yd + player's 1.5 yd combat reach (1.95 yd with Bloodlust).
+inline constexpr float FLAME_STRIKE_HAZARD_RADIUS = 11.5f;
+inline constexpr float FLAME_STRIKE_CLEARANCE = FLAME_STRIKE_HAZARD_RADIUS + 2.0f;
 // Do not attempt to avoid Phoenixes if within this distance of a Flame Strike.
-inline constexpr float FLAME_STRIKE_BUFFER_DISTANCE = FLAME_STRIKE_HAZARD_RADIUS + 5.0f;
+inline constexpr float FLAME_STRIKE_BUFFER_DISTANCE = FLAME_STRIKE_HAZARD_RADIUS + 7.0f;
+// Radius of Burn (36721). No combat reaches added.
+inline constexpr float PHOENIX_HAZARD_RADIUS = 8.0f;
+inline constexpr float PHOENIX_CLEARANCE = PHOENIX_HAZARD_RADIUS + 4.0f;
 
 inline constexpr EncounterHelpers::ClassRole CAPERNIAN_TANK_ROLE = {
     .playerClass = CLASS_WARLOCK,
