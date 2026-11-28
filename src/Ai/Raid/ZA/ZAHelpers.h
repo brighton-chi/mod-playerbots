@@ -223,32 +223,31 @@ Creature* GetNearestCorruptedLightningTotem(Player* bot);
 
 // Freezing Trap (43448) stuns for 10s across a 10 yd radius, even though its trigger radius is much
 // shorter at 2.5 yd.
-inline constexpr float ZA_FREEZING_TRAP_CLEARANCE = 11.0f;
-inline constexpr float ZA_FREEZING_TRAP_SEARCH_RADIUS = 16.0f;
-inline constexpr uint32 FREEZING_TRAP_CACHE_INTERVAL_MS = 200;
+inline constexpr float HEX_LORD_FREEZING_TRAP_CLEARANCE = 11.0f;
+inline constexpr float HEX_LORD_FREEZING_TRAP_SEARCH_RADIUS = 16.0f;
+inline constexpr uint32 HEX_LORD_FREEZING_TRAP_CACHE_INTERVAL_MS = 200;
 // Measured from Malacrass's spawn. His adds stand in a row within 12 yd of it, and 100 yd leaves
 // room for wherever they are tanked.
-inline constexpr float HEX_LORD_MALACRASS_DPS_TARGET_SEARCH_RADIUS = 100.0f;
-inline constexpr uint32 HEX_LORD_MALACRASS_DPS_TARGET_CACHE_INTERVAL_MS = 200;
+inline constexpr float HEX_LORD_ADD_SEARCH_RADIUS = 100.0f;
+inline constexpr uint32 HEX_LORD_ADD_CACHE_INTERVAL_MS = 200;
 
-// Highest priority first.
-inline constexpr std::array HEX_LORD_MALACRASS_DPS_PRIORITY = {
-    ZaNpcs::NPC_LORD_RAADAN,
-    ZaNpcs::NPC_ALYSON_ANTILLE,
-    ZaNpcs::NPC_KORAGG,
-    ZaNpcs::NPC_DARKHEART,
-    ZaNpcs::NPC_FENSTALKER,
-    ZaNpcs::NPC_GAZAKROTH,
-    ZaNpcs::NPC_THURG,
-    ZaNpcs::NPC_SLITHER,
-    ZaNpcs::NPC_HEX_LORD_MALACRASS,
+// Listed in kill order.
+inline std::vector<uint32> const HEX_LORD_ADD_ENTRIES = {
+    Id(ZaNpcs::NPC_LORD_RAADAN),
+    Id(ZaNpcs::NPC_ALYSON_ANTILLE),
+    Id(ZaNpcs::NPC_KORAGG),
+    Id(ZaNpcs::NPC_DARKHEART),
+    Id(ZaNpcs::NPC_FENSTALKER),
+    Id(ZaNpcs::NPC_GAZAKROTH),
+    Id(ZaNpcs::NPC_THURG),
+    Id(ZaNpcs::NPC_SLITHER),
 };
 
 inline Position const HEX_LORD_MALACRASS_SPAWN_POSITION = { 117.363f, 923.569f, 33.973f };
 
 ObjectGuid FindNearbyFreezingTrapGuid(Player* bot);
 GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI);
-GuidVector FindHexLordMalacrassDpsTargetGuids(Player* bot);
+GuidVector FindHexLordAddGuids(Player* bot);
 
 // Zul'jin
 
@@ -289,7 +288,7 @@ struct ZaInstanceState
     EncounterHelpers::InstanceCreatureList janalaiAdds;
     EncounterHelpers::InstanceCreatureList janalaiFireBombs;
     EncounterHelpers::InstanceCreatureList halazziTotems;
-    EncounterHelpers::InstanceCreatureList hexLordMalacrassDpsTargets;
+    EncounterHelpers::InstanceCreatureList hexLordAdds;
 };
 
 ZaInstanceState& ZaState(uint32 instanceId);

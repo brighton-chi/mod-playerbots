@@ -18,7 +18,7 @@ public:
     HexLordMalacrassFreezingTrapValue(PlayerbotAI* botAI)
         : ObjectGuidCalculatedValue(
               botAI, "hex lord malacrass freezing trap",
-              ZaHelpers::FREEZING_TRAP_CACHE_INTERVAL_MS) {}
+              ZaHelpers::HEX_LORD_FREEZING_TRAP_CACHE_INTERVAL_MS) {}
 
 protected:
     ObjectGuid Calculate() override { return ZaHelpers::FindNearbyFreezingTrapGuid(bot); }

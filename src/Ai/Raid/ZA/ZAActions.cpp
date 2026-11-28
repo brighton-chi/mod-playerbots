@@ -316,31 +316,26 @@ bool HalazziDpsAttackTotemAndBossAction::Execute(Event /*event*/)
 
 // Hex Lord Malacrass
 
-bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
+bool HexLordMalacrassMarkTargetAction::Execute(Event /*event*/)
 {
-    auto const& priority = HEX_LORD_MALACRASS_DPS_PRIORITY;
-    Unit* priorityTarget = nullptr;
-    size_t bestRank = priority.size();
-    GuidVector const& guids = GetInstanceCreatureList(
-        ZaState(bot->GetInstanceId()).hexLordMalacrassDpsTargets,
-        HEX_LORD_MALACRASS_DPS_TARGET_CACHE_INTERVAL_MS, bot, FindHexLordMalacrassDpsTargetGuids);
-    for (ObjectGuid const& guid : guids)
-    {
-        Creature* unit = ObjectAccessor::GetCreature(*bot, guid);
-        if (!unit || !unit->IsAlive() || !unit->IsInWorld())
-            continue;
+    GuidVector const& adds = GetInstanceCreatureList(
+        ZaState(bot->GetInstanceId()).hexLordAdds, HEX_LORD_ADD_CACHE_INTERVAL_MS, bot,
+        FindHexLordAddGuids);
 
-        auto const it =
-            std::find(priority.begin(), priority.end(), static_cast<ZaNpcs>(unit->GetEntry()));
-        size_t const rank = std::distance(priority.begin(), it);
-        if (rank < bestRank)
+    for (uint32 entry : HEX_LORD_ADD_ENTRIES)
+    {
+        for (ObjectGuid const& guid : adds)
         {
-            bestRank = rank;
-            priorityTarget = unit;
+            if (guid.GetEntry() != entry)
+                continue;
+
+            Creature* add = ObjectAccessor::GetCreature(*bot, guid);
+            if (add && add->IsAlive())
+                return MarkTargetWithSkull(bot, add);
         }
     }
 
-    return priorityTarget && MarkTargetWithSkull(bot, priorityTarget);
+    return false;
 }
 
 bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
@@ -350,11 +345,11 @@ bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
         return false;
 
     float const currentDistance = bot->GetExactDist2d(trap);
-    if (currentDistance >= ZA_FREEZING_TRAP_CLEARANCE)
+    if (currentDistance >= HEX_LORD_FREEZING_TRAP_CLEARANCE)
         return false;
 
     constexpr uint32 minInterval = 0;
-    return FleePosition(trap->GetPosition(), ZA_FREEZING_TRAP_CLEARANCE, minInterval);
+    return FleePosition(trap->GetPosition(), HEX_LORD_FREEZING_TRAP_CLEARANCE, minInterval);
 }
 
 // Zul'jin

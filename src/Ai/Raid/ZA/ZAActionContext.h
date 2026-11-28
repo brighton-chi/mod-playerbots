@@ -80,8 +80,8 @@ public:
         creators["hex lord malacrass misdirect boss to main tank"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_misdirect_boss_to_main_tank;
 
-        creators["hex lord malacrass assign dps priority"] =
-            &RaidZulAmanActionContext::hex_lord_malacrass_assign_dps_priority;
+        creators["hex lord malacrass mark target"] =
+            &RaidZulAmanActionContext::hex_lord_malacrass_mark_target;
 
         creators["hex lord malacrass run away from whirlwind"] =
             &RaidZulAmanActionContext::hex_lord_malacrass_run_away_from_whirlwind;
@@ -216,9 +216,9 @@ private:
             botAI, "hex lord malacrass misdirect boss to main tank",
             ZaHelpers::ZaBosses::DATA_HEX_LORD_MALACRASS);
     }
-    static Action* hex_lord_malacrass_assign_dps_priority(PlayerbotAI* botAI)
+    static Action* hex_lord_malacrass_mark_target(PlayerbotAI* botAI)
     {
-        return new HexLordMalacrassAssignDpsPriorityAction(botAI);
+        return new HexLordMalacrassMarkTargetAction(botAI);
     }
     static Action* hex_lord_malacrass_run_away_from_whirlwind(PlayerbotAI* botAI)
     {

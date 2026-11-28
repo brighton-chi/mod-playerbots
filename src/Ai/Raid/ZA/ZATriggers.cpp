@@ -164,7 +164,7 @@ bool HalazziShouldFocusDpsTrigger::IsActiveInEncounter()
 
 bool HexLordMalacrassShouldPrioritizeAddsTrigger::IsActiveInEncounter()
 {
-    return PlayerbotAI::IsDps(bot);
+    return IsMechanicTrackerBot(bot, ZA_MAP_ID);
 }
 
 bool HexLordMalacrassChannelingWhirlwindTrigger::IsActiveInEncounter()

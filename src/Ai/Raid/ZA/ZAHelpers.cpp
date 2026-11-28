@@ -305,7 +305,7 @@ ObjectGuid FindNearbyFreezingTrapGuid(Player* bot)
         return ObjectGuid::Empty;
 
     GameObject* trap = bot->FindNearestGameObject(
-        Id(ZaObjects::GO_FREEZING_TRAP), ZA_FREEZING_TRAP_SEARCH_RADIUS, true);
+        Id(ZaObjects::GO_FREEZING_TRAP), HEX_LORD_FREEZING_TRAP_SEARCH_RADIUS, true);
 
     return trap ? trap->GetGUID() : ObjectGuid::Empty;
 }
@@ -318,16 +318,10 @@ GameObject* GetNearbyFreezingTrap(PlayerbotAI* botAI)
     return guid.IsEmpty() ? nullptr : botAI->GetGameObject(guid);
 }
 
-GuidVector FindHexLordMalacrassDpsTargetGuids(Player* bot)
+GuidVector FindHexLordAddGuids(Player* bot)
 {
-    std::vector<uint32> entries;
-    entries.reserve(HEX_LORD_MALACRASS_DPS_PRIORITY.size());
-    for (ZaNpcs const npc : HEX_LORD_MALACRASS_DPS_PRIORITY)
-        entries.push_back(Id(npc));
-
     return FindCreatureGuidsAround(
-        bot, HEX_LORD_MALACRASS_SPAWN_POSITION, HEX_LORD_MALACRASS_DPS_TARGET_SEARCH_RADIUS,
-        entries);
+        bot, HEX_LORD_MALACRASS_SPAWN_POSITION, HEX_LORD_ADD_SEARCH_RADIUS, HEX_LORD_ADD_ENTRIES);
 }
 
 // Zul'jin

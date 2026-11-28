@@ -157,11 +157,11 @@ public:
 
 // Hex Lord Malacrass
 
-class HexLordMalacrassAssignDpsPriorityAction : public AttackAction
+class HexLordMalacrassMarkTargetAction : public Action
 {
 public:
-    HexLordMalacrassAssignDpsPriorityAction(PlayerbotAI* botAI)
-        : AttackAction(botAI,  "hex lord malacrass assign dps priority") {}
+    HexLordMalacrassMarkTargetAction(PlayerbotAI* botAI)
+        : Action(botAI, "hex lord malacrass mark target") {}
     bool Execute(Event event) override;
 };
 

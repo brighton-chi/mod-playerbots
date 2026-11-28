@@ -77,7 +77,7 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("hex lord malacrass misdirect boss to main tank", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass should prioritize adds",
-        { NextAction("hex lord malacrass assign dps priority", ACTION_RAID) }));
+        { NextAction("hex lord malacrass mark target", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("hex lord malacrass channeling whirlwind",
         { NextAction("hex lord malacrass run away from whirlwind", ACTION_EMERGENCY + 1) }));
