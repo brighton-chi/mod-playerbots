@@ -361,7 +361,7 @@ bool MoroesMarkTargetAction::Execute(Event /*event*/)
         KaraState(bot->GetInstanceId()).moroesGuests, MOROES_GUEST_CACHE_INTERVAL_MS, bot,
         FindMoroesGuestGuids);
 
-    for (uint32 entry : MOROES_GUESTS_IN_KILL_ORDER)
+    for (uint32 entry : MOROES_GUEST_ENTRIES)
     {
         for (ObjectGuid const& guid : guests)
         {

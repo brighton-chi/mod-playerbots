@@ -361,7 +361,7 @@ bool IsAttumenDpsHeld(Player* bot)
 GuidVector FindMoroesGuestGuids(Player* bot)
 {
     return FindCreatureGuidsAround(
-        bot, MOROES_SPAWN_POSITION, MOROES_GUEST_SEARCH_RADIUS, MOROES_GUESTS_IN_KILL_ORDER);
+        bot, MOROES_SPAWN_POSITION, MOROES_GUEST_SEARCH_RADIUS, MOROES_GUEST_ENTRIES);
 }
 
 // Maiden of Virtue

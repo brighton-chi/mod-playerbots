@@ -229,7 +229,8 @@ inline constexpr uint32 MOROES_GUEST_CACHE_INTERVAL_MS = 1000;
 
 inline Position const MOROES_SPAWN_POSITION = { -10982.700f, -1877.930f, 81.812f };
 
-inline std::vector<uint32> const MOROES_GUESTS_IN_KILL_ORDER = {
+// Listed in kill order.
+inline std::vector<uint32> const MOROES_GUEST_ENTRIES = {
     Id(KaraNpcs::NPC_BARONESS_DOROTHEA_MILLSTIPE),
     Id(KaraNpcs::NPC_LADY_CATRIONA_VON_INDI),
     Id(KaraNpcs::NPC_LADY_KEIRA_BERRYBUCK),
