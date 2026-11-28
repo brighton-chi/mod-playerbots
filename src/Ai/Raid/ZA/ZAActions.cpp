@@ -221,6 +221,10 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event /*event*/)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     std::vector<Unit*> const bombs = GetFireBombs(bot);
 
     if (bombs.empty())
@@ -256,8 +260,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        ZA_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        ZA_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, false);
 }
 
 bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)

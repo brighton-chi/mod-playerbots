@@ -119,6 +119,10 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     if (_winterchillPositionReached)
         return false;
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     constexpr float healerRadius = 25.0f;
     constexpr float dpsRadius = 35.0f;
     float moveX;
@@ -132,8 +136,7 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false, priority, true, false);
 }
 
 // Melee looks for an open position within the boss's melee range. If one isn't available (likely
@@ -141,6 +144,10 @@ bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 // the hazard and waits it out.
 bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* winterchill = GetHyjalBoss(bot, HyjalBosses::DATA_RAGE_WINTERCHILL);
     if (!winterchill)
         return false;
@@ -159,8 +166,7 @@ bool RageWinterchillMeleeManeuverThroughDeathAndDecayAction::Execute(Event /*eve
     }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false, priority, true, false);
 }
 
 // Anetheron
@@ -210,6 +216,10 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
         return false;
     }
 
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     constexpr float healerRadius = 27.0f;
     constexpr float dpsRadius = 34.0f;
     float moveX;
@@ -223,8 +233,7 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false, priority, true, false);
 }
 
 // Everyone standing near whoever Inferno is aimed at is about to be stunned, since the Infernal
@@ -337,6 +346,10 @@ bool KazrogalAssistTanksMoveInFrontAction::Execute(Event /*event*/)
 
 bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     std::vector<Player*> const rangedMembers = GetRangedMembers(bot);
     auto findIt = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
     if (findIt == rangedMembers.end())
@@ -367,8 +380,7 @@ bool KazrogalSpreadRangedInArcAction::Execute(Event /*event*/)
         return false;
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false, priority, true, false);
 }
 
 bool KazrogalMoveAwayFromGroupAction::Execute(Event /*event*/)
@@ -462,6 +474,10 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
 // active at a time, and escape cannot take the bot into Azgalor's frontal arc due to the Cleave.
 bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Unit* azgalor = GetHyjalBoss(bot, HyjalBosses::DATA_AZGALOR);
     if (!azgalor)
         return false;
@@ -488,8 +504,7 @@ bool AzgalorMeleeManeuverThroughFireAction::Execute(Event /*event*/)
     }
 
     return MoveTo(
-        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, false);
+        HYJAL_MAP_ID, moveX, moveY, moveZ, false, false, false, false, priority, true, false);
 }
 
 // Like with Winterchill, this is essentially a forced "avoid aoe" due to the default config being
@@ -631,6 +646,12 @@ bool ArchimondeSpreadRangedAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
+    MovementPriority const escapePriority = PlayerbotAI::IsHeal(bot) ?
+        MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
+    // Never below the approach's priority, so this can't refuse a move the approach could make.
+    if (IsWaitingForLastMove(escapePriority))
+        return false;
+
     std::vector<Position> const& trail = GetDoomfirePositions(botAI);
 
     float const botX = bot->GetPositionX();
@@ -719,14 +740,11 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
         float const targetX = botX + (totalDx / norm) * moveDist;
         float const targetY = botY + (totalDy / norm) * moveDist;
 
-        MovementPriority const priority = PlayerbotAI::IsHeal(bot) ?
-            MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_FORCED;
-
         bool const backwards = archimonde->GetVictim() == bot;
 
         return MoveTo(
             HYJAL_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
-            false, false, priority, true, backwards);
+            false, false, escapePriority, true, backwards);
     }
 
     bool const inPosition = PlayerbotAI::IsRanged(bot) ?

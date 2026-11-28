@@ -487,6 +487,10 @@ bool GruulTheDragonkillerGetOutOfCaveInAction::Execute(Event /*event*/)
 // off in the same direction.
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -531,8 +535,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 
         return MoveTo(
             GRUUL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
-            bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-            true, false);
+            bot->GetPositionZ(), false, false, false, false, priority, true, false);
     }
 
     return false;

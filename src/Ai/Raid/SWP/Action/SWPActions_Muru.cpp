@@ -731,6 +731,10 @@ Unit* MuruVoidSpawnCastShadowBoltVolleyAction::GetVoidSpawnVolleyPriorityTarget(
 
 bool MuruMoveClearOfVoidZonesAndFiendsAction::Execute(Event /*event*/)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_FORCED;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     Position destination;
     if (!TryGetMuruClearPosition(botAI, destination))
         return false;
@@ -747,8 +751,8 @@ bool MuruMoveClearOfVoidZonesAndFiendsAction::Execute(Event /*event*/)
 
     bot->CastStop();
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-        MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false, false, false, priority,
+        true, false);
 }
 
 bool MuruEscapeTheSingularityAction::Execute(Event /*event*/)

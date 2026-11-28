@@ -392,10 +392,10 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
         float const moveAngle = botAngle + spin * stepAngle;
 
         constexpr MovementPriority spinPriority = MovementPriority::MOVEMENT_FORCED;
-        bot->CastStop();
         if (IsWaitingForLastMove(spinPriority))
             return false;
 
+        bot->CastStop();
         return MoveStraightTo(
             botAI, lurkerX + moveRadius * std::cos(moveAngle),
             lurkerY + moveRadius * std::sin(moveAngle), lurkerZ, spinPriority);
@@ -1499,6 +1499,10 @@ bool LadyVashjMainTankPositionBossAction::MoveToPhase1TankPosition(Unit* vashj)
 // that are held by another tank or that are free.
 bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit* vashj)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     constexpr float searchRadius = 25.0f;
     GuidVector const& adds = GetVashjAdds(bot);
 
@@ -1559,8 +1563,7 @@ bool LadyVashjMainTankPositionBossAction::MoveAwayFromElementalsAndStriders(Unit
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
 // Semicircle around center of the room (to allow escape paths by Static Charged bots).
@@ -2086,6 +2089,10 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderToHoldPosition(Unit* str
 bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
     Unit* strider, Unit* vashj)
 {
+    constexpr MovementPriority priority = MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
     float stepX;
     float stepY;
     float stepZ;
@@ -2098,8 +2105,7 @@ bool LadyVashjPositionCoilfangStriderAction::MoveStriderAwayFromVashj(
     }
 
     return MoveTo(
-        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false,
-        MovementPriority::MOVEMENT_COMBAT, true, backwards);
+        SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
 }
 
 // Two locations: (1) 12 yd in front of the north rock's tip, and (2) southeast of the dais middle.
@@ -2523,10 +2529,16 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
             {
                 return spore.GetExactDist2d(_breakoutPosition) < TOXIC_SPORES_TANK_AVOID_RADIUS;
             });
-
-        if (_hasBreakoutPosition && StepTowardBreakoutPosition(vashj))
-            return true;
     }
+
+    // The breakout is tank-only and forced, so this matches every move below.
+    MovementPriority const priority = isTanking ?
+        MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    if (_hasBreakoutPosition && StepTowardBreakoutPosition(vashj))
+        return true;
 
     float stepX;
     float stepY;
@@ -2562,9 +2574,6 @@ bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 
     if (!found)
         return false;
-
-    MovementPriority const priority = isTanking ?
-        MovementPriority::MOVEMENT_FORCED : MovementPriority::MOVEMENT_COMBAT;
 
     return MoveTo(
         SSC_MAP_ID, stepX, stepY, stepZ, false, false, false, false, priority, true, backwards);
