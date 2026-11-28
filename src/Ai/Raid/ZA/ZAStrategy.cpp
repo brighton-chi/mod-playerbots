@@ -95,6 +95,13 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("zul'jin channeling whirlwind in troll form",
         { NextAction("zul'jin run away from whirlwind", ACTION_EMERGENCY + 1) }));
 
+    // Priority is below ACTION_CRITICAL_HEAL (30), which would be outranked by ACTION_RAID (60).
+    triggers.push_back(new TriggerNode("zul'jin grievous throw on group member",
+        { NextAction("zul'jin heal grievous throw target to full", ACTION_MEDIUM_HEAL + 1) }));
+
+    triggers.push_back(new TriggerNode("zul'jin grievous throw on bot",
+        { NextAction("healthstone", ACTION_EMERGENCY) }));
+
     triggers.push_back(new TriggerNode("zul'jin creeping paralysis in bear form",
         { NextAction("zul'jin mass dispel creeping paralysis", ACTION_EMERGENCY + 6) }));
 

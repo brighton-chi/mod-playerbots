@@ -354,6 +354,34 @@ bool HexLordMalacrassMoveAwayFromFreezingTrapAction::Execute(Event /*event*/)
 
 // Zul'jin
 
+bool ZuljinHealGrievousThrowTargetToFullAction::Execute(Event /*event*/)
+{
+    Player* target = GetZuljinGrievousThrowHealTarget(bot);
+    if (!target)
+        return false;
+
+    char const* heal = nullptr;
+    switch (bot->getClass())
+    {
+        case CLASS_PRIEST:
+            heal = "greater heal";
+            break;
+        case CLASS_PALADIN:
+            heal = "holy light";
+            break;
+        case CLASS_SHAMAN:
+            heal = "healing wave";
+            break;
+        case CLASS_DRUID:
+            heal = "healing touch";
+            break;
+        default:
+            return false;
+    }
+
+    return botAI->CanCastSpell(heal, target) && botAI->CastSpell(heal, target);
+}
+
 bool ZuljinMassDispelCreepingParalysisAction::Execute(Event /*event*/)
 {
     Player* paralysisTarget = GetZuljinCreepingParalysisDispelTarget(bot);

@@ -281,6 +281,28 @@ protected:
     bool IsActiveInEncounter() override;
 };
 
+class ZuljinGrievousThrowOnGroupMemberTrigger : public ZulAmanEncounterTrigger
+{
+public:
+    ZuljinGrievousThrowOnGroupMemberTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin grievous throw on group member", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
+class ZuljinGrievousThrowOnBotTrigger : public ZulAmanEncounterTrigger
+{
+public:
+    ZuljinGrievousThrowOnBotTrigger(PlayerbotAI* botAI)
+        : ZulAmanEncounterTrigger(
+            botAI, "zul'jin grievous throw on bot", ZaHelpers::ZaBosses::DATA_ZULJIN) {}
+
+protected:
+    bool IsActiveInEncounter() override;
+};
+
 class ZuljinCreepingParalysisInBearFormTrigger : public ZulAmanEncounterTrigger
 {
 public:

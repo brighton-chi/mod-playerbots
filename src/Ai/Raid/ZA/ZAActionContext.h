@@ -99,6 +99,9 @@ public:
         creators["zul'jin run away from whirlwind"] =
             &RaidZulAmanActionContext::zuljin_run_away_from_whirlwind;
 
+        creators["zul'jin heal grievous throw target to full"] =
+            &RaidZulAmanActionContext::zuljin_heal_grievous_throw_target_to_full;
+
         creators["zul'jin mass dispel creeping paralysis"] =
             &RaidZulAmanActionContext::zuljin_mass_dispel_creeping_paralysis;
 
@@ -252,6 +255,10 @@ private:
     {
         return new ZulAmanRunAwayFromWhirlwindAction(
             botAI, "zul'jin run away from whirlwind", ZaHelpers::ZaBosses::DATA_ZULJIN);
+    }
+    static Action* zuljin_heal_grievous_throw_target_to_full(PlayerbotAI* botAI)
+    {
+        return new ZuljinHealGrievousThrowTargetToFullAction(botAI);
     }
     static Action* zuljin_mass_dispel_creeping_paralysis(PlayerbotAI* botAI)
     {

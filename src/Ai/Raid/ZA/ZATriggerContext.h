@@ -97,6 +97,12 @@ public:
         creators["zul'jin channeling whirlwind in troll form"] =
             &RaidZulAmanTriggerContext::zuljin_channeling_whirlwind_in_troll_form;
 
+        creators["zul'jin grievous throw on group member"] =
+            &RaidZulAmanTriggerContext::zuljin_grievous_throw_on_group_member;
+
+        creators["zul'jin grievous throw on bot"] =
+            &RaidZulAmanTriggerContext::zuljin_grievous_throw_on_bot;
+
         creators["zul'jin creeping paralysis in bear form"] =
             &RaidZulAmanTriggerContext::zuljin_creeping_paralysis_in_bear_form;
 
@@ -233,6 +239,14 @@ private:
     static Trigger* zuljin_channeling_whirlwind_in_troll_form(PlayerbotAI* botAI)
     {
         return new ZuljinChannelingWhirlwindInTrollFormTrigger(botAI);
+    }
+    static Trigger* zuljin_grievous_throw_on_group_member(PlayerbotAI* botAI)
+    {
+        return new ZuljinGrievousThrowOnGroupMemberTrigger(botAI);
+    }
+    static Trigger* zuljin_grievous_throw_on_bot(PlayerbotAI* botAI)
+    {
+        return new ZuljinGrievousThrowOnBotTrigger(botAI);
     }
     static Trigger* zuljin_creeping_paralysis_in_bear_form(PlayerbotAI* botAI)
     {

@@ -61,6 +61,7 @@ enum class ZaSpells : uint32
 
     // Zul'jin
     SPELL_ZULJIN_WHIRLWIND          = 17207,
+    SPELL_GRIEVOUS_THROW            = 43093,
     SPELL_SHAPE_OF_THE_BEAR         = 42594,
     SPELL_SHAPE_OF_THE_EAGLE        = 42606,
     SPELL_SHAPE_OF_THE_LYNX         = 42607,
@@ -278,6 +279,7 @@ inline std::array<Position, 8> const ZULJIN_SPREAD_POSITIONS = {{
 }};
 
 bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex);
+Player* GetZuljinGrievousThrowHealTarget(Player* bot);
 Player* GetZuljinCreepingParalysisDispelTarget(Player* bot);
 
 // Shared encounter state

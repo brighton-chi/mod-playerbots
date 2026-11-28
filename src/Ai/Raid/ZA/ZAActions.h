@@ -175,6 +175,14 @@ public:
 
 // Zul'jin
 
+class ZuljinHealGrievousThrowTargetToFullAction : public Action
+{
+public:
+    ZuljinHealGrievousThrowTargetToFullAction(PlayerbotAI* botAI)
+        : Action(botAI, "zul'jin heal grievous throw target to full") {}
+    bool Execute(Event event) override;
+};
+
 class ZuljinMassDispelCreepingParalysisAction : public Action
 {
 public:

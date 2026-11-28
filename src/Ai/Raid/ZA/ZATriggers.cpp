@@ -192,8 +192,7 @@ bool ZuljinShouldBeTankedTrigger::IsActiveInEncounter()
     if (!zuljin)
         return false;
 
-    // Eagle can't be tanked, and flexibility for the tank to turn Zul'jin during Dragonhawk
-    // is preferable.
+    // Eagle can't be tanked, and prefer flexibility for the tank to turn Dragonhawk from the raid.
     return !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_EAGLE)) &&
         !zuljin->HasAura(Id(ZaSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }
@@ -205,6 +204,16 @@ bool ZuljinChannelingWhirlwindInTrollFormTrigger::IsActiveInEncounter()
         return false;
 
     return !PlayerbotAI::IsTank(bot) || zuljin->GetVictim() != bot;
+}
+
+bool ZuljinGrievousThrowOnGroupMemberTrigger::IsActiveInEncounter()
+{
+    return PlayerbotAI::IsHeal(bot) && GetZuljinGrievousThrowHealTarget(bot);
+}
+
+bool ZuljinGrievousThrowOnBotTrigger::IsActiveInEncounter()
+{
+    return !bot->IsFullHealth() && bot->HasAura(Id(ZaSpells::SPELL_GRIEVOUS_THROW));
 }
 
 bool ZuljinCreepingParalysisInBearFormTrigger::IsActiveInEncounter()

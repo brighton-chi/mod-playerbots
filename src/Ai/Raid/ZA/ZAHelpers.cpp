@@ -366,6 +366,27 @@ bool GetZuljinSpreadSlotIndex(Player* bot, size_t slotCount, size_t& slotIndex)
     return true;
 }
 
+// Grievous Throw deals periodic damage every 2s. The aura drops only if its target is at full
+// health when the aura ticks.
+Player* GetZuljinGrievousThrowHealTarget(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member->IsAlive() && bot->IsInMap(member) && !member->IsFullHealth() &&
+            member->HasAura(Id(ZaSpells::SPELL_GRIEVOUS_THROW)))
+        {
+            return member;
+        }
+    }
+
+    return nullptr;
+}
+
 Player* GetZuljinCreepingParalysisDispelTarget(Player* bot)
 {
     Group* group = bot->GetGroup();
